@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://rc7cqj7qu0oy"]
+
+[ext_resource type="PackedScene" uid="uid://ca2i5ncgs1sal" path="res://npcs/rey huevo.glb" id="1_bocnp"]
+[ext_resource type="Script" uid="uid://dr5n7m8u2jjg3" path="res://src/scenes/Rey.gd" id="2_bxubb"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_cdu41"]
+points = PackedVector3Array(-1.2902929, 0.817893, -1.1505445, 1.5420206, 0.25660652, -1.1352777, 0.28473064, 1.2309915, -5.0838885, -0.5732579, -1.4057038, -2.0088365, 1.0771465, -0.6689836, -4.1328, -1.1399251, -0.6689836, -4.1328, 0.6422077, -1.4018043, -0.1645, 0.44483832, 1.2356734, -0.1645, -1.3974265, -0.3812883, -0.1645, -0.82315403, 0.9142204, -4.608104, -0.5839905, 1.5174366, -1.576371, 1.4928707, -0.3812883, -0.1645, 1.2350438, 0.43922666, -4.291876, 1.0887344, 1.2236528, -1.4492002, -1.057371, 1.1484374, -0.1645, -0.88716847, -1.2312524, -0.1645, 0.6719223, -1.4138838, -1.8659405, 0.5423898, 1.5288014, -1.1441159, -1.4046913, 0.5272925, -2.007396, -0.189612, 0.75599766, -5.0838885, 1.2303429, -0.9997072, -1.3075649, 1.5110956, -0.30473694, -2.002705, -1.1399251, 0.28067836, -4.449509, -0.29221573, -1.3846183, -2.425584, -1.404215, -0.440161, -2.0076, 1.4928707, 0.2981238, -0.1645, -0.189612, 1.2309915, -5.0838885, -1.1492333, -1.0123503, -1.2915471, 1.2350438, 0.12245563, -4.449509, 0.9182727, 0.9142204, -4.449509, -1.1042311, 1.0596261, -2.0199776, 1.3515388, 0.79809636, -2.0121853)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_grmny"]
+points = PackedVector3Array(2.5788553, 2.4214106, 4.9730997, -2.63924, -2.4907, -0.09251417, -2.6447, 2.4241507, -0.09781459, 2.6447, 2.4833941, -0.15890948, 2.576306, -2.4907, -0.09251417, -2.63924, -2.4907, 4.970625, -2.6417892, 2.4214106, 4.9730997, 2.576306, -2.4907, 4.970625)
+
+[node name="Rey" unique_id=1070947383 instance=ExtResource("1_bocnp")]
+script = ExtResource("2_bxubb")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="reyhuevo" parent_id_path=PackedInt32Array(1029524866) index="0" unique_id=1426147791]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="reyhuevo/StaticBody3D" index="0" unique_id=1799721844]
+shape = SubResource("ConvexPolygonShape3D_cdu41")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="reyhuevo/StaticBody3D" index="1" unique_id=48843494]
+shape = SubResource("ConvexPolygonShape3D_grmny")

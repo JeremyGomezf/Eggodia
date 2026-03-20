@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://b4h0apjc6iuc7"]
+
+[ext_resource type="PackedScene" uid="uid://v83jdt177qqi" path="res://src/scenes/campo.tscn" id="1_kkvs4"]
+
+[node name="Main" type="Node3D" unique_id=1893135751]
+
+[node name="escenariobeta" parent="." unique_id=503405643 instance=ExtResource("1_kkvs4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.7762394, 18.588196, -1.5243607)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=72945628]
+transform = Transform3D(-0.99999696, 5.0931547e-11, -0.0024610313, -0.002460786, -0.014119208, 0.9998973, -3.474776e-05, 0.99990034, 0.014119165, 3.0561562, 92.291466, 1.5976372)
+current = true
