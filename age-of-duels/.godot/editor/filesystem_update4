@@ -1,0 +1,13 @@
+res://src/scenes/player.tscn
+res://src/scenes/player.gd
+res://src/scenes/Rey.tscn
+res://src/scenes/campo.tscn
+res://src/scenes/campo.gd
+res://src/scenes/Rex.tscn
+res://src/scenes/t_rex_huevo.tscn
+res://src/scenes/t_rex_huevo.gd
+res://src/scenes/main.tscn
+res://src/scenes/t-rex.tscn
+res://src/scenes/t_rex.gd
+res://src/scenes/Rex.gd
+res://src/scenes/Rey.gd
