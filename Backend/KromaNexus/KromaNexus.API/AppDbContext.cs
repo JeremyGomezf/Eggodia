@@ -1,22 +1,25 @@
 using Microsoft.EntityFrameworkCore;
+using KromaNexus.API.model; // Asegúrate que esta ruta sea correcta
 
-namespace KromaNexus.API.Data
+namespace KromaNexus.API.Data 
 {
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        // Aquí definimos la tabla de Cartas. 
-        // Si aún no tienen el modelo "Carta", lo crearemos en el paso 2.
         public DbSet<Carta> Cartas { get; set; }
-    }
 
-    public class Carta
-    {
-        public int Id { get; set; }
-        public string Nombre { get; set; } = "";
-        public int PuntosAtaque { get; set; }
-        public int PuntosDefensa { get; set; }
-        public string Tipo { get; set; } = "";
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Carta>(entity =>
+            {
+                // Forzamos el nombre de la tabla
+                entity.ToTable("cartas"); 
+
+                // Forzamos el nombre de las columnas exactas
+                entity.Property(c => c.Ataque).HasColumnName("Ataque");
+                entity.Property(c => c.Defensa).HasColumnName("Defensa");
+            });
+        }
     }
 }

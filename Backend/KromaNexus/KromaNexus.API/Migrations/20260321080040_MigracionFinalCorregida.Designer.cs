@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KromaNexus.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260321030235_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260321080040_MigracionFinalCorregida")]
+    partial class MigracionFinalCorregida
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
