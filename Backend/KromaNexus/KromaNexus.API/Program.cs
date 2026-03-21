@@ -1,23 +1,42 @@
+using Microsoft.EntityFrameworkCore;
+using KromaNexus.API.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// 1. Configurar Servicios básicos
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+// 2. Configurar Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// 3. Configurar CORS
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowAll", policy => {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
+// --- PASO 1.5: CONECTAR LA BASE DE DATOS (ESTO ES LO QUE FALTABA) ---
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+// -----------------------------------------------------------------
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// 4. Activar la interfaz visual de Swagger
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(); 
 }
 
-app.UseHttpsRedirection();
+// 5. Usar la política de CORS
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
