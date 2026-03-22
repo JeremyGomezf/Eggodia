@@ -15,6 +15,10 @@ run/main_scene="uid://b4h0apjc6iuc7"
 config/features=PackedStringArray("4.6", "Mobile")
 config/icon="res://icon.svg"
 
+[dotnet]
+
+project/assembly_name="age of duels"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://b4h0apjc6iuc7"]
 
 [ext_resource type="PackedScene" uid="uid://v83jdt177qqi" path="res://src/scenes/campo.tscn" id="1_kkvs4"]
+[ext_resource type="Script" uid="uid://iyu5pqx0vpve" path="res://ApiConnector.cs" id="1_rr2wm"]
 
 [node name="Main" type="Node3D" unique_id=1893135751]
+script = ExtResource("1_rr2wm")
 
 [node name="escenariobeta" parent="." unique_id=503405643 instance=ExtResource("1_kkvs4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.7762394, 18.588196, -1.5243607)
