@@ -12,7 +12,7 @@ config_version=5
 
 config/name="age of duels"
 run/main_scene="uid://b4h0apjc6iuc7"
-config/features=PackedStringArray("4.6", "Mobile")
+config/features=PackedStringArray("4.6", "C#", "Mobile")
 config/icon="res://icon.svg"
 
 [dotnet]
