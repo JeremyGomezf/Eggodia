@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b0kjxhih543ce"]
 
 [ext_resource type="Texture2D" uid="uid://djdsv3gcq1ash" path="res://Tematicafondo.png" id="1_bj1uy"]
+[ext_resource type="Script" uid="uid://irvsriti704n" path="res://MenuPrincipal.cs" id="1_kni6g"]
 [ext_resource type="Texture2D" uid="uid://nhaihcreuvkw" path="res://Play.png" id="2_gmcsc"]
 [ext_resource type="Texture2D" uid="uid://bfwg4iyvsnyld" path="res://Play1.png" id="2_ul6ys"]
 [ext_resource type="Texture2D" uid="uid://dc1m7m3uykmeq" path="res://Settings3.png" id="3_a6518"]
@@ -45,6 +46,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_kni6g")
+RutaEscenaJuego = "res://tablero_duelo.tscn"
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=393314323]
 layout_mode = 1
