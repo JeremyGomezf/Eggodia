@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://chhk21rklvkl8"]
+
+[ext_resource type="Texture2D" uid="uid://dx1mpvaklc5jf" path="res://imagenes/PersonajesPng/Golem.png" id="1_lc7jo"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
+size = Vector2(223, 178.5)
+
+[node name="Golem" type="Area2D" unique_id=745771741]
+
+[node name="Golem" type="Sprite2D" parent="." unique_id=1601025594]
+scale = Vector2(0.30190423, 0.2674632)
+texture = ExtResource("1_lc7jo")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=613560021]
+shape = SubResource("RectangleShape2D_8ramd")
