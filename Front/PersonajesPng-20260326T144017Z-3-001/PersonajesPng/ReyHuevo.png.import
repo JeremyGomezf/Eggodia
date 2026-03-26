@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4kwa7p6rvcwa"
-path="res://.godot/imported/ReyHuevo.png-e720dde481800edbc973f4751acbb497.ctex"
+path="res://.godot/imported/ReyHuevo.png-e9c5faced455aadeec87b62dc90ede17.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://PersonajesPng/ReyHuevo.png"
-dest_files=["res://.godot/imported/ReyHuevo.png-e720dde481800edbc973f4751acbb497.ctex"]
+source_file="res://PersonajesPng-20260326T144017Z-3-001/PersonajesPng/ReyHuevo.png"
+dest_files=["res://.godot/imported/ReyHuevo.png-e9c5faced455aadeec87b62dc90ede17.ctex"]
 
 [params]
 

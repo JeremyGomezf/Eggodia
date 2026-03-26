@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dx1mpvaklc5jf"
-path="res://.godot/imported/Golem.png-f688966fcee22cd206bd80f6a47578ff.ctex"
+path="res://.godot/imported/Golem.png-13bb0bc78fc52c6cedcb473837d6cf26.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://PersonajesPng/Golem.png"
-dest_files=["res://.godot/imported/Golem.png-f688966fcee22cd206bd80f6a47578ff.ctex"]
+source_file="res://PersonajesPng-20260326T144017Z-3-001/PersonajesPng/Golem.png"
+dest_files=["res://.godot/imported/Golem.png-13bb0bc78fc52c6cedcb473837d6cf26.ctex"]
 
 [params]
 

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4lmp4ltcgcap"
-path="res://.godot/imported/TronoAlpha.png-c1bfdf534422e07d86e9f05c519a3ce0.ctex"
+path="res://.godot/imported/TronoAlpha.png-a6c3abc059818f6efcd98ad9896783a9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://PersonajesPng/TronoAlpha.png"
-dest_files=["res://.godot/imported/TronoAlpha.png-c1bfdf534422e07d86e9f05c519a3ce0.ctex"]
+source_file="res://PersonajesPng-20260326T144017Z-3-001/PersonajesPng/TronoAlpha.png"
+dest_files=["res://.godot/imported/TronoAlpha.png-a6c3abc059818f6efcd98ad9896783a9.ctex"]
 
 [params]
 

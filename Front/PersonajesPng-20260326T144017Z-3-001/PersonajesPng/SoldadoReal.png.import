@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3gd1rcrhu124"
-path="res://.godot/imported/SoldadoReal.png-795262f22e3bee8ab6981e3d61bf15d1.ctex"
+path="res://.godot/imported/SoldadoReal.png-b095c7903208ddc69b56df955c467270.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://PersonajesPng/SoldadoReal.png"
-dest_files=["res://.godot/imported/SoldadoReal.png-795262f22e3bee8ab6981e3d61bf15d1.ctex"]
+source_file="res://PersonajesPng-20260326T144017Z-3-001/PersonajesPng/SoldadoReal.png"
+dest_files=["res://.godot/imported/SoldadoReal.png-b095c7903208ddc69b56df955c467270.ctex"]
 
 [params]
 

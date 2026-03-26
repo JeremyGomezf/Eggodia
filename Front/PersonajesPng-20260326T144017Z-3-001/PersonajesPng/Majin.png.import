@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://btkcemsi2m200"
-path="res://.godot/imported/Majin.png-62d697122bb9984b1482ece5b59bfee9.ctex"
+path="res://.godot/imported/Majin.png-48482f1a115ef9e4fb9aa16566d7a50c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://PersonajesPng/Majin.png"
-dest_files=["res://.godot/imported/Majin.png-62d697122bb9984b1482ece5b59bfee9.ctex"]
+source_file="res://PersonajesPng-20260326T144017Z-3-001/PersonajesPng/Majin.png"
+dest_files=["res://.godot/imported/Majin.png-48482f1a115ef9e4fb9aa16566d7a50c.ctex"]
 
 [params]
 

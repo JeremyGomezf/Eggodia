@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://be48flc345hrr"
-path="res://.godot/imported/Tiburon.png-19ea54e95175062b205129524cd4eb55.ctex"
+path="res://.godot/imported/Tiburon.png-d05fb4793abdb2f79bda3f4249d23d44.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://PersonajesPng/Tiburon.png"
-dest_files=["res://.godot/imported/Tiburon.png-19ea54e95175062b205129524cd4eb55.ctex"]
+source_file="res://PersonajesPng-20260326T144017Z-3-001/PersonajesPng/Tiburon.png"
+dest_files=["res://.godot/imported/Tiburon.png-d05fb4793abdb2f79bda3f4249d23d44.ctex"]
 
 [params]
 

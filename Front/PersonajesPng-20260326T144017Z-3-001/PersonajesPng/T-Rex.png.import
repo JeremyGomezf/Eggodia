@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bymyvdmsoh3ko"
-path="res://.godot/imported/T-Rex.png-e2b79e39c5440297586030e3004b0c89.ctex"
+path="res://.godot/imported/T-Rex.png-ac788191a3e69f1439dc675686012adb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://PersonajesPng/T-Rex.png"
-dest_files=["res://.godot/imported/T-Rex.png-e2b79e39c5440297586030e3004b0c89.ctex"]
+source_file="res://PersonajesPng-20260326T144017Z-3-001/PersonajesPng/T-Rex.png"
+dest_files=["res://.godot/imported/T-Rex.png-ac788191a3e69f1439dc675686012adb.ctex"]
 
 [params]
 

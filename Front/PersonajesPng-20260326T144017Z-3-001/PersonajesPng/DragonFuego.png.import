@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://daqfe014jdooy"
-path="res://.godot/imported/DragonFuego.png-d150ddb09d6ff3e5df90c13c7ad4e0dd.ctex"
+path="res://.godot/imported/DragonFuego.png-c397decdacf703fc0a9416b2a980d550.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://PersonajesPng/DragonFuego.png"
-dest_files=["res://.godot/imported/DragonFuego.png-d150ddb09d6ff3e5df90c13c7ad4e0dd.ctex"]
+source_file="res://PersonajesPng-20260326T144017Z-3-001/PersonajesPng/DragonFuego.png"
+dest_files=["res://.godot/imported/DragonFuego.png-c397decdacf703fc0a9416b2a980d550.ctex"]
 
 [params]
 
