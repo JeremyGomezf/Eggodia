@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema; // Importante añadir esto
+using System.ComponentModel.DataAnnotations.Schema; // <--- ASEGÚRATE DE TENER ESTO
 
 namespace KromaNexus.API.model
 {
@@ -12,10 +12,10 @@ namespace KromaNexus.API.model
         public string? Tipo { get; set; }
         public int Costo { get; set; }
 
-        [Column("Ataque")] // Esto obliga a buscar "Ataque" en SQL
-        public int Ataque { get; set; } 
+        [Column("Ataque")] // <--- ESTO OBLIGA A BUSCAR "Ataque" EN SQL
+        public int Ataque { get; set; }
 
-        [Column("Defensa")] // Esto obliga a buscar "Defensa" en SQL
+        [Column("Defensa")] // <--- ESTO OBLIGA A BUSCAR "Defensa" EN SQL
         public int Defensa { get; set; }
 
         public string? Habilidad { get; set; }

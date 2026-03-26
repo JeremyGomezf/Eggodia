@@ -17,7 +17,7 @@ builder.Services.AddCors(options => {
     });
 });
 
-// --- PASO 1.5: CONECTAR LA BASE DE DATOS (ESTO ES LO QUE FALTABA) ---
+// --- PASO 1 CONECTAR LA BASE DE DATOS (ESTO ES LO QUE FALTABA) ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
