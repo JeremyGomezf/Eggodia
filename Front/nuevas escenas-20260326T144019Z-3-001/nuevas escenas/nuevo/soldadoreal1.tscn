@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://dc77ru7dk5llo"]
+
+[ext_resource type="Texture2D" uid="uid://c3gd1rcrhu124" path="res://PersonajesPng/SoldadoReal.png" id="1_xof0s"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
+size = Vector2(98, 92.5)
+
+[node name="Soldado Real" type="Area2D" unique_id=745771741]
+
+[node name="SoldadoReal" type="Sprite2D" parent="." unique_id=1428879646]
+scale = Vector2(0.23839054, 0.21223654)
+texture = ExtResource("1_xof0s")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1824730468]
+shape = SubResource("RectangleShape2D_8ramd")

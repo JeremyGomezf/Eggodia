@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://tlrvmode5mtr"]
+
+[ext_resource type="Texture2D" uid="uid://daqfe014jdooy" path="res://PersonajesPng/DragonFuego.png" id="1_goejh"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
+size = Vector2(184, 147.5)
+
+[node name="Dragon de Fuego" type="Area2D" unique_id=745771741]
+
+[node name="DragonFuego" type="Sprite2D" parent="." unique_id=1723734537]
+scale = Vector2(0.27604946, 0.25980392)
+texture = ExtResource("1_goejh")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=287232751]
+shape = SubResource("RectangleShape2D_8ramd")
