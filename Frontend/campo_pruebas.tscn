@@ -1,0 +1,104 @@
+[gd_scene format=3 uid="uid://cl00kgjsyw1jg"]
+
+[ext_resource type="PackedScene" uid="uid://dg44bkrbcj144" path="res://escenas/personajes/reyhuevo1.tscn" id="1_6fyn1"]
+[ext_resource type="PackedScene" uid="uid://bsyn4abojxj65" path="res://escenas/personajes/dinohuevo1.tscn" id="2_e5m0h"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e5m0h"]
+bg_color = Color(0, 0.72156864, 0.101960786, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6fyn1"]
+bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
+
+[node name="CampoPruebas" type="Node2D" unique_id=1024000573]
+
+[node name="rey_huevo" parent="." unique_id=745771741 instance=ExtResource("1_6fyn1")]
+position = Vector2(406, 241)
+
+[node name="ProgressBar" type="ProgressBar" parent="rey_huevo" unique_id=1139983518]
+offset_left = -57.0
+offset_top = -96.0
+offset_right = 55.0
+offset_bottom = -69.0
+theme_override_styles/background = SubResource("StyleBoxFlat_e5m0h")
+
+[node name="MenuAcciones" type="VBoxContainer" parent="rey_huevo" unique_id=136132679]
+offset_left = -42.0
+offset_top = 77.0
+offset_right = -2.0
+offset_bottom = 117.0
+
+[node name="BtnAtaque" type="Button" parent="rey_huevo/MenuAcciones" unique_id=927415652]
+layout_mode = 2
+text = "Ataque"
+
+[node name="BtnDefensa" type="Button" parent="rey_huevo/MenuAcciones" unique_id=1212798373]
+layout_mode = 2
+text = "Defensa"
+
+[node name="BtnHabilidad" type="Button" parent="rey_huevo/MenuAcciones" unique_id=378643909]
+layout_mode = 2
+text = "Habilidad"
+
+[node name="Chispas" type="CPUParticles2D" parent="rey_huevo" unique_id=50486397]
+emitting = false
+amount = 100
+one_shot = true
+explosiveness = 1.0
+spread = 180.0
+initial_velocity_min = 200.0
+initial_velocity_max = 200.0
+color = Color(1, 1, 0.1764706, 1)
+
+[node name="BarraMana" type="ProgressBar" parent="rey_huevo" unique_id=1114980628]
+offset_left = -57.0
+offset_top = -124.0
+offset_right = 55.0
+offset_bottom = -97.0
+scale = Vector2(1, 0.71999943)
+theme_override_styles/background = SubResource("StyleBoxFlat_6fyn1")
+
+[node name="dino_huevo" parent="." unique_id=612177627 instance=ExtResource("2_e5m0h")]
+position = Vector2(692, 254)
+
+[node name="ProgressBar" type="ProgressBar" parent="dino_huevo" unique_id=125605525]
+offset_left = -57.0
+offset_top = -100.0
+offset_right = 55.0
+offset_bottom = -73.0
+theme_override_styles/background = SubResource("StyleBoxFlat_e5m0h")
+
+[node name="MenuAcciones" type="VBoxContainer" parent="dino_huevo" unique_id=1641892541]
+offset_left = -38.0
+offset_top = 72.0
+offset_right = 44.0
+offset_bottom = 173.0
+
+[node name="BtnAtaque" type="Button" parent="dino_huevo/MenuAcciones" unique_id=1609090009]
+layout_mode = 2
+text = "Ataque"
+
+[node name="BtnDefensa" type="Button" parent="dino_huevo/MenuAcciones" unique_id=136122852]
+layout_mode = 2
+text = "Defensa"
+
+[node name="BtnHabilidad" type="Button" parent="dino_huevo/MenuAcciones" unique_id=210312538]
+layout_mode = 2
+text = "Habilidad"
+
+[node name="Chispas" type="CPUParticles2D" parent="dino_huevo" unique_id=225402031]
+emitting = false
+amount = 100
+one_shot = true
+explosiveness = 1.0
+spread = 180.0
+initial_velocity_min = 200.0
+initial_velocity_max = 200.0
+color = Color(1, 1, 0.1764706, 1)
+
+[node name="BarraMana" type="ProgressBar" parent="dino_huevo" unique_id=228156185]
+offset_left = -56.0
+offset_top = -129.0
+offset_right = 56.0
+offset_bottom = -102.0
+scale = Vector2(1, 0.71999943)
+theme_override_styles/background = SubResource("StyleBoxFlat_6fyn1")
