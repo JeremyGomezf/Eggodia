@@ -1,11 +1,14 @@
 [gd_scene format=3 uid="uid://dg44bkrbcj144"]
 
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://EntidadRed.cs" id="1_4oupg"]
 [ext_resource type="Texture2D" uid="uid://b4kwa7p6rvcwa" path="res://imagenes/PersonajesPng/ReyHuevo.png" id="1_t2jtk"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
 size = Vector2(82, 133.5)
 
 [node name="Rey Huevo" type="Area2D" unique_id=745771741]
+script = ExtResource("1_4oupg")
+IdPersonaje = "rey_huevo"
 
 [node name="ReyHuevo" type="Sprite2D" parent="." unique_id=812599606]
 scale = Vector2(0.22506925, 0.199792)
@@ -13,3 +16,9 @@ texture = ExtResource("1_t2jtk")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=338538435]
 shape = SubResource("RectangleShape2D_8ramd")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=1207579468]
+
+[node name="Label" type="Label" parent="." unique_id=467849228]
+offset_right = 40.0
+offset_bottom = 23.0

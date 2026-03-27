@@ -1,11 +1,14 @@
 [gd_scene format=3 uid="uid://bsyn4abojxj65"]
 
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://EntidadRed.cs" id="1_20oeg"]
 [ext_resource type="Texture2D" uid="uid://wr0sospsktfe" path="res://imagenes/PersonajesPng/DinoHuevo.png" id="1_ex4sh"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
 size = Vector2(108, 133.5)
 
 [node name="Dino Huevo" type="Area2D" unique_id=745771741]
+script = ExtResource("1_20oeg")
+IdPersonaje = "dino_huevo"
 
 [node name="DinoHuevo" type="Sprite2D" parent="." unique_id=699284681]
 scale = Vector2(0.20009327, 0.19805811)
@@ -13,3 +16,9 @@ texture = ExtResource("1_ex4sh")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=789237659]
 shape = SubResource("RectangleShape2D_8ramd")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=782052654]
+
+[node name="Label" type="Label" parent="." unique_id=271387681]
+offset_right = 40.0
+offset_bottom = 23.0
