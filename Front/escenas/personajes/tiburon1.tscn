@@ -1,11 +1,14 @@
 [gd_scene format=3 uid="uid://xuqohwbxk5ly"]
 
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://EntidadRed.cs" id="1_fgxpu"]
 [ext_resource type="Texture2D" uid="uid://be48flc345hrr" path="res://imagenes/PersonajesPng/Tiburon.png" id="1_vwtqj"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
 size = Vector2(127, 68.5)
 
 [node name="Tiburon" type="Area2D" unique_id=745771741]
+script = ExtResource("1_fgxpu")
+IdPersonaje = "Tiburon"
 
 [node name="Tiburon" type="Sprite2D" parent="." unique_id=1842563195]
 scale = Vector2(0.16300125, 0.16656408)
@@ -13,3 +16,9 @@ texture = ExtResource("1_vwtqj")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=495579207]
 shape = SubResource("RectangleShape2D_8ramd")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=796898879]
+
+[node name="Label" type="Label" parent="." unique_id=1676653668]
+offset_right = 40.0
+offset_bottom = 23.0

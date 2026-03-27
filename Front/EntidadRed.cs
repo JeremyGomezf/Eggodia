@@ -5,13 +5,15 @@ using Godot.Collections;
 public partial class EntidadRed : Node2D
 {
 	[Export] public string IdPersonaje = "trono";
-	private HttpRequest _peticion;
+	private Godot.HttpRequest _peticion;
 
 	public override void _Ready()
 	{
-		_peticion = GetNode<HttpRequest>("HTTPRequest");
+		// 1. Buscamos el nodo de internet
+		_peticion = GetNode<Godot.HttpRequest>("HTTPRequest");
 		_peticion.RequestCompleted += AlRecibirDatos;
 		
+		// 2. Hacemos la llamada a la nube
 		string url = "https://jsonplaceholder.typicode.com/posts/1";
 		_peticion.Request(url);
 		GD.Print($"Conectando con la nube para: {IdPersonaje}...");
@@ -25,17 +27,22 @@ public partial class EntidadRed : Node2D
 		if (error == Error.Ok)
 		{
 			var datos = json.GetData().AsGodotDictionary();
-			// Esto saca el título del post de prueba de internet
 			string textoDeInternet = datos["title"].ToString();
 			
 			GD.Print("¡Dato recibido!: " + textoDeInternet);
 			
-			// Aquí le decimos al Label que muestre el dato
-			GetNode<Label>("Label").Text = "NUBE: " + textoDeInternet;
-		}
-		else 
-		{
-			GD.PrintErr("Error al procesar el JSON del servidor");
+			// --- AQUÍ ESTÁ LO DEL LABEL ---
+			// Buscamos el nodo Label que creaste en la escena
+			var labelNodo = GetNodeOrNull<Label>("Label");
+			
+			if (labelNodo != null) 
+			{
+				labelNodo.Text = "NUBE: " + textoDeInternet;
+			}
+			else 
+			{
+				GD.PrintErr("¡OJO! No encontré el nodo llamado 'Label' en esta escena.");
+			}
 		}
 	}
-	}
+}
