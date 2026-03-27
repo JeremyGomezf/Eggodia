@@ -17,15 +17,9 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
---
--- Database: `cardsdatabase`
---
+-- Db cardsdatabase
 
--- --------------------------------------------------------
-
---
--- Table structure for table `cartas`
---
+-- tabla de estructura de las cartas
 
 CREATE TABLE `cartas` (
   `ID` int(11) NOT NULL,
@@ -38,7 +32,7 @@ CREATE TABLE `cartas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `cartas`
+-- Dumping data para tabla cartas
 --
 
 INSERT INTO `cartas` (`ID`, `Nombre`, `Tipo`, `Costo`, `Ataque`, `Defensa`, `Habilidad`) VALUES
@@ -51,42 +45,41 @@ INSERT INTO `cartas` (`ID`, `Nombre`, `Tipo`, `Costo`, `Ataque`, `Defensa`, `Hab
 (7, 'Tiburón', 'Defensivo', 5, 30, 250, 'Ataca a tropas enemigos que están en el puente'),
 (8, 'Majin', 'Hechicero', 3, 30, 120, 'Lanza flamas de color azul');
 
--- --------------------------------------------------------
+
 
 --
--- Table structure for table `__efmigrationshistory`
+-- estructura de cartas `__efmigrationshistory`
 --
-
+--carlos es zorro, el mas zorro que conozco, el mas zorroooooooooooooooooo
 CREATE TABLE `__efmigrationshistory` (
   `MigrationId` varchar(150) NOT NULL,
   `ProductVersion` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `__efmigrationshistory`
+-- Dumping data para las cartas`__efmigrationshistory`
 --
 
 INSERT INTO `__efmigrationshistory` (`MigrationId`, `ProductVersion`) VALUES
 ('20260321030235_InitialCreate', '8.0.2');
 
 --
--- Indexes for dumped tables
+-- indxxx's for dumped tabla
 --
 
 --
--- Indexes for table `cartas`
---
+-- Indxxx's for tabla cartas
 ALTER TABLE `cartas`
   ADD PRIMARY KEY (`ID`);
 
 --
--- Indexes for table `__efmigrationshistory`
+-- Indxxx's para la ttabla `__efmigrationshistory`
 --
 ALTER TABLE `__efmigrationshistory`
   ADD PRIMARY KEY (`MigrationId`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT for dumped tables///aprendan en casa
 --
 
 --

@@ -1,11 +1,14 @@
 [gd_scene format=3 uid="uid://cak0od5ggqiqk"]
 
 [ext_resource type="Texture2D" uid="uid://b4lmp4ltcgcap" path="res://imagenes/PersonajesPng/TronoAlpha.png" id="1_4u0b8"]
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://EntidadRed.cs" id="1_drxha"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_twi5e"]
 size = Vector2(134, 85)
 
 [node name="Trono" type="StaticBody2D" unique_id=2015694416]
+script = ExtResource("1_drxha")
+IdPersonaje = "trono_rey"
 
 [node name="TronoAlpha" type="Sprite2D" parent="." unique_id=1051652193]
 scale = Vector2(0.6140553, 0.68750006)
@@ -14,3 +17,10 @@ texture = ExtResource("1_4u0b8")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1163080008]
 position = Vector2(-1, 14.5)
 shape = SubResource("RectangleShape2D_twi5e")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=1610388458]
+
+[node name="Label" type="Label" parent="." unique_id=1992990557]
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Esperando internet..."
