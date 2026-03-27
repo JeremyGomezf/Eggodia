@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cpuatclac0kpu"]
 
 [ext_resource type="Texture2D" uid="uid://btkcemsi2m200" path="res://imagenes/PersonajesPng/Majin.png" id="1_73x4u"]
-[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://EntidadRed.cs" id="1_pcn00"]
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_pcn00"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
 size = Vector2(107, 164.5)

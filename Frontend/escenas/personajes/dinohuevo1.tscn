@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bsyn4abojxj65"]
 
-[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://EntidadRed.cs" id="1_20oeg"]
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_20oeg"]
 [ext_resource type="Texture2D" uid="uid://wr0sospsktfe" path="res://imagenes/PersonajesPng/DinoHuevo.png" id="1_ex4sh"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]

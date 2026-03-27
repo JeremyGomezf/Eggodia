@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://chhk21rklvkl8"]
 
-[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://EntidadRed.cs" id="1_khme1"]
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_khme1"]
 [ext_resource type="Texture2D" uid="uid://dx1mpvaklc5jf" path="res://imagenes/PersonajesPng/Golem.png" id="1_lc7jo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]

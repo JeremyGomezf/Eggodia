@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dg44bkrbcj144"]
 
-[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://EntidadRed.cs" id="1_4oupg"]
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_4oupg"]
 [ext_resource type="Texture2D" uid="uid://b4kwa7p6rvcwa" path="res://imagenes/PersonajesPng/ReyHuevo.png" id="1_t2jtk"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
