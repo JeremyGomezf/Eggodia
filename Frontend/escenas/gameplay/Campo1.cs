@@ -23,26 +23,30 @@ public partial class Campo1 : Node2D
 
 	private void ActualizarInterfaz()
 	{
-		// Si el juego terminó, mostramos quién ganó y quién perdió
 		if (juegoTerminado)
 		{
-			if (vidaJugador <= 0)
-			{
-				labelVida1.Text = "DERROTA";
-				labelVida2.Text = "¡GANASTE!";
-			}
-			else if (vidaRival <= 0)
-			{
-				labelVida1.Text = "¡GANASTE!";
-				labelVida2.Text = "DERROTA";
-			}
+			labelVida1.Text = vidaJugador <= 0 ? "DERROTA" : "¡GANASTE!";
+			labelVida2.Text = vidaRival <= 0 ? "DERROTA" : "¡GANASTE!";
 		}
 		else
 		{
-			// Si el juego sigue, mostramos la vida normal
-			if (labelVida1 != null) labelVida1.Text = $"VIDA: {vidaJugador}";
-			if (labelVida2 != null) labelVida2.Text = $"VIDA: {vidaRival}";
+			labelVida1.Text = $"VIDA: {vidaJugador}";
+			labelVida2.Text = $"VIDA: {vidaRival}";
+			
+			// Un pequeño truco: resaltamos con un mensaje quién tiene el turno
+			GD.Print(esTurnoJugador ? "--> Turno de Jeremy" : "--> Turno del Rival");
 		}
+	}
+
+	// --- FUNCIÓN PARA EL NUEVO BOTÓN ---
+	private void _on_pasar_turno_pressed()
+	{
+		if (juegoTerminado) return;
+
+		// Simplemente cambiamos el interruptor y actualizamos
+		esTurnoJugador = !esTurnoJugador;
+		ActualizarInterfaz();
+		GD.Print("Turno cedido voluntariamente.");
 	}
 
 	private void _on_sacrificar_pressed()
@@ -60,7 +64,6 @@ public partial class Campo1 : Node2D
 			if (vidaRival < 0) vidaRival = 0;
 		}
 
-		// Revisamos si tras este golpe alguien llegó a 0
 		if (vidaJugador <= 0 || vidaRival <= 0)
 		{
 			juegoTerminado = true;
@@ -83,10 +86,5 @@ public partial class Campo1 : Node2D
 			int segundos = tiempoRestante % 60;
 			if (labelTiempo != null) labelTiempo.Text = $"{minutos}:{segundos:D2}";
 		}
-	}
-
-	private void _on_barajar_pressed()
-	{
-		if (!juegoTerminado) GD.Print("Jeremy está barajando...");
 	}
 }

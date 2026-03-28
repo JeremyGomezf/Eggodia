@@ -59,6 +59,11 @@ text = "SACRIFICAR"
 [node name="Timer" type="Timer" parent="." unique_id=270587084]
 autostart = true
 
+[node name="Pasar_Turno" type="Button" parent="." unique_id=485402027]
+offset_right = 8.0
+offset_bottom = 8.0
+
 [connection signal="pressed" from="Barajar" to="." method="_on_barajar_pressed"]
 [connection signal="pressed" from="Sacrificar" to="." method="_on_sacrificar_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="pressed" from="Pasar_Turno" to="." method="_on_pasar_turno_pressed"]
