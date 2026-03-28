@@ -1,16 +1,18 @@
 [gd_scene format=3 uid="uid://r247tee0owlr"]
 
+[ext_resource type="Script" uid="uid://5di8thk6dfo3" path="res://escenas/gameplay/Campo1.cs" id="1_ar4p3"]
 [ext_resource type="Texture2D" uid="uid://inps3xbcbpi4" path="res://imagenes/PersonajesPng/escenario1.png" id="1_r607e"]
 [ext_resource type="Texture2D" uid="uid://nn4qcbvpu22a" path="res://imagenes/PersonajesPng/WhatsApp Image 2026-03-25 at 4.41.44 PM.jpeg" id="2_e0wnx"]
 
 [node name="Campo1" type="Node2D" unique_id=807187685]
+script = ExtResource("1_ar4p3")
 
 [node name="Escenario1" type="Sprite2D" parent="." unique_id=376666928]
 position = Vector2(573.75, 322.5)
 scale = Vector2(1.8408, 1.6929133)
 texture = ExtResource("1_r607e")
 
-[node name="WhatsAppImage20260325At4_41_44Pm" type="Sprite2D" parent="." unique_id=1640264118]
+[node name="gonza es meco" type="Sprite2D" parent="." unique_id=1640264118]
 visible = false
 position = Vector2(578.25, 324.25)
 scale = Vector2(1.8328, 1.683727)
@@ -53,3 +55,10 @@ offset_top = 586.0
 offset_right = 340.0
 offset_bottom = 623.0
 text = "SACRIFICAR"
+
+[node name="Timer" type="Timer" parent="." unique_id=270587084]
+autostart = true
+
+[connection signal="pressed" from="Barajar" to="." method="_on_barajar_pressed"]
+[connection signal="pressed" from="Sacrificar" to="." method="_on_sacrificar_pressed"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
