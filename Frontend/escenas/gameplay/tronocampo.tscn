@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://bv7g7ssxuqmga"]
+
+[ext_resource type="Script" uid="uid://dn7jghugam0wv" path="res://escenas/gameplay/tronocampo.cs" id="1_ktk0l"]
+[ext_resource type="Texture2D" uid="uid://b4lmp4ltcgcap" path="res://imagenes/PersonajesPng/TronoAlpha.png" id="2_2rktf"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2rktf"]
+size = Vector2(134, 85)
+
+[node name="tronocampo" type="StaticBody2D" unique_id=1758489065]
+script = ExtResource("1_ktk0l")
+
+[node name="TronoAlpha" type="Sprite2D" parent="." unique_id=547816299]
+scale = Vector2(0.6140553, 0.68750006)
+texture = ExtResource("2_2rktf")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1437593390]
+position = Vector2(-1, 14.5)
+shape = SubResource("RectangleShape2D_2rktf")
+
+[node name="PosicionHuevo" type="Marker2D" parent="." unique_id=1202989575]
+position = Vector2(0, -91)

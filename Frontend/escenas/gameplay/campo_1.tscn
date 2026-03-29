@@ -8,11 +8,11 @@
 script = ExtResource("1_ar4p3")
 
 [node name="Escenario1" type="Sprite2D" parent="." unique_id=376666928]
-position = Vector2(573.75, 322.5)
-scale = Vector2(1.8408, 1.6929133)
+position = Vector2(603.7, 350.5)
+scale = Vector2(1.9368, 1.8398951)
 texture = ExtResource("1_r607e")
 
-[node name="gonza es meco" type="Sprite2D" parent="." unique_id=1640264118]
+[node name="jeremy mi hijo" type="Sprite2D" parent="." unique_id=1640264118]
 visible = false
 position = Vector2(578.25, 324.25)
 scale = Vector2(1.8328, 1.683727)
@@ -28,32 +28,35 @@ text = "HP:"
 
 [node name="Vida2" type="Label" parent="." unique_id=2069520175]
 modulate = Color(0, 0, 0, 1)
-offset_left = 935.0
+offset_left = 1123.0
 offset_top = 4.0
-offset_right = 1149.0
+offset_right = 1337.0
 offset_bottom = 61.0
 text = "HP:"
 
 [node name="Tiempo" type="Label" parent="." unique_id=1734563875]
 modulate = Color(0, 0, 0, 1)
-offset_left = 529.0
-offset_top = 14.0
-offset_right = 743.0
-offset_bottom = 71.0
+offset_left = 539.00006
+offset_top = 15.999999
+offset_right = 753.00006
+offset_bottom = 73.0
+scale = Vector2(1.9643834, 1.2399999)
 text = "TIEMPO"
 
 [node name="Barajar" type="Button" parent="." unique_id=362498556]
-offset_left = 27.0
-offset_top = 586.0
-offset_right = 169.0
-offset_bottom = 623.0
+offset_left = 30.0
+offset_top = 630.0
+offset_right = 172.0
+offset_bottom = 667.0
+scale = Vector2(1.3718677, 1.334544)
 text = "BARAJAR"
 
 [node name="Sacrificar" type="Button" parent="." unique_id=372876625]
-offset_left = 198.0
-offset_top = 586.0
-offset_right = 340.0
-offset_bottom = 623.0
+offset_left = 259.0
+offset_top = 631.0
+offset_right = 401.0
+offset_bottom = 668.0
+scale = Vector2(1.3718677, 1.334544)
 text = "SACRIFICAR"
 
 [node name="Timer" type="Timer" parent="." unique_id=270587084]
@@ -62,6 +65,16 @@ autostart = true
 [node name="Pasar_Turno" type="Button" parent="." unique_id=485402027]
 offset_right = 8.0
 offset_bottom = 8.0
+
+[node name="SpawnTrono1" type="Marker2D" parent="." unique_id=1533911167]
+position = Vector2(165, 417)
+
+[node name="SpawnTrono2" type="Marker2D" parent="." unique_id=1433017232]
+position = Vector2(1041, 414)
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1921821545]
+position = Vector2(603, 350)
+zoom = Vector2(0.95, 0.93)
 
 [connection signal="pressed" from="Barajar" to="." method="_on_barajar_pressed"]
 [connection signal="pressed" from="Sacrificar" to="." method="_on_sacrificar_pressed"]

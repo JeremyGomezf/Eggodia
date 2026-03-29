@@ -8,7 +8,6 @@ size = Vector2(82, 133.5)
 
 [node name="Rey Huevo" type="Area2D" unique_id=745771741]
 script = ExtResource("1_4oupg")
-IdPersonaje = "rey_huevo"
 
 [node name="ReyHuevo" type="Sprite2D" parent="." unique_id=812599606]
 scale = Vector2(0.22506925, 0.199792)
@@ -20,5 +19,6 @@ shape = SubResource("RectangleShape2D_8ramd")
 [node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=1207579468]
 
 [node name="Label" type="Label" parent="." unique_id=467849228]
+visible = false
 offset_right = 40.0
 offset_bottom = 23.0

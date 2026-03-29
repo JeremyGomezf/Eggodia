@@ -20,5 +20,6 @@ shape = SubResource("RectangleShape2D_8ramd")
 [node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=782052654]
 
 [node name="Label" type="Label" parent="." unique_id=271387681]
+visible = false
 offset_right = 40.0
 offset_bottom = 23.0
