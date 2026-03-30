@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://5di8thk6dfo3" path="res://escenas/gameplay/Campo1.cs" id="1_ar4p3"]
 [ext_resource type="Texture2D" uid="uid://inps3xbcbpi4" path="res://imagenes/PersonajesPng/escenario1.png" id="1_r607e"]
 [ext_resource type="Texture2D" uid="uid://nn4qcbvpu22a" path="res://imagenes/PersonajesPng/WhatsApp Image 2026-03-25 at 4.41.44 PM.jpeg" id="2_e0wnx"]
+[ext_resource type="Script" uid="uid://cvfer1mm7acv5" path="res://escenas/gameplay/funcioncartas.gd" id="4_qk0di"]
 
 [node name="Campo1" type="Node2D" unique_id=807187685]
 script = ExtResource("1_ar4p3")
@@ -75,6 +76,40 @@ position = Vector2(1041, 414)
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1921821545]
 position = Vector2(603, 350)
 zoom = Vector2(0.95, 0.93)
+
+[node name="ManoJugador" type="HBoxContainer" parent="." unique_id=2134602336]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 672.0
+offset_top = 568.0
+offset_right = 920.0
+offset_bottom = 688.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_horizontal = 8
+theme_override_constants/separation = 20
+metadata/_edit_use_anchors_ = true
+
+[node name="Carta1" type="ColorRect" parent="ManoJugador" unique_id=575681856]
+custom_minimum_size = Vector2(80, 120)
+layout_mode = 2
+color = Color(0.047058824, 1, 1, 1)
+script = ExtResource("4_qk0di")
+
+[node name="Carta2" type="ColorRect" parent="ManoJugador" unique_id=1113365659]
+custom_minimum_size = Vector2(80, 120)
+layout_mode = 2
+color = Color(0.047058824, 1, 0, 1)
+script = ExtResource("4_qk0di")
+
+[node name="Carta3" type="ColorRect" parent="ManoJugador" unique_id=2031756337]
+custom_minimum_size = Vector2(80, 120)
+layout_mode = 2
+color = Color(0.5921569, 0.11372549, 0.40784314, 1)
+script = ExtResource("4_qk0di")
 
 [connection signal="pressed" from="Barajar" to="." method="_on_barajar_pressed"]
 [connection signal="pressed" from="Sacrificar" to="." method="_on_sacrificar_pressed"]

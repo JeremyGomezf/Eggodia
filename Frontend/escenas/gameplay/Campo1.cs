@@ -23,7 +23,7 @@ public partial class Campo1 : Node2D
 		labelVida1 = GetNodeOrNull<Label>("Vida1");
 		labelVida2 = GetNodeOrNull<Label>("Vida2");
 		labelTiempo = GetNodeOrNull<Label>("Tiempo");
-		labelMensajes = GetNodeOrNull<Label>("LabelMensajes"); // Asegúrate de crearlo
+		labelMensajes = GetNodeOrNull<Label>("LabelMensajes"); 
 		botonSacrificar = GetNodeOrNull<Button>("Sacrificar");
 		botonPasarTurno = GetNodeOrNull<Button>("Pasar_Turno");
 
@@ -41,6 +41,8 @@ public partial class Campo1 : Node2D
 		}
 	}
 
+	// --- BOTONES Y SEÑALES (Ahora son PUBLIC para que Godot las vea) ---
+
 	public void _on_barajar_pressed()
 	{
 		if (juegoTerminado) return;
@@ -48,7 +50,7 @@ public partial class Campo1 : Node2D
 		GD.Print("Barajando cartas...");
 	}
 
-	private void _on_atacar_pressed()
+	public void _on_atacar_pressed()
 	{
 		if (juegoTerminado || !esTurnoJugador) return;
 		
@@ -59,7 +61,7 @@ public partial class Campo1 : Node2D
 		ActualizarInterfaz();
 	}
 
-	private void _on_sacrificar_pressed()
+	public void _on_sacrificar_pressed()
 	{
 		if (juegoTerminado) return;
 		vidaJugador -= 200;
@@ -68,6 +70,32 @@ public partial class Campo1 : Node2D
 		if (vidaJugador <= 0) MatarHuevo(tronoJugador, "Jugador");
 		ActualizarInterfaz();
 	}
+
+	public void _on_pasar_turno_pressed()
+	{
+		if (juegoTerminado) return;
+		
+		esTurnoJugador = !esTurnoJugador; // Cambia el turno al lado contrario
+		string turnoDe = esTurnoJugador ? "Tu turno" : "Turno del Rival";
+		MostrarMensaje($"¡Cambio de fase! {turnoDe}");
+	}
+
+	public void _on_timer_timeout()
+	{
+		if (tiempoRestante > 0 && !juegoTerminado) 
+		{
+			tiempoRestante--;
+			int minutos = tiempoRestante / 60;
+			int segundos = tiempoRestante % 60;
+			if (labelTiempo != null) labelTiempo.Text = $"{minutos}:{segundos:D2}";
+		}
+		else if (tiempoRestante <= 0 && !juegoTerminado)
+		{
+			FinalizarPorTiempo();
+		}
+	}
+
+	// --- LÓGICA DE BATALLA Y FIN DE JUEGO ---
 
 	private void MatarHuevo(tronocampo trono, string quien)
 	{
@@ -101,26 +129,51 @@ public partial class Campo1 : Node2D
 		if (labelVida2 != null) labelVida2.Text = $"vida: {vidaRival}";
 	}
 
-	private void _on_timer_timeout()
-	{
-		if (tiempoRestante > 0 && !juegoTerminado) 
-		{
-			tiempoRestante--;
-			int minutos = tiempoRestante / 60;
-			int segundos = tiempoRestante % 60;
-			if (labelTiempo != null) labelTiempo.Text = $"{minutos}:{segundos:D2}";
-		}
-		else if (tiempoRestante <= 0 && !juegoTerminado)
-		{
-			FinalizarPorTiempo();
-		}
-	}
-
 	private void FinalizarPorTiempo()
 	{
 		juegoTerminado = true;
-		if (vidaJugador > vidaRival) MostrarMensaje("¡TIEMPO AGOTADO! GANA JUGADOR");
-		else if (vidaRival > vidaJugador) MostrarMensaje("¡TIEMPO AGOTADO! GANA RIVAL");
-		else MostrarMensaje("¡EMPATE POR TIEMPO!");
+		string resultadoBatalla = "";
+
+		if (vidaJugador > vidaRival) 
+			resultadoBatalla = "¡EL JUGADOR GANA!";
+		else if (vidaRival > vidaJugador) 
+			resultadoBatalla = "¡EL RIVAL GANA!";
+		else 
+			resultadoBatalla = "¡EMPATE ÉPICO!";
+
+		MostrarPantallaFinal(resultadoBatalla);
+	}
+
+	private void MostrarPantallaFinal(string textoResultado)
+	{
+		// 1. Capa nueva por encima de todo
+		CanvasLayer capaFinal = new CanvasLayer();
+		AddChild(capaFinal);
+
+		// 2. Fondo oscuro
+		ColorRect fondoOscuro = new ColorRect();
+		fondoOscuro.Color = new Color(0, 0, 0, 0.75f); 
+		fondoOscuro.SetAnchorsPreset(Control.LayoutPreset.FullRect); 
+		capaFinal.AddChild(fondoOscuro);
+
+		// 3. Letrero gigante
+		Label letreroGigante = new Label();
+		letreroGigante.Text = "¡JUEGO FINALIZADO!\n\n" + textoResultado;
+		letreroGigante.SetAnchorsPreset(Control.LayoutPreset.FullRect); 
+		letreroGigante.HorizontalAlignment = HorizontalAlignment.Center; 
+		letreroGigante.VerticalAlignment = VerticalAlignment.Center; 
+
+		// 4. Decoración del texto
+		LabelSettings decoracion = new LabelSettings();
+		decoracion.FontSize = 64; 
+		decoracion.FontColor = new Color(1f, 0.84f, 0f); // Dorado
+		decoracion.OutlineSize = 15; 
+		decoracion.OutlineColor = new Color(0, 0, 0); // Borde negro
+		decoracion.ShadowSize = 10;
+		decoracion.ShadowColor = new Color(0, 0, 0, 0.8f); 
+		decoracion.ShadowOffset = new Vector2(6, 6); 
+
+		letreroGigante.LabelSettings = decoracion;
+		capaFinal.AddChild(letreroGigante);
 	}
 }
