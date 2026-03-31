@@ -3,105 +3,208 @@ using System;
 
 public partial class Campo1 : Node2D
 {
+	// --- Variables de Estado ---
 	private int vidaJugador = 2000;
 	private int vidaRival = 2000;
-	private int tiempoRestante = 180;
-	private bool esTurnoJugador = true;
 	private bool juegoTerminado = false;
+	private int tiempoRestante = 10; // el tiempo que quieran
 
-	private Label labelVida1, labelVida2, labelTiempo, labelMensajes;
-	private Button botonSacrificar, botonPasarTurno, botonAtacar;
+	// --- Referencias a Nodos (UI) ---
+	private Label labelVida1, labelVida2, labelTiempo;
+	private HBoxContainer contenedorMano;
+	private Timer timerTurno;
 
+	// --- Variables Exportadas (Asignar en el Inspector) ---
+	[Export] private Control panelFinal; // El ColorRect "PantallaFinal"
+	[Export] private Label labelResultado; // El Label "MensajeResultado"
+	[Export] private PackedScene escenaCartaBase; // Tu archivo carta_base.tscn
+	
 	[Export] private PackedScene escenaTronoRef = GD.Load<PackedScene>("res://escenas/gameplay/tronocampo.tscn");
 	[Export] private PackedScene escenaReyHuevoRef = GD.Load<PackedScene>("res://escenas/personajes/reyhuevo1.tscn");
 	[Export] private PackedScene escenaDinoHuevoRef = GD.Load<PackedScene>("res://escenas/personajes/dinohuevo1.tscn");
 
-	private tronocampo tronoJugador, tronoRival;
+	private string[] imagenesCartas = {
+		"res://imagenes/CartasPng/dragonfuego_carta.png",
+		"res://imagenes/CartasPng/golem_carta.png",
+		"res://imagenes/CartasPng/majin_carta.png",
+		"res://imagenes/CartasPng/soldadoreal_carta.png",
+		"res://imagenes/CartasPng/t-rex_carta.png",
+        "res://imagenes/CartasPng/tiburon_carta.png"
+	};
+
+	private tronocampo tronoJugador, tronoRival; 
+	private Random random = new Random();
 
 	public override void _Ready()
 	{
+		// Vinculación de nodos por nombre
 		labelVida1 = GetNodeOrNull<Label>("Vida1");
 		labelVida2 = GetNodeOrNull<Label>("Vida2");
 		labelTiempo = GetNodeOrNull<Label>("Tiempo");
-		labelMensajes = GetNodeOrNull<Label>("LabelMensajes"); 
-		botonSacrificar = GetNodeOrNull<Button>("Sacrificar");
-		botonPasarTurno = GetNodeOrNull<Button>("Pasar_Turno");
+		contenedorMano = GetNodeOrNull<HBoxContainer>("ManoJugador");
+		timerTurno = GetNodeOrNull<Timer>("Timer");
+
+		// Ocultar pantalla final al empezar
+		if (panelFinal != null) panelFinal.Visible = false;
 
 		CrearEscenaDeBatalla();
+		BarajarMazoInicial(); 
 		ActualizarInterfaz();
-	}
-
-	private void MostrarMensaje(string mensaje)
-	{
-		if (labelMensajes != null)
+		
+		// Configurar e iniciar el reloj si existe
+		if (timerTurno != null)
 		{
-			labelMensajes.Text = mensaje;
-			// Pequeño temporizador para borrar el mensaje después de 2 segundos
-			GetTree().CreateTimer(2.0).Timeout += () => labelMensajes.Text = "";
+			timerTurno.WaitTime = 1.0f;
+			timerTurno.OneShot = false;
+			timerTurno.Start();
 		}
 	}
 
-	// --- BOTONES Y SEÑALES (Ahora son PUBLIC para que Godot las vea) ---
-
-	public void _on_barajar_pressed()
+	// --- Lógica del Reloj ---
+	public void _on_timer_timeout()
 	{
 		if (juegoTerminado) return;
-		MostrarMensaje("¡Mazo Barajado!");
-		GD.Print("Barajando cartas...");
+
+		tiempoRestante--;
+		ActualizarEtiquetaTiempo();
+
+		if (tiempoRestante <= 0)
+		{
+			DeterminarGanadorPorTiempo();
+		}
 	}
 
-	public void _on_atacar_pressed()
+	private void ActualizarEtiquetaTiempo()
 	{
-		if (juegoTerminado || !esTurnoJugador) return;
-		
-		vidaRival -= 500;
-		MostrarMensaje("¡Ataque Crítico! -500 HP");
-		
-		if (vidaRival <= 0) MatarHuevo(tronoRival, "Enemigo");
+		if (labelTiempo != null)
+		{
+			int minutos = tiempoRestante / 60;
+			int segundos = tiempoRestante % 60;
+			labelTiempo.Text = string.Format("Tiempo: {0}:{1:00}", minutos, segundos);
+		}
+	}
+
+	private void DeterminarGanadorPorTiempo()
+	{
+		if (vidaJugador > vidaRival) FinalizarPartida("¡GANASTE POR SALUD!");
+		else if (vidaRival > vidaJugador) FinalizarPartida("¡PERDISTE POR SALUD!");
+		else FinalizarPartida("¡EMPATE POR TIEMPO!");
+	}
+
+	// --- Combate y Reglas ---
+	private void AplicarDaño(int daño)
+	{
+		if (juegoTerminado) return;
+
+		vidaRival -= daño;
+		if (vidaRival < 0) vidaRival = 0;
+
 		ActualizarInterfaz();
+		CheckEstadoJuego();
+	}
+
+	private void CheckEstadoJuego()
+	{
+		if (vidaRival <= 0 && vidaJugador <= 0) FinalizarPartida("¡EMPATE TOTAL!");
+		else if (vidaRival <= 0) FinalizarPartida("¡VICTORIA!");
+		else if (vidaJugador <= 0) FinalizarPartida("¡HAS PERDIDO!");
+	}
+
+	private void FinalizarPartida(string mensaje)
+	{
+		juegoTerminado = true;
+		if (timerTurno != null) timerTurno.Stop();
+		
+		if (panelFinal != null)
+		{
+			panelFinal.Visible = true; // Muestra el ColorRect
+			if (labelResultado != null) labelResultado.Text = mensaje;
+		}
+
+		if (vidaRival <= 0 && tronoRival != null) MatarHuevo(tronoRival);
+		if (vidaJugador <= 0 && tronoJugador != null) MatarHuevo(tronoJugador);
+	}
+
+	// --- Botones de Interfaz ---
+	public void _on_barajar_pressed()
+	{
+		if (juegoTerminado || contenedorMano == null) return;
+		
+		foreach (Node hijo in contenedorMano.GetChildren()) hijo.QueueFree();
+		
+		GetTree().Connect("process_frame", Callable.From(() => {
+			BarajarMazoInicial();
+		}), (uint)ConnectFlags.OneShot);
 	}
 
 	public void _on_sacrificar_pressed()
 	{
 		if (juegoTerminado) return;
-		vidaJugador -= 200;
-		MostrarMensaje("¡Sacrificio! Perdiste 200 HP");
-		
-		if (vidaJugador <= 0) MatarHuevo(tronoJugador, "Jugador");
+		vidaJugador -= 500; 
+		if (vidaJugador < 0) vidaJugador = 0;
 		ActualizarInterfaz();
+		_on_barajar_pressed();
+		CheckEstadoJuego();
 	}
 
-	public void _on_pasar_turno_pressed()
+	public void _on_boton_reiniciar_pressed()
+	{
+		GetTree().ReloadCurrentScene();
+	}
+
+	// --- Gestión de Cartas ---
+	private void BarajarMazoInicial()
+	{
+		for (int i = 0; i < 3; i++) { CrearNuevaCarta(); }
+	}
+
+	private void CrearNuevaCarta()
+	{
+		if (escenaCartaBase == null || contenedorMano == null)
+		{
+			GD.PrintErr("ERROR: No hay CartaBase asignada en el Inspector");
+			return;
+		}
+
+		Control nuevaCarta = (Control)escenaCartaBase.Instantiate();
+		contenedorMano.AddChild(nuevaCarta);
+
+		string rutaAleatoria = imagenesCartas[random.Next(imagenesCartas.Length)];
+		if (FileAccess.FileExists(rutaAleatoria))
+		{
+			TextureRect display = nuevaCarta.GetNodeOrNull<TextureRect>("foto");
+			if (display != null) display.Texture = GD.Load<Texture2D>(rutaAleatoria);
+		}
+
+		int dañoAleatorio = random.Next(300, 701);
+		nuevaCarta.GuiInput += (ev) => {
+			if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+			{
+				AnimarYAtacar(nuevaCarta, dañoAleatorio);
+			}
+		};
+	}
+
+	private void AnimarYAtacar(Control nodoCarta, int daño)
 	{
 		if (juegoTerminado) return;
+		Tween tween = CreateTween();
+		Vector2 centro = GetViewportRect().Size / 2;
+
+		tween.TweenProperty(nodoCarta, "global_position", centro - (nodoCarta.Size / 2), 0.4f);
+		tween.TweenProperty(nodoCarta, "modulate:a", 0.0f, 0.2f);
 		
-		esTurnoJugador = !esTurnoJugador; // Cambia el turno al lado contrario
-		string turnoDe = esTurnoJugador ? "Tu turno" : "Turno del Rival";
-		MostrarMensaje($"¡Cambio de fase! {turnoDe}");
+		tween.Finished += () => {
+			AplicarDaño(daño);
+			nodoCarta.QueueFree();
+			if (!juegoTerminado) CrearNuevaCarta();
+		};
 	}
 
-	public void _on_timer_timeout()
+	private void ActualizarInterfaz()
 	{
-		if (tiempoRestante > 0 && !juegoTerminado) 
-		{
-			tiempoRestante--;
-			int minutos = tiempoRestante / 60;
-			int segundos = tiempoRestante % 60;
-			if (labelTiempo != null) labelTiempo.Text = $"{minutos}:{segundos:D2}";
-		}
-		else if (tiempoRestante <= 0 && !juegoTerminado)
-		{
-			FinalizarPorTiempo();
-		}
-	}
-
-	// --- LÓGICA DE BATALLA Y FIN DE JUEGO ---
-
-	private void MatarHuevo(tronocampo trono, string quien)
-	{
-		juegoTerminado = true;
-		if (trono != null) trono.EfectoMuerteMinecraft();
-		MostrarMensaje($"¡{quien} ha muerto!");
+		if (labelVida1 != null) labelVida1.Text = $"Vida: {vidaJugador}";
+		if (labelVida2 != null) labelVida2.Text = $"Vida: {vidaRival}";
 	}
 
 	private void CrearEscenaDeBatalla()
@@ -109,13 +212,13 @@ public partial class Campo1 : Node2D
 		Marker2D m1 = GetNodeOrNull<Marker2D>("SpawnTrono1");
 		Marker2D m2 = GetNodeOrNull<Marker2D>("SpawnTrono2");
 
-		if (m1 != null) {
+		if (m1 != null && m2 != null) 
+		{
 			tronoJugador = (tronocampo)escenaTronoRef.Instantiate();
 			AddChild(tronoJugador);
 			tronoJugador.GlobalPosition = m1.GlobalPosition;
 			tronoJugador.CargarHuevo(escenaReyHuevoRef, false);
-		}
-		if (m2 != null) {
+
 			tronoRival = (tronocampo)escenaTronoRef.Instantiate();
 			AddChild(tronoRival);
 			tronoRival.GlobalPosition = m2.GlobalPosition;
@@ -123,57 +226,8 @@ public partial class Campo1 : Node2D
 		}
 	}
 
-	private void ActualizarInterfaz()
+	private void MatarHuevo(tronocampo trono)
 	{
-		if (labelVida1 != null) labelVida1.Text = $"vida: {vidaJugador}";
-		if (labelVida2 != null) labelVida2.Text = $"vida: {vidaRival}";
-	}
-
-	private void FinalizarPorTiempo()
-	{
-		juegoTerminado = true;
-		string resultadoBatalla = "";
-
-		if (vidaJugador > vidaRival) 
-			resultadoBatalla = "¡EL JUGADOR GANA!";
-		else if (vidaRival > vidaJugador) 
-			resultadoBatalla = "¡EL RIVAL GANA!";
-		else 
-			resultadoBatalla = "¡EMPATE ÉPICO!";
-
-		MostrarPantallaFinal(resultadoBatalla);
-	}
-
-	private void MostrarPantallaFinal(string textoResultado)
-	{
-		// 1. Capa nueva por encima de todo
-		CanvasLayer capaFinal = new CanvasLayer();
-		AddChild(capaFinal);
-
-		// 2. Fondo oscuro
-		ColorRect fondoOscuro = new ColorRect();
-		fondoOscuro.Color = new Color(0, 0, 0, 0.75f); 
-		fondoOscuro.SetAnchorsPreset(Control.LayoutPreset.FullRect); 
-		capaFinal.AddChild(fondoOscuro);
-
-		// 3. Letrero gigante
-		Label letreroGigante = new Label();
-		letreroGigante.Text = "¡JUEGO FINALIZADO!\n\n" + textoResultado;
-		letreroGigante.SetAnchorsPreset(Control.LayoutPreset.FullRect); 
-		letreroGigante.HorizontalAlignment = HorizontalAlignment.Center; 
-		letreroGigante.VerticalAlignment = VerticalAlignment.Center; 
-
-		// 4. Decoración del texto
-		LabelSettings decoracion = new LabelSettings();
-		decoracion.FontSize = 64; 
-		decoracion.FontColor = new Color(1f, 0.84f, 0f); // Dorado
-		decoracion.OutlineSize = 15; 
-		decoracion.OutlineColor = new Color(0, 0, 0); // Borde negro
-		decoracion.ShadowSize = 10;
-		decoracion.ShadowColor = new Color(0, 0, 0, 0.8f); 
-		decoracion.ShadowOffset = new Vector2(6, 6); 
-
-		letreroGigante.LabelSettings = decoracion;
-		capaFinal.AddChild(letreroGigante);
+		if (trono != null) trono.EfectoMuerteMinecraft();
 	}
 }

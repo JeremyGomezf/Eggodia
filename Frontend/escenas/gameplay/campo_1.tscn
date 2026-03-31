@@ -3,10 +3,13 @@
 [ext_resource type="Script" uid="uid://5di8thk6dfo3" path="res://escenas/gameplay/Campo1.cs" id="1_ar4p3"]
 [ext_resource type="Texture2D" uid="uid://inps3xbcbpi4" path="res://imagenes/PersonajesPng/escenario1.png" id="1_r607e"]
 [ext_resource type="Texture2D" uid="uid://nn4qcbvpu22a" path="res://imagenes/PersonajesPng/WhatsApp Image 2026-03-25 at 4.41.44 PM.jpeg" id="2_e0wnx"]
-[ext_resource type="Script" uid="uid://cvfer1mm7acv5" path="res://escenas/gameplay/funcioncartas.gd" id="4_qk0di"]
+[ext_resource type="PackedScene" uid="uid://bh0x6bv5ndeh6" path="res://escenas/gameplay/carta_base.tscn" id="2_qk0di"]
 
-[node name="Campo1" type="Node2D" unique_id=807187685]
+[node name="Campo1" type="Node2D" unique_id=807187685 node_paths=PackedStringArray("panelFinal", "labelResultado")]
 script = ExtResource("1_ar4p3")
+panelFinal = NodePath("PantallaFinal")
+labelResultado = NodePath("PantallaFinal/MensajeResultado")
+escenaCartaBase = ExtResource("2_qk0di")
 
 [node name="Escenario1" type="Sprite2D" parent="." unique_id=376666928]
 position = Vector2(603.7, 350.5)
@@ -93,23 +96,17 @@ size_flags_horizontal = 8
 theme_override_constants/separation = 20
 metadata/_edit_use_anchors_ = true
 
-[node name="Carta1" type="ColorRect" parent="ManoJugador" unique_id=575681856]
-custom_minimum_size = Vector2(80, 120)
-layout_mode = 2
-color = Color(0.047058824, 1, 1, 1)
-script = ExtResource("4_qk0di")
+[node name="PantallaFinal" type="ColorRect" parent="." unique_id=1712408150]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="Carta2" type="ColorRect" parent="ManoJugador" unique_id=1113365659]
-custom_minimum_size = Vector2(80, 120)
-layout_mode = 2
-color = Color(0.047058824, 1, 0, 1)
-script = ExtResource("4_qk0di")
-
-[node name="Carta3" type="ColorRect" parent="ManoJugador" unique_id=2031756337]
-custom_minimum_size = Vector2(80, 120)
-layout_mode = 2
-color = Color(0.5921569, 0.11372549, 0.40784314, 1)
-script = ExtResource("4_qk0di")
+[node name="MensajeResultado" type="Label" parent="PantallaFinal" unique_id=224121774]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
 
 [connection signal="pressed" from="Barajar" to="." method="_on_barajar_pressed"]
 [connection signal="pressed" from="Sacrificar" to="." method="_on_sacrificar_pressed"]
