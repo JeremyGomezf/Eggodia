@@ -12,7 +12,7 @@ labelResultado = NodePath("PantallaFinal/MensajeResultado")
 escenaCartaBase = ExtResource("2_qk0di")
 
 [node name="Escenario1" type="Sprite2D" parent="." unique_id=376666928]
-position = Vector2(603.7, 350.5)
+position = Vector2(612, 343)
 scale = Vector2(1.9368, 1.8398951)
 texture = ExtResource("1_r607e")
 
@@ -80,22 +80,6 @@ position = Vector2(1041, 414)
 position = Vector2(603, 350)
 zoom = Vector2(0.95, 0.93)
 
-[node name="ManoJugador" type="HBoxContainer" parent="." unique_id=2134602336]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 672.0
-offset_top = 568.0
-offset_right = 920.0
-offset_bottom = 688.0
-grow_horizontal = 0
-grow_vertical = 0
-size_flags_horizontal = 8
-theme_override_constants/separation = 20
-metadata/_edit_use_anchors_ = true
-
 [node name="PantallaFinal" type="ColorRect" parent="." unique_id=1712408150]
 anchors_preset = 15
 anchor_right = 1.0
@@ -107,6 +91,25 @@ grow_vertical = 2
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
+
+[node name="ManoManual" type="Control" parent="." unique_id=145652396]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 687.0
+offset_top = 485.0
+offset_right = 727.0
+offset_bottom = 525.0
+
+[node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
+position = Vector2(-137, 30)
+rotation = -0.2617994
+
+[node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
+position = Vector2(2, -26)
+
+[node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
+position = Vector2(147, -18)
+rotation = 0.43633232
 
 [connection signal="pressed" from="Barajar" to="." method="_on_barajar_pressed"]
 [connection signal="pressed" from="Sacrificar" to="." method="_on_sacrificar_pressed"]

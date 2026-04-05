@@ -3,21 +3,18 @@ using System;
 
 public partial class Campo1 : Node2D
 {
-	// --- Variables de Estado ---
 	private int vidaJugador = 2000;
 	private int vidaRival = 2000;
 	private bool juegoTerminado = false;
-	private int tiempoRestante = 10; // el tiempo que quieran
+	private int tiempoRestante = 90; 
 
-	// --- Referencias a Nodos (UI) ---
 	private Label labelVida1, labelVida2, labelTiempo;
-	private HBoxContainer contenedorMano;
+	private Control contenedorMano; 
 	private Timer timerTurno;
 
-	// --- Variables Exportadas (Asignar en el Inspector) ---
-	[Export] private Control panelFinal; // El ColorRect "PantallaFinal"
-	[Export] private Label labelResultado; // El Label "MensajeResultado"
-	[Export] private PackedScene escenaCartaBase; // Tu archivo carta_base.tscn
+	[Export] private Control panelFinal; 
+	[Export] private Label labelResultado; 
+	[Export] private PackedScene escenaCartaBase; 
 	
 	[Export] private PackedScene escenaTronoRef = GD.Load<PackedScene>("res://escenas/gameplay/tronocampo.tscn");
 	[Export] private PackedScene escenaReyHuevoRef = GD.Load<PackedScene>("res://escenas/personajes/reyhuevo1.tscn");
@@ -29,7 +26,16 @@ public partial class Campo1 : Node2D
 		"res://imagenes/CartasPng/majin_carta.png",
 		"res://imagenes/CartasPng/soldadoreal_carta.png",
 		"res://imagenes/CartasPng/t-rex_carta.png",
-        "res://imagenes/CartasPng/tiburon_carta.png"
+		"res://imagenes/CartasPng/tiburon_carta.png"
+	};
+
+	private string[] escenasTropas = {
+		"res://escenas/personajes/dragonfuego1.tscn",
+		"res://escenas/personajes/golem1.tscn",
+		"res://escenas/personajes/majin1.tscn",
+		"res://escenas/personajes/soldadoreal1.tscn",
+		"res://escenas/personajes/trex1.tscn", 
+		"res://escenas/personajes/tiburon1.tscn" 
 	};
 
 	private tronocampo tronoJugador, tronoRival; 
@@ -37,41 +43,31 @@ public partial class Campo1 : Node2D
 
 	public override void _Ready()
 	{
-		// Vinculación de nodos por nombre
 		labelVida1 = GetNodeOrNull<Label>("Vida1");
 		labelVida2 = GetNodeOrNull<Label>("Vida2");
 		labelTiempo = GetNodeOrNull<Label>("Tiempo");
-		contenedorMano = GetNodeOrNull<HBoxContainer>("ManoJugador");
+		contenedorMano = GetNodeOrNull<Control>("ManoManual"); 
 		timerTurno = GetNodeOrNull<Timer>("Timer");
 
-		// Ocultar pantalla final al empezar
 		if (panelFinal != null) panelFinal.Visible = false;
 
 		CrearEscenaDeBatalla();
 		BarajarMazoInicial(); 
 		ActualizarInterfaz();
 		
-		// Configurar e iniciar el reloj si existe
 		if (timerTurno != null)
 		{
 			timerTurno.WaitTime = 1.0f;
-			timerTurno.OneShot = false;
 			timerTurno.Start();
 		}
 	}
 
-	// --- Lógica del Reloj ---
 	public void _on_timer_timeout()
 	{
 		if (juegoTerminado) return;
-
 		tiempoRestante--;
 		ActualizarEtiquetaTiempo();
-
-		if (tiempoRestante <= 0)
-		{
-			DeterminarGanadorPorTiempo();
-		}
+		if (tiempoRestante <= 0) DeterminarGanadorPorTiempo();
 	}
 
 	private void ActualizarEtiquetaTiempo()
@@ -91,14 +87,11 @@ public partial class Campo1 : Node2D
 		else FinalizarPartida("¡EMPATE POR TIEMPO!");
 	}
 
-	// --- Combate y Reglas ---
-	private void AplicarDaño(int daño)
+	public void AplicarDaño(int daño)
 	{
 		if (juegoTerminado) return;
-
 		vidaRival -= daño;
 		if (vidaRival < 0) vidaRival = 0;
-
 		ActualizarInterfaz();
 		CheckEstadoJuego();
 	}
@@ -114,27 +107,23 @@ public partial class Campo1 : Node2D
 	{
 		juegoTerminado = true;
 		if (timerTurno != null) timerTurno.Stop();
-		
 		if (panelFinal != null)
 		{
-			panelFinal.Visible = true; // Muestra el ColorRect
+			panelFinal.Visible = true; 
 			if (labelResultado != null) labelResultado.Text = mensaje;
 		}
-
 		if (vidaRival <= 0 && tronoRival != null) MatarHuevo(tronoRival);
 		if (vidaJugador <= 0 && tronoJugador != null) MatarHuevo(tronoJugador);
 	}
 
-	// --- Botones de Interfaz ---
 	public void _on_barajar_pressed()
 	{
 		if (juegoTerminado || contenedorMano == null) return;
-		
-		foreach (Node hijo in contenedorMano.GetChildren()) hijo.QueueFree();
-		
-		GetTree().Connect("process_frame", Callable.From(() => {
-			BarajarMazoInicial();
-		}), (uint)ConnectFlags.OneShot);
+		foreach (Node hijo in contenedorMano.GetChildren()) 
+		{
+			if (hijo is Carta) hijo.QueueFree();
+		}
+		GetTree().Connect("process_frame", Callable.From(() => { BarajarMazoInicial(); }), (uint)ConnectFlags.OneShot);
 	}
 
 	public void _on_sacrificar_pressed()
@@ -152,52 +141,118 @@ public partial class Campo1 : Node2D
 		GetTree().ReloadCurrentScene();
 	}
 
-	// --- Gestión de Cartas ---
 	private void BarajarMazoInicial()
 	{
 		for (int i = 0; i < 3; i++) { CrearNuevaCarta(); }
 	}
 
+	// --- LÓGICA ANTI-BLOQUEO DE ASIENTOS ---
 	private void CrearNuevaCarta()
 	{
-		if (escenaCartaBase == null || contenedorMano == null)
+		if (escenaCartaBase == null || contenedorMano == null) return;
+
+		Marker2D spotDestino = null;
+		string nombreSpotLibre = "";
+
+		// Buscamos cuál de los 3 spots está realmente vacío
+		for (int i = 1; i <= 3; i++)
 		{
-			GD.PrintErr("ERROR: No hay CartaBase asignada en el Inspector");
-			return;
+			string nombreBusqueda = "Spot" + i;
+			bool ocupado = false;
+
+			foreach (Node hijo in contenedorMano.GetChildren())
+			{
+				if (hijo is Carta c && !c.IsQueuedForDeletion() && c.EstaEnMano && c.NombreSpot == nombreBusqueda)
+				{
+					ocupado = true;
+					break;
+				}
+			}
+
+			if (!ocupado)
+			{
+				spotDestino = contenedorMano.GetNodeOrNull<Marker2D>(nombreBusqueda);
+				nombreSpotLibre = nombreBusqueda;
+				break; 
+			}
 		}
 
-		Control nuevaCarta = (Control)escenaCartaBase.Instantiate();
-		contenedorMano.AddChild(nuevaCarta);
+		if (spotDestino == null) return; 
 
-		string rutaAleatoria = imagenesCartas[random.Next(imagenesCartas.Length)];
-		if (FileAccess.FileExists(rutaAleatoria))
+		Carta nuevaCartaNode = (Carta)escenaCartaBase.Instantiate();
+		nuevaCartaNode.NombreSpot = nombreSpotLibre; 
+		contenedorMano.AddChild(nuevaCartaNode);
+
+		Callable.From(() => {
+			if (nuevaCartaNode != null && spotDestino != null)
+			{
+				Vector2 ajusteCentro = new Vector2(nuevaCartaNode.Size.X / 2, nuevaCartaNode.Size.Y / 2);
+				nuevaCartaNode.GlobalPosition = spotDestino.GlobalPosition - ajusteCentro;
+				nuevaCartaNode.Rotation = spotDestino.GlobalRotation;
+				
+				// La carta del centro (Spot2) se queda visualmente al fondo
+				if (nombreSpotLibre == "Spot2") { nuevaCartaNode.ZIndex = 0; } 
+				else { nuevaCartaNode.ZIndex = 1; }
+
+				nuevaCartaNode.GuardarEstadoOriginal();
+			}
+		}).CallDeferred();
+
+		int indiceAleatorio = random.Next(imagenesCartas.Length);
+		
+		string rutaImagen = imagenesCartas[indiceAleatorio];
+		if (FileAccess.FileExists(rutaImagen))
 		{
-			TextureRect display = nuevaCarta.GetNodeOrNull<TextureRect>("foto");
-			if (display != null) display.Texture = GD.Load<Texture2D>(rutaAleatoria);
+			TextureRect display = nuevaCartaNode.GetNodeOrNull<TextureRect>("foto");
+			if (display != null) display.Texture = GD.Load<Texture2D>(rutaImagen);
 		}
 
-		int dañoAleatorio = random.Next(300, 701);
-		nuevaCarta.GuiInput += (ev) => {
+		string rutaTropa = escenasTropas[indiceAleatorio];
+		if (FileAccess.FileExists(rutaTropa))
+		{
+			nuevaCartaNode.EscenaTropa = GD.Load<PackedScene>(rutaTropa);
+		}
+
+		nuevaCartaNode.GuiInput += (ev) => {
 			if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
 			{
-				AnimarYAtacar(nuevaCarta, dañoAleatorio);
+				AnimarYAtacar(nuevaCartaNode);
 			}
 		};
 	}
 
-	private void AnimarYAtacar(Control nodoCarta, int daño)
+	private void AnimarYAtacar(Carta nodoCarta)
 	{
 		if (juegoTerminado) return;
-		Tween tween = CreateTween();
+		
+		// SOLUCIÓN AL BLOQUEO DE CLICS:
+		nodoCarta.EstaEnMano = false; 
+		nodoCarta.MouseFilter = Control.MouseFilterEnum.Ignore; 
+
+		Tween tween = CreateTween().SetParallel(true);
 		Vector2 centro = GetViewportRect().Size / 2;
 
 		tween.TweenProperty(nodoCarta, "global_position", centro - (nodoCarta.Size / 2), 0.4f);
-		tween.TweenProperty(nodoCarta, "modulate:a", 0.0f, 0.2f);
+		tween.TweenProperty(nodoCarta, "rotation", 0f, 0.4f); 
+		tween.TweenProperty(nodoCarta, "modulate:a", 0.0f, 0.2f).SetDelay(0.2f);
 		
 		tween.Finished += () => {
-			AplicarDaño(daño);
+			if (nodoCarta.EscenaTropa != null)
+			{
+				Node2D nuevaTropa = (Node2D)nodoCarta.EscenaTropa.Instantiate();
+				AddChild(nuevaTropa);
+
+				Marker2D m1 = GetNodeOrNull<Marker2D>("SpawnTrono1");
+				if (m1 != null) {
+					// Dispersión en la zona roja
+					int distAleaX = random.Next(100, 300);
+					int distAleaY = random.Next(-130, 130);
+					nuevaTropa.GlobalPosition = new Vector2(m1.GlobalPosition.X + distAleaX, m1.GlobalPosition.Y + distAleaY);
+				}
+			}
 			nodoCarta.QueueFree();
-			if (!juegoTerminado) CrearNuevaCarta();
+			// Pequeña espera para asegurar que el asiento se libere en el siguiente frame
+			GetTree().CreateTimer(0.1f).Timeout += () => { if (!juegoTerminado) CrearNuevaCarta(); };
 		};
 	}
 
