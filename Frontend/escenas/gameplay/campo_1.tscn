@@ -3,13 +3,14 @@
 [ext_resource type="Script" uid="uid://5di8thk6dfo3" path="res://escenas/gameplay/Campo1.cs" id="1_ar4p3"]
 [ext_resource type="Texture2D" uid="uid://inps3xbcbpi4" path="res://imagenes/PersonajesPng/escenario1.png" id="1_r607e"]
 [ext_resource type="Texture2D" uid="uid://nn4qcbvpu22a" path="res://imagenes/PersonajesPng/WhatsApp Image 2026-03-25 at 4.41.44 PM.jpeg" id="2_e0wnx"]
+[ext_resource type="Texture2D" uid="uid://buwneu22b4hyn" path="res://imagenes/PersonajesPng/calaca_icon.png" id="2_jjuwa"]
 [ext_resource type="PackedScene" uid="uid://bh0x6bv5ndeh6" path="res://escenas/gameplay/carta_base.tscn" id="2_qk0di"]
 
-[node name="Campo1" type="Node2D" unique_id=807187685 node_paths=PackedStringArray("panelFinal", "labelResultado")]
+[node name="Campo1" type="Node2D" unique_id=807187685 node_paths=PackedStringArray("contenedorMano")]
 script = ExtResource("1_ar4p3")
-panelFinal = NodePath("PantallaFinal")
-labelResultado = NodePath("PantallaFinal/MensajeResultado")
+iconoCursorSacrificio = ExtResource("2_jjuwa")
 escenaCartaBase = ExtResource("2_qk0di")
+contenedorMano = NodePath("ManoManual")
 
 [node name="Escenario1" type="Sprite2D" parent="." unique_id=376666928]
 position = Vector2(612, 343)
@@ -74,7 +75,7 @@ offset_bottom = 8.0
 position = Vector2(165, 417)
 
 [node name="SpawnTrono2" type="Marker2D" parent="." unique_id=1433017232]
-position = Vector2(1041, 414)
+position = Vector2(1055, 414)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1921821545]
 position = Vector2(603, 350)
@@ -108,8 +109,41 @@ rotation = -0.2617994
 position = Vector2(2, -26)
 
 [node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
-position = Vector2(147, -18)
+position = Vector2(146, 24.000004)
 rotation = 0.43633232
+
+[node name="Mod1" type="Marker2D" parent="." unique_id=698830398 groups=["zonas_invocacion"]]
+position = Vector2(388, 231)
+
+[node name="Indicador" type="ColorRect" parent="Mod1" unique_id=2126922730]
+offset_left = -8.0
+offset_top = -7.0
+offset_right = 32.0
+offset_bottom = 33.0
+scale = Vector2(0.38723856, 0.37211406)
+color = Color(0.8838381, 0.1367881, 0.2436428, 1)
+
+[node name="Mod2" type="Marker2D" parent="." unique_id=801882136 groups=["zonas_invocacion"]]
+position = Vector2(309, 366)
+
+[node name="Indicador" type="ColorRect" parent="Mod2" unique_id=1577266458]
+offset_left = -8.0
+offset_top = -7.0
+offset_right = 32.0
+offset_bottom = 33.0
+scale = Vector2(0.38723856, 0.37211406)
+color = Color(0.8838381, 0.1367881, 0.2436428, 1)
+
+[node name="Mod3" type="Marker2D" parent="." unique_id=31331561 groups=["zonas_invocacion"]]
+position = Vector2(391, 497)
+
+[node name="Indicador" type="ColorRect" parent="Mod3" unique_id=1001165050]
+offset_left = -8.0
+offset_top = -7.0
+offset_right = 32.0
+offset_bottom = 33.0
+scale = Vector2(0.38723856, 0.37211406)
+color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
 [connection signal="pressed" from="Barajar" to="." method="_on_barajar_pressed"]
 [connection signal="pressed" from="Sacrificar" to="." method="_on_sacrificar_pressed"]

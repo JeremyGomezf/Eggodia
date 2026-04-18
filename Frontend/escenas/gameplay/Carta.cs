@@ -3,63 +3,123 @@ using System;
 
 public partial class Carta : Control 
 {
-	// --- VARIABLES DE ESTADO ---
-	public int Daño = 0;
 	public bool EstaEnMano = true; 
+	public bool EstaArrastrando = false;
+	
 	public PackedScene EscenaTropa;
-	public string NombreSpot = ""; // Guarda en qué asiento está sentada
+	public string NombreSpot = ""; 
+	public int IdCarta;
 
 	private Vector2 _posicionOriginal;
-	private float _rotacionOriginal;
-	private int _zIndexOriginal;
-
-	[Export] private Vector2 _escalaHover = new Vector2(1.3f, 1.3f); 
-	[Export] private float _tiempoAnimacion = 0.15f; 
+	private bool _bloqueada = false;
+	private Vector2 _offsetMouse;
+	
+	private Vector2 _escalaNormalMano = new Vector2(6.5f, 6.5f); // GIGANTE
+	private Vector2 _escalaAlArrastrar = new Vector2(4.0f, 4.0f); // MEDIANA
 
 	public override void _Ready()
 	{
-		// Punto de control para que crezca desde abajo
-		PivotOffset = new Vector2(Size.X / 2, Size.Y);
-		
-		// IMPORTANTE: Asegurar que la carta detecte el mouse al inicio
-		MouseFilter = MouseFilterEnum.Stop;
+		PivotOffset = Size / 2; 
+		MouseFilter = MouseFilterEnum.Stop; 
+		Scale = _escalaNormalMano;
 	}
 
-	public void GuardarEstadoOriginal()
+	public void GuardarEstadoOriginal() => _posicionOriginal = Position;
+
+	public void AsignarDatos(string rutaImg, string rutaTropa, int id)
 	{
-		_posicionOriginal = Position;
-		_rotacionOriginal = Rotation;
-		_zIndexOriginal = ZIndex;
+		IdCarta = id;
+		var foto = GetNodeOrNull<TextureRect>("foto");
+		if (foto != null) 
+		{
+			foto.Texture = GD.Load<Texture2D>(rutaImg);
+			foto.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+			foto.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		}
+		EscenaTropa = GD.Load<PackedScene>(rutaTropa);
 	}
 
-	// --- ANIMACIÓN AL ENTRAR EL MOUSE ---
+	public override void _GuiInput(InputEvent @event)
+	{
+		// BLOQUEO SI EL JUEGO TERMINÓ
+		var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
+		if (campo != null && campo.juegoTerminado) return;
+
+		if (!EstaEnMano || _bloqueada) return;
+
+		if (@event is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left)
+		{
+			if (mb.Pressed)
+			{
+				EstaArrastrando = true;
+				_offsetMouse = GetGlobalMousePosition() - GlobalPosition;
+				ZIndex = 200;
+				Tween t = CreateTween();
+				t.TweenProperty(this, "scale", _escalaAlArrastrar, 0.1f);
+			}
+			else if (EstaArrastrando)
+			{
+				EstaArrastrando = false;
+				VerificarSoltado();
+			}
+		}
+
+		if (@event is InputEventMouseMotion mm && EstaArrastrando)
+		{
+			GlobalPosition = GetGlobalMousePosition() - _offsetMouse;
+		}
+	}
+
+	private void VerificarSoltado()
+	{
+		var zonas = GetTree().GetNodesInGroup("zonas_invocacion");
+		bool exito = false;
+		foreach (Node2D puntoMod in zonas)
+		{
+			if (GlobalPosition.DistanceTo(puntoMod.GlobalPosition) < 180)
+			{
+				if (puntoMod.GetNodeOrNull("Ocupado") == null)
+				{
+					exito = true;
+					ConfirmarInvocacion(puntoMod);
+					break;
+				}
+			}
+		}
+		if (!exito) RegresarAMano();
+	}
+
+	private void ConfirmarInvocacion(Node2D puntoMod)
+	{
+		EstaEnMano = false;
+		var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
+		if (campo != null) campo.TropaInvocada(puntoMod, EscenaTropa);
+		QueueFree();
+	}
+
+	private void RegresarAMano()
+	{
+		ZIndex = 1;
+		Tween t = CreateTween().SetParallel(true);
+		t.TweenProperty(this, "position", _posicionOriginal, 0.2f);
+		t.TweenProperty(this, "scale", _escalaNormalMano, 0.2f);
+	}
+
 	public void _on_mouse_entered()
 	{
-		if (!EstaEnMano) return; 
-
-		Tween tween = CreateTween().SetParallel(true);
-		
-		// Se agranda y se endereza
-		tween.TweenProperty(this, "scale", _escalaHover, _tiempoAnimacion).SetTrans(Tween.TransitionType.Quart).SetEase(Tween.EaseType.Out);
-		tween.TweenProperty(this, "rotation", 0f, _tiempoAnimacion);
-		
-		// Salto hacia arriba para leerla bien
-		Vector2 posicionElevada = new Vector2(_posicionOriginal.X, _posicionOriginal.Y - 150f);
-		tween.TweenProperty(this, "position", posicionElevada, _tiempoAnimacion).SetTrans(Tween.TransitionType.Quart).SetEase(Tween.EaseType.Out);
-		
-		ZIndex = 100; 
+		if (!EstaEnMano || EstaArrastrando || _bloqueada) return;
+		ZIndex = 150;
+		Tween t = CreateTween();
+		t.TweenProperty(this, "scale", _escalaNormalMano * 1.05f, 0.1f);
 	}
 
-	// --- ANIMACIÓN AL SALIR EL MOUSE ---
 	public void _on_mouse_exited()
 	{
-		if (!EstaEnMano) return; 
-
-		Tween tween = CreateTween().SetParallel(true);
-		tween.TweenProperty(this, "scale", new Vector2(1f, 1f), _tiempoAnimacion);
-		tween.TweenProperty(this, "rotation", _rotacionOriginal, _tiempoAnimacion);
-		tween.TweenProperty(this, "position", _posicionOriginal, _tiempoAnimacion);
-
-		tween.Finished += () => { if (EstaEnMano) ZIndex = _zIndexOriginal; };
+		if (!EstaArrastrando) 
+		{
+			ZIndex = 1;
+			Tween t = CreateTween();
+			t.TweenProperty(this, "scale", _escalaNormalMano, 0.1f);
+		}
 	}
 }
