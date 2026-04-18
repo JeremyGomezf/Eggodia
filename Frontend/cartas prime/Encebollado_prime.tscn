@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://oy7eal3gnumq"]
+
+[ext_resource type="Script" uid="uid://bjvybv8vrx2f3" path="res://cartas prime/EncebolladoPrime.cs" id="1_tmqq6"]
+[ext_resource type="Texture2D" uid="uid://d0vyjaa6ns5ov" path="res://imagenes/sprites/encebollado.png" id="2_oxpwm"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_nkj7l"]
+size = Vector2(318.75, 203.125)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ivqs3"]
+atlas = ExtResource("2_oxpwm")
+region = Rect2(0, 0, 338, 328)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ow3ik"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}],
+"loop": true,
+"name": &"ataque",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}],
+"loop": true,
+"name": &"daño",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}],
+"loop": true,
+"name": &"defensa",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}],
+"loop": true,
+"name": &"derrota",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}],
+"loop": true,
+"name": &"pre defensa",
+"speed": 5.0
+}]
+
+[node name="Sopita" type="Area2D" unique_id=1111717749]
+script = ExtResource("1_tmqq6")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=225252504]
+position = Vector2(1, -15.500001)
+scale = Vector2(0.32, 0.32)
+shape = SubResource("RectangleShape2D_nkj7l")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=262768543]
+position = Vector2(1.0000004, -20.000002)
+scale = Vector2(0.32, 0.32)
+sprite_frames = SubResource("SpriteFrames_ow3ik")
+animation = &"defensa"
