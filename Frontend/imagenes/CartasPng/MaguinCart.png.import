@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cuxipw342wm73"
-path="res://.godot/imported/tiburon_carta.png-4cb9d0b2127aad99845a38bdbcff64fd.ctex"
+uid="uid://cg4x316mvv3gt"
+path="res://.godot/imported/MaguinCart.png-685fa23773a5e8da6cde9813700d19f3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/CartasPng/tiburon_carta.png"
-dest_files=["res://.godot/imported/tiburon_carta.png-4cb9d0b2127aad99845a38bdbcff64fd.ctex"]
+source_file="res://imagenes/CartasPng/MaguinCart.png"
+dest_files=["res://.godot/imported/MaguinCart.png-685fa23773a5e8da6cde9813700d19f3.ctex"]
 
 [params]
 

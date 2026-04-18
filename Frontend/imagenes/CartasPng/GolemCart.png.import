@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d4fduoevypqpy"
-path="res://.godot/imported/t-rex_carta.png-92d07f6e329113cac82e2312394332b6.ctex"
+uid="uid://cvb8u47vpr3ly"
+path="res://.godot/imported/GolemCart.png-2f65907c32c7adc9222697c0be633f3c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/CartasPng/t-rex_carta.png"
-dest_files=["res://.godot/imported/t-rex_carta.png-92d07f6e329113cac82e2312394332b6.ctex"]
+source_file="res://imagenes/CartasPng/GolemCart.png"
+dest_files=["res://.godot/imported/GolemCart.png-2f65907c32c7adc9222697c0be633f3c.ctex"]
 
 [params]
 

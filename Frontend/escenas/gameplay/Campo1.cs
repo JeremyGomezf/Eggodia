@@ -23,9 +23,9 @@ public partial class Campo1 : Node2D
 	[Export] private PackedScene escenaDinoHuevoRef = GD.Load<PackedScene>("res://escenas/personajes/dinohuevo1.tscn");
 
 	private string[] imagenesCartas = {
-		"res://imagenes/CartasPng/dragonfuego_carta.png", "res://imagenes/CartasPng/golem_carta.png",
-		"res://imagenes/CartasPng/majin_carta.png", "res://imagenes/CartasPng/soldadoreal_carta.png",
-		"res://imagenes/CartasPng/t-rex_carta.png", "res://imagenes/CartasPng/tiburon_carta.png"
+		"res://imagenes/CartasPng/DragonCart.png", "res://imagenes/CartasPng/GolemCart.png",
+		"res://imagenes/CartasPng/MaguinCart.png", "res://imagenes/CartasPng/SoldRealCart.png",
+		"res://imagenes/CartasPng/TReXCart.png", "res://imagenes/CartasPng/TiburonCart.png"
 	};
 
 	private string[] escenasTropas = {

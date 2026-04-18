@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ds6wy8njo7b13"
-path="res://.godot/imported/dragonfuego_carta.png-830c2c05360755fcbed2fa3ff811d9f4.ctex"
+uid="uid://b1hymabs6uiv6"
+path="res://.godot/imported/SoldRealCart.png-9616a3a885f4340b973ae964b92dbe0e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/CartasPng/dragonfuego_carta.png"
-dest_files=["res://.godot/imported/dragonfuego_carta.png-830c2c05360755fcbed2fa3ff811d9f4.ctex"]
+source_file="res://imagenes/CartasPng/SoldRealCart.png"
+dest_files=["res://.godot/imported/SoldRealCart.png-9616a3a885f4340b973ae964b92dbe0e.ctex"]
 
 [params]
 

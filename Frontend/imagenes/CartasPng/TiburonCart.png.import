@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cmpd4k5hg3vij"
-path="res://.godot/imported/majin_carta.png-f0a00d0aab544f9f374937c5fa7421f2.ctex"
+uid="uid://y21o88gbgrdj"
+path="res://.godot/imported/TiburonCart.png-aad5d22db1eccc5aa3c961ae52978f56.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/CartasPng/majin_carta.png"
-dest_files=["res://.godot/imported/majin_carta.png-f0a00d0aab544f9f374937c5fa7421f2.ctex"]
+source_file="res://imagenes/CartasPng/TiburonCart.png"
+dest_files=["res://.godot/imported/TiburonCart.png-aad5d22db1eccc5aa3c961ae52978f56.ctex"]
 
 [params]
 

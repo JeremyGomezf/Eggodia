@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dl8cwyya4vhud"
-path="res://.godot/imported/soldadoreal_carta.png-340a59737611e7baac50a183e4b4bb0a.ctex"
+uid="uid://bqeg5mkibx2es"
+path="res://.godot/imported/DragonCart.png-bbbce255f4cd3463030edcfe0a6b3bc5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/CartasPng/soldadoreal_carta.png"
-dest_files=["res://.godot/imported/soldadoreal_carta.png-340a59737611e7baac50a183e4b4bb0a.ctex"]
+source_file="res://imagenes/CartasPng/DragonCart.png"
+dest_files=["res://.godot/imported/DragonCart.png-bbbce255f4cd3463030edcfe0a6b3bc5.ctex"]
 
 [params]
 
