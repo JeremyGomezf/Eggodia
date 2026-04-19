@@ -94,12 +94,38 @@ public partial class Campo1 : Node2D
 
 		if (esTurnoJugador)
 		{
+			// --- LO NUEVO: Completar cartas faltantes al iniciar turno ---
+			CompletarManoAlInicio();
+
 			foreach (Node nodo in GetTree().GetNodesInGroup("tropas_jugador"))
 			{
 				if (nodo.HasMethod("SetActivo")) nodo.Call("SetActivo", true);
 			}
 		}
 		ActualizarInterfaz();
+	}
+
+	// Esta función revisa qué spots están vacíos y crea cartas solo ahí
+	private void CompletarManoAlInicio()
+	{
+		string[] spots = { "Spot1", "Spot2", "Spot3" };
+		foreach (string s in spots)
+		{
+			bool ocupado = false;
+			foreach (Node n in contenedorMano.GetChildren())
+			{
+				if (n is Carta c && c.NombreSpot == s && !c.IsQueuedForDeletion())
+				{
+					ocupado = true;
+					break;
+				}
+			}
+
+			if (!ocupado)
+			{
+				CrearNuevaCartaEnSpot(s);
+			}
+		}
 	}
 
 	private void RegistrarGastoMovimiento()
@@ -149,7 +175,6 @@ public partial class Campo1 : Node2D
 		RegistrarGastoMovimiento();
 	}
 
-	// Nueva función para no repetir código
 	private void EjecutarBarajadoLogico()
 	{
 		foreach (Node n in contenedorMano.GetChildren()) 
@@ -225,23 +250,14 @@ public partial class Campo1 : Node2D
 			puntoMod.AddChild(marcador);
 			marcador.SetMeta("tropa_instanciada", nuevaTropa); 
 			
-			// --- LÓGICA DE MANO VACÍA ---
+			// Si te quedas sin cartas, baraja automático tras 1 seg
 			GetTree().CreateTimer(0.1f).Timeout += () => {
 				int cartasEnMano = 0;
 				foreach (Node n in contenedorMano.GetChildren())
-				{
-					// Contamos solo las cartas que no estén en proceso de borrado
-					if (n is Carta c && !c.IsQueuedForDeletion() && c.NombreSpot != "X") 
-						cartasEnMano++;
-				}
+					if (n is Carta c && !c.IsQueuedForDeletion() && c.NombreSpot != "X") cartasEnMano++;
 
 				if (cartasEnMano == 0)
-				{
-					// Esperamos 1 segundo y barajamos automáticamente
-					GetTree().CreateTimer(1.0f).Timeout += () => {
-						if (!juegoTerminado) EjecutarBarajadoLogico();
-					};
-				}
+					GetTree().CreateTimer(1.0f).Timeout += () => { if (!juegoTerminado) EjecutarBarajadoLogico(); };
 			};
 		}
 	}
@@ -346,9 +362,7 @@ public partial class Campo1 : Node2D
 
 	public void BarajarMazoInicial() 
 	{ 
-		CrearNuevaCartaEnSpot("Spot1");
-		CrearNuevaCartaEnSpot("Spot2");
-		CrearNuevaCartaEnSpot("Spot3");
+		CompletarManoAlInicio();
 	}
 
 	private void CrearNuevaCartaEnSpot(string idSpot)
