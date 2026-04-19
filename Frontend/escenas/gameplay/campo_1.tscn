@@ -145,7 +145,39 @@ offset_bottom = 33.0
 scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
+[node name="LabelTurnoInfo" type="Label" parent="." unique_id=8873490]
+modulate = Color(0, 0, 0, 1)
+offset_left = 19.0
+offset_top = 28.0
+offset_right = 76.0
+offset_bottom = 51.0
+text = "TURNO"
+
+[node name="InterfazMenu" type="CanvasLayer" parent="." unique_id=916174861]
+
+[node name="MenuAcciones" type="Control" parent="InterfazMenu" unique_id=224335847]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="InterfazMenu/MenuAcciones" unique_id=1829154968]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="BtnAtaque" type="Button" parent="InterfazMenu/MenuAcciones/HBoxContainer" unique_id=2043477391]
+layout_mode = 2
+text = "ATACAR"
+
+[node name="BtnDefensa" type="Button" parent="InterfazMenu/MenuAcciones/HBoxContainer" unique_id=1630369539]
+layout_mode = 2
+text = "DEFENSA"
+
 [connection signal="pressed" from="Barajar" to="." method="_on_barajar_pressed"]
 [connection signal="pressed" from="Sacrificar" to="." method="_on_sacrificar_pressed"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
 [connection signal="pressed" from="Pasar_Turno" to="." method="_on_pasar_turno_pressed"]
+[connection signal="pressed" from="InterfazMenu/MenuAcciones/HBoxContainer/BtnAtaque" to="." method="_on_btn_ataque_pressed"]
+[connection signal="pressed" from="InterfazMenu/MenuAcciones/HBoxContainer/BtnDefensa" to="." method="_on_btn_defensa_pressed"]

@@ -39,6 +39,60 @@ animations = [{
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ivqs3")
 }],
 "loop": true,
 "name": &"derrota",
@@ -73,4 +127,4 @@ shape = SubResource("RectangleShape2D_nkj7l")
 position = Vector2(1.0000004, -20.000002)
 scale = Vector2(0.32, 0.32)
 sprite_frames = SubResource("SpriteFrames_ow3ik")
-animation = &"defensa"
+animation = &"derrota"

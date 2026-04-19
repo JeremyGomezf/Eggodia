@@ -115,7 +115,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_hv3q5")
 }],
-"loop": true,
+"loop": false,
 "name": &"ataque",
 "speed": 7.0
 }, {
@@ -135,7 +135,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_hsym3")
 }],
-"loop": true,
+"loop": false,
 "name": &"daño",
 "speed": 5.0
 }, {
@@ -173,7 +173,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qp245")
 }],
-"loop": true,
+"loop": false,
 "name": &"defensa",
 "speed": 6.0
 }, {
@@ -240,59 +240,8 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_d35bo")
 }],
-"loop": true,
+"loop": false,
 "name": &"derrota",
 "speed": 5.0
 }, {
@@ -506,7 +455,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2voc2")
 }],
-"loop": true,
+"loop": false,
 "name": &"pre defensa",
 "speed": 5.0
 }]
@@ -522,6 +471,4 @@ shape = SubResource("RectangleShape2D_opij5")
 position = Vector2(-3, -20)
 scale = Vector2(0.27, 0.27)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"idle"
-frame = 14
-frame_progress = 0.82310265
+animation = &"pre defensa"

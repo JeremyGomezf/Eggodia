@@ -41,9 +41,15 @@ public partial class Carta : Control
 
 	public override void _GuiInput(InputEvent @event)
 	{
-		// BLOQUEO SI EL JUEGO TERMINÓ
+		// 1. BUSCAMOS EL CAMPO PARA VALIDAR TURNO
 		var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
-		if (campo != null && campo.juegoTerminado) return;
+		
+		// BLOQUEO SI EL JUEGO TERMINÓ O SI NO ES MI TURNO O NO HAY MOVIMIENTOS
+		if (campo != null)
+		{
+			if (campo.juegoTerminado || !campo.esTurnoJugador || campo.movimientosRestantes <= 0) 
+				return;
+		}
 
 		if (!EstaEnMano || _bloqueada) return;
 
@@ -107,6 +113,9 @@ public partial class Carta : Control
 
 	public void _on_mouse_entered()
 	{
+		var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
+		if (campo != null && (!campo.esTurnoJugador || campo.movimientosRestantes <= 0)) return;
+
 		if (!EstaEnMano || EstaArrastrando || _bloqueada) return;
 		ZIndex = 150;
 		Tween t = CreateTween();

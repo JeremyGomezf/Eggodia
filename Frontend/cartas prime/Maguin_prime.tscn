@@ -136,7 +136,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wp1bm")
 }],
-"loop": true,
+"loop": false,
 "name": &"ataque",
 "speed": 5.0
 }, {
@@ -189,7 +189,7 @@ animations = [{
 "duration": 0.5,
 "texture": SubResource("AtlasTexture_2gr8j")
 }],
-"loop": true,
+"loop": false,
 "name": &"daño",
 "speed": 6.0
 }, {
@@ -218,7 +218,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_tuccf")
 }],
-"loop": true,
+"loop": false,
 "name": &"defensa",
 "speed": 7.0
 }, {
@@ -300,41 +300,8 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_q7oka")
 }],
-"loop": true,
+"loop": false,
 "name": &"derrota",
 "speed": 7.0
 }, {
@@ -527,7 +494,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_f5xsa")
 }],
-"loop": true,
+"loop": false,
 "name": &"pre defensa",
 "speed": 5.0
 }]
@@ -544,4 +511,3 @@ position = Vector2(-2, -25)
 scale = Vector2(0.31, 0.31)
 sprite_frames = SubResource("SpriteFrames_lp7oi")
 animation = &"idle"
-frame_progress = 0.2852566

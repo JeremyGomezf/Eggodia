@@ -128,7 +128,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_l4o2v")
 }],
-"loop": true,
+"loop": false,
 "name": &"ataque",
 "speed": 7.0
 }, {
@@ -148,7 +148,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_28y8f")
 }],
-"loop": true,
+"loop": false,
 "name": &"daño",
 "speed": 7.0
 }, {
@@ -183,7 +183,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_nmn2a")
 }],
-"loop": true,
+"loop": false,
 "name": &"defensa",
 "speed": 8.0
 }, {
@@ -250,56 +250,8 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_m6fqj")
 }],
-"loop": true,
+"loop": false,
 "name": &"derrota",
 "speed": 7.0
 }, {
@@ -471,7 +423,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_1774v")
 }],
-"loop": true,
+"loop": false,
 "name": &"pre defensa",
 "speed": 5.0
 }]

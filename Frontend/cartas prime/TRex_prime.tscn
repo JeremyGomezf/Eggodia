@@ -216,7 +216,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_6noun")
 }],
-"loop": true,
+"loop": false,
 "name": &"ataque",
 "speed": 5.0
 }, {
@@ -242,7 +242,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_rqv4x")
 }],
-"loop": true,
+"loop": false,
 "name": &"daño",
 "speed": 7.0
 }, {
@@ -268,7 +268,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_igkvg")
 }],
-"loop": true,
+"loop": false,
 "name": &"defensa",
 "speed": 5.0
 }, {
@@ -335,47 +335,8 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lkn3x")
 }],
-"loop": true,
+"loop": false,
 "name": &"derrota",
 "speed": 8.0
 }, {
@@ -469,7 +430,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_0kmnm")
 }],
-"loop": true,
+"loop": false,
 "name": &"pre defensa",
 "speed": 5.0
 }]
@@ -485,6 +446,4 @@ shape = SubResource("RectangleShape2D_wjcmm")
 position = Vector2(27, -12)
 scale = Vector2(0.735, 0.735)
 sprite_frames = SubResource("SpriteFrames_ebqfj")
-animation = &"idle"
-frame = 5
-frame_progress = 0.80439574
+animation = &"pre defensa"
