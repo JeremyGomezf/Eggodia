@@ -499,6 +499,12 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sfeue"]
+bg_color = Color(0, 0.72156864, 0.101960786, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5srsx"]
+bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
+
 [node name="Maguin" type="Area2D" unique_id=1429336816]
 script = ExtResource("1_sfeue")
 
@@ -511,3 +517,30 @@ position = Vector2(-2, -25)
 scale = Vector2(0.31, 0.31)
 sprite_frames = SubResource("SpriteFrames_lp7oi")
 animation = &"idle"
+
+[node name="StatsTropa" type="Control" parent="." unique_id=1704710540]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 100.99998
+offset_top = -20.0
+offset_right = 140.99997
+offset_bottom = 20.0
+scale = Vector2(0.91999876, 0.7599994)
+
+[node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=861492653]
+layout_mode = 0
+offset_left = -57.0
+offset_top = 24.0
+offset_right = 55.0
+offset_bottom = 51.0
+scale = Vector2(1, 0.8000012)
+theme_override_styles/background = SubResource("StyleBoxFlat_sfeue")
+
+[node name="BarraEscudo" type="ProgressBar" parent="StatsTropa" unique_id=269363280]
+layout_mode = 0
+offset_left = -57.0
+offset_top = -4.0
+offset_right = 55.0
+offset_bottom = 23.0
+scale = Vector2(1, 0.71999943)
+theme_override_styles/background = SubResource("StyleBoxFlat_5srsx")

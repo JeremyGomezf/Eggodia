@@ -490,6 +490,12 @@ animations = [{
 "speed": 7.0
 }]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sk8r6"]
+bg_color = Color(0, 0.72156864, 0.101960786, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l6j8d"]
+bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
+
 [node name="dragon" type="Area2D" unique_id=1181367873 groups=["tropas_jugador"]]
 script = ExtResource("1_sk8r6")
 
@@ -501,4 +507,33 @@ shape = SubResource("RectangleShape2D_sk8r6")
 position = Vector2(-12.000001, -1)
 scale = Vector2(0.465, 0.465)
 sprite_frames = SubResource("SpriteFrames_pm8sp")
-animation = &"pre defensa"
+animation = &"idle"
+frame = 1
+frame_progress = 0.36754772
+
+[node name="StatsTropa" type="Control" parent="." unique_id=1623861200]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 150.99998
+offset_top = 3.999998
+offset_right = 190.99998
+offset_bottom = 44.0
+scale = Vector2(0.91999876, 0.7599994)
+
+[node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=1711138597]
+layout_mode = 0
+offset_left = -57.0
+offset_top = 24.0
+offset_right = 55.0
+offset_bottom = 51.0
+scale = Vector2(1, 0.8000012)
+theme_override_styles/background = SubResource("StyleBoxFlat_sk8r6")
+
+[node name="BarraEscudo" type="ProgressBar" parent="StatsTropa" unique_id=1688142470]
+layout_mode = 0
+offset_left = -57.0
+offset_top = -4.0
+offset_right = 55.0
+offset_bottom = 23.0
+scale = Vector2(1, 0.71999943)
+theme_override_styles/background = SubResource("StyleBoxFlat_l6j8d")

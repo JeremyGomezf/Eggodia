@@ -516,6 +516,12 @@ animations = [{
 "speed": 6.0
 }]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5ma2x"]
+bg_color = Color(0, 0.72156864, 0.101960786, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wcfak"]
+bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
+
 [node name="Tiburon" type="Area2D" unique_id=1696740470]
 script = ExtResource("1_5ma2x")
 
@@ -528,3 +534,30 @@ position = Vector2(8, -20)
 scale = Vector2(0.315, 0.315)
 sprite_frames = SubResource("SpriteFrames_8ftdi")
 animation = &"ataque"
+
+[node name="StatsTropa" type="Control" parent="." unique_id=427531950]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 146.99998
+offset_top = -37.0
+offset_right = 186.99998
+offset_bottom = 3.0
+scale = Vector2(0.91999876, 0.7599994)
+
+[node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=37117962]
+layout_mode = 0
+offset_left = -57.0
+offset_top = 24.0
+offset_right = 55.0
+offset_bottom = 51.0
+scale = Vector2(1, 0.8000012)
+theme_override_styles/background = SubResource("StyleBoxFlat_5ma2x")
+
+[node name="BarraEscudo" type="ProgressBar" parent="StatsTropa" unique_id=814816098]
+layout_mode = 0
+offset_left = -57.0
+offset_top = -4.0
+offset_right = 55.0
+offset_bottom = 23.0
+scale = Vector2(1, 0.71999943)
+theme_override_styles/background = SubResource("StyleBoxFlat_wcfak")

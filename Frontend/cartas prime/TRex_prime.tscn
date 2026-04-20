@@ -435,6 +435,12 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wjcmm"]
+bg_color = Color(0, 0.72156864, 0.101960786, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y2d0i"]
+bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
+
 [node name="t-rex" type="Area2D" unique_id=327969899]
 script = ExtResource("1_wjcmm")
 
@@ -447,3 +453,30 @@ position = Vector2(27, -12)
 scale = Vector2(0.735, 0.735)
 sprite_frames = SubResource("SpriteFrames_ebqfj")
 animation = &"pre defensa"
+
+[node name="StatsTropa" type="Control" parent="." unique_id=1023355261]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 248.0
+offset_top = -25.0
+offset_right = 288.0
+offset_bottom = 15.0
+scale = Vector2(0.91999876, 0.7599994)
+
+[node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=1907648177]
+layout_mode = 0
+offset_left = -57.0
+offset_top = 24.0
+offset_right = 55.0
+offset_bottom = 51.0
+scale = Vector2(1, 0.8000012)
+theme_override_styles/background = SubResource("StyleBoxFlat_wjcmm")
+
+[node name="BarraEscudo" type="ProgressBar" parent="StatsTropa" unique_id=522076209]
+layout_mode = 0
+offset_left = -57.0
+offset_top = -4.0
+offset_right = 55.0
+offset_bottom = 23.0
+scale = Vector2(1, 0.71999943)
+theme_override_styles/background = SubResource("StyleBoxFlat_y2d0i")

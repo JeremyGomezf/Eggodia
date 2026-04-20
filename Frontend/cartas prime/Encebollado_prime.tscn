@@ -115,6 +115,12 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tmqq6"]
+bg_color = Color(0, 0.72156864, 0.101960786, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oxpwm"]
+bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
+
 [node name="Sopita" type="Area2D" unique_id=1111717749]
 script = ExtResource("1_tmqq6")
 
@@ -128,3 +134,30 @@ position = Vector2(1.0000004, -20.000002)
 scale = Vector2(0.32, 0.32)
 sprite_frames = SubResource("SpriteFrames_ow3ik")
 animation = &"derrota"
+
+[node name="StatsTropa" type="Control" parent="." unique_id=1065412161]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 104.999985
+offset_top = -28.0
+offset_right = 144.99998
+offset_bottom = 12.0
+scale = Vector2(0.91999876, 0.7599994)
+
+[node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=525415326]
+layout_mode = 0
+offset_left = -57.0
+offset_top = 24.0
+offset_right = 55.0
+offset_bottom = 51.0
+scale = Vector2(1, 0.8000012)
+theme_override_styles/background = SubResource("StyleBoxFlat_tmqq6")
+
+[node name="BarraEscudo" type="ProgressBar" parent="StatsTropa" unique_id=110595270]
+layout_mode = 0
+offset_left = -57.0
+offset_top = -4.0
+offset_right = 55.0
+offset_bottom = 23.0
+scale = Vector2(1, 0.71999943)
+theme_override_styles/background = SubResource("StyleBoxFlat_oxpwm")
