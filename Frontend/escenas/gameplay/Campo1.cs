@@ -90,6 +90,9 @@ public partial class Campo1 : Node2D
 
 		if (esTurnoJugador)
 		{
+			// --- LO NUEVO: Completar cartas faltantes al iniciar turno ---
+			CompletarManoAlInicio();
+
 			foreach (Node nodo in GetTree().GetNodesInGroup("tropas_jugador"))
 				if (nodo.HasMethod("SetActivo")) nodo.Call("SetActivo", true);
 		}
@@ -100,8 +103,35 @@ public partial class Campo1 : Node2D
 		ActualizarInterfaz();
 	}
 
+<<<<<<< HEAD
 	// --- LÓGICA DE IA MEJORADA ---
 	private async void EjecutarTurnoIA()
+=======
+	// Esta función revisa qué spots están vacíos y crea cartas solo ahí
+	private void CompletarManoAlInicio()
+	{
+		string[] spots = { "Spot1", "Spot2", "Spot3" };
+		foreach (string s in spots)
+		{
+			bool ocupado = false;
+			foreach (Node n in contenedorMano.GetChildren())
+			{
+				if (n is Carta c && c.NombreSpot == s && !c.IsQueuedForDeletion())
+				{
+					ocupado = true;
+					break;
+				}
+			}
+
+			if (!ocupado)
+			{
+				CrearNuevaCartaEnSpot(s);
+			}
+		}
+	}
+
+	private void RegistrarGastoMovimiento()
+>>>>>>> 3b15d4b18a856a0faee6425c9cc8f137accdd03a
 	{
 		if (juegoTerminado || esTurnoJugador) return;
 		await ToSignal(GetTree().CreateTimer(1.2f), "timeout");
@@ -206,6 +236,173 @@ public partial class Campo1 : Node2D
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	public void _on_barajar_pressed()
+	{
+		if (!esTurnoJugador || movimientosRestantes <= 0 || juegoTerminado || usosBarajar >= MAX_BARAJAR) return;
+		
+		usosBarajar++;
+		EjecutarBarajadoLogico();
+		RegistrarGastoMovimiento();
+	}
+
+	private void EjecutarBarajadoLogico()
+	{
+		foreach (Node n in contenedorMano.GetChildren()) 
+		{
+			if (n is Carta c) { c.NombreSpot = "X"; c.QueueFree(); }
+		}
+		GetTree().CreateTimer(0.1f).Timeout += () => { 
+			PrepararMazoSinRepetir(); 
+			BarajarMazoInicial(); 
+		};
+	}
+
+	public void _on_sacrificar_pressed()
+	{
+		if (!esTurnoJugador || movimientosRestantes <= 0 || juegoTerminado || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500) 
+		{
+			if (modoSacrificioActivo) CancelarSacrificio();
+			return;
+		}
+
+		modoSacrificioActivo = !modoSacrificioActivo;
+		if (modoSacrificioActivo && iconoCursorSacrificio != null)
+			Input.SetCustomMouseCursor(iconoCursorSacrificio, Input.CursorShape.Arrow, new Vector2(16, 16));
+		else
+			Input.SetCustomMouseCursor(null);
+	}
+
+	public override void _Input(InputEvent @event)
+	{
+		if (juegoTerminado || !esTurnoJugador) return;
+		if (modoSacrificioActivo && @event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+			VerificarSacrificioEnCampo(GetGlobalMousePosition());
+	}
+
+	private void VerificarSacrificioEnCampo(Vector2 posClick)
+	{
+		foreach (Node2D punto in GetTree().GetNodesInGroup("zonas_invocacion"))
+		{
+			if (punto.GlobalPosition.DistanceTo(posClick) < 110f)
+			{
+				Node marcador = punto.GetNodeOrNull("Ocupado");
+				if (marcador != null)
+				{
+					vidaJugador -= 500;
+					usosSacrificio++; 
+					if (marcador.HasMeta("tropa_instanciada"))
+					{
+						Node2D tropa = (Node2D)marcador.GetMeta("tropa_instanciada");
+						if (IsInstanceValid(tropa)) EjecutarMuerteTropaSacrificada(tropa);
+					}
+					marcador.QueueFree();
+					CancelarSacrificio();
+					RegistrarGastoMovimiento();
+					CheckEstadoJuego();
+					break;
+				}
+			}
+		}
+	}
+
+	private void CancelarSacrificio() { modoSacrificioActivo = false; Input.SetCustomMouseCursor(null); }
+
+	public void TropaInvocada(Node2D puntoMod, PackedScene escenaTropa)
+	{
+		if (juegoTerminado || !esTurnoJugador) return; 
+		if (escenaTropa != null)
+		{
+			Node2D nuevaTropa = (Node2D)escenaTropa.Instantiate();
+			AddChild(nuevaTropa);
+			nuevaTropa.GlobalPosition = puntoMod.GlobalPosition;
+			nuevaTropa.AddToGroup("tropas_jugador");
+			Node marcador = new Node(); marcador.Name = "Ocupado";
+			puntoMod.AddChild(marcador);
+			marcador.SetMeta("tropa_instanciada", nuevaTropa); 
+			
+			// Si te quedas sin cartas, baraja automático tras 1 seg
+			GetTree().CreateTimer(0.1f).Timeout += () => {
+				int cartasEnMano = 0;
+				foreach (Node n in contenedorMano.GetChildren())
+					if (n is Carta c && !c.IsQueuedForDeletion() && c.NombreSpot != "X") cartasEnMano++;
+
+				if (cartasEnMano == 0)
+					GetTree().CreateTimer(1.0f).Timeout += () => { if (!juegoTerminado) EjecutarBarajadoLogico(); };
+			};
+		}
+	}
+
+	private void ActualizarInterfaz()
+	{
+		if (HasNode("Vida1")) GetNode<Label>("Vida1").Text = $"Vida: {vidaJugador}";
+		if (HasNode("Vida2")) GetNode<Label>("Vida2").Text = $"Vida: {vidaRival}";
+		
+		if (HasNode("Tiempo")) 
+		{
+			int min = tiempoTotalPartida / 60;
+			int seg = tiempoTotalPartida % 60;
+			GetNode<Label>("Tiempo").Text = string.Format("Tiempo: {0}:{1:00}", min, seg);
+		}
+
+		var btnBarajar = GetNodeOrNull<Button>("Barajar"); 
+		var btnSacrificar = GetNodeOrNull<Button>("Sacrificar");
+
+		Color activo = new Color(1, 1, 1, 1);
+		Color bloqueado = new Color(0.3f, 0.3f, 0.3f, 0.5f); 
+
+		if (btnBarajar != null)
+		{
+			bool puede = esTurnoJugador && movimientosRestantes > 0 && usosBarajar < MAX_BARAJAR;
+			btnBarajar.Disabled = !puede;
+			btnBarajar.Modulate = puede ? activo : bloqueado;
+			btnBarajar.MouseFilter = puede ? Control.MouseFilterEnum.Stop : Control.MouseFilterEnum.Ignore;
+		}
+
+		if (btnSacrificar != null)
+		{
+			bool puede = esTurnoJugador && movimientosRestantes > 0 && usosSacrificio < MAX_SACRIFICIO && vidaJugador > 500;
+			btnSacrificar.Disabled = !puede;
+			btnSacrificar.Modulate = puede ? activo : bloqueado;
+			btnSacrificar.MouseFilter = puede ? Control.MouseFilterEnum.Stop : Control.MouseFilterEnum.Ignore;
+		}
+
+		if (HasNode("LabelTurnoInfo"))
+		{
+			var lbl = GetNode<Label>("LabelTurnoInfo");
+			string txt = esTurnoJugador ? "TU TURNO" : "TURNO RIVAL";
+			lbl.Text = $"{txt}\nSiguiente en: {tiempoTurnoActual}s\nMovimientos: {movimientosRestantes}";
+			lbl.Modulate = esTurnoJugador ? Color.Color8(34, 139, 34) : Color.Color8(178, 34, 34);
+		}
+	}
+
+	private void EjecutarMuerteTropaSacrificada(Node2D tropa)
+	{
+		if (tropa.HasMethod("ReproducirDerrota")) tropa.Call("ReproducirDerrota");
+		var animSprite = tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+		float duracion = 1.0f; float t3f = 0.15f; 
+		if (animSprite != null && animSprite.SpriteFrames.HasAnimation("derrota"))
+		{
+			animSprite.SpriteFrames.SetAnimationLoop("derrota", false);
+			float spd = (float)animSprite.SpriteFrames.GetAnimationSpeed("derrota");
+			duracion = (float)animSprite.SpriteFrames.GetFrameCount("derrota") / spd;
+			t3f = 3.0f / spd; 
+		}
+		Tween t = CreateTween();
+		t.TweenInterval(Mathf.Max(0f, duracion - t3f));
+		t.TweenProperty(tropa, "modulate:a", 0.0f, t3f);
+		t.Finished += () => { if (IsInstanceValid(tropa)) tropa.QueueFree(); };
+	}
+
+	private void DeterminarGanadorPorTiempo()
+	{
+		if (vidaJugador > vidaRival) FinalizarPartida("¡VICTORIA POR SALUD!");
+		else if (vidaRival > vidaJugador) FinalizarPartida("¡DERROTA POR SALUD!");
+		else FinalizarPartida("¡EMPATE!");
+	}
+
+>>>>>>> 3b15d4b18a856a0faee6425c9cc8f137accdd03a
 	private void CheckEstadoJuego() 
 	{ 
 		if (vidaJugador <= 0) { vidaJugador = 0; FinalizarPartida("DERROTA"); }
@@ -282,8 +479,14 @@ public partial class Campo1 : Node2D
 		proximoIndiceMazo = 0;
 	}
 
+<<<<<<< HEAD
 	public void BarajarMazoInicial() {
 		CrearNuevaCartaEnSpot("Spot1"); CrearNuevaCartaEnSpot("Spot2"); CrearNuevaCartaEnSpot("Spot3");
+=======
+	public void BarajarMazoInicial() 
+	{ 
+		CompletarManoAlInicio();
+>>>>>>> 3b15d4b18a856a0faee6425c9cc8f137accdd03a
 	}
 
 	private void CrearNuevaCartaEnSpot(string idSpot) {
