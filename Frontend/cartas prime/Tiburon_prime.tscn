@@ -181,60 +181,6 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_le4vl")
 }, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_le4vl")
-}, {
 "duration": 0.6,
 "texture": SubResource("AtlasTexture_obfpb")
 }, {
@@ -242,9 +188,6 @@ animations = [{
 "texture": SubResource("AtlasTexture_4qywh")
 }, {
 "duration": 0.6,
-"texture": SubResource("AtlasTexture_frtxf")
-}, {
-"duration": 1.0,
 "texture": SubResource("AtlasTexture_frtxf")
 }, {
 "duration": 1.0,
@@ -533,7 +476,7 @@ shape = SubResource("RectangleShape2D_jmqmn")
 position = Vector2(8, -20)
 scale = Vector2(0.315, 0.315)
 sprite_frames = SubResource("SpriteFrames_8ftdi")
-animation = &"ataque"
+animation = &"defensa"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=427531950]
 layout_mode = 3
