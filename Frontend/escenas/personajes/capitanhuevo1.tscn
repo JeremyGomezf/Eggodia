@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://di0k73s0oq6sd"]
+
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_n51oi"]
+[ext_resource type="Texture2D" uid="uid://vub622eiyiqw" path="res://imagenes/PersonajesPng/CapitanHuevo.png" id="2_n51oi"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
+size = Vector2(126, 133.5)
+
+[node name="Capitan Huevo" type="Area2D" unique_id=745771741]
+script = ExtResource("1_n51oi")
+
+[node name="CapitanHuevo" type="Sprite2D" parent="." unique_id=1347749461]
+position = Vector2(-6, -10)
+scale = Vector2(0.49, 0.49)
+texture = ExtResource("2_n51oi")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=802832332]
+position = Vector2(-9, 0)
+shape = SubResource("RectangleShape2D_8ramd")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=833165201]
+
+[node name="Label" type="Label" parent="." unique_id=1151744199]
+visible = false
+offset_right = 40.0
+offset_bottom = 23.0
