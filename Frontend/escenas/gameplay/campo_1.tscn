@@ -124,7 +124,7 @@ scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
 [node name="ModRival1" type="Marker2D" parent="." unique_id=1028389189 groups=["zonas_invocacion_rival"]]
-position = Vector2(819, 231)
+position = Vector2(807, 230)
 
 [node name="Indicador" type="ColorRect" parent="ModRival1" unique_id=1987297612]
 offset_left = -7.0
@@ -146,7 +146,7 @@ scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
 [node name="ModRival2" type="Marker2D" parent="." unique_id=1202636240 groups=["zonas_invocacion_rival"]]
-position = Vector2(917, 366)
+position = Vector2(905, 365)
 
 [node name="Indicador" type="ColorRect" parent="ModRival2" unique_id=2020004028]
 offset_left = -6.0
@@ -168,7 +168,7 @@ scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
 [node name="ModRival3" type="Marker2D" parent="." unique_id=281382111 groups=["zonas_invocacion_rival"]]
-position = Vector2(817, 500)
+position = Vector2(805, 497)
 
 [node name="Indicador" type="ColorRect" parent="ModRival3" unique_id=581110044]
 offset_left = -7.0

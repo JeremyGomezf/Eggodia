@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://bpkbb0kxqft3v"]
+
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_rpf1j"]
+[ext_resource type="Texture2D" uid="uid://d0556iy31qfpk" path="res://imagenes/PersonajesPng/MajestadHuevo.png" id="2_rpf1j"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
+size = Vector2(108, 153.75)
+
+[node name="Majestad Huevo" type="Area2D" unique_id=745771741]
+script = ExtResource("1_rpf1j")
+IdPersonaje = "dino_huevo"
+
+[node name="MajestadHuevo" type="Sprite2D" parent="." unique_id=1072455660]
+position = Vector2(2.406255, -9.375006)
+scale = Vector2(0.2636773, 0.22881997)
+texture = ExtResource("2_rpf1j")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=330972587]
+position = Vector2(0, -10.125)
+shape = SubResource("RectangleShape2D_8ramd")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=2144251248]
+
+[node name="Label" type="Label" parent="." unique_id=1632729151]
+visible = false
+offset_right = 40.0
+offset_bottom = 23.0

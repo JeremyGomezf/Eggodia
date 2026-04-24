@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://4noxejvkqeqj" path="res://cartas prime/TRexPrime.cs" id="1_wjcmm"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wjcmm"]
-size = Vector2(386, 229)
+size = Vector2(386, 220)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_y2d0i"]
 atlas = ExtResource("1_fntn8")
@@ -445,14 +445,16 @@ bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
 script = ExtResource("1_wjcmm")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=704329438]
-position = Vector2(32, -24.5)
+position = Vector2(32, -29)
 shape = SubResource("RectangleShape2D_wjcmm")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1032052819]
 position = Vector2(27, -12)
 scale = Vector2(0.735, 0.735)
 sprite_frames = SubResource("SpriteFrames_ebqfj")
-animation = &"pre defensa"
+animation = &"ataque"
+frame = 8
+frame_progress = 1.0
 
 [node name="StatsTropa" type="Control" parent="." unique_id=1023355261]
 layout_mode = 3

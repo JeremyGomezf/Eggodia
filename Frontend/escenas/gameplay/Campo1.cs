@@ -44,14 +44,18 @@ public partial class Campo1 : Node2D
 		"res://imagenes/CartasPng/DragonCart.png", "res://imagenes/CartasPng/GolemCart.png",
 		"res://imagenes/CartasPng/MaguinCart.png", "res://imagenes/CartasPng/SoldRealCart.png",
 		"res://imagenes/CartasPng/TReXCart.png", "res://imagenes/CartasPng/TiburonCart.png",
-		"res://imagenes/CartasPng/PeonCart.png", "res://imagenes/CartasPng/EncebolladoCart.png"
+		"res://imagenes/CartasPng/PeonCart.png", "res://imagenes/CartasPng/EncebolladoCart.png",
+		"res://imagenes/CartasPng/CalamarGCart.png", "res://imagenes/CartasPng/CaballoCart.png",
+		"res://imagenes/CartasPng/DamaCart.png", "res://imagenes/CartasPng/TorreCart.png"
 	};
 
 	private string[] escenasTropas = {
 		"res://cartas prime/Dragon_prime.tscn", "res://cartas prime/Golem_prime.tscn",
 		"res://cartas prime/Maguin_prime.tscn", "res://cartas prime/SoldadoReal_prime.tscn",
 		"res://cartas prime/TRex_prime.tscn", "res://cartas prime/Tiburon_prime.tscn",
-		"res://cartas prime/Peon_prime.tscn", "res://cartas prime/Encebollado_prime.tscn"
+		"res://cartas prime/Peon_prime.tscn", "res://cartas prime/Encebollado_prime.tscn",
+		"res://cartas prime/CalamarG_prime.tscn", "res://cartas prime/Caballo_prime.tscn",
+		"res://cartas prime/Dama_prime.tscn", "res://cartas prime/Torre_prime.tscn"
 	};
 
 	private tronocampo tronoJugador, tronoRival; 
