@@ -131,15 +131,17 @@ public partial class Campo1 : Node2D
 	private void CrearPanelPausa()
 	{
 		panelPausa = new Control();
-		panelPausa.Name    = "PanelPausa";
-		panelPausa.Visible = false;
+		panelPausa.Name        = "PanelPausa";
+		panelPausa.Visible     = false;
+		panelPausa.ProcessMode = ProcessModeEnum.Always; // <- sigue activo aunque el árbol esté pausado
 		panelPausa.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		panelPausa.ZIndex  = 200;
+		panelPausa.ZIndex = 200;
 
-		// Fondo semi-transparente
+		// Fondo semi-transparente (Ignore para que los clics lleguen a los botones)
 		var fondo = new ColorRect();
 		fondo.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		fondo.Color = new Color(0, 0, 0, 0.7f);
+		fondo.Color       = new Color(0, 0, 0, 0.7f);
+		fondo.MouseFilter = Control.MouseFilterEnum.Ignore;
 		panelPausa.AddChild(fondo);
 
 		var vbox = new VBoxContainer();

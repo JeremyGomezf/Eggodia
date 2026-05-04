@@ -111,10 +111,20 @@ public partial class GolemPrime : Area2D
 			try { escActual = (int)a.Get("escudoActual"); } catch { }
 			try { escMax    = (int)a.Get("escudoMaximo"); } catch { }
 			int nuevo = escActual + 200;
-			try { a.Set("escudoActual", nuevo); }                             catch { }
-			try { a.Set("escudoMaximo", Mathf.Max(escMax, nuevo)); }          catch { }
+			int nuevoMax = Mathf.Max(escMax, nuevo);
+			try { a.Set("escudoActual", nuevo); }    catch { }
+			try { a.Set("escudoMaximo", nuevoMax); } catch { }
 
-			// Visual del aliado
+			// Refrescar barra de escudo visualmente
+			var stats = a.GetNodeOrNull<Control>("StatsTropa");
+			if (stats != null)
+			{
+				stats.Visible = true;
+				var be = stats.GetNodeOrNull<ProgressBar>("BarraEscudo");
+				if (be != null && nuevoMax > 0) be.Value = (float)nuevo / nuevoMax * 100;
+			}
+
+			// Visual del aliado: destello dorado
 			Tween ta = a.CreateTween();
 			ta.TweenProperty(a, "modulate", new Color(1.2f,1f,0.4f), 0.2f);
 			ta.TweenProperty(a, "modulate", Colors.White, 0.4f);
@@ -152,6 +162,8 @@ public partial class GolemPrime : Area2D
 		await ToSignal(_anim, "animation_finished");
 		ReproducirIdle();
 	}
+
+	public bool TieneHabilidadEspecial() => true;
 
 	public void ReproducirDerrota() { _estaMuerto = true; _anim.Play("derrota"); }
 

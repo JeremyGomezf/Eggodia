@@ -89,7 +89,7 @@ public partial class CalamarGPrime : Area2D
 			if (n is Node2D e && IsInstanceValid(e))
 			{
 				float d = GlobalPosition.DistanceTo(e.GlobalPosition);
-				if (d <= 300f) candidatos.Add((e, d));
+				if (d <= 500f) candidatos.Add((e, d)); // radio ampliado para cubrir más del campo
 			}
 
 		candidatos.Sort((a, b) => a.d.CompareTo(b.d));
@@ -148,6 +148,8 @@ public partial class CalamarGPrime : Area2D
 		await ToSignal(_anim, "animation_finished");
 		ReproducirIdle();
 	}
+
+	public bool TieneHabilidadEspecial() => true;
 
 	public void ReproducirDerrota() { _estaMuerto = true; _anim.Play("derrota"); }
 

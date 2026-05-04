@@ -6,15 +6,14 @@ public partial class CaballoPrime : Area2D
 {
 	private AnimatedSprite2D _anim;
 	private bool _estaMuerto = false;
-	private bool _yaActuo = false;
+	private bool _yaActuo    = false;
 
-	[Export] public int vidaActual  = 230;
-	[Export] public int vidaMaxima  = 230;
+	[Export] public int vidaActual   = 230;
+	[Export] public int vidaMaxima   = 230;
 	[Export] public int escudoActual = 250;
 	[Export] public int escudoMaximo = 250;
 	[Export] public int puntosAtaque = 200;
 
-	// ── HABILIDAD: Ataque en L ────────────────────────────────────────────
 	public bool habilidadUsada = false;
 
 	private Control _contenedorStats;
@@ -40,6 +39,16 @@ public partial class CaballoPrime : Area2D
 	}
 
 	public void SetActivo(bool estado) { _yaActuo = !estado; if (estado) MostrarBarras(false); }
+
+	// Método público para que Campo1 refresque las barras tras curación
+	public void RefrescarUI()
+	{
+		if (_contenedorStats != null)
+		{
+			_contenedorStats.Visible = true;
+			ActualizarBarrasUI();
+		}
+	}
 
 	public void RecibirDaño(int cantidad)
 	{
@@ -77,13 +86,26 @@ public partial class CaballoPrime : Area2D
 		}
 	}
 
-	// ── HABILIDAD: Salto en L ─────────────────────────────────────────────
+	// ── HABILIDAD: Ataque en L ────────────────────────────────────────────
 	private void UsarHabilidad()
 	{
-		if (habilidadUsada || !HasMeta("carril")) return;
+		if (habilidadUsada) return;
+		if (!HasMeta("carril"))
+		{
+			GD.PrintErr("CaballoPrime: no tiene meta 'carril'");
+			return;
+		}
 
 		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
-		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","");
+		string raw = (string)GetMeta("carril");
+
+		// Normalizar: "Mod1"→"1", "ModRival1"→"1", "mod2"→"2"
+		string miCarril = raw.ToLower()
+							 .Replace("modrival", "")
+							 .Replace("mod", "")
+							 .Trim();
+
+		GD.Print($"Caballo: carril propio = '{miCarril}' (raw: '{raw}')");
 
 		var carrilesL = new List<string>();
 		switch (miCarril)
@@ -91,24 +113,49 @@ public partial class CaballoPrime : Area2D
 			case "1": carrilesL.Add("2"); carrilesL.Add("3"); break;
 			case "2": carrilesL.Add("1"); carrilesL.Add("3"); break;
 			case "3": carrilesL.Add("1"); carrilesL.Add("2"); break;
+			default:
+				GD.PrintErr($"Caballo: carril desconocido '{miCarril}'");
+				return;
 		}
 
 		int dañoDoble = puntosAtaque * 2;
+		int golpes = 0;
 
 		// Visual: salto
 		Tween tw = CreateTween();
-		tw.TweenProperty(this, "position:y", Position.Y - 45f, 0.2f);
-		tw.TweenProperty(this, "position:y", Position.Y,       0.2f);
+		tw.TweenProperty(this, "position:y", Position.Y - 45f, 0.15f);
+		tw.TweenProperty(this, "position:y", Position.Y,       0.15f);
 
+		// Recolectar objetivos primero para evitar modificar la colección mientras iteramos
+		var objetivos = new List<Node2D>();
 		foreach (Node n in GetTree().GetNodesInGroup(grupoEnemigo))
 		{
 			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
-			string id = ((string)e.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","");
-			if (!carrilesL.Contains(id)) continue;
-			if (e.HasMethod("RecibirDaño")) e.Call("RecibirDaño", dañoDoble);
+			string idEne = ((string)e.GetMeta("carril"))
+							   .ToLower()
+							   .Replace("modrival", "")
+							   .Replace("mod", "")
+							   .Trim();
+
+			GD.Print($"Caballo: revisando enemigo carril '{idEne}'");
+			if (carrilesL.Contains(idEne))
+				objetivos.Add(e);
 		}
 
+		GD.Print($"Caballo: {objetivos.Count} objetivo(s) en patrón L");
+
+		foreach (Node2D objetivo in objetivos)
+		{
+			if (!IsInstanceValid(objetivo)) continue;
+			objetivo.Call("RecibirDaño", dañoDoble);
+			golpes++;
+		}
+
+		if (golpes == 0)
+			GD.Print("Caballo: no hay enemigos en carriles L");
+
 		habilidadUsada = true;
+		_yaActuo       = true;
 	}
 
 	// ── ANIMACIONES ───────────────────────────────────────────────────────
@@ -151,7 +198,7 @@ public partial class CaballoPrime : Area2D
 	{
 		var bv = _contenedorStats?.GetNodeOrNull<ProgressBar>("BarraVida");
 		var be = _contenedorStats?.GetNodeOrNull<ProgressBar>("BarraEscudo");
-		if (bv != null) bv.Value = (float)vidaActual / vidaMaxima * 100;
+		if (bv != null) bv.Value = vidaMaxima > 0 ? (float)vidaActual / vidaMaxima * 100 : 0;
 		if (be != null) be.Value = escudoMaximo > 0 ? (float)escudoActual / escudoMaximo * 100 : 0;
 	}
 }

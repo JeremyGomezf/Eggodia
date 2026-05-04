@@ -15,6 +15,10 @@ run/main_scene="uid://b0kjxhih543ce"
 config/features=PackedStringArray("4.6", "C#", "Mobile")
 config/icon="res://icon.svg"
 
+[autoload]
+
+GestorCartas="*uid://g30uaqw4cooo"
+
 [dotnet]
 
 project/assembly_name="juegoecotec"

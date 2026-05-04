@@ -150,6 +150,8 @@ public partial class TorrePrime : Area2D
 		ReproducirIdle();
 	}
 
+	public bool TieneHabilidadEspecial() => true;
+
 	public void ReproducirDerrota() { _estaMuerto = true; _anim.Play("derrota"); }
 
 	private void MostrarBarras(bool mostrar)

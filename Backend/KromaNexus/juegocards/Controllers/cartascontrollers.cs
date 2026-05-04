@@ -1,7 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KromaNexus.API.Data; // Asegúrate de que este sea el nombre de tu carpeta Data
+using KromaNexus.API.Data;
+using KromaNexus.API.model;
 
+/// <summary>
+/// Endpoints de cartas.
+/// GET  /api/cartas          → todas las cartas
+/// GET  /api/cartas/{id}     → una carta por id
+/// GET  /api/cartas/era/{n}  → cartas filtradas por era (1, 2 ó 3)
+/// POST /api/cartas          → crear carta nueva (admin)
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class CartasController : ControllerBase
@@ -13,11 +21,54 @@ public class CartasController : ControllerBase
         _context = context;
     }
 
-    // GET: api/Cartas
+    // GET: api/cartas
     [HttpGet]
     public async Task<IActionResult> GetCartas()
     {
-        var lista = await _context.Cartas.ToListAsync();
+        var lista = await _context.Cartas
+            .OrderBy(c => c.Era)
+            .ThenBy(c => c.Id)
+            .ToListAsync();
         return Ok(lista);
+    }
+
+    // GET: api/cartas/5
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetCarta(int id)
+    {
+        var carta = await _context.Cartas.FindAsync(id);
+        if (carta == null) return NotFound(new { mensaje = $"Carta {id} no existe." });
+        return Ok(carta);
+    }
+
+    // GET: api/cartas/era/1
+    [HttpGet("era/{era}")]
+    public async Task<IActionResult> GetCartasPorEra(int era)
+    {
+        var lista = await _context.Cartas
+            .Where(c => c.Era == era)
+            .OrderBy(c => c.Id)
+            .ToListAsync();
+        return Ok(lista);
+    }
+
+    // POST: api/cartas
+    [HttpPost]
+    public async Task<IActionResult> CrearCarta([FromBody] Carta carta)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        _context.Cartas.Add(carta);
+        await _context.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetCarta), new { id = carta.Id }, carta);
+    }
+
+    // PUT: api/cartas/5
+    [HttpPut("{id}")]
+    public async Task<IActionResult> ActualizarCarta(int id, [FromBody] Carta carta)
+    {
+        if (id != carta.Id) return BadRequest();
+        _context.Entry(carta).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+        return NoContent();
     }
 }
