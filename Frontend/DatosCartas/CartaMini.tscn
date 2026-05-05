@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://cc4dl7d6qlseb"]
+
+[ext_resource type="Script" uid="uid://dtr24np34q4xh" path="res://DatosCartas/CartaMini.cs" id="1_nacjw"]
+
+[node name="CartaMini" type="VBoxContainer" unique_id=1050541027 node_paths=PackedStringArray("_fotoCarta", "_nombreTexto")]
+custom_minimum_size = Vector2(100, 130)
+offset_right = 100.0
+offset_bottom = 130.0
+mouse_filter = 0
+script = ExtResource("1_nacjw")
+_fotoCarta = NodePath("FotoMini")
+_nombreTexto = NodePath("NombreMini")
+
+[node name="FotoMini" type="TextureRect" parent="." unique_id=1454746085]
+custom_minimum_size = Vector2(80, 100)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NombreMini" type="Label" parent="." unique_id=888980218]
+custom_minimum_size = Vector2(90, 40)
+layout_mode = 2
+size_flags_vertical = 6
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+autowrap_mode = 3

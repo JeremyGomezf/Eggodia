@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://bwkv80ys0ndq3"]
+
+[ext_resource type="Texture2D" uid="uid://k5b3jenpudms" path="res://imagenes/iconos/Dama_icon.png" id="1_86a8u"]
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="1_a3pim"]
+
+[resource]
+script = ExtResource("1_a3pim")
+Nombre = "DAMA AJEDREZ"
+Imagen = ExtResource("1_86a8u")
+Ataque = 350
+Defensa = 300
+Vida = 350
+Descripcion = "La pieza más letal del tablero. Su elegancia oculta una fuerza destructiva absoluta, capaz de moverse libremente para aniquilar amenazas en un abrir y cerrar de ojos."
+metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"

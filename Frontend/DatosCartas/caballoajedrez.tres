@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://b1cw6v28vaerd"]
+
+[ext_resource type="Texture2D" uid="uid://6cqf4q1tpirj" path="res://imagenes/iconos/Caballo_icon.png" id="1_8gq41"]
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="1_y4una"]
+
+[resource]
+script = ExtResource("1_y4una")
+Nombre = "CABALLO AJEDREZ"
+Imagen = ExtResource("1_8gq41")
+Ataque = 200
+Defensa = 250
+Vida = 230
+Descripcion = "Un caballero táctico impredecible. Su estilo de combate le permite saltar las líneas enemigas y atacar los puntos débiles desde ángulos que nadie espera."
+metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"

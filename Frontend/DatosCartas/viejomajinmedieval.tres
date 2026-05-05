@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://twk1m5tumrf0"]
+
+[ext_resource type="Texture2D" uid="uid://bng3e8oitdhro" path="res://imagenes/iconos/Maguin_icon.png" id="1_pksid"]
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="2_5s6o6"]
+
+[resource]
+script = ExtResource("2_5s6o6")
+Nombre = "VIEJO MAJIN MEDIEVAL"
+Imagen = ExtResource("1_pksid")
+Ataque = 250
+Defensa = 220
+Vida = 200
+Descripcion = "Un hechicero ermitaño que ha dominado las artes místicas durante siglos. Su magia antigua puede no parecer ágil, pero su conocimiento en el campo de batalla es letal para los incautos."

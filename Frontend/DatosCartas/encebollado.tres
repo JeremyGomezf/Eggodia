@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://c1j3pny5vfwes"]
+
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="1_k60ae"]
+[ext_resource type="Texture2D" uid="uid://lyq2w23h1h4a" path="res://imagenes/CartasPng/EncebolladoCart.png" id="1_l7eni"]
+
+[resource]
+script = ExtResource("1_k60ae")
+Nombre = "ENCEBOLLADO ECUADOR"
+Imagen = ExtResource("1_l7eni")
+Categoria = 1
+Descripcion = "¡El manjar de los dioses ecuatorianos! Revitaliza a las tropas otorgando un buff masivo de Defensa, Ataque y Curación. Además, su aroma místico aplica efectos únicos: roba una carta del rival (solo 1 vez por partida), envenena a los enemigos que se atrevan a olerlo, y bloquea el movimiento de la carta afectada. ¡Con chifle y limón, la victoria está asegurada!"
+metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"

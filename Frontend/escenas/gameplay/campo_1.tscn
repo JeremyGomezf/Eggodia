@@ -1,16 +1,13 @@
 [gd_scene format=3 uid="uid://r247tee0owlr"]
 
-[ext_resource type="Script" uid="uid://5di8thk6dfo3" path="res://escenas/gameplay/Campo1.cs" id="1_ar4p3"]
+[ext_resource type="Script" uid="uid://ckyirl8sq33f" path="res://escenas/gameplay/Campo1.cs" id="1_ar4p3"]
 [ext_resource type="Texture2D" uid="uid://inps3xbcbpi4" path="res://imagenes/PersonajesPng/escenario1.png" id="1_r607e"]
 [ext_resource type="Texture2D" uid="uid://nn4qcbvpu22a" path="res://imagenes/PersonajesPng/WhatsApp Image 2026-03-25 at 4.41.44 PM.jpeg" id="2_e0wnx"]
-[ext_resource type="Texture2D" uid="uid://buwneu22b4hyn" path="res://imagenes/PersonajesPng/calaca_icon.png" id="2_jjuwa"]
 [ext_resource type="PackedScene" uid="uid://bh0x6bv5ndeh6" path="res://escenas/gameplay/carta_base.tscn" id="2_qk0di"]
 
-[node name="Campo1" type="Node2D" unique_id=807187685 node_paths=PackedStringArray("contenedorMano")]
+[node name="Campo1" type="Node2D" unique_id=807187685]
 script = ExtResource("1_ar4p3")
-iconoCursorSacrificio = ExtResource("2_jjuwa")
 escenaCartaBase = ExtResource("2_qk0di")
-contenedorMano = NodePath("ManoManual")
 
 [node name="Escenario1" type="Sprite2D" parent="." unique_id=376666928]
 position = Vector2(612, 343)

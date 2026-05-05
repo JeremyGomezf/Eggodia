@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://d2hluur0yic6s"]
+
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="1_4ewec"]
+[ext_resource type="Texture2D" uid="uid://cr16gksk07txm" path="res://imagenes/iconos/Calamar_icon.png" id="1_ce6uv"]
+
+[resource]
+script = ExtResource("1_4ewec")
+Nombre = "CALAMAR GIGANTE ARRECIFE"
+Imagen = ExtResource("1_ce6uv")
+Ataque = 370
+Defensa = 380
+Vida = 400
+Descripcion = "Un monstruo abismal que acecha en las sombras. Usa sus tentáculos asfixiantes para atrapar a múltiples enemigos a la vez y arrastrarlos a su perdición."
+metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"

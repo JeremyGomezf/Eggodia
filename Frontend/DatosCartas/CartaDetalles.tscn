@@ -1,0 +1,186 @@
+[gd_scene format=3 uid="uid://dywx02kyud042"]
+
+[ext_resource type="Script" uid="uid://bp55y7p02lr4f" path="res://DatosCartas/CartaDetalles.cs" id="1_e4o5v"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gmkua"]
+bg_color = Color(0.92156863, 0.87058824, 0.8117647, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.91228896, 0.9122889, 0.91228884, 1)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 2
+shadow_size = 3
+
+[sub_resource type="FontVariation" id="FontVariation_5fkdi"]
+
+[sub_resource type="FontVariation" id="FontVariation_irnef"]
+
+[sub_resource type="FontFile" id="FontFile_conaq"]
+subpixel_positioning = 0
+msdf_pixel_range = 14
+msdf_size = 128
+cache/0/variation_coordinates = {}
+cache/0/face_index = 0
+cache/0/embolden = 0.0
+cache/0/transform = Transform2D(1, 0, 0, 1, 0, 0)
+cache/0/spacing_top = 0
+cache/0/spacing_bottom = 0
+cache/0/spacing_space = 0
+cache/0/spacing_glyph = 0
+cache/0/baseline_offset = 0.0
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+
+[sub_resource type="FontVariation" id="FontVariation_e4o5v"]
+
+[sub_resource type="FontVariation" id="FontVariation_conaq"]
+
+[sub_resource type="FontFile" id="FontFile_n0s32"]
+cache/0/variation_coordinates = {}
+cache/0/face_index = 0
+cache/0/embolden = 0.0
+cache/0/transform = Transform2D(1, 0, 0, 1, 0, 0)
+cache/0/spacing_top = 0
+cache/0/spacing_bottom = 0
+cache/0/spacing_space = 0
+cache/0/spacing_glyph = 0
+cache/0/baseline_offset = 0.0
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+
+[sub_resource type="FontVariation" id="FontVariation_dkacu"]
+
+[node name="CartaDetalles" type="PanelContainer" unique_id=781539525 node_paths=PackedStringArray("_nombreLabel", "_imagenRect", "_ataqueLabel", "_defensaLabel", "_vidaLabel", "_descripcionLabel")]
+custom_minimum_size = Vector2(100, 0)
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.1
+theme_override_styles/panel = SubResource("StyleBoxFlat_gmkua")
+script = ExtResource("1_e4o5v")
+_nombreLabel = NodePath("MarginContainer/VBoxContainer/HBoxContainer/StatsText/NombreCarta")
+_imagenRect = NodePath("MarginContainer/VBoxContainer/HBoxContainer/ImagenCarta")
+_ataqueLabel = NodePath("MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer/ValorAtk")
+_defensaLabel = NodePath("MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer2/ValorDef")
+_vidaLabel = NodePath("MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer3/ValorHP")
+_descripcionLabel = NodePath("MarginContainer/VBoxContainer/RichTextLabel")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1469086089]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=2059822830]
+layout_mode = 2
+
+[node name="TítuloPanel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=91804469]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = SubResource("FontVariation_5fkdi")
+text = "DETALLES DE CARTA SELECCIONADA"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=1777079694]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1551320769]
+layout_mode = 2
+
+[node name="ImagenCarta" type="TextureRect" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=70496267]
+custom_minimum_size = Vector2(130, 170)
+layout_mode = 2
+expand_mode = 1
+
+[node name="StatsText" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=597709130]
+layout_mode = 2
+
+[node name="NombreCarta" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=112838998]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = SubResource("FontVariation_irnef")
+theme_override_font_sizes/font_size = 20
+text = "JUAN"
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=985584925]
+visible = false
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=475795755]
+layout_mode = 2
+
+[node name="Ataque" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer" unique_id=1139374123]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = SubResource("FontFile_conaq")
+text = "ATAQUE:"
+
+[node name="Control" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer" unique_id=1634318033]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ValorAtk" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer" unique_id=357650549]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.0035191667, 0.0035191681, 0.0035191672, 1)
+theme_override_fonts/font = SubResource("FontVariation_e4o5v")
+text = "000"
+
+[node name="Separadoratk" type="HSeparator" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=1117069787]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=1625319433]
+layout_mode = 2
+
+[node name="Defensa" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer2" unique_id=1762445953]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = SubResource("FontFile_conaq")
+text = "DEFENSA:"
+
+[node name="Control" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer2" unique_id=477870864]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ValorDef" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer2" unique_id=1482947287]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = SubResource("FontVariation_conaq")
+text = "000"
+
+[node name="Separadordf" type="HSeparator" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=1861008052]
+layout_mode = 2
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=1285659186]
+layout_mode = 2
+
+[node name="Vida" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer3" unique_id=1271425532]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = SubResource("FontFile_n0s32")
+text = "VIDA:"
+
+[node name="Control" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer3" unique_id=675937486]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ValorHP" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer3" unique_id=253422471]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = SubResource("FontVariation_dkacu")
+text = "000"
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=2118817072]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer" unique_id=1709008020]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0, 0, 0, 1)
+fit_content = true

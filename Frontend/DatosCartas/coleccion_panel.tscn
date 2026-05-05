@@ -1,0 +1,182 @@
+[gd_scene format=3 uid="uid://dpjsmimi7gyi4"]
+
+[ext_resource type="Script" uid="uid://cu5psm5cj856" path="res://ColeccionPanel.cs" id="1_iw5pq"]
+[ext_resource type="PackedScene" uid="uid://cc4dl7d6qlseb" path="res://DatosCartas/CartaMini.tscn" id="2_kd0cq"]
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="3_fw50h"]
+[ext_resource type="Resource" uid="uid://cv8yb14uuyoot" path="res://DatosCartas/trex.tres" id="4_lbsjf"]
+[ext_resource type="Resource" uid="uid://d2hluur0yic6s" path="res://DatosCartas/calamar.tres" id="5_idan7"]
+[ext_resource type="Resource" uid="uid://bwkv80ys0ndq3" path="res://DatosCartas/damajedrez.tres" id="6_km5rb"]
+[ext_resource type="Resource" uid="uid://c1j3pny5vfwes" path="res://DatosCartas/encebollado.tres" id="7_j6ynr"]
+[ext_resource type="Resource" uid="uid://cbg5gc5rbnhdy" path="res://DatosCartas/peonajedrez.tres" id="8_krecm"]
+[ext_resource type="Resource" uid="uid://s7vyajd2jkjm" path="res://DatosCartas/torreajedrez.tres" id="9_1ny4s"]
+[ext_resource type="Resource" uid="uid://crrsots3lyrcx" path="res://DatosCartas/dragondeflama.tres" id="10_ul7fw"]
+[ext_resource type="Resource" uid="uid://ca7kd5ao6oec7" path="res://DatosCartas/tiburonblanco.tres" id="11_gswwo"]
+[ext_resource type="Resource" uid="uid://b1cw6v28vaerd" path="res://DatosCartas/caballoajedrez.tres" id="12_h7ecj"]
+[ext_resource type="Resource" uid="uid://twk1m5tumrf0" path="res://DatosCartas/viejomajinmedieval.tres" id="13_6hujd"]
+[ext_resource type="Resource" uid="uid://chbre1ur6h2hd" path="res://DatosCartas/soldadorealmedieval.tres" id="14_21xwf"]
+[ext_resource type="Resource" uid="uid://duxwj1s5trbmk" path="res://DatosCartas/golempedregalmedieval.tres" id="15_3x8ef"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kd0cq"]
+bg_color = Color(0.92156863, 0.87058824, 0.8117647, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.9137255, 0.9137255, 0.9137255, 1)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 2
+shadow_size = 3
+
+[sub_resource type="FontVariation" id="FontVariation_gr3y8"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n66yw"]
+bg_color = Color(0.638853, 0.48292273, 0.39104465, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fw50h"]
+bg_color = Color(0.44980443, 0.3493367, 0.16240466, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lbsjf"]
+bg_color = Color(0.98039216, 0.98039216, 0.98039216, 0.21960784)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0, 0, 0, 1)
+border_blend = true
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_idan7"]
+bg_color = Color(0.98039216, 0.98039216, 0.98039216, 0.21960784)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0, 0, 0, 1)
+border_blend = true
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_km5rb"]
+bg_color = Color(0.98039216, 0.98039216, 0.98039216, 0.21960784)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0, 0, 0, 1)
+border_blend = true
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+corner_detail = 5
+
+[node name="ColeccionPanel" type="PanelContainer" unique_id=1749755602 node_paths=PackedStringArray("_buscador", "_gridCartas", "_btnTodas", "_btnUnidades", "_btnHechizos", "_btnEstructuras")]
+offset_right = 252.0
+offset_bottom = 457.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_kd0cq")
+script = ExtResource("1_iw5pq")
+_buscador = NodePath("MarginContainer/VBoxContainer/HBoxContainer/Buscador")
+_gridCartas = NodePath("MarginContainer/VBoxContainer/ScrollCartas/GridCartas")
+_escenaCartaMini = ExtResource("2_kd0cq")
+_btnTodas = NodePath("MarginContainer/VBoxContainer/BotoneraFiltros/TODAS")
+_btnUnidades = NodePath("MarginContainer/VBoxContainer/BotoneraFiltros/UNIDADES")
+_btnHechizos = NodePath("MarginContainer/VBoxContainer/BotoneraFiltros/HECHIZOS")
+_btnEstructuras = NodePath("MarginContainer/VBoxContainer/BotoneraFiltros/ESTRUCTURAS")
+_todasLasCartas = Array[ExtResource("3_fw50h")]([ExtResource("4_lbsjf"), ExtResource("5_idan7"), ExtResource("6_km5rb"), ExtResource("7_j6ynr"), ExtResource("8_krecm"), ExtResource("9_1ny4s"), ExtResource("10_ul7fw"), ExtResource("11_gswwo"), ExtResource("12_h7ecj"), ExtResource("13_6hujd"), ExtResource("14_21xwf"), ExtResource("15_3x8ef")])
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=418676145]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1639783673]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1660934316]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1630452595]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = SubResource("FontVariation_gr3y8")
+text = "CARTAS DISPONIBLES"
+
+[node name="Control" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1300588606]
+layout_mode = 2
+
+[node name="Buscador" type="LineEdit" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1689913482]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/selection_color = Color(0.94293886, 0.6117536, 0.4424848, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_n66yw")
+placeholder_text = "🔍"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=1205418511]
+layout_mode = 2
+
+[node name="ScrollCartas" type="ScrollContainer" parent="MarginContainer/VBoxContainer" unique_id=1156143431]
+custom_minimum_size = Vector2(0, 400)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="GridCartas" type="GridContainer" parent="MarginContainer/VBoxContainer/ScrollCartas" unique_id=1843430825]
+layout_mode = 2
+columns = 4
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=1889561152]
+layout_mode = 2
+
+[node name="BotoneraFiltros" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=2139961236]
+layout_mode = 2
+
+[node name="TODAS" type="Button" parent="MarginContainer/VBoxContainer/BotoneraFiltros" unique_id=704806335]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.9110458, 0.8596875, 0.5679102, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_fw50h")
+text = "TODAS"
+
+[node name="UNIDADES" type="Button" parent="MarginContainer/VBoxContainer/BotoneraFiltros" unique_id=248692661]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_lbsjf")
+text = "UNIDADES"
+
+[node name="HECHIZOS" type="Button" parent="MarginContainer/VBoxContainer/BotoneraFiltros" unique_id=1749831466]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_idan7")
+text = "HECHIZOS"
+
+[node name="ESTRUCTURAS" type="Button" parent="MarginContainer/VBoxContainer/BotoneraFiltros" unique_id=669966269]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_km5rb")
+text = "ESTRUCTURAS"

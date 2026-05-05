@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://ca7kd5ao6oec7"]
+
+[ext_resource type="Texture2D" uid="uid://dftr4300qkj2h" path="res://imagenes/iconos/Tiburon_icon.png" id="1_o86g0"]
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="2_d73ys"]
+
+[resource]
+script = ExtResource("2_d73ys")
+Nombre = "TIBURON BLANCO ARRECIFE"
+Imagen = ExtResource("1_o86g0")
+Ataque = 230
+Defensa = 200
+Vida = 300
+Descripcion = "El depredador definitivo de los mares, ahora en tierra firme. Sus mandíbulas están diseñadas para destrozar armaduras gruesas con una ferocidad inigualable."
+metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"

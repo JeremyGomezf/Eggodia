@@ -1,0 +1,78 @@
+[gd_scene format=3 uid="uid://rf3h2j6kp815"]
+
+[ext_resource type="Script" uid="uid://7fk7m6kf1qwx" path="res://DatosCartas/MenuConstructor.cs" id="1_7duwh"]
+[ext_resource type="Texture2D" uid="uid://bt0vu55rqcdx1" path="res://imagenes/menu.png" id="1_idawy"]
+[ext_resource type="PackedScene" uid="uid://bwia3nmvitnbb" path="res://DatosCartas/MazoPanel.tscn" id="2_7duwh"]
+[ext_resource type="PackedScene" uid="uid://dywx02kyud042" path="res://DatosCartas/CartaDetalles.tscn" id="3_eko3d"]
+[ext_resource type="PackedScene" uid="uid://dpjsmimi7gyi4" path="res://DatosCartas/coleccion_panel.tscn" id="4_rfsye"]
+
+[sub_resource type="FontVariation" id="FontVariation_idawy"]
+
+[node name="MenuConstructor" type="Control" unique_id=188255977 node_paths=PackedStringArray("_panelColeccion", "_panelMazo", "_panelDetalles")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7duwh")
+_panelColeccion = NodePath("MarginContainer/VBoxContainer/HBoxContainer/ColeccionPanel")
+_panelMazo = NodePath("MarginContainer/VBoxContainer/HBoxContainer/MazoPanel")
+_panelDetalles = NodePath("MarginContainer/VBoxContainer/HBoxContainer/CartaDetalles")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1623753459]
+self_modulate = Color(1, 1, 1, 0.56078434)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_idawy")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=824154271]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1670578709]
+layout_mode = 2
+
+[node name="Titulo" type="Label" parent="MarginContainer/VBoxContainer" unique_id=437191803]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_constants/line_spacing = 3
+theme_override_fonts/font = SubResource("FontVariation_idawy")
+theme_override_font_sizes/font_size = 50
+text = "𝙎𝙚𝙡𝙚𝙘𝙘𝙞𝙤́𝙣 𝙙𝙚 𝙘𝙖𝙧𝙩𝙖𝙨"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=460802437]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 40
+
+[node name="MazoPanel" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=2094166136 instance=ExtResource("2_7duwh")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CartaDetalles" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=781539525 instance=ExtResource("3_eko3d")]
+layout_mode = 2
+size_flags_stretch_ratio = 0.8
+
+[node name="ColeccionPanel" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1749755602 instance=ExtResource("4_rfsye")]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.5
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=116502532]
+layout_mode = 2

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://duxwj1s5trbmk"]
+
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="1_38o3r"]
+[ext_resource type="Texture2D" uid="uid://bllow48jlifns" path="res://imagenes/iconos/Golem_icon.png" id="1_62sng"]
+
+[resource]
+script = ExtResource("1_38o3r")
+Nombre = "GOLEM PEDREGAL MEDIEVAL"
+Imagen = ExtResource("1_62sng")
+Ataque = 350
+Defensa = 500
+Vida = 450
+Descripcion = "Una mole inmensa de roca viva forjada con magia olvidada. Es lento y pesado, pero sus golpes caen como meteoritos y su resistencia es casi infinita."
+metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"

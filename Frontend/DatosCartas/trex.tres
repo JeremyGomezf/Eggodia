@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://cv8yb14uuyoot"]
+
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="1_goo7v"]
+[ext_resource type="Texture2D" uid="uid://582fmomjl700" path="res://imagenes/iconos/TRex_icon.png" id="1_j8wyx"]
+
+[resource]
+script = ExtResource("1_goo7v")
+Nombre = "T-REX Z PREHISTORIA"
+Imagen = ExtResource("1_j8wyx")
+Ataque = 400
+Defensa = 350
+Vida = 400
+Descripcion = "El rey jurásico traído de vuelta a la vida con furia renovada. Su mordida aplasta las defensas y su rugido paraliza de terror a las tropas más débiles."
+metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"

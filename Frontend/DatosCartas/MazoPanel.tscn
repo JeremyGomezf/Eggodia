@@ -1,0 +1,174 @@
+[gd_scene format=3 uid="uid://bwia3nmvitnbb"]
+
+[ext_resource type="Script" uid="uid://bc06dvb6bqibo" path="res://DatosCartas/MazoPanel.cs" id="1_cg7ne"]
+[ext_resource type="PackedScene" uid="uid://cc4dl7d6qlseb" path="res://DatosCartas/CartaMini.tscn" id="2_lxy0p"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3kgnq"]
+bg_color = Color(0.92156863, 0.87058824, 0.8117647, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.9137255, 0.9137255, 0.9137255, 1)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 2
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cg7ne"]
+bg_color = Color(0.6245287, 0.54090863, 0.39933598, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.6689776, 0.5484257, 0.36123392, 1)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lxy0p"]
+bg_color = Color(0.6, 0.6, 0.6, 0.23137255)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+border_blend = true
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+corner_detail = 7
+expand_margin_left = 10.0
+expand_margin_top = 5.0
+expand_margin_right = 10.0
+expand_margin_bottom = 5.0
+
+[node name="MazoPanel" type="PanelContainer" unique_id=2094166136 node_paths=PackedStringArray("_gridMazo", "_btnRemover")]
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_3kgnq")
+script = ExtResource("1_cg7ne")
+_gridMazo = NodePath("MarginContainer/VBoxContainer/GridMazo")
+_btnRemover = NodePath("MarginContainer/VBoxContainer/CenterContainer/REMOVER")
+_escenaCartaMini = ExtResource("2_lxy0p")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=280660328]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=534936270]
+layout_mode = 2
+alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=475806477]
+layout_mode = 2
+
+[node name="TU MAZO" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=197373484]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "TU MAZO"
+
+[node name="EspacioArriba" type="Control" parent="MarginContainer/VBoxContainer" unique_id=372192024]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=1013121511]
+layout_mode = 2
+
+[node name="GridMazo" type="GridContainer" parent="MarginContainer/VBoxContainer" unique_id=252546364]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 40
+columns = 4
+
+[node name="Slot1" type="Panel" parent="MarginContainer/VBoxContainer/GridMazo" unique_id=1827478478]
+custom_minimum_size = Vector2(100, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cg7ne")
+
+[node name="Slot2" type="Panel" parent="MarginContainer/VBoxContainer/GridMazo" unique_id=374269870]
+custom_minimum_size = Vector2(100, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cg7ne")
+
+[node name="Slot3" type="Panel" parent="MarginContainer/VBoxContainer/GridMazo" unique_id=1912218515]
+custom_minimum_size = Vector2(100, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cg7ne")
+
+[node name="Slot4" type="Panel" parent="MarginContainer/VBoxContainer/GridMazo" unique_id=1049674728]
+custom_minimum_size = Vector2(100, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cg7ne")
+
+[node name="Slot5" type="Panel" parent="MarginContainer/VBoxContainer/GridMazo" unique_id=1233953643]
+custom_minimum_size = Vector2(100, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cg7ne")
+
+[node name="Slot6" type="Panel" parent="MarginContainer/VBoxContainer/GridMazo" unique_id=1448603006]
+custom_minimum_size = Vector2(100, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cg7ne")
+
+[node name="Slot7" type="Panel" parent="MarginContainer/VBoxContainer/GridMazo" unique_id=1666445994]
+custom_minimum_size = Vector2(100, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cg7ne")
+
+[node name="Slot8" type="Panel" parent="MarginContainer/VBoxContainer/GridMazo" unique_id=1966015354]
+custom_minimum_size = Vector2(100, 180)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_cg7ne")
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer/VBoxContainer" unique_id=1275649218]
+custom_minimum_size = Vector2(10, 100)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="REMOVER" type="Button" parent="MarginContainer/VBoxContainer/CenterContainer" unique_id=1596533044]
+custom_minimum_size = Vector2(250, 60)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_lxy0p")
+button_mask = 4
+text = "REMOVER"
+
+[node name="EspacioAbajo" type="Control" parent="MarginContainer/VBoxContainer/CenterContainer" unique_id=2031623373]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2

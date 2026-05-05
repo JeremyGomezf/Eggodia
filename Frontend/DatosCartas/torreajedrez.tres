@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://s7vyajd2jkjm"]
+
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="1_bawxg"]
+[ext_resource type="Texture2D" uid="uid://dlc3h1crkqf1f" path="res://imagenes/iconos/Torre_icon.png" id="1_p4pcv"]
+
+[resource]
+script = ExtResource("1_bawxg")
+Nombre = "TORRE AJEDREZ"
+Imagen = ExtResource("1_p4pcv")
+Ataque = 350
+Defensa = 450
+Vida = 500
+Descripcion = "Una fortaleza andante de piedra inamovible. Diseñada para defender las líneas aliadas con una solidez impenetrable; chocar contra ella es un suicidio."
+metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
