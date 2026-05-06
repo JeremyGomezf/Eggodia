@@ -922,7 +922,9 @@ public partial class Campo1 : Node2D
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
 
-		// Al invocar, salir de fase de invocación → ya puede atacar
+		// Activar inmediatamente para que se pueda usar en el mismo turno
+		if (t.HasMethod("SetActivo")) t.Call("SetActivo", true);
+
 		tropasInvocadasTurno++;
 		faseInvocacion = false;
 		GetTree().CreateTimer(0.1f).Timeout += () =>
@@ -1046,6 +1048,7 @@ public partial class Campo1 : Node2D
 				AddChild(t); t.GlobalPosition = zonaJugador.GlobalPosition;
 				t.AddToGroup("tropas_jugador"); t.SetMeta("carril", "Mod2");
 				Node m = new Node(); m.Name = "Ocupado"; zonaJugador.AddChild(m); m.SetMeta("tropa_instanciada", t);
+				if (t.HasMethod("SetActivo")) t.Call("SetActivo", true);
 			}
 		}
 
