@@ -19,7 +19,7 @@ public partial class GestorCartas : Node
 
 	// ── CONFIG ────────────────────────────────────────────────────────────
 	// Cambia esta URL cuando despliegues el backend en producción
-	private const string URL_BASE = "http://localhost:5000/api/cartas";
+	private const string URL_BASE = "http://localhost:5289/api/cartas";
 
 	// ── ESTADO ────────────────────────────────────────────────────────────
 	public bool CartasCargadas { get; private set; } = false;

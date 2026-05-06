@@ -934,7 +934,7 @@ public partial class Campo1 : Node2D
 			DañoHecho = daño
 		});
 		string[] h = { "Content-Type: application/json" };
-		http.Request("http://localhost:5000/api/usuarios/resultado", h, HttpClient.Method.Post, json);
+		http.Request("http://localhost:5289/api/usuarios/resultado", h, HttpClient.Method.Post, json);
 		GD.Print($"[Campo1] Resultado → backend: {resultado}");
 	}
 

@@ -19,7 +19,7 @@ using System.Text.Json;
 /// </summary>
 public partial class PanelLogin : Control
 {
-    private const string URL_BASE = "http://localhost:5000/api/usuarios";
+    private const string URL_BASE = "http://localhost:5289/api/usuarios";
 
     // ── NODOS LOGIN ───────────────────────────────────────────────────────
     private LineEdit _emailLogin;
