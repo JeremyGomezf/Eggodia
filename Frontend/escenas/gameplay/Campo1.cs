@@ -639,19 +639,18 @@ public partial class Campo1 : Node2D
 		await ToSignal(GetTree().CreateTimer(delay * 0.4f), "timeout");
 		if (juegoTerminado) return;
 
-		// Evaluar estado del campo para decidir estrategia
+		// Evaluar estado del campo
 		int tropasEnCampo = 0;
 		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 			if (IsInstanceValid(n as Node2D)) tropasEnCampo++;
 
-		float ratioHP    = (float)vidaRival / Mathf.Max(1, vidaMaxJugador);
+		float ratioHP      = (float)vidaRival / Mathf.Max(1, vidaMaxJugador);
 		bool atacarPrimero = tropasEnCampo >= 2 && ratioHP > 0.35f;
-
-		string[] puntos = { "ModRival1", "ModRival2", "ModRival3" };
+		string[] puntos    = { "ModRival1", "ModRival2", "ModRival3" };
 
 		if (atacarPrimero)
 		{
-			// Tiene tropas y está bien de vida → atacar primero, luego reforzar
+			// Con tropas en campo: atacar primero (gasta energía)
 			var bots = new List<Node2D>();
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 				if (n is Node2D n2 && IsInstanceValid(n2)) bots.Add(n2);
@@ -675,16 +674,16 @@ public partial class Campo1 : Node2D
 				await ToSignal(GetTree().CreateTimer(delay), "timeout");
 				if (juegoTerminado) return;
 			}
-			// Reforzar si queda energía
-			int maxNuevos = Mathf.Min(movimientosRestantes, _dificultadIA + 1);
+			// Reforzar zonas vacías GRATIS (invocar no gasta energía)
+			int maxNuevos = _dificultadIA + 1;
 			int reforzadas = 0;
 			foreach (string nombre in puntos)
 			{
-				if (reforzadas >= maxNuevos || movimientosRestantes <= 0 || juegoTerminado) break;
+				if (reforzadas >= maxNuevos || juegoTerminado) break;
 				Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
 				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
 				InvocacionRival(zona, ElegirTropaIA());
-				movimientosRestantes--; reforzadas++;
+				reforzadas++;
 				ActualizarInterfaz();
 				await ToSignal(GetTree().CreateTimer(delay * 0.7f), "timeout");
 				if (juegoTerminado) return;
@@ -692,21 +691,22 @@ public partial class Campo1 : Node2D
 		}
 		else
 		{
-			// Campo vacío o bajo de vida → invocar primero, luego atacar
+			// Sin tropas suficientes: invocar primero GRATIS, luego atacar (gasta energía)
 			int aInvocar = _dificultadIA == 0 ? 1 : _dificultadIA == 1 ? 2 : 3;
 			int invocadas = 0;
 			foreach (string nombre in puntos)
 			{
-				if (invocadas >= aInvocar || movimientosRestantes <= 0 || juegoTerminado) break;
+				if (invocadas >= aInvocar || juegoTerminado) break;
 				Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
 				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
 				InvocacionRival(zona, ElegirTropaIA());
-				movimientosRestantes--; invocadas++;
+				invocadas++;
 				ActualizarInterfaz();
 				await ToSignal(GetTree().CreateTimer(delay), "timeout");
 				if (juegoTerminado) return;
 			}
 
+			// Atacar con todas las tropas (incluyendo las recién invocadas)
 			var bots = new List<Node2D>();
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 				if (n is Node2D n2 && IsInstanceValid(n2)) bots.Add(n2);
