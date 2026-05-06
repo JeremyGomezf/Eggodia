@@ -118,6 +118,16 @@ public partial class Campo1 : Node2D
 
 		CrearPanelHechizos();
 		CrearPanelPausa();
+
+		// Usar mazo del jugador si lo armó en el constructor
+		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
+		{
+			imagenesCartas = SesionJuego.Instance.ImagenesMazo.ToArray();
+			escenasTropas  = SesionJuego.Instance.MazoSeleccionado.ToArray();
+			GD.Print($"[Campo1] Mazo personalizado: {escenasTropas.Length} cartas");
+		}
+
+		AplicarIdentidadEra();
 		PrepararMazoSinRepetir();
 		CrearEscenaDeBatalla();
 		BarajarMazoInicial();
@@ -878,13 +888,54 @@ public partial class Campo1 : Node2D
 		lblStats.AutowrapMode = TextServer.AutowrapMode.Word;
 		pantalla.AddChild(lblStats);
 
-		// Botón reiniciar
+		// Nombre del jugador
+		string nombreJ = SesionJuego.Instance?.NombreJugador ?? "Jugador";
+		var lblNombre = new Label();
+		lblNombre.Text = $"Jugador: {nombreJ}";
+		lblNombre.AddThemeColorOverride("font_color", Colors.LightBlue);
+		lblNombre.AddThemeFontSizeOverride("font_size", 16);
+		lblNombre.Position = new Vector2(50, 100);
+		pantalla.AddChild(lblNombre);
+
+		// Botones
 		var btnReinicio = new Button();
 		btnReinicio.Text     = "🔄 Jugar de nuevo";
-		btnReinicio.Position = new Vector2(50, 320);
+		btnReinicio.Position = new Vector2(50, 330);
 		btnReinicio.CustomMinimumSize = new Vector2(200, 50);
 		btnReinicio.Pressed += () => GetTree().ReloadCurrentScene();
 		pantalla.AddChild(btnReinicio);
+
+		var btnMenu = new Button();
+		btnMenu.Text     = "🏠 Menú Principal";
+		btnMenu.Position = new Vector2(270, 330);
+		btnMenu.CustomMinimumSize = new Vector2(200, 50);
+		btnMenu.Pressed += () => GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
+		pantalla.AddChild(btnMenu);
+
+		// Guardar resultado en sesión y enviar al backend
+		string resultadoStr = msg.Contains("VICTORIA") ? "victoria"
+		                    : msg.Contains("EMPATE")   ? "empate" : "derrota";
+		if (SesionJuego.Instance != null)
+		{
+			SesionJuego.Instance.UltimoResultado    = resultadoStr;
+			SesionJuego.Instance.DañoUltimaPartida  = _dañoTotalJugador;
+			if (SesionJuego.Instance.EstaLogueado)
+				EnviarResultadoBackend(resultadoStr, _dañoTotalJugador);
+		}
+	}
+
+	private void EnviarResultadoBackend(string resultado, int daño)
+	{
+		var http = new Godot.HttpRequest();
+		AddChild(http);
+		string json = System.Text.Json.JsonSerializer.Serialize(new {
+			UsuarioId = SesionJuego.Instance!.UsuarioId,
+			Resultado = resultado,
+			DañoHecho = daño
+		});
+		string[] h = { "Content-Type: application/json" };
+		http.Request("http://localhost:5000/api/usuarios/resultado", h, HttpClient.Method.Post, json);
+		GD.Print($"[Campo1] Resultado → backend: {resultado}");
 	}
 
 	public void RegistrarGastoMovimiento()

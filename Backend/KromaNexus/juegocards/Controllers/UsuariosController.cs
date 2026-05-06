@@ -1,0 +1,111 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using KromaNexus.API.Data;
+using KromaNexus.API.model;
+
+[ApiController]
+[Route("api/[controller]")]
+public class UsuariosController : ControllerBase
+{
+    private readonly AppDbContext _db;
+    public UsuariosController(AppDbContext db) { _db = db; }
+
+    // POST: api/usuarios/registro
+    [HttpPost("registro")]
+    public async Task<IActionResult> Registro([FromBody] RegistroRequest req)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        // Verificar email único
+        bool existe = await _db.Usuarios.AnyAsync(u => u.Email == req.Email);
+        if (existe) return Conflict(new { mensaje = "El email ya está registrado." });
+
+        var usuario = new Usuario
+        {
+            Nombre   = req.Nombre,
+            Email    = req.Email,
+            Password = req.Password  // TODO: hashear con BCrypt en producción
+        };
+
+        _db.Usuarios.Add(usuario);
+        await _db.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetUsuario), new { id = usuario.Id }, ToDto(usuario));
+    }
+
+    // POST: api/usuarios/login
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest req)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var usuario = await _db.Usuarios
+            .FirstOrDefaultAsync(u => u.Email == req.Email && u.Password == req.Password);
+
+        if (usuario == null)
+            return Unauthorized(new { mensaje = "Email o contraseña incorrectos." });
+
+        return Ok(ToDto(usuario));
+    }
+
+    // GET: api/usuarios/5
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUsuario(int id)
+    {
+        var u = await _db.Usuarios.FindAsync(id);
+        if (u == null) return NotFound();
+        return Ok(ToDto(u));
+    }
+
+    // POST: api/usuarios/resultado
+    // Llamado al terminar una partida para actualizar stats
+    [HttpPost("resultado")]
+    public async Task<IActionResult> GuardarResultado([FromBody] ResultadoPartidaRequest req)
+    {
+        var u = await _db.Usuarios.FindAsync(req.UsuarioId);
+        if (u == null) return NotFound(new { mensaje = "Usuario no encontrado." });
+
+        switch (req.Resultado.ToLower())
+        {
+            case "victoria": u.Victorias++;  break;
+            case "derrota":  u.Derrotas++;   break;
+            case "empate":   u.Empates++;    break;
+        }
+        u.DañoTotal += req.DañoHecho;
+
+        await _db.SaveChangesAsync();
+        return Ok(ToDto(u));
+    }
+
+    // GET: api/usuarios/ranking
+    [HttpGet("ranking")]
+    public async Task<IActionResult> GetRanking()
+    {
+        var top = await _db.Usuarios
+            .OrderByDescending(u => u.Victorias)
+            .ThenByDescending(u => u.DañoTotal)
+            .Take(20)
+            .Select(u => new {
+                u.Id, u.Nombre,
+                u.Victorias, u.Derrotas, u.Empates,
+                u.DañoTotal,
+                WinRate = u.Victorias + u.Derrotas + u.Empates > 0
+                    ? (int)((float)u.Victorias / (u.Victorias + u.Derrotas + u.Empates) * 100)
+                    : 0
+            })
+            .ToListAsync();
+
+        return Ok(top);
+    }
+
+    private static UsuarioDto ToDto(Usuario u) => new()
+    {
+        Id        = u.Id,
+        Nombre    = u.Nombre,
+        Email     = u.Email,
+        Victorias = u.Victorias,
+        Derrotas  = u.Derrotas,
+        Empates   = u.Empates,
+        DañoTotal = u.DañoTotal
+    };
+}

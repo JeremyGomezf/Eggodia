@@ -21,7 +21,7 @@ builder.Services.AddCors(options => {
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    options.UseMySql(connectionString, new MariaDbServerVersion(new Version(10, 4, 32))));
 // -----------------------------------------------------------------
 
 var app = builder.Build();
