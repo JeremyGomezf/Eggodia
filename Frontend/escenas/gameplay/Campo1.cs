@@ -499,14 +499,26 @@ public partial class Campo1 : Node2D
 	private void CambiarTurno()
 	{
 		_turnosJugados++;
-		esTurnoJugador       = !esTurnoJugador;
-		tiempoTurnoActual    = 20;
-		movimientosRestantes = 3;
-		usosBarajar          = 0;
-		usosSacrificio       = 0;
-		faseInvocacion       = true;
-		tropasInvocadasTurno = 0;
-		_comboTurno          = 0;
+		esTurnoJugador    = !esTurnoJugador;
+		tiempoTurnoActual = 28;
+
+		// Energía escala progresivamente: 3 → 4 → 5 (cap), cada 3 turnos completos
+		int turnoGlobal      = _turnosJugados / 2;
+		movimientosRestantes = Mathf.Min(5, 3 + turnoGlobal / 3);
+
+		// Comeback: si tienes <30% HP ganas +1 energía ese turno
+		int hpActivo = esTurnoJugador ? vidaJugador : vidaRival;
+		if (hpActivo < (int)(vidaMaxJugador * 0.3f) && movimientosRestantes < 5)
+		{
+			movimientosRestantes++;
+			if (esTurnoJugador)
+				MostrarAviso("💪 ¡Desesperación! +1 Energía", Colors.OrangeRed);
+		}
+
+		usosBarajar    = 0;
+		usosSacrificio = 0;
+		faseInvocacion = false; // ya no se exige invocar antes de atacar
+		_comboTurno    = 0;
 		_modoSeleccionObjetivo = false;
 		_hechizoPendiente      = "";
 		if (_lblInstruccion != null) _lblInstruccion.Visible = false;
@@ -523,7 +535,38 @@ public partial class Campo1 : Node2D
 		}
 		else EjecutarTurnoIA();
 
+		AnunciarTurno();
 		ActualizarInterfaz();
+	}
+
+	private void AnunciarTurno()
+	{
+		if (juegoTerminado) return;
+		int turnoNum  = _turnosJugados / 2 + 1;
+		int maxEnergy = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
+		string energyBar = new string('⚡', movimientosRestantes)
+		                 + new string('·', Mathf.Max(0, maxEnergy - movimientosRestantes));
+		string texto = esTurnoJugador
+			? $"⚡ TU TURNO  [{energyBar}]  Turno {turnoNum}"
+			: $"🤖 TURNO RIVAL  —  Turno {turnoNum}";
+		Color color = esTurnoJugador ? Colors.LightGreen : Colors.OrangeRed;
+
+		var lbl = new Label();
+		lbl.Text = texto;
+		lbl.AddThemeColorOverride("font_color", color);
+		lbl.AddThemeFontSizeOverride("font_size", 28);
+		lbl.HorizontalAlignment = HorizontalAlignment.Center;
+		lbl.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
+		lbl.OffsetTop   = 160;
+		lbl.OffsetLeft  = -340;
+		lbl.OffsetRight = 340;
+		lbl.ZIndex      = 150;
+		AddChild(lbl);
+
+		Tween tw = CreateTween().SetParallel(true);
+		tw.TweenProperty(lbl, "modulate:a", 0.0f, 0.7f).SetDelay(0.6f);
+		tw.TweenProperty(lbl, "scale", new Vector2(1.08f, 1.08f), 0.3f);
+		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
 	}
 
 	// ── STATUS EFFECTS ────────────────────────────────────────────────────
@@ -592,63 +635,111 @@ public partial class Campo1 : Node2D
 		if (juegoTerminado || esTurnoJugador) return;
 		AjustarDificultad();
 
-		float delay = _dificultadIA == 0 ? 1.5f : _dificultadIA == 1 ? 1.0f : 0.7f;
-		await ToSignal(GetTree().CreateTimer(delay), "timeout");
+		float delay = _dificultadIA == 0 ? 1.8f : _dificultadIA == 1 ? 1.2f : 0.85f;
+		await ToSignal(GetTree().CreateTimer(delay * 0.4f), "timeout");
+		if (juegoTerminado) return;
 
-		// Invocar tropas (difícil invoca siempre, fácil solo a veces)
-		string[] puntos = { "ModRival1", "ModRival2", "ModRival3" };
-		foreach (string nombre in puntos)
-		{
-			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
-			if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
-			// Siempre invoca — dificultad solo afecta qué tropa elige
-			PackedScene escena;
-			if (_dificultadIA == 2)
-				escena = GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length / 2, escenasTropas.Length)]);
-			else if (_dificultadIA == 0)
-				escena = GD.Load<PackedScene>(escenasTropas[random.Next(0, escenasTropas.Length / 2)]);
-			else
-				escena = GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length)]);
-
-			InvocacionRival(zona, escena);
-			await ToSignal(GetTree().CreateTimer(0.8f), "timeout");
-		}
-
-		var bots = new List<Node2D>();
+		// Evaluar estado del campo para decidir estrategia
+		int tropasEnCampo = 0;
 		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
-			if (n is Node2D n2 && IsInstanceValid(n2)) bots.Add(n2);
+			if (IsInstanceValid(n as Node2D)) tropasEnCampo++;
 
-		// Difícil ordena por ataque (más fuerte ataca primero)
-		if (_dificultadIA == 2)
-			bots.Sort((a,b) => Gi(b,"puntosAtaque").CompareTo(Gi(a,"puntosAtaque")));
+		float ratioHP    = (float)vidaRival / Mathf.Max(1, vidaMaxJugador);
+		bool atacarPrimero = tropasEnCampo >= 2 && ratioHP > 0.35f;
 
-		foreach (Node2D tropa in bots)
+		string[] puntos = { "ModRival1", "ModRival2", "ModRival3" };
+
+		if (atacarPrimero)
 		{
-			if (movimientosRestantes <= 0 || juegoTerminado || !IsInstanceValid(tropa)) break;
-			if (EstaBlockeada(tropa)) continue;
+			// Tiene tropas y está bien de vida → atacar primero, luego reforzar
+			var bots = new List<Node2D>();
+			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+				if (n is Node2D n2 && IsInstanceValid(n2)) bots.Add(n2);
+			if (_dificultadIA == 2)
+				bots.Sort((a, b) => Gi(b, "puntosAtaque").CompareTo(Gi(a, "puntosAtaque")));
 
-			Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
-
-			// Usar habilidad
-			if (!HabilidadUsada(tropa) && _dificultadIA >= 1 && random.Next(3) == 0)
+			foreach (Node2D tropa in bots)
 			{
-				if (tropa.HasMethod("EjecutarAccion")) tropa.Call("EjecutarAccion", "usar_habilidad");
+				if (movimientosRestantes <= 0 || juegoTerminado || !IsInstanceValid(tropa)) break;
+				if (EstaBlockeada(tropa)) continue;
+				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
+				if (!HabilidadUsada(tropa) && _dificultadIA >= 1 && random.Next(3) == 0)
+					tropa.Call("EjecutarAccion", "usar_habilidad");
+				else if (DebeDefender(tropa, objetivo))
+					tropa.Call("EjecutarAccion", "preparar_defensa");
+				else
+					ProcesarCombateFrontal(tropa, "tropas_jugador");
+				if (_dificultadIA == 2 && random.Next(5) == 0) IAUsarHechizo();
+				movimientosRestantes--;
+				ActualizarInterfaz();
+				await ToSignal(GetTree().CreateTimer(delay), "timeout");
+				if (juegoTerminado) return;
 			}
-			else if (DebeDefender(tropa, objetivo))
-				tropa.Call("EjecutarAccion", "preparar_defensa");
-			else
-				ProcesarCombateFrontal(tropa, "tropas_jugador");
+			// Reforzar si queda energía
+			int maxNuevos = Mathf.Min(movimientosRestantes, _dificultadIA + 1);
+			int reforzadas = 0;
+			foreach (string nombre in puntos)
+			{
+				if (reforzadas >= maxNuevos || movimientosRestantes <= 0 || juegoTerminado) break;
+				Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
+				InvocacionRival(zona, ElegirTropaIA());
+				movimientosRestantes--; reforzadas++;
+				ActualizarInterfaz();
+				await ToSignal(GetTree().CreateTimer(delay * 0.7f), "timeout");
+				if (juegoTerminado) return;
+			}
+		}
+		else
+		{
+			// Campo vacío o bajo de vida → invocar primero, luego atacar
+			int aInvocar = _dificultadIA == 0 ? 1 : _dificultadIA == 1 ? 2 : 3;
+			int invocadas = 0;
+			foreach (string nombre in puntos)
+			{
+				if (invocadas >= aInvocar || movimientosRestantes <= 0 || juegoTerminado) break;
+				Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
+				InvocacionRival(zona, ElegirTropaIA());
+				movimientosRestantes--; invocadas++;
+				ActualizarInterfaz();
+				await ToSignal(GetTree().CreateTimer(delay), "timeout");
+				if (juegoTerminado) return;
+			}
 
-			// IA difícil usa hechizos
-			if (_dificultadIA == 2 && random.Next(5) == 0)
-				IAUsarHechizo();
+			var bots = new List<Node2D>();
+			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+				if (n is Node2D n2 && IsInstanceValid(n2)) bots.Add(n2);
+			if (_dificultadIA == 2)
+				bots.Sort((a, b) => Gi(b, "puntosAtaque").CompareTo(Gi(a, "puntosAtaque")));
 
-			movimientosRestantes--;
-			ActualizarInterfaz();
-			await ToSignal(GetTree().CreateTimer(delay), "timeout");
+			foreach (Node2D tropa in bots)
+			{
+				if (movimientosRestantes <= 0 || juegoTerminado || !IsInstanceValid(tropa)) break;
+				if (EstaBlockeada(tropa)) continue;
+				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
+				if (!HabilidadUsada(tropa) && _dificultadIA >= 1 && random.Next(3) == 0)
+					tropa.Call("EjecutarAccion", "usar_habilidad");
+				else if (DebeDefender(tropa, objetivo))
+					tropa.Call("EjecutarAccion", "preparar_defensa");
+				else
+					ProcesarCombateFrontal(tropa, "tropas_jugador");
+				if (_dificultadIA == 2 && random.Next(5) == 0) IAUsarHechizo();
+				movimientosRestantes--;
+				ActualizarInterfaz();
+				await ToSignal(GetTree().CreateTimer(delay), "timeout");
+				if (juegoTerminado) return;
+			}
 		}
 
 		if (!esTurnoJugador && !juegoTerminado) CambiarTurno();
+	}
+
+	private PackedScene ElegirTropaIA()
+	{
+		if (_dificultadIA == 2) return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length / 2, escenasTropas.Length)]);
+		if (_dificultadIA == 0) return GD.Load<PackedScene>(escenasTropas[random.Next(0, escenasTropas.Length / 2)]);
+		return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length)]);
 	}
 
 	private bool DebeDefender(Node2D t, Node2D obj)
@@ -742,14 +833,6 @@ public partial class Campo1 : Node2D
 	{
 		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
 		if (EstaBlockeada(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
-
-		// No puede atacar si está en fase de invocación sin tropas en campo
-		if (faseInvocacion)
-		{
-			MostrarAvisoFase("Primero invoca una tropa antes de atacar");
-			menuAcciones.Visible = false;
-			return;
-		}
 
 		ProcesarCombateFrontal(tropaSeleccionada, "tropas_rival");
 		tropaSeleccionada.Call("SetActivo", false);
@@ -956,13 +1039,17 @@ public partial class Campo1 : Node2D
 		if (HasNode("LabelTurnoInfo"))
 		{
 			var l = GetNode<Label>("LabelTurnoInfo");
-			string dif = _dificultadIA == 0 ? "🟢 Fácil" : _dificultadIA == 1 ? "🟡 Medio" : "🔴 Difícil";
-			bool urgente = esTurnoJugador && tiempoTurnoActual <= 5;
-			string timerTxt = urgente ? $"⚠️ {tiempoTurnoActual}s!" : $"{tiempoTurnoActual}s";
-			l.Text = $"{(esTurnoJugador ? "TU TURNO" : "TURNO RIVAL")} {dif}\nSiguiente en: {timerTxt}\nMovimientos: {movimientosRestantes}";
-			l.Modulate = urgente ? Colors.Red
-					   : esTurnoJugador ? new Color(0, 0.5f, 0)
-					   : new Color(0.8f, 0, 0);
+			string dif     = _dificultadIA == 0 ? "🟢 Fácil" : _dificultadIA == 1 ? "🟡 Medio" : "🔴 Difícil";
+			bool urgente   = esTurnoJugador && tiempoTurnoActual <= 8;
+			string timer   = urgente ? $"⚠️ {tiempoTurnoActual}s!" : $"⏱ {tiempoTurnoActual}s";
+			int maxEnergy  = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
+			string eBar    = new string('⚡', movimientosRestantes)
+			               + new string('·', Mathf.Max(0, maxEnergy - movimientosRestantes));
+			int turnoNum   = _turnosJugados / 2 + 1;
+			l.Text = $"Turno {turnoNum}  {dif}\n{eBar} {movimientosRestantes}/{maxEnergy} Energía\n{(esTurnoJugador ? "TU TURNO" : "TURNO RIVAL")}  {timer}";
+			l.Modulate = urgente      ? Colors.Red
+					   : esTurnoJugador ? new Color(0, 0.55f, 0)
+					   : new Color(0.85f, 0, 0);
 		}
 	}
 
