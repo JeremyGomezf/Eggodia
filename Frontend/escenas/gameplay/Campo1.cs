@@ -155,7 +155,9 @@ public partial class Campo1 : Node2D
 		AplicarIdentidadEra();
 		PrepararMazoSinRepetir();
 		CrearEscenaDeBatalla();
+		ColocarTropasIniciales();   // ambos lados empiezan con 1 tropa en el carril central
 		BarajarMazoInicial();
+		faseInvocacion = false;     // no se requiere invocar antes de atacar desde el turno 1
 		ActualizarInterfaz();
 
 		// Restaurar racha desde sesión
@@ -1026,6 +1028,40 @@ public partial class Campo1 : Node2D
 		tronoJugador.GlobalPosition = m1.GlobalPosition; tronoJugador.CargarHuevo(escenaReyHuevoRef, false);
 		tronoRival = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoRival);
 		tronoRival.GlobalPosition = m2.GlobalPosition; tronoRival.CargarHuevo(escenaDinoHuevoRef, true);
+	}
+
+	// Coloca 1 tropa inicial por lado en el carril central para que turno 1 sea accionable
+	private void ColocarTropasIniciales()
+	{
+		// Tropa del jugador — carril central (Mod2)
+		Node2D zonaJugador = GetTree().Root.FindChild("Mod2", true, false) as Node2D;
+		if (zonaJugador != null && zonaJugador.GetNodeOrNull("Ocupado") == null)
+		{
+			int idx = mazoIndices[proximoIndiceMazo % mazoIndices.Count];
+			proximoIndiceMazo++;
+			var escena = GD.Load<PackedScene>(escenasTropas[idx]);
+			if (escena != null)
+			{
+				Node2D t = (Node2D)escena.Instantiate();
+				AddChild(t); t.GlobalPosition = zonaJugador.GlobalPosition;
+				t.AddToGroup("tropas_jugador"); t.SetMeta("carril", "Mod2");
+				Node m = new Node(); m.Name = "Ocupado"; zonaJugador.AddChild(m); m.SetMeta("tropa_instanciada", t);
+			}
+		}
+
+		// Tropa del rival — carril central (ModRival2)
+		Node2D zonaRival = GetTree().Root.FindChild("ModRival2", true, false) as Node2D;
+		if (zonaRival != null && zonaRival.GetNodeOrNull("Ocupado") == null)
+		{
+			var escena = ElegirTropaIA();
+			if (escena != null)
+			{
+				Node2D t = (Node2D)escena.Instantiate();
+				AddChild(t); t.GlobalPosition = zonaRival.GlobalPosition; t.Scale = new Vector2(-1, 1);
+				t.AddToGroup("tropas_rival"); t.SetMeta("carril", "ModRival2");
+				Node m = new Node(); m.Name = "Ocupado"; zonaRival.AddChild(m); m.SetMeta("tropa_instanciada", t);
+			}
+		}
 	}
 
 	// ── INTERFAZ ──────────────────────────────────────────────────────────
