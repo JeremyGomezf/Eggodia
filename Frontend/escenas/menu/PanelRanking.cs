@@ -5,140 +5,217 @@ using System.Text;
 using System.Text.Json;
 
 /// <summary>
-/// PanelRanking — tabla de líderes.
-/// Muestra top 20 jugadores ordenados por victorias.
-///
-/// Nodos requeridos:
-///   VBoxContainer "ListaRanking"  (aquí se crean las filas)
-///   Button "BtnCerrar"
-///   Label "LblTitulo"
+/// PanelRanking — tabla de líderes completamente autónoma.
+/// Crea todos sus nodos en código — no necesita escena ni nodos hijos.
+/// Se usa así: var panel = new PanelRanking(); AddChild(panel); panel.Mostrar();
 /// </summary>
 public partial class PanelRanking : Control
 {
-    private const string URL_RANKING = "http://localhost:5289/api/usuarios/ranking";
+	private const string URL_RANKING = "http://localhost:5289/api/usuarios/ranking";
 
-    private VBoxContainer _lista;
-    private Button        _btnCerrar;
-    private Godot.HttpRequest _http;
+	private VBoxContainer     _lista;
+	private Godot.HttpRequest _http;
+	private bool              _construido = false;
 
-    public override void _Ready()
-    {
-        _lista     = GetNodeOrNull<VBoxContainer>("ListaRanking");
-        _btnCerrar = GetNodeOrNull<Button>("BtnCerrar");
+	public override void _Ready()
+	{
+		ConstruirUI();
+	}
 
-        _http = new Godot.HttpRequest();
-        AddChild(_http);
-        _http.RequestCompleted += OnRankingRecibido;
+	private void ConstruirUI()
+	{
+		if (_construido) return;
+		_construido = true;
 
-        if (_btnCerrar != null) _btnCerrar.Pressed += () => Visible = false;
+		// Tamaño y posición centrada
+		SetAnchorsPreset(LayoutPreset.FullRect);
+		ZIndex = 150;
 
-        // Encabezado de tabla
-        AgregarFila("🏆 POS", "JUGADOR", "V", "D", "W%", true);
-        AgregarSeparador();
+		// Fondo oscuro semitransparente
+		var fondo = new ColorRect();
+		fondo.SetAnchorsPreset(LayoutPreset.FullRect);
+		fondo.Color = new Color(0f, 0f, 0f, 0.85f);
+		fondo.MouseFilter = MouseFilterEnum.Stop;
+		AddChild(fondo);
 
-        CargarRanking();
-    }
+		// Panel central
+		var panel = new PanelContainer();
+		panel.SetAnchorsPreset(LayoutPreset.Center);
+		panel.CustomMinimumSize = new Vector2(550, 480);
+		panel.Position          = new Vector2(-275, -240);
+		AddChild(panel);
 
-    public void Mostrar()
-    {
-        Visible = true;
-        // Limpiar y recargar
-        if (_lista != null)
-            foreach (Node n in _lista.GetChildren()) n.QueueFree();
-        AgregarFila("🏆 POS", "JUGADOR", "V", "D", "W%", true);
-        AgregarSeparador();
-        CargarRanking();
-    }
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 4);
+		panel.AddChild(vbox);
 
-    private void CargarRanking()
-    {
-        _http.Request(URL_RANKING);
-    }
+		// Título
+		var titulo = new Label();
+		titulo.Text = "🏆 RANKING — AGE OF CARDS";
+		titulo.AddThemeColorOverride("font_color", Colors.Gold);
+		titulo.AddThemeFontSizeOverride("font_size", 22);
+		titulo.HorizontalAlignment = HorizontalAlignment.Center;
+		vbox.AddChild(titulo);
 
-    private void OnRankingRecibido(long result, long code, string[] headers, byte[] body)
-    {
-        if (result != (long)Godot.HttpRequest.Result.Success || code != 200)
-        {
-            AgregarFila("—", "Sin conexión al servidor", "—", "—", "—", false);
-            return;
-        }
+		vbox.AddChild(new HSeparator());
 
-        try
-        {
-            string json = Encoding.UTF8.GetString(body);
-            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var lista = JsonSerializer.Deserialize<List<EntradaRanking>>(json, opts);
+		// Scroll para la lista
+		var scroll = new ScrollContainer();
+		scroll.CustomMinimumSize = new Vector2(0, 360);
+		vbox.AddChild(scroll);
 
-            if (lista == null || lista.Count == 0)
-            {
-                AgregarFila("—", "Sin jugadores aún", "—", "—", "—", false);
-                return;
-            }
+		_lista = new VBoxContainer();
+		_lista.AddThemeConstantOverride("separation", 2);
+		scroll.AddChild(_lista);
 
-            int pos = 1;
-            foreach (var e in lista)
-            {
-                string medalla = pos == 1 ? "🥇" : pos == 2 ? "🥈" : pos == 3 ? "🥉" : $"{pos}.";
-                // Resaltar usuario actual
-                bool esYo = SesionJuego.Instance != null && e.Id == SesionJuego.Instance.UsuarioId;
-                AgregarFila(medalla, e.Nombre + (esYo ? " ◀ TÚ" : ""),
-                            e.Victorias.ToString(), e.Derrotas.ToString(),
-                            $"{e.WinRate}%", false, esYo);
-                pos++;
-            }
-        }
-        catch (Exception ex)
-        {
-            GD.PrintErr($"[Ranking] Error: {ex.Message}");
-            AgregarFila("—", "Error cargando datos", "—", "—", "—", false);
-        }
-    }
+		vbox.AddChild(new HSeparator());
 
-    private void AgregarFila(string pos, string nombre, string v, string d, string wr,
-                              bool esEncabezado, bool resaltar = false)
-    {
-        if (_lista == null) return;
+		// Botón cerrar
+		var btnCerrar = new Button();
+		btnCerrar.Text              = "✕ Cerrar";
+		btnCerrar.CustomMinimumSize = new Vector2(150, 40);
+		btnCerrar.AddThemeFontSizeOverride("font_size", 16);
+		btnCerrar.Pressed += () => QueueFree();
 
-        var hbox = new HBoxContainer();
-        hbox.CustomMinimumSize = new Vector2(0, 32);
+		var hboxCerrar = new HBoxContainer();
+		hboxCerrar.Alignment = BoxContainer.AlignmentMode.Center;
+		hboxCerrar.AddChild(btnCerrar);
+		vbox.AddChild(hboxCerrar);
 
-        Color colorTexto = esEncabezado ? Colors.Gold
-                         : resaltar     ? new Color(0.3f, 1f, 0.5f)
-                                        : Colors.White;
+		// HTTP
+		_http = new Godot.HttpRequest();
+		AddChild(_http);
+		_http.RequestCompleted += OnRankingRecibido;
 
-        AgregarCelda(hbox, pos,     70,  colorTexto);
-        AgregarCelda(hbox, nombre,  220, colorTexto);
-        AgregarCelda(hbox, v,       60,  colorTexto);
-        AgregarCelda(hbox, d,       60,  colorTexto);
-        AgregarCelda(hbox, wr,      70,  colorTexto);
+		// Encabezado
+		AgregarFila("POS", "JUGADOR", "V", "D", "W%", esEncabezado: true);
+		AgregarSeparador();
+	}
 
-        _lista.AddChild(hbox);
-    }
+	public void Mostrar()
+	{
+		if (!_construido) ConstruirUI();
+		Visible = true;
 
-    private void AgregarCelda(HBoxContainer parent, string texto, int ancho, Color color)
-    {
-        var lbl = new Label();
-        lbl.Text = texto;
-        lbl.CustomMinimumSize = new Vector2(ancho, 0);
-        lbl.AddThemeColorOverride("font_color", color);
-        parent.AddChild(lbl);
-    }
+		// Limpiar lista y recargar
+		if (_lista != null)
+			foreach (Node n in _lista.GetChildren()) n.QueueFree();
 
-    private void AgregarSeparador()
-    {
-        if (_lista == null) return;
-        var sep = new HSeparator();
-        _lista.AddChild(sep);
-    }
+		AgregarFila("POS", "JUGADOR", "V", "D", "W%", esEncabezado: true);
+		AgregarSeparador();
 
-    private class EntradaRanking
-    {
-        public int    Id        { get; set; }
-        public string Nombre    { get; set; } = "";
-        public int    Victorias { get; set; }
-        public int    Derrotas  { get; set; }
-        public int    Empates   { get; set; }
-        public int    DañoTotal { get; set; }
-        public int    WinRate   { get; set; }
-    }
+		// Mostrar "cargando..." mientras espera
+		var lblCargando = new Label();
+		lblCargando.Name = "LblCargando";
+		lblCargando.Text = "⏳ Cargando ranking...";
+		lblCargando.AddThemeColorOverride("font_color", Colors.LightGray);
+		lblCargando.HorizontalAlignment = HorizontalAlignment.Center;
+		_lista.AddChild(lblCargando);
+
+		CargarRanking();
+	}
+
+	private void CargarRanking()
+	{
+		var err = _http.Request(URL_RANKING);
+		if (err != Error.Ok)
+		{
+			LimpiarCargando();
+			AgregarFila("—", "Backend no disponible", "—", "—", "—", false);
+		}
+	}
+
+	private void OnRankingRecibido(long result, long code, string[] headers, byte[] body)
+	{
+		LimpiarCargando();
+
+		if (result != (long)Godot.HttpRequest.Result.Success || code != 200)
+		{
+			AgregarFila("—", "Sin conexión al servidor", "—", "—", "—", false);
+			return;
+		}
+
+		try
+		{
+			string json = Encoding.UTF8.GetString(body);
+			var opts    = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+			var lista   = JsonSerializer.Deserialize<List<EntradaRanking>>(json, opts);
+
+			if (lista == null || lista.Count == 0)
+			{
+				AgregarFila("—", "Aún no hay jugadores", "—", "—", "—", false);
+				return;
+			}
+
+			int pos = 1;
+			foreach (var e in lista)
+			{
+				string medalla = pos switch { 1 => "🥇", 2 => "🥈", 3 => "🥉", _ => $"{pos}." };
+				bool   esYo    = SesionJuego.Instance?.UsuarioId == e.Id;
+				AgregarFila(
+					medalla,
+					e.Nombre + (esYo ? " ◀" : ""),
+					e.Victorias.ToString(),
+					e.Derrotas.ToString(),
+					$"{e.WinRate}%",
+					false, esYo
+				);
+				pos++;
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"[Ranking] {ex.Message}");
+			AgregarFila("—", "Error al procesar datos", "—", "—", "—", false);
+		}
+	}
+
+	private void LimpiarCargando()
+	{
+		_lista?.GetNodeOrNull("LblCargando")?.QueueFree();
+	}
+
+	private void AgregarFila(string pos, string nombre, string v, string d, string wr,
+							  bool esEncabezado, bool resaltar = false)
+	{
+		if (_lista == null) return;
+
+		var hbox = new HBoxContainer();
+		hbox.CustomMinimumSize = new Vector2(0, 30);
+
+		Color color = esEncabezado ? Colors.Gold
+					: resaltar     ? new Color(0.3f, 1f, 0.5f)
+								   : Colors.White;
+
+		Celda(hbox, pos,    55,  color, esEncabezado);
+		Celda(hbox, nombre, 230, color, esEncabezado);
+		Celda(hbox, v,      55,  color, esEncabezado);
+		Celda(hbox, d,      55,  color, esEncabezado);
+		Celda(hbox, wr,     65,  color, esEncabezado);
+
+		_lista.AddChild(hbox);
+	}
+
+	private void Celda(HBoxContainer parent, string texto, int ancho, Color color, bool negrita)
+	{
+		var lbl = new Label();
+		lbl.Text              = texto;
+		lbl.CustomMinimumSize = new Vector2(ancho, 0);
+		lbl.AddThemeColorOverride("font_color", color);
+		if (negrita) lbl.AddThemeFontSizeOverride("font_size", 15);
+		parent.AddChild(lbl);
+	}
+
+	private void AgregarSeparador() => _lista?.AddChild(new HSeparator());
+
+	private class EntradaRanking
+	{
+		public int    Id        { get; set; }
+		public string Nombre    { get; set; } = "";
+		public int    Victorias { get; set; }
+		public int    Derrotas  { get; set; }
+		public int    Empates   { get; set; }
+		public int    DañoTotal { get; set; }
+		public int    WinRate   { get; set; }
+	}
 }

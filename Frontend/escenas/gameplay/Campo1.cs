@@ -17,6 +17,25 @@ public partial class Campo1 : Node2D
 	private int  tiempoTurnoActual    = 20;
 	private Timer timerReloj;
 
+	// Fase de turno: primero invocar, luego atacar
+	public  bool faseInvocacion       = true;
+	private int  tropasInvocadasTurno = 0;
+
+	// ── SISTEMA DE COMBOS Y RACHAS ────────────────────────────────────────
+	private int  _comboTurno          = 0;   // tropas eliminadas en turno actual
+	private int  _rachaVictorias      = 0;   // victorias consecutivas (persiste en SesionJuego)
+	private int  _totalTropasElimIA   = 0;   // para logros
+
+	// ── LOGROS ────────────────────────────────────────────────────────────
+	private bool _logroPrimeraVictoria  = false;
+	private bool _logro10Tropas         = false;
+	private bool _logroHabilidadUsada   = false;
+	private bool _logroHechizosUsados   = false;
+
+	// ── MODO DEMO ─────────────────────────────────────────────────────────
+	private bool _modoDemo             = false;
+	private Timer _timerDemo;
+
 	// ── LIMITADORES ───────────────────────────────────────────────────────
 	private int usosBarajar           = 0;
 	private int usosSacrificio        = 0;
@@ -119,6 +138,12 @@ public partial class Campo1 : Node2D
 		CrearPanelHechizos();
 		CrearPanelPausa();
 
+		// Si contenedorMano no está asignado en el inspector, buscarlo por nombre
+		if (contenedorMano == null)
+			contenedorMano = GetNodeOrNull<Control>("ManoManual");
+		if (contenedorMano == null)
+			GD.PrintErr("[Campo1] ¡contenedorMano no encontrado! Asígnalo en el Inspector o crea un nodo ManoManual.");
+
 		// Usar mazo del jugador si lo armó en el constructor
 		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
 		{
@@ -132,6 +157,61 @@ public partial class Campo1 : Node2D
 		CrearEscenaDeBatalla();
 		BarajarMazoInicial();
 		ActualizarInterfaz();
+
+		// Restaurar racha desde sesión
+		if (SesionJuego.Instance != null)
+			_rachaVictorias = SesionJuego.Instance.RachaActual;
+	}
+
+	// ── MODO DEMO: IA vs IA ───────────────────────────────────────────────
+	public void ActivarModoDemo()
+	{
+		_modoDemo = true;
+		var lbl = new Label();
+		lbl.Text = "👁 MODO DEMOSTRACIÓN — Toca para jugar";
+		lbl.AddThemeColorOverride("font_color", Colors.Gold);
+		lbl.AddThemeFontSizeOverride("font_size", 16);
+		lbl.Position = new Vector2(350, 5);
+		lbl.ZIndex   = 50;
+		AddChild(lbl);
+
+		// En modo demo el jugador también es IA
+		_timerDemo = new Timer();
+		_timerDemo.WaitTime = 0.5f;
+		_timerDemo.Timeout  += () => { if (_modoDemo && esTurnoJugador) EjecutarTurnoIADemo(); };
+		AddChild(_timerDemo);
+		_timerDemo.Start();
+
+		// Clic en pantalla sale del demo
+		SetProcessInput(true);
+	}
+
+	private async void EjecutarTurnoIADemo()
+	{
+		if (juegoTerminado || !_modoDemo) return;
+		await ToSignal(GetTree().CreateTimer(1.2f), "timeout");
+
+		string[] puntos = { "Mod1", "Mod2", "Mod3" };
+		foreach (string nombre in puntos)
+		{
+			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+			if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
+			InvocacionRival(zona, GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length)]));
+			await ToSignal(GetTree().CreateTimer(0.8f), "timeout");
+		}
+
+		var tropas = new System.Collections.Generic.List<Node2D>();
+		foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
+			if (n is Node2D n2 && IsInstanceValid(n2)) tropas.Add(n2);
+
+		foreach (Node2D tropa in tropas)
+		{
+			if (!IsInstanceValid(tropa)) continue;
+			ProcesarCombateFrontal(tropa, "tropas_rival");
+			await ToSignal(GetTree().CreateTimer(0.9f), "timeout");
+		}
+
+		if (_modoDemo) CambiarTurno();
 	}
 
 	public void _on_timer_timeout() { }
@@ -253,7 +333,7 @@ public partial class Campo1 : Node2D
 	{
 		// Limpiar íconos anteriores
 		Node iconosViejos = tropa.GetNodeOrNull("IconosEstado");
-		iconosViejos?.Free();
+		iconosViejos?.QueueFree();
 
 		bool envenenado = tropa.HasMeta("envenenado") && ((bool)tropa.GetMeta("envenenado") == true);
 		bool bloqueado  = tropa.HasMeta("bloqueado")  && ((bool)tropa.GetMeta("bloqueado")  == true);
@@ -424,6 +504,9 @@ public partial class Campo1 : Node2D
 		movimientosRestantes = 3;
 		usosBarajar          = 0;
 		usosSacrificio       = 0;
+		faseInvocacion       = true;
+		tropasInvocadasTurno = 0;
+		_comboTurno          = 0;
 		_modoSeleccionObjetivo = false;
 		_hechizoPendiente      = "";
 		if (_lblInstruccion != null) _lblInstruccion.Visible = false;
@@ -556,6 +639,10 @@ public partial class Campo1 : Node2D
 			else
 				ProcesarCombateFrontal(tropa, "tropas_jugador");
 
+			// IA difícil usa hechizos
+			if (_dificultadIA == 2 && random.Next(5) == 0)
+				IAUsarHechizo();
+
 			movimientosRestantes--;
 			ActualizarInterfaz();
 			await ToSignal(GetTree().CreateTimer(delay), "timeout");
@@ -655,6 +742,15 @@ public partial class Campo1 : Node2D
 	{
 		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
 		if (EstaBlockeada(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
+
+		// No puede atacar si está en fase de invocación sin tropas en campo
+		if (faseInvocacion)
+		{
+			MostrarAvisoFase("Primero invoca una tropa antes de atacar");
+			menuAcciones.Visible = false;
+			return;
+		}
+
 		ProcesarCombateFrontal(tropaSeleccionada, "tropas_rival");
 		tropaSeleccionada.Call("SetActivo", false);
 		menuAcciones.Visible = false;
@@ -740,6 +836,10 @@ public partial class Campo1 : Node2D
 		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
+
+		// Al invocar, salir de fase de invocación → ya puede atacar
+		tropasInvocadasTurno++;
+		faseInvocacion = false;
 		GetTree().CreateTimer(0.1f).Timeout += () =>
 		{
 			int c = 0;
@@ -794,7 +894,33 @@ public partial class Campo1 : Node2D
 		proximoIndiceMazo = 0;
 	}
 
-	public void BarajarMazoInicial() { CrearNuevaCartaEnSpot("Spot1"); CrearNuevaCartaEnSpot("Spot2"); CrearNuevaCartaEnSpot("Spot3"); }
+	public void BarajarMazoInicial()
+	{
+		CrearNuevaCartaEnSpot("Spot1");
+		CrearNuevaCartaEnSpot("Spot2");
+		CrearNuevaCartaEnSpot("Spot3");
+		MostrarTutorialInicio();
+	}
+
+	private async void MostrarTutorialInicio()
+	{
+		if (_turnosJugados > 0) return; // solo en el primer turno
+
+		await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
+
+		string[] pasos = {
+			"👋 ¡Bienvenido a Age of Cards!",
+			"🃏 Arrastra una carta al campo para invocar tu tropa",
+			"⚔️ Luego haz clic en tu tropa para atacar",
+			"🧅 Usa hechizos para potenciar tus tropas o dañar al rival"
+		};
+
+		for (int i = 0; i < pasos.Length; i++)
+		{
+			MostrarAviso(pasos[i], Colors.White);
+			await ToSignal(GetTree().CreateTimer(2.5f), "timeout");
+		}
+	}
 
 	private void CrearNuevaCartaEnSpot(string id)
 	{
@@ -831,8 +957,12 @@ public partial class Campo1 : Node2D
 		{
 			var l = GetNode<Label>("LabelTurnoInfo");
 			string dif = _dificultadIA == 0 ? "🟢 Fácil" : _dificultadIA == 1 ? "🟡 Medio" : "🔴 Difícil";
-			l.Text    = $"{(esTurnoJugador?"TU TURNO":"TURNO RIVAL")} {dif}\nSiguiente en: {tiempoTurnoActual}s\nMovimientos: {movimientosRestantes}";
-			l.Modulate = esTurnoJugador ? new Color(0,0.5f,0) : new Color(0.8f,0,0);
+			bool urgente = esTurnoJugador && tiempoTurnoActual <= 5;
+			string timerTxt = urgente ? $"⚠️ {tiempoTurnoActual}s!" : $"{tiempoTurnoActual}s";
+			l.Text = $"{(esTurnoJugador ? "TU TURNO" : "TURNO RIVAL")} {dif}\nSiguiente en: {timerTxt}\nMovimientos: {movimientosRestantes}";
+			l.Modulate = urgente ? Colors.Red
+					   : esTurnoJugador ? new Color(0, 0.5f, 0)
+					   : new Color(0.8f, 0, 0);
 		}
 	}
 
@@ -874,47 +1004,74 @@ public partial class Campo1 : Node2D
 			lbl.Modulate = msg.Contains("VICTORIA") ? Colors.Gold : msg.Contains("EMPATE") ? Colors.White : Colors.Red;
 		}
 
-		// Estadísticas debajo del resultado
+		// ── Nombre del jugador y racha ────────────────────────────────────────
+		string nombreJ = SesionJuego.Instance?.NombreJugador ?? "Jugador";
+		var lblNombre = new Label();
+		lblNombre.Text = $"👤 {nombreJ}";
+		lblNombre.AddThemeColorOverride("font_color", Colors.LightBlue);
+		lblNombre.AddThemeFontSizeOverride("font_size", 17);
+		lblNombre.Position = new Vector2(50, 55);
+		pantalla.AddChild(lblNombre);
+
+		if (_rachaVictorias > 1)
+		{
+			var lblRacha = new Label();
+			lblRacha.Text = $"🔥 Racha: {_rachaVictorias} victorias seguidas";
+			lblRacha.AddThemeColorOverride("font_color", Colors.OrangeRed);
+			lblRacha.AddThemeFontSizeOverride("font_size", 16);
+			lblRacha.Position = new Vector2(50, 80);
+			pantalla.AddChild(lblRacha);
+		}
+
+		// ── Estadísticas ──────────────────────────────────────────────────────
 		var lblStats = new Label();
-		lblStats.Text = $"\n📊 ESTADÍSTICAS\n" +
-						$"Daño infligido: {_dañoTotalJugador}\n" +
-						$"Daño recibido: {_dañoTotalRival}\n" +
-						$"Tropas eliminadas: {_tropasEliminadasRival}\n" +
-						$"Tropas perdidas: {_tropasEliminadasJugador}\n" +
-						$"Turnos jugados: {_turnosJugados}";
+		lblStats.Text = $"📊 ESTADÍSTICAS\n" +
+						$"Daño infligido:     {_dañoTotalJugador}\n" +
+						$"Daño recibido:      {_dañoTotalRival}\n" +
+						$"Tropas eliminadas:  {_tropasEliminadasRival}\n" +
+						$"Tropas perdidas:    {_tropasEliminadasJugador}\n" +
+						$"Turnos jugados:     {_turnosJugados}";
 		lblStats.AddThemeColorOverride("font_color", Colors.White);
-		lblStats.AddThemeFontSizeOverride("font_size", 16);
-		lblStats.Position = new Vector2(50, 120);
+		lblStats.AddThemeFontSizeOverride("font_size", 15);
+		lblStats.Position = new Vector2(50, 110);
 		lblStats.AutowrapMode = TextServer.AutowrapMode.Word;
 		pantalla.AddChild(lblStats);
 
-		// Nombre del jugador
-		string nombreJ = SesionJuego.Instance?.NombreJugador ?? "Jugador";
-		var lblNombre = new Label();
-		lblNombre.Text = $"Jugador: {nombreJ}";
-		lblNombre.AddThemeColorOverride("font_color", Colors.LightBlue);
-		lblNombre.AddThemeFontSizeOverride("font_size", 16);
-		lblNombre.Position = new Vector2(50, 100);
-		pantalla.AddChild(lblNombre);
-
-		// Botones
+		// ── Botones ───────────────────────────────────────────────────────────
 		var btnReinicio = new Button();
-		btnReinicio.Text     = "🔄 Jugar de nuevo";
-		btnReinicio.Position = new Vector2(50, 330);
-		btnReinicio.CustomMinimumSize = new Vector2(200, 50);
+		btnReinicio.Text              = "🔄 Jugar de nuevo";
+		btnReinicio.Position          = new Vector2(50, 300);
+		btnReinicio.CustomMinimumSize = new Vector2(190, 48);
 		btnReinicio.Pressed += () => GetTree().ReloadCurrentScene();
 		pantalla.AddChild(btnReinicio);
 
 		var btnMenu = new Button();
-		btnMenu.Text     = "🏠 Menú Principal";
-		btnMenu.Position = new Vector2(270, 330);
-		btnMenu.CustomMinimumSize = new Vector2(200, 50);
+		btnMenu.Text              = "🏠 Menú Principal";
+		btnMenu.Position          = new Vector2(255, 300);
+		btnMenu.CustomMinimumSize = new Vector2(190, 48);
 		btnMenu.Pressed += () => GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
 		pantalla.AddChild(btnMenu);
 
+		if (SesionJuego.Instance?.EstaLogueado == true)
+		{
+			var btnRanking = new Button();
+			btnRanking.Text              = "🏆 Ver Ranking";
+			btnRanking.Position          = new Vector2(50, 358);
+			btnRanking.CustomMinimumSize = new Vector2(395, 44);
+			btnRanking.SelfModulate      = Colors.Gold;
+			btnRanking.Pressed += () =>
+			{
+				var panel = new PanelRanking();
+				pantalla.AddChild(panel);
+				panel.Mostrar();
+			};
+			pantalla.AddChild(btnRanking);
+		}
+
 		// Guardar resultado en sesión y enviar al backend
 		string resultadoStr = msg.Contains("VICTORIA") ? "victoria"
-		                    : msg.Contains("EMPATE")   ? "empate" : "derrota";
+							: msg.Contains("EMPATE")   ? "empate" : "derrota";
+		VerificarLogros(msg);
 		if (SesionJuego.Instance != null)
 		{
 			SesionJuego.Instance.UltimoResultado    = resultadoStr;
@@ -936,6 +1093,171 @@ public partial class Campo1 : Node2D
 		string[] h = { "Content-Type: application/json" };
 		http.Request("http://localhost:5289/api/usuarios/resultado", h, HttpClient.Method.Post, json);
 		GD.Print($"[Campo1] Resultado → backend: {resultado}");
+	}
+
+	// ── IDENTIDAD VISUAL POR ERA ─────────────────────────────────────────
+	private void AplicarIdentidadEra()
+	{
+		if (SesionJuego.Instance == null || !SesionJuego.Instance.TieneMazo) return;
+
+		var escenas = SesionJuego.Instance.MazoSeleccionado;
+		int era1 = 0, era2 = 0, era3 = 0;
+		foreach (string e in escenas)
+		{
+			if (e.Contains("TRex") || e.Contains("Tiburon") || e.Contains("CalamarG")) era1++;
+			else if (e.Contains("Torre") || e.Contains("Caballo") || e.Contains("Dama") ||
+					 e.Contains("SoldadoReal") || e.Contains("Peon") || e.Contains("Encebollado")) era2++;
+			else era3++;
+		}
+
+		string nombreEra = era1 >= era2 && era1 >= era3 ? "🦕 Era Primordial"
+						 : era2 >= era1 && era2 >= era3 ? "⚔️ Era Medieval"
+														: "🔮 Era Mística";
+
+		// Mostrar nombre de la era al inicio
+		var aviso = new Label();
+		aviso.Text = nombreEra;
+		aviso.AddThemeFontSizeOverride("font_size", 28);
+		aviso.AddThemeColorOverride("font_color", Colors.Gold);
+		aviso.Position = new Vector2(450, 250);
+		aviso.ZIndex   = 100;
+		AddChild(aviso);
+		Tween tw = CreateTween();
+		tw.TweenInterval(1.5f);
+		tw.TweenProperty(aviso, "modulate:a", 0.0f, 0.8f);
+		tw.Finished += () => { if (IsInstanceValid(aviso)) aviso.QueueFree(); };
+	}
+
+	// ── IA HECHIZOS ──────────────────────────────────────────────────────
+	private void IAUsarHechizo()
+	{
+		// Buscar tropa del jugador con más vida para envenenaría
+		Node2D objetivo = null;
+		int maxVida = 0;
+		foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
+		{
+			if (!(n is Node2D t) || !IsInstanceValid(t)) continue;
+			int v = Gi(t, "vidaActual");
+			if (v > maxVida) { maxVida = v; objetivo = t; }
+		}
+		if (objetivo == null) return;
+
+		// Alternar entre veneno y bloqueo
+		if (random.Next(2) == 0)
+		{
+			objetivo.SetMeta("envenenado",   true);
+			objetivo.SetMeta("dañoVeneno",   40);
+			objetivo.SetMeta("turnosVeneno", 2);
+			objetivo.Modulate = new Color(0.6f, 1f, 0.4f);
+			ActualizarIconosEstado(objetivo);
+		}
+		else
+		{
+			objetivo.SetMeta("bloqueado",     true);
+			objetivo.SetMeta("turnosBloqueo", 1);
+			objetivo.Modulate = new Color(0.4f, 0.6f, 1.4f);
+			ActualizarIconosEstado(objetivo);
+		}
+	}
+
+	// ── IA PRIORIZA TROPAS DÉBILES ────────────────────────────────────────
+	private Node2D BuscarObjetivoDebilEnCarril(Node2D atacante, string grupo)
+	{
+		string carril = ((string)atacante.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","");
+		Node2D mejor = null; int min = int.MaxValue;
+		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+		{
+			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
+			if (((string)e.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","") != carril) continue;
+			int v = Gi(e, "vidaActual");
+			if (v < min) { min = v; mejor = e; }
+		}
+		return mejor;
+	}
+
+	// ── SISTEMA DE LOGROS ─────────────────────────────────────────────────
+	private void VerificarLogros(string resultado)
+	{
+		if (resultado.Contains("VICTORIA"))
+		{
+			// Primera victoria
+			if (!_logroPrimeraVictoria)
+			{
+				_logroPrimeraVictoria = true;
+				MostrarLogroEnPantalla("🏆 LOGRO: ¡Primera Victoria!");
+			}
+			// Racha
+			_rachaVictorias++;
+			if (SesionJuego.Instance != null)
+				SesionJuego.Instance.RachaActual = _rachaVictorias;
+			if (_rachaVictorias >= 3)
+				MostrarLogroEnPantalla($"🔥 ¡RACHA DE {_rachaVictorias} VICTORIAS!");
+		}
+		else
+		{
+			_rachaVictorias = 0;
+			if (SesionJuego.Instance != null)
+				SesionJuego.Instance.RachaActual = 0;
+		}
+
+		// Logro habilidades
+		if (!_logroHabilidadUsada)
+		{
+			foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
+			{
+				if (n is Node2D t && HabilidadUsada(t))
+				{
+					_logroHabilidadUsada = true;
+					MostrarLogroEnPantalla("⚡ LOGRO: ¡Usaste una habilidad especial!");
+					break;
+				}
+			}
+		}
+	}
+
+	private void MostrarLogroEnPantalla(string texto)
+	{
+		var lbl = new Label();
+		lbl.Text = texto;
+		lbl.AddThemeColorOverride("font_color", Colors.Gold);
+		lbl.AddThemeFontSizeOverride("font_size", 20);
+		lbl.Position = new Vector2(300, 60);
+		lbl.ZIndex   = 300;
+		AddChild(lbl);
+		Tween tw = CreateTween().SetParallel(true);
+		tw.TweenProperty(lbl, "position:y", lbl.Position.Y - 50f, 1.5f);
+		tw.TweenProperty(lbl, "modulate:a", 0.0f, 1.5f);
+		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
+	}
+
+	private void MostrarAviso(string texto, Color color)
+	{
+		var lbl = new Label();
+		lbl.Text = texto;
+		lbl.AddThemeColorOverride("font_color", color);
+		lbl.AddThemeFontSizeOverride("font_size", 19);
+		lbl.Position = new Vector2(300, 90);
+		lbl.ZIndex   = 200;
+		AddChild(lbl);
+		Tween tw = CreateTween();
+		tw.TweenInterval(2.0f);
+		tw.TweenProperty(lbl, "modulate:a", 0.0f, 0.5f);
+		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
+	}
+
+	private void MostrarAvisoFase(string msg)
+	{
+		var lbl = new Label();
+		lbl.Text = msg;
+		lbl.AddThemeColorOverride("font_color", Colors.OrangeRed);
+		lbl.AddThemeFontSizeOverride("font_size", 18);
+		lbl.Position  = new Vector2(350, 20);
+		lbl.ZIndex    = 200;
+		AddChild(lbl);
+		Tween tw = CreateTween();
+		tw.TweenInterval(2.0f);
+		tw.TweenProperty(lbl, "modulate:a", 0.0f, 0.5f);
+		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
 	}
 
 	public void RegistrarGastoMovimiento()
