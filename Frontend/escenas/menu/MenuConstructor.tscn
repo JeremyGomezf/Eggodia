@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://rf3h2j6kp815"]
+[gd_scene format=3 uid="uid://crgc7q8vp78fn"]
 
 [ext_resource type="Script" uid="uid://7fk7m6kf1qwx" path="res://DatosCartas/MenuConstructor.cs" id="1_7duwh"]
 [ext_resource type="Texture2D" uid="uid://bt0vu55rqcdx1" path="res://imagenes/menu.png" id="1_idawy"]
@@ -8,7 +8,7 @@
 
 [sub_resource type="FontVariation" id="FontVariation_idawy"]
 
-[node name="MenuConstructor" type="Control" unique_id=188255977 node_paths=PackedStringArray("_panelColeccion", "_panelMazo", "_panelDetalles", "_btnVolver", "_btnBatallar", "_lblContadorMazo")]
+[node name="MenuConstructor" type="Control" unique_id=188255977 node_paths=PackedStringArray("_panelColeccion", "_panelMazo", "_panelDetalles")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,6 +16,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_7duwh")
+RutaBatalla = "res://escenas/gameplay/campo_1.tscn"
+RutaMenu = "res://escenas/menu/menu_principal.tscn"
 _panelColeccion = NodePath("MarginContainer/VBoxContainer/HBoxContainer/ColeccionPanel")
 _panelMazo = NodePath("MarginContainer/VBoxContainer/HBoxContainer/MazoPanel")
 _panelDetalles = NodePath("MarginContainer/VBoxContainer/HBoxContainer/CartaDetalles")

@@ -165,7 +165,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_lxy0p")
-button_mask = 4
+button_mask = 1
 text = "REMOVER"
 
 [node name="EspacioAbajo" type="Control" parent="MarginContainer/VBoxContainer/CenterContainer" unique_id=2031623373]
