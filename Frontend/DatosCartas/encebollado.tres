@@ -7,6 +7,10 @@
 script = ExtResource("1_k60ae")
 Nombre = "ENCEBOLLADO ECUADOR"
 Imagen = ExtResource("1_l7eni")
+RutaEscena = "res://cartas prime/Encebollado_prime.tscn"
 Categoria = 1
+Ataque = 0
+Defensa = 500
+Vida = 200
 Descripcion = "¡El manjar de los dioses ecuatorianos! Revitaliza a las tropas otorgando un buff masivo de Defensa, Ataque y Curación. Además, su aroma místico aplica efectos únicos: roba una carta del rival (solo 1 vez por partida), envenena a los enemigos que se atrevan a olerlo, y bloquea el movimiento de la carta afectada. ¡Con chifle y limón, la victoria está asegurada!"
 metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"

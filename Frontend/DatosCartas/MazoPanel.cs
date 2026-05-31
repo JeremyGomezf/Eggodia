@@ -8,6 +8,7 @@ public partial class MazoPanel : Control
 	[Export] private PackedScene _escenaCartaMini; 
 
 	public event Action<CartaData> OnCartaSeleccionadaEnMazo;
+	public event Action OnMazoCambiado;
 	private CartaMini _cartaActualSeleccionada = null;
 
 	public override void _Ready()
@@ -29,27 +30,40 @@ public partial class MazoPanel : Control
 		// 1. Candado Anti-Duplicados
 		foreach (Node slot in _gridMazo.GetChildren())
 		{
-			if (slot.GetChildCount() > 0) 
+			var cartaExistente = slot.GetNodeOrNull<CartaMini>("CartaMini") ?? slot.GetChildOrNull<CartaMini>(slot.GetChildCount() - 1);
+			if (cartaExistente != null && cartaExistente.MisDatos.Nombre == datos.Nombre) 
 			{
-				CartaMini cartaExistente = slot.GetChild<CartaMini>(0);
-				if (cartaExistente.MisDatos.Nombre == datos.Nombre) 
-				{
-					GD.Print("Rechazado: ¡" + datos.Nombre + " ya está en tu mazo!");
-					return; 
-				}
+				GD.Print("Rechazado: ¡" + datos.Nombre + " ya está en tu mazo!");
+				return; 
 			}
 		}
 
 		// 2. Llenar hueco vacío
 		foreach (Node slot in _gridMazo.GetChildren())
 		{
-			if (slot.GetChildCount() == 0) 
+			var cartaExistente = slot.GetNodeOrNull<CartaMini>("CartaMini") ?? slot.GetChildOrNull<CartaMini>(slot.GetChildCount() - 1);
+			if (cartaExistente == null) 
 			{
 				CartaMini nuevaCarta = _escenaCartaMini.Instantiate<CartaMini>();
+				nuevaCarta.Name = "CartaMini";
 				slot.AddChild(nuevaCarta);
+				
+				// Ocultar fondo vacío
+				var bg = slot.GetNodeOrNull<Control>("FondoVacio");
+				if (bg != null) bg.Hide();
+
 				nuevaCarta.CargarDatos(datos);
+				nuevaCarta.SetModoMazo(true);
+				
+				// Animación de aparición (Pop-in)
+				nuevaCarta.PivotOffset = new Vector2(42.5f, 65f); // Centro aproximado del slot
+				nuevaCarta.Scale = new Vector2(0.3f, 0.3f);
+				var tween = nuevaCarta.CreateTween();
+				tween.TweenProperty(nuevaCarta, "scale", new Vector2(1.1f, 1.1f), 0.2f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+				tween.TweenProperty(nuevaCarta, "scale", Vector2.One, 0.1f).SetTrans(Tween.TransitionType.Sine);
 				
 				nuevaCarta.OnClickeada += SeleccionarCartaDelMazo;
+				OnMazoCambiado?.Invoke();
 				return; 
 			}
 		}
@@ -77,9 +91,20 @@ public partial class MazoPanel : Control
 
 		if (_cartaActualSeleccionada != null && IsInstanceValid(_cartaActualSeleccionada))
 		{
+			var slot = _cartaActualSeleccionada.GetParent();
+			slot.RemoveChild(_cartaActualSeleccionada);
 			_cartaActualSeleccionada.QueueFree(); 
 			_cartaActualSeleccionada = null;
 			GD.Print("¡Carta fulminada del mazo!");
+			
+			// Mostrar fondo vacío
+			if (slot != null) 
+			{
+				var bg = slot.GetNodeOrNull<Control>("FondoVacio");
+				if (bg != null) bg.Show();
+			}
+
+			OnMazoCambiado?.Invoke();
 		}
 		else
 		{

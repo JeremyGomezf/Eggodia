@@ -8,7 +8,116 @@
 
 [sub_resource type="FontVariation" id="FontVariation_idawy"]
 
-[node name="MenuConstructor" type="Control" unique_id=188255977 node_paths=PackedStringArray("_panelColeccion", "_panelMazo", "_panelDetalles", "_btnVolver", "_btnBatallar", "_lblContadorMazo")]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header_bg"]
+bg_color = Color(0.03529412, 0.0627451, 0.10980392, 0.82)
+content_margin_left = 24.0
+content_margin_top = 10.0
+content_margin_right = 24.0
+content_margin_bottom = 10.0
+border_width_bottom = 2
+border_color = Color(0.27450982, 0.54901963, 0.8901961, 0.5)
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_actionbar"]
+bg_color = Color(0.03529412, 0.0627451, 0.10980392, 0.87058824)
+content_margin_left = 24.0
+content_margin_top = 10.0
+content_margin_right = 24.0
+content_margin_bottom = 10.0
+border_width_top = 2
+border_color = Color(0.27450982, 0.54901963, 0.8901961, 0.5)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_bg"]
+bg_color = Color(0.15, 0.18, 0.24, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.35, 0.45, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_fill"]
+bg_color = Color(0.20, 0.72, 0.40, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_back"]
+bg_color = Color(0.14901961, 0.21568628, 0.3137255, 1)
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3647059, 0.4862745, 0.6784314, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_back_hover"]
+bg_color = Color(0.20392157, 0.28235295, 0.39607844, 1)
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.56078434, 0.7137255, 0.92941177, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_continue"]
+bg_color = Color(0.16862746, 0.47058824, 0.9019608, 1)
+content_margin_left = 28.0
+content_margin_top = 10.0
+content_margin_right = 28.0
+content_margin_bottom = 10.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7764706, 0.8980392, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.16862746, 0.47058824, 0.9019608, 0.4)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_continue_hover"]
+bg_color = Color(0.2784314, 0.5921569, 0.9647059, 1)
+content_margin_left = 28.0
+content_margin_top = 10.0
+content_margin_right = 28.0
+content_margin_bottom = 10.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8666667, 0.94509804, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.2784314, 0.5921569, 0.9647059, 0.5)
+shadow_size = 8
+
+[node name="MenuConstructor" type="Control" unique_id=188255977 node_paths=PackedStringArray("_panelColeccion", "_panelMazo", "_panelDetalles", "_btnVolver", "_btnBatallar", "_lblContadorMazo", "_lblNombreJugador", "_progressBar")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,15 +125,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_7duwh")
+RutaBatalla = "res://escenas/gameplay/campo_1.tscn"
+RutaMenu = "res://escenas/menu/menu_principal.tscn"
 _panelColeccion = NodePath("MarginContainer/VBoxContainer/HBoxContainer/ColeccionPanel")
 _panelMazo = NodePath("MarginContainer/VBoxContainer/HBoxContainer/MazoPanel")
 _panelDetalles = NodePath("MarginContainer/VBoxContainer/HBoxContainer/CartaDetalles")
-_btnVolver = NodePath("MarginContainer/VBoxContainer/HBoxContainer2/BtnVolver")
-_btnBatallar = NodePath("MarginContainer/VBoxContainer/HBoxContainer2/BtnBatallar")
-_lblContadorMazo = NodePath("MarginContainer/VBoxContainer/HBoxContainer2/LblContador")
+_btnVolver = NodePath("MarginContainer/VBoxContainer/ActionBar/ActionContent/BtnVolver")
+_btnBatallar = NodePath("MarginContainer/VBoxContainer/ActionBar/ActionContent/BtnBatallar")
+_lblContadorMazo = NodePath("MarginContainer/VBoxContainer/ActionBar/ActionContent/ContadorCard/LblContador")
+_progressBar = NodePath("MarginContainer/VBoxContainer/HeaderBar/HeaderContent/ProgressSection/ProgressBar")
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=1623753459]
-self_modulate = Color(1, 1, 1, 0.56078434)
+self_modulate = Color(1, 1, 1, 0.5)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,6 +147,15 @@ texture = ExtResource("1_idawy")
 expand_mode = 1
 stretch_mode = 6
 
+[node name="Overlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02745098, 0.03529412, 0.05490196, 0.45)
+
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=824154271]
 layout_mode = 1
 anchors_preset = 15
@@ -42,27 +163,67 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 60
-theme_override_constants/margin_top = 20
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 40
-theme_override_constants/margin_bottom = 40
+theme_override_constants/margin_bottom = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1670578709]
 layout_mode = 2
+theme_override_constants/separation = 12
 
-[node name="Titulo" type="Label" parent="MarginContainer/VBoxContainer" unique_id=437191803]
+[node name="HeaderBar" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_constants/line_spacing = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_header_bg")
+
+[node name="HeaderContent" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HeaderBar"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DecoLines" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/HeaderContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34901961, 0.77647059, 0.98039216, 1)
+theme_override_font_sizes/font_size = 28
+text = "≡"
+vertical_alignment = 1
+
+[node name="Titulo" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/HeaderContent" unique_id=437191803]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98039216, 0.9882353, 1, 1)
 theme_override_fonts/font = SubResource("FontVariation_idawy")
-theme_override_font_sizes/font_size = 50
-text = "𝙎𝙚𝙡𝙚𝙘𝙘𝙞𝙤́𝙣 𝙙𝙚 𝙘𝙖𝙧𝙩𝙖𝙨"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+text = "GUÍA DE SELECCIÓN DE CARTAS"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/HeaderBar/HeaderContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ProgressSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HeaderBar/HeaderContent"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 4
+
+[node name="ProgressLabel" type="Label" parent="MarginContainer/VBoxContainer/HeaderBar/HeaderContent/ProgressSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.90, 0.98, 1)
+theme_override_font_sizes/font_size = 13
+text = "USER PROGRESS"
+horizontal_alignment = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/HeaderBar/HeaderContent/ProgressSection"]
+custom_minimum_size = Vector2(180, 16)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_progress_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_progress_fill")
+max_value = 8.0
+value = 0.0
+show_percentage = false
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=460802437]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 40
+theme_override_constants/separation = 24
 
 [node name="MazoPanel" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=2094166136 instance=ExtResource("2_7duwh")]
 layout_mode = 2
@@ -70,35 +231,53 @@ size_flags_horizontal = 3
 
 [node name="CartaDetalles" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=781539525 instance=ExtResource("3_eko3d")]
 layout_mode = 2
-size_flags_stretch_ratio = 0.8
+size_flags_stretch_ratio = 0.85
 
 [node name="ColeccionPanel" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1749755602 instance=ExtResource("4_rfsye")]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.5
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=116502532]
+[node name="ActionBar" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-alignment = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_actionbar")
+
+[node name="ActionContent" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ActionBar" unique_id=116502532]
+layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="BtnVolver" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer2" unique_id=201010101]
-custom_minimum_size = Vector2(200, 55)
+[node name="BtnVolver" type="Button" parent="MarginContainer/VBoxContainer/ActionBar/ActionContent" unique_id=201010101]
+custom_minimum_size = Vector2(180, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "← Volver"
-
-[node name="LblContador" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer2" unique_id=201010102]
-custom_minimum_size = Vector2(180, 55)
-layout_mode = 2
+theme_override_colors/font_color = Color(0.9490196, 0.96862745, 1, 1)
 theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_back")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_back_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_back_hover")
+text = "◄  BACK"
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/ActionBar/ActionContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ContadorCard" type="PanelContainer" parent="MarginContainer/VBoxContainer/ActionBar/ActionContent"]
+visible = false
+layout_mode = 2
+
+[node name="LblContador" type="Label" parent="MarginContainer/VBoxContainer/ActionBar/ActionContent/ContadorCard" unique_id=201010102]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.98039216, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Cartas: 0/8"
 horizontal_alignment = 1
 vertical_alignment = 1
-text = "Cartas: 0/12"
 
-[node name="BtnBatallar" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer2" unique_id=201010103]
-custom_minimum_size = Vector2(200, 55)
+[node name="BtnBatallar" type="Button" parent="MarginContainer/VBoxContainer/ActionBar/ActionContent" unique_id=201010103]
+custom_minimum_size = Vector2(220, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "⚔️ ¡A BATALLAR!"
-
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_continue")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_continue_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_continue_hover")
+text = "CONTINUE"

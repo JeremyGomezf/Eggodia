@@ -7,6 +7,7 @@
 script = ExtResource("1_lyybi")
 Nombre = "SOLDADO REAL MEDIEVAL"
 Imagen = ExtResource("1_55xal")
+RutaEscena = "res://cartas prime/SoldadoReal_prime.tscn"
 Ataque = 150
 Defensa = 300
 Vida = 250

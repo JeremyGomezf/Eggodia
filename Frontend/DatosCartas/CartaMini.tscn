@@ -2,6 +2,9 @@
 
 [ext_resource type="Script" uid="uid://dtr24np34q4xh" path="res://DatosCartas/CartaMini.cs" id="1_nacjw"]
 
+[sub_resource type="FontVariation" id="FontVariation_bold"]
+variation_embolden = 1.0
+
 [node name="CartaMini" type="VBoxContainer" unique_id=1050541027 node_paths=PackedStringArray("_fotoCarta", "_nombreTexto")]
 custom_minimum_size = Vector2(100, 130)
 offset_right = 100.0
@@ -19,10 +22,12 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="NombreMini" type="Label" parent="." unique_id=888980218]
-custom_minimum_size = Vector2(90, 40)
+custom_minimum_size = Vector2(90, 32)
 layout_mode = 2
 size_flags_vertical = 6
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_fonts/font = SubResource("FontVariation_bold")
+theme_override_font_sizes/font_size = 11
 horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 3

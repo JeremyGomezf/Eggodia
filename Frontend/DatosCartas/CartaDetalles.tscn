@@ -2,185 +2,239 @@
 
 [ext_resource type="Script" uid="uid://bp55y7p02lr4f" path="res://DatosCartas/CartaDetalles.cs" id="1_e4o5v"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gmkua"]
-bg_color = Color(0.92156863, 0.87058824, 0.8117647, 1)
-border_width_left = 5
-border_width_top = 5
-border_width_right = 5
-border_width_bottom = 5
-border_color = Color(0.91228896, 0.9122889, 0.91228884, 1)
-border_blend = true
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-corner_detail = 2
-shadow_size = 3
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_detalles_bg"]
+bg_color = Color(0.93333333, 0.91764706, 0.88627451, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.34901961, 0.77647059, 0.98039216, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.34901961, 0.77647059, 0.98039216, 0.25)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_desc_bg"]
+bg_color = Color(1, 1, 1, 0.45)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.65, 0.6, 0.3)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
-[sub_resource type="FontVariation" id="FontVariation_5fkdi"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_image_frame"]
+bg_color = Color(0.12941176, 0.14901961, 0.18039216, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.43137255, 0.39215686, 0.34509804, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
 
-[sub_resource type="FontVariation" id="FontVariation_irnef"]
 
-[sub_resource type="FontFile" id="FontFile_conaq"]
-subpixel_positioning = 0
-msdf_pixel_range = 14
-msdf_size = 128
-cache/0/variation_coordinates = {}
-cache/0/face_index = 0
-cache/0/embolden = 0.0
-cache/0/transform = Transform2D(1, 0, 0, 1, 0, 0)
-cache/0/spacing_top = 0
-cache/0/spacing_bottom = 0
-cache/0/spacing_space = 0
-cache/0/spacing_glyph = 0
-cache/0/baseline_offset = 0.0
-cache/0/16/0/ascent = 0.0
-cache/0/16/0/descent = 0.0
-cache/0/16/0/underline_position = 0.0
-cache/0/16/0/underline_thickness = 0.0
-cache/0/16/0/scale = 1.0
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge_fuerte"]
+bg_color = Color(0.78431373, 0.92156863, 0.80392157, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2745098, 0.65882353, 0.32156863, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_left = 6.0
+expand_margin_top = 4.0
+expand_margin_right = 6.0
+expand_margin_bottom = 4.0
 
-[sub_resource type="FontVariation" id="FontVariation_e4o5v"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge_debil"]
+bg_color = Color(0.96078431, 0.82352941, 0.82352941, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.81176471, 0.34509804, 0.34509804, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_left = 6.0
+expand_margin_top = 4.0
+expand_margin_right = 6.0
+expand_margin_bottom = 4.0
 
-[sub_resource type="FontVariation" id="FontVariation_conaq"]
 
-[sub_resource type="FontFile" id="FontFile_n0s32"]
-cache/0/variation_coordinates = {}
-cache/0/face_index = 0
-cache/0/embolden = 0.0
-cache/0/transform = Transform2D(1, 0, 0, 1, 0, 0)
-cache/0/spacing_top = 0
-cache/0/spacing_bottom = 0
-cache/0/spacing_space = 0
-cache/0/spacing_glyph = 0
-cache/0/baseline_offset = 0.0
-cache/0/16/0/ascent = 0.0
-cache/0/16/0/descent = 0.0
-cache/0/16/0/underline_position = 0.0
-cache/0/16/0/underline_thickness = 0.0
-cache/0/16/0/scale = 1.0
-
-[sub_resource type="FontVariation" id="FontVariation_dkacu"]
-
-[node name="CartaDetalles" type="PanelContainer" unique_id=781539525 node_paths=PackedStringArray("_nombreLabel", "_imagenRect", "_ataqueLabel", "_defensaLabel", "_vidaLabel", "_descripcionLabel")]
-custom_minimum_size = Vector2(100, 0)
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.1
-theme_override_styles/panel = SubResource("StyleBoxFlat_gmkua")
+[node name="CartaDetalles" type="PanelContainer" unique_id=781539525 node_paths=PackedStringArray("_nombreLabel", "_imagenRect", "_ataqueLabel", "_defensaLabel", "_vidaLabel", "_descripcionLabel", "_fuerteContraLabel", "_debilContraLabel")]
+offset_right = 380.0
+offset_bottom = 580.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_detalles_bg")
 script = ExtResource("1_e4o5v")
-_nombreLabel = NodePath("MarginContainer/VBoxContainer/HBoxContainer/StatsText/NombreCarta")
-_imagenRect = NodePath("MarginContainer/VBoxContainer/HBoxContainer/ImagenCarta")
-_ataqueLabel = NodePath("MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer/ValorAtk")
-_defensaLabel = NodePath("MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer2/ValorDef")
-_vidaLabel = NodePath("MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer3/ValorHP")
-_descripcionLabel = NodePath("MarginContainer/VBoxContainer/RichTextLabel")
+_nombreLabel = NodePath("MarginContainer/VBoxContainer/CardOverview/StatsCol/NombreCarta")
+_imagenRect = NodePath("MarginContainer/VBoxContainer/CardOverview/CardLeftCol/Frame/ImagenCarta")
+_ataqueLabel = NodePath("MarginContainer/VBoxContainer/CardOverview/StatsCol/StatsGrid/ValorAtk")
+_defensaLabel = NodePath("MarginContainer/VBoxContainer/CardOverview/StatsCol/StatsGrid/ValorDef")
+_vidaLabel = NodePath("MarginContainer/VBoxContainer/CardOverview/StatsCol/StatsGrid/ValorHp")
+_descripcionLabel = NodePath("MarginContainer/VBoxContainer/PanelDesc/MarginDesc/DescripcionText")
+_fuerteContraLabel = NodePath("MarginContainer/VBoxContainer/BadgesBox/FuerteBadge/LblFuerte")
+_debilContraLabel = NodePath("MarginContainer/VBoxContainer/BadgesBox/DebilBadge/LblDebil")
 
-[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1469086089]
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TituloPanel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.16, 0.15, 1)
+theme_override_font_sizes/font_size = 18
+text = "DETALLES DE LA CARTA"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=2059822830]
-layout_mode = 2
-
-[node name="TítuloPanel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=91804469]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = SubResource("FontVariation_5fkdi")
-text = "DETALLES DE CARTA SELECCIONADA"
-
-[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=1777079694]
-layout_mode = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1551320769]
-layout_mode = 2
-
-[node name="ImagenCarta" type="TextureRect" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=70496267]
-custom_minimum_size = Vector2(130, 170)
-layout_mode = 2
-expand_mode = 1
-
-[node name="StatsText" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=597709130]
-layout_mode = 2
-
-[node name="NombreCarta" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=112838998]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = SubResource("FontVariation_irnef")
-theme_override_font_sizes/font_size = 20
-text = "JUAN"
-autowrap_mode = 3
-
-[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=985584925]
-visible = false
-layout_mode = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=475795755]
-layout_mode = 2
-
-[node name="Ataque" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer" unique_id=1139374123]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = SubResource("FontFile_conaq")
-text = "ATAQUE:"
-
-[node name="Control" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer" unique_id=1634318033]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ValorAtk" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer" unique_id=357650549]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.0035191667, 0.0035191681, 0.0035191672, 1)
-theme_override_fonts/font = SubResource("FontVariation_e4o5v")
-text = "000"
-
-[node name="Separadoratk" type="HSeparator" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=1117069787]
-layout_mode = 2
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=1625319433]
-layout_mode = 2
-
-[node name="Defensa" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer2" unique_id=1762445953]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = SubResource("FontFile_conaq")
-text = "DEFENSA:"
-
-[node name="Control" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer2" unique_id=477870864]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ValorDef" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer2" unique_id=1482947287]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = SubResource("FontVariation_conaq")
-text = "000"
-
-[node name="Separadordf" type="HSeparator" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=1861008052]
-layout_mode = 2
-
-[node name="HBoxContainer3" type="HBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText" unique_id=1285659186]
-layout_mode = 2
-
-[node name="Vida" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer3" unique_id=1271425532]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = SubResource("FontFile_n0s32")
-text = "VIDA:"
-
-[node name="Control" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer3" unique_id=675937486]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ValorHP" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/StatsText/HBoxContainer3" unique_id=253422471]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = SubResource("FontVariation_dkacu")
-text = "000"
-
-[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=2118817072]
-layout_mode = 2
-
-[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer" unique_id=1709008020]
+[node name="CardOverview" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/default_color = Color(0, 0, 0, 1)
+theme_override_constants/separation = 16
+
+[node name="CardLeftCol" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardOverview"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Frame" type="MarginContainer" parent="MarginContainer/VBoxContainer/CardOverview/CardLeftCol"]
+custom_minimum_size = Vector2(140, 170)
+layout_mode = 2
+
+[node name="ImagenCarta" type="TextureRect" parent="MarginContainer/VBoxContainer/CardOverview/CardLeftCol/Frame"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+
+[node name="StatsCol" type="VBoxContainer" parent="MarginContainer/VBoxContainer/CardOverview"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="NombreCarta" type="Label" parent="MarginContainer/VBoxContainer/CardOverview/StatsCol"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.10, 0.08, 1)
+theme_override_font_sizes/font_size = 20
+text = "SELECCIONA CARTA"
+autowrap_mode = 3
+
+[node name="HSep" type="HSeparator" parent="MarginContainer/VBoxContainer/CardOverview/StatsCol"]
+layout_mode = 2
+
+[node name="StatsGrid" type="GridContainer" parent="MarginContainer/VBoxContainer/CardOverview/StatsCol"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
+columns = 2
+
+
+[node name="LabelAtk" type="Label" parent="MarginContainer/VBoxContainer/CardOverview/StatsCol/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.32, 0.30, 1)
+theme_override_font_sizes/font_size = 14
+text = "⚔️ ATAQUE:"
+
+[node name="ValorAtk" type="Label" parent="MarginContainer/VBoxContainer/CardOverview/StatsCol/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.10, 0.08, 1)
+theme_override_font_sizes/font_size = 14
+text = "—"
+horizontal_alignment = 2
+
+[node name="LabelHp" type="Label" parent="MarginContainer/VBoxContainer/CardOverview/StatsCol/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.32, 0.30, 1)
+theme_override_font_sizes/font_size = 14
+text = "❤️ VIDA:"
+
+[node name="ValorHp" type="Label" parent="MarginContainer/VBoxContainer/CardOverview/StatsCol/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.10, 0.08, 1)
+theme_override_font_sizes/font_size = 14
+text = "—"
+horizontal_alignment = 2
+
+
+
+[node name="LabelDef" type="Label" parent="MarginContainer/VBoxContainer/CardOverview/StatsCol/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.32, 0.30, 1)
+theme_override_font_sizes/font_size = 14
+text = "🛡️ DEFENSA:"
+
+[node name="ValorDef" type="Label" parent="MarginContainer/VBoxContainer/CardOverview/StatsCol/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.10, 0.08, 1)
+theme_override_font_sizes/font_size = 14
+text = "—"
+horizontal_alignment = 2
+
+[node name="PanelDesc" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_desc_bg")
+
+[node name="MarginDesc" type="MarginContainer" parent="MarginContainer/VBoxContainer/PanelDesc"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="DescripcionText" type="RichTextLabel" parent="MarginContainer/VBoxContainer/PanelDesc/MarginDesc"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.24, 0.22, 0.2, 1)
+theme_override_font_sizes/normal_font_size = 13
+bbcode_enabled = true
 fit_content = true
+text = "[i]Selecciona una carta para ver su historia...[/i]"
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="BadgesBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="FuerteBadge" type="PanelContainer" parent="MarginContainer/VBoxContainer/BadgesBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge_fuerte")
+
+[node name="LblFuerte" type="Label" parent="MarginContainer/VBoxContainer/BadgesBox/FuerteBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.35, 0.15, 1)
+theme_override_font_sizes/font_size = 11
+text = "FUERTE CONTRA: —"
+
+[node name="DebilBadge" type="PanelContainer" parent="MarginContainer/VBoxContainer/BadgesBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge_debil")
+
+[node name="LblDebil" type="Label" parent="MarginContainer/VBoxContainer/BadgesBox/DebilBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.15, 0.15, 1)
+theme_override_font_sizes/font_size = 11
+text = "DÉBIL CONTRA: —"

@@ -7,6 +7,7 @@
 script = ExtResource("1_dact2")
 Nombre = "PEÓN AJEDREZ"
 Imagen = ExtResource("1_qoiut")
+RutaEscena = "res://cartas prime/Peon_prime.tscn"
 Ataque = 100
 Defensa = 150
 Vida = 150

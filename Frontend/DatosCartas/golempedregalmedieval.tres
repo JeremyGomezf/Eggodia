@@ -7,6 +7,7 @@
 script = ExtResource("1_38o3r")
 Nombre = "GOLEM PEDREGAL MEDIEVAL"
 Imagen = ExtResource("1_62sng")
+RutaEscena = "res://cartas prime/Golem_prime.tscn"
 Ataque = 350
 Defensa = 500
 Vida = 450

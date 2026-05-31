@@ -1,0 +1,109 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://escenas/gameplay/PantallaDerrota.cs" id="1_pderr"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn1"]
+bg_color = Color(0.2, 0.25, 0.35, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn1_hover"]
+bg_color = Color(0.3, 0.4, 0.6, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn2"]
+bg_color = Color(0.15, 0.15, 0.2, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn2_hover"]
+bg_color = Color(0.25, 0.25, 0.35, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="PantallaDerrota" type="CanvasLayer"]
+process_mode = 3
+layer = 150
+script = ExtResource("1_pderr")
+
+[node name="Overlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.02, 0.05, 0.9)
+
+[node name="Lluvia" type="CPUParticles2D" parent="Overlay"]
+position = Vector2(640, -50)
+amount = 150
+lifetime = 2.5
+emission_shape = 3
+emission_rect_extents = Vector2(700, 1)
+direction = Vector2(-0.2, 1)
+spread = 5.0
+gravity = Vector2(0, 500)
+initial_velocity_min = 200.0
+initial_velocity_max = 300.0
+scale_amount_min = 1.0
+scale_amount_max = 3.0
+color = Color(0.4, 0.5, 0.6, 0.5)
+
+[node name="VBox" type="VBoxContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -150.0
+offset_right = 250.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 40
+
+[node name="Titulo" type="Label" parent="Overlay/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.2, 0.2, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_y = 5
+theme_override_font_sizes/font_size = 60
+text = "HAS PERDIDO"
+horizontal_alignment = 1
+
+[node name="Mensaje" type="Label" parent="Overlay/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 20
+text = "Las fuerzas enemigas te han superado.
+¿Qué deseas hacer ahora?"
+horizontal_alignment = 1
+
+[node name="BtnReintentar" type="Button" parent="Overlay/VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn1")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn1_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn1_hover")
+text = "🔄 VOLVER A JUGAR (Modificar Mazo)"
+
+[node name="BtnMenu" type="Button" parent="Overlay/VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn2_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn2_hover")
+text = "🏠 SALIR AL MENÚ PRINCIPAL"

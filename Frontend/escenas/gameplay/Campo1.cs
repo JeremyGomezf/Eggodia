@@ -136,7 +136,6 @@ public partial class Campo1 : Node2D
 		}
 
 		CrearPanelHechizos();
-		CrearPanelPausa();
 
 		// Si contenedorMano no está asignado en el inspector, buscarlo por nombre
 		if (contenedorMano == null)
@@ -219,66 +218,7 @@ public partial class Campo1 : Node2D
 	public void _on_timer_timeout() { }
 	public void _on_pasar_turno_pressed() { if (!esTurnoJugador || juegoTerminado) return; CambiarTurno(); }
 
-	// ── PAUSA ─────────────────────────────────────────────────────────────
-	private void CrearPanelPausa()
-	{
-		panelPausa = new Control();
-		panelPausa.Name        = "PanelPausa";
-		panelPausa.Visible     = false;
-		panelPausa.ProcessMode = ProcessModeEnum.Always; // <- sigue activo aunque el árbol esté pausado
-		panelPausa.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		panelPausa.ZIndex = 200;
 
-		// Fondo semi-transparente (Ignore para que los clics lleguen a los botones)
-		var fondo = new ColorRect();
-		fondo.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		fondo.Color       = new Color(0, 0, 0, 0.7f);
-		fondo.MouseFilter = Control.MouseFilterEnum.Ignore;
-		panelPausa.AddChild(fondo);
-
-		var vbox = new VBoxContainer();
-		vbox.SetAnchorsPreset(Control.LayoutPreset.Center);
-		vbox.Position = new Vector2(-120, -100);
-		panelPausa.AddChild(vbox);
-
-		var titulo = new Label();
-		titulo.Text = "⏸ PAUSA";
-		titulo.AddThemeColorOverride("font_color", Colors.White);
-		titulo.AddThemeFontSizeOverride("font_size", 32);
-		vbox.AddChild(titulo);
-
-		AgregarBtnPausa(vbox, "▶ Continuar",  Colors.LightGreen, () => TogglePausa());
-		AgregarBtnPausa(vbox, "🏳 Rendirse",   new Color(1f,0.4f,0.4f), () => { TogglePausa(); FinalizarPartida("DERROTA"); });
-		AgregarBtnPausa(vbox, "🔄 Reiniciar",  Colors.LightBlue, () => GetTree().ReloadCurrentScene());
-
-		AddChild(panelPausa);
-
-		// Botón de pausa en esquina superior
-		var btnP = new Button();
-		btnP.Text     = "⏸";
-		btnP.Position = new Vector2(610, 8);
-		btnP.CustomMinimumSize = new Vector2(50, 35);
-		btnP.Pressed += () => TogglePausa();
-		AddChild(btnP);
-	}
-
-	private void AgregarBtnPausa(VBoxContainer parent, string texto, Color color, Action onPress)
-	{
-		var btn = new Button();
-		btn.Text              = texto;
-		btn.CustomMinimumSize = new Vector2(240, 50);
-		btn.SelfModulate      = color;
-		btn.Pressed          += () => onPress();
-		parent.AddChild(btn);
-	}
-
-	private void TogglePausa()
-	{
-		if (juegoTerminado) return;
-		bool pausado = !panelPausa.Visible;
-		panelPausa.Visible = pausado;
-		GetTree().Paused   = pausado;
-	}
 
 	// ── PANEL DE HECHIZOS ─────────────────────────────────────────────────
 	private void CrearPanelHechizos()
@@ -468,10 +408,6 @@ public partial class Campo1 : Node2D
 	// ── INPUT ─────────────────────────────────────────────────────────────
 	public override void _Input(InputEvent @event)
 	{
-		if (@event is InputEventKey key && key.Pressed && key.Keycode == Key.Escape && !juegoTerminado)
-		{
-			TogglePausa(); return;
-		}
 
 		if (juegoTerminado || !esTurnoJugador) return;
 
@@ -547,7 +483,7 @@ public partial class Campo1 : Node2D
 		int turnoNum  = _turnosJugados / 2 + 1;
 		int maxEnergy = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
 		string energyBar = new string('⚡', movimientosRestantes)
-		                 + new string('·', Mathf.Max(0, maxEnergy - movimientosRestantes));
+						 + new string('·', Mathf.Max(0, maxEnergy - movimientosRestantes));
 		string texto = esTurnoJugador
 			? $"⚡ TU TURNO  [{energyBar}]  Turno {turnoNum}"
 			: $"🤖 TURNO RIVAL  —  Turno {turnoNum}";
@@ -1083,7 +1019,7 @@ public partial class Campo1 : Node2D
 			string timer   = urgente ? $"⚠️ {tiempoTurnoActual}s!" : $"⏱ {tiempoTurnoActual}s";
 			int maxEnergy  = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
 			string eBar    = new string('⚡', movimientosRestantes)
-			               + new string('·', Mathf.Max(0, maxEnergy - movimientosRestantes));
+						   + new string('·', Mathf.Max(0, maxEnergy - movimientosRestantes));
 			int turnoNum   = _turnosJugados / 2 + 1;
 			l.Text = $"Turno {turnoNum}  {dif}\n{eBar} {movimientosRestantes}/{maxEnergy} Energía\n{(esTurnoJugador ? "TU TURNO" : "TURNO RIVAL")}  {timer}";
 			l.Modulate = urgente      ? Colors.Red
@@ -1106,7 +1042,7 @@ public partial class Campo1 : Node2D
 		else if (vidaRival <= 0) FinalizarPartida("VICTORIA");
 	}
 
-	private void FinalizarPartida(string msg)
+	public void FinalizarPartida(string msg)
 	{
 		if (juegoTerminado) return;
 		juegoTerminado = true;
@@ -1116,6 +1052,14 @@ public partial class Campo1 : Node2D
 		// Actualizar historial de dificultad
 		if (msg.Contains("VICTORIA")) _victoriasJugador++;
 		else if (msg.Contains("DERROTA")) _derrotasJugador++;
+
+		if (msg.Contains("DERROTA"))
+		{
+			var escenaDerrota = GD.Load<PackedScene>("res://escenas/gameplay/PantallaDerrota.tscn");
+			var instancia = escenaDerrota.Instantiate();
+			AddChild(instancia);
+			return;
+		}
 
 		if (!HasNode("PantallaFinal")) return;
 		var pantalla = GetNode<Control>("PantallaFinal");

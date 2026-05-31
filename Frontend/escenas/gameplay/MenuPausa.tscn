@@ -1,0 +1,146 @@
+[gd_scene format=3 uid="uid://mpausa123"]
+
+[ext_resource type="Script" path="res://escenas/gameplay/MenuPausa.cs" id="1_mpausa"]
+[ext_resource type="PackedScene" uid="uid://psettings123" path="res://escenas/menu/PanelSettings.tscn" id="2_psett"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+bg_color = Color(0.2, 0.25, 0.35, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.3, 0.38, 0.5, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_red"]
+bg_color = Color(0.65, 0.2, 0.2, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_red_hover"]
+bg_color = Color(0.8, 0.3, 0.3, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="MenuPausa" type="CanvasLayer"]
+process_mode = 3
+layer = 100
+script = ExtResource("1_mpausa")
+
+[node name="Overlay" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.05, 0.08, 0.75)
+
+[node name="VBox" type="VBoxContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -150.0
+offset_right = 150.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 25
+
+[node name="Titulo" type="Label" parent="Overlay/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "PAUSA"
+horizontal_alignment = 1
+
+[node name="BtnContinue" type="Button" parent="Overlay/VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+text = "CONTINUE"
+
+[node name="BtnSettings" type="Button" parent="Overlay/VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+text = "SETTINGS"
+
+[node name="BtnExit" type="Button" parent="Overlay/VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_red_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_red_hover")
+text = "EXIT"
+
+[node name="PanelSettings" parent="." instance=ExtResource("2_psett")]
+visible = false
+
+[node name="PanelConfirmacion" type="PanelContainer" parent="Overlay"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -120.0
+offset_right = 220.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_btn")
+
+[node name="VBox" type="VBoxContainer" parent="Overlay/PanelConfirmacion"]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="Label" type="Label" parent="Overlay/PanelConfirmacion/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "¿SALIR? ¿Estás seguro de
+terminar la batalla?"
+horizontal_alignment = 1
+
+[node name="HBox" type="HBoxContainer" parent="Overlay/PanelConfirmacion/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BtnCancelar" type="Button" parent="Overlay/PanelConfirmacion/VBox/HBox"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_hover")
+text = "CANCELAR"
+
+[node name="BtnConfirmar" type="Button" parent="Overlay/PanelConfirmacion/VBox/HBox"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_red_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_red_hover")
+text = "SALIR"

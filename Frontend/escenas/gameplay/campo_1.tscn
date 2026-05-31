@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://inps3xbcbpi4" path="res://imagenes/PersonajesPng/escenario1.png" id="1_r607e"]
 [ext_resource type="Texture2D" uid="uid://nn4qcbvpu22a" path="res://imagenes/PersonajesPng/WhatsApp Image 2026-03-25 at 4.41.44 PM.jpeg" id="2_e0wnx"]
 [ext_resource type="PackedScene" uid="uid://bh0x6bv5ndeh6" path="res://escenas/gameplay/carta_base.tscn" id="2_qk0di"]
+[ext_resource type="PackedScene" uid="uid://mpausa123" path="res://escenas/gameplay/MenuPausa.tscn" id="3_mpausa"]
 
 [node name="Campo1" type="Node2D" unique_id=807187685]
 script = ExtResource("1_ar4p3")
@@ -211,3 +212,5 @@ text = "DEFENSA"
 [connection signal="pressed" from="Pasar_Turno" to="." method="_on_pasar_turno_pressed"]
 [connection signal="pressed" from="InterfazMenu/MenuAcciones/HBoxContainer/BtnAtaque" to="." method="_on_btn_ataque_pressed"]
 [connection signal="pressed" from="InterfazMenu/MenuAcciones/HBoxContainer/BtnDefensa" to="." method="_on_btn_defensa_pressed"]
+
+[node name="MenuPausa" parent="." instance=ExtResource("3_mpausa")]

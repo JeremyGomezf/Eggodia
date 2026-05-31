@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://bg4fr2apg5ew5" path="res://imagenes/MenuPng/exit1.png" id="8_xpioy"]
 [ext_resource type="Texture2D" uid="uid://xsw3j6diq1kp" path="res://imagenes/MenuPng/exit2.png" id="9_kni6g"]
 [ext_resource type="Texture2D" uid="uid://bguo2eel58il7" path="res://imagenes/MenuPng/exit3.png" id="10_nx6e2"]
+[ext_resource type="PackedScene" uid="uid://psettings123" path="res://escenas/menu/PanelSettings.tscn" id="11_sett"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ns3he"]
 texture = ExtResource("2_ul6ys")
@@ -38,6 +39,18 @@ texture = ExtResource("9_kni6g")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_palpy"]
 texture = ExtResource("10_nx6e2")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_settings_bg"]
+bg_color = Color(0.08, 0.1, 0.14, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.4, 0.6, 0.9, 0.8)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
 
 [node name="MenuPrincipal" type="Control" unique_id=1669744344]
 layout_mode = 3
@@ -100,3 +113,7 @@ theme_override_font_sizes/font_size = 45
 theme_override_styles/normal = SubResource("StyleBoxTexture_kcxxd")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_ul6ys")
 theme_override_styles/hover = SubResource("StyleBoxTexture_palpy")
+
+[node name="PanelSettings" parent="." instance=ExtResource("11_sett")]
+visible = false
+layout_mode = 1

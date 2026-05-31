@@ -7,6 +7,7 @@
 script = ExtResource("1_goo7v")
 Nombre = "T-REX Z PREHISTORIA"
 Imagen = ExtResource("1_j8wyx")
+RutaEscena = "res://cartas prime/TRex_prime.tscn"
 Ataque = 400
 Defensa = 350
 Vida = 400

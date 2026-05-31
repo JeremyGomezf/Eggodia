@@ -7,6 +7,7 @@
 script = ExtResource("1_3dtud")
 Nombre = "DRAGON DE FLAMA MEDIEVAL"
 Imagen = ExtResource("1_1r3hj")
+RutaEscena = "res://cartas prime/Dragon_prime.tscn"
 Ataque = 280
 Defensa = 250
 Vida = 350

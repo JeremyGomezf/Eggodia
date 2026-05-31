@@ -7,6 +7,7 @@
 script = ExtResource("1_a3pim")
 Nombre = "DAMA AJEDREZ"
 Imagen = ExtResource("1_86a8u")
+RutaEscena = "res://cartas prime/Dama_prime.tscn"
 Ataque = 350
 Defensa = 300
 Vida = 350

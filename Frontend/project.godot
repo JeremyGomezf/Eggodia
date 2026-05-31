@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 GestorCartas="*uid://g30uaqw4cooo"
 PanelLogin="*uid://cmw3sg1x14hqv"
+GlobalAudioManager="*res://scripts/GlobalAudioManager.cs"
 
 [display]
 
