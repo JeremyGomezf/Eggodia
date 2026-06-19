@@ -1,0 +1,97 @@
+[gd_scene format=3 uid="uid://cchp5q2rfqo4q"]
+
+[ext_resource type="Texture2D" uid="uid://dlkvojt1gcm1k" path="res://imagenes/sprites/Guerra Cartoons/EX-GRANADA.png" id="1_myoyv"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(456, 326)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x62tf"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(0, 0, 1212, 765)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8a1jg"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(1212, 0, 1212, 765)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xvo2n"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(2424, 0, 1212, 765)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b1wnw"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(0, 765, 1212, 765)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d6cb5"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(1212, 765, 1212, 765)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xij2v"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(2424, 765, 1212, 765)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fw1we"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(0, 1530, 1212, 765)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rx852"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(1212, 1530, 1212, 765)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xwg78"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(2424, 1530, 1212, 765)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qxrhk"]
+atlas = ExtResource("1_myoyv")
+region = Rect2(0, 2295, 1212, 765)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x62tf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8a1jg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xvo2n")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_b1wnw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d6cb5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xij2v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fw1we")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rx852")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xwg78")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qxrhk")
+}],
+"loop": true,
+"name": &"explosion_granada_c",
+"speed": 17.0
+}]
+
+[node name="explosion cartoon" type="Area2D" unique_id=1934137725]
+position = Vector2(2, -22)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(24, -60)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(13, -62)
+scale = Vector2(0.39039087, 0.3920484)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"explosion_granada_c"

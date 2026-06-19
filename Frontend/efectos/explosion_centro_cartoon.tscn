@@ -1,0 +1,96 @@
+[gd_scene format=3 uid="uid://ym744v05f5hc"]
+
+[ext_resource type="Texture2D" uid="uid://dsmsxvi7yb5sc" path="res://imagenes/sprites/Guerra Cartoons/EX-CENTRO.png" id="1_jjfva"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(427, 410)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yu4pu"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(0, 0, 1212, 1154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wnfkl"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(1212, 0, 1212, 1154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kgmor"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(2424, 0, 1212, 1154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eufg6"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(3636, 0, 1212, 1154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w56tc"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(4848, 0, 1212, 1154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_navge"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(0, 1154, 1212, 1154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ytkrk"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(1212, 1154, 1212, 1154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0e3lf"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(2424, 1154, 1212, 1154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kkmwm"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(3636, 1154, 1212, 1154)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j3x74"]
+atlas = ExtResource("1_jjfva")
+region = Rect2(4848, 1154, 1212, 1154)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yu4pu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wnfkl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kgmor")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eufg6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w56tc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_navge")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ytkrk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0e3lf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kkmwm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j3x74")
+}],
+"loop": false,
+"name": &"explosion_centro_c",
+"speed": 17.0
+}]
+
+[node name="explosion cartoon" type="Area2D" unique_id=1934137725]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(-14.499992, -4)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(0, -3)
+scale = Vector2(0.39039087, 0.3920484)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"explosion_centro_c"

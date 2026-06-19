@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://jwogecgmtvvc"]
+
+[ext_resource type="Texture2D" uid="uid://71a11fjbvx1p" path="res://imagenes/sprites/Guerra Cartoons/BALA-TANQUE.png" id="1_wtdht"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(96, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rkp8l"]
+atlas = ExtResource("1_wtdht")
+region = Rect2(0, 0, 359, 115)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k8im2"]
+atlas = ExtResource("1_wtdht")
+region = Rect2(359, 0, 359, 115)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rkp8l")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_k8im2")
+}],
+"loop": true,
+"name": &"movimiento_misil",
+"speed": 13.0
+}]
+
+[node name="Misil Cartoon" type="Area2D" unique_id=1934137725]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(5.8750076, 0.3749962)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(-24.124992, 3.3749962)
+scale = Vector2(0.55640674, 0.33695647)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"movimiento_misil"
+frame_progress = 0.6738482
