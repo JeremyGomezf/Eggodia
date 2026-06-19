@@ -32,6 +32,9 @@ public partial class Campo1 : Node2D
 	private bool _logroHabilidadUsada   = false;
 	private bool _logroHechizosUsados   = false;
 
+	// ── FASE DE APERTURA (inicio de partida: obligatorio colocar 3 tropas) ─
+	private bool _faseApertura         = true;
+
 	// ── MODO DEMO ─────────────────────────────────────────────────────────
 	private bool _modoDemo             = false;
 	private Timer _timerDemo;
@@ -154,10 +157,11 @@ public partial class Campo1 : Node2D
 		AplicarIdentidadEra();
 		PrepararMazoSinRepetir();
 		CrearEscenaDeBatalla();
-		ColocarTropasIniciales();   // ambos lados empiezan con 1 tropa en el carril central
 		BarajarMazoInicial();
-		faseInvocacion = false;     // no se requiere invocar antes de atacar desde el turno 1
+		_faseApertura  = true;
+		faseInvocacion = true;
 		ActualizarInterfaz();
+		MostrarAvisoApertura();
 
 		// Restaurar racha desde sesión
 		if (SesionJuego.Instance != null)
@@ -216,7 +220,12 @@ public partial class Campo1 : Node2D
 	}
 
 	public void _on_timer_timeout() { }
-	public void _on_pasar_turno_pressed() { if (!esTurnoJugador || juegoTerminado) return; CambiarTurno(); }
+	public void _on_pasar_turno_pressed()
+	{
+		if (!esTurnoJugador || juegoTerminado) return;
+		if (_faseApertura) { MostrarAviso("🃏 ¡Coloca tus 3 tropas primero!", Colors.Gold); return; }
+		CambiarTurno();
+	}
 
 
 
@@ -403,7 +412,7 @@ public partial class Campo1 : Node2D
 		RegistrarGastoMovimiento();
 	}
 
-	private bool ValidarHechizo() => esTurnoJugador && movimientosRestantes > 0 && !juegoTerminado;
+	private bool ValidarHechizo() => esTurnoJugador && movimientosRestantes > 0 && !juegoTerminado && !_faseApertura;
 
 	// ── INPUT ─────────────────────────────────────────────────────────────
 	public override void _Input(InputEvent @event)
@@ -455,7 +464,8 @@ public partial class Campo1 : Node2D
 
 		usosBarajar    = 0;
 		usosSacrificio = 0;
-		faseInvocacion = false; // ya no se exige invocar antes de atacar
+		// Cada turno del jugador empieza en fase de invocación
+		faseInvocacion = esTurnoJugador ? !TodosSpotsOcupados() : false;
 		_comboTurno    = 0;
 		_modoSeleccionObjetivo = false;
 		_hechizoPendiente      = "";
@@ -484,9 +494,9 @@ public partial class Campo1 : Node2D
 		int maxEnergy = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
 		string energyBar = new string('⚡', movimientosRestantes)
 						 + new string('·', Mathf.Max(0, maxEnergy - movimientosRestantes));
-		string texto = esTurnoJugador
-			? $"⚡ TU TURNO  [{energyBar}]  Turno {turnoNum}"
-			: $"🤖 TURNO RIVAL  —  Turno {turnoNum}";
+		string texto = _faseApertura
+			? (esTurnoJugador ? "🃏 APERTURA — Coloca tus 3 tropas" : "🤖 APERTURA — La IA coloca sus tropas...")
+			: (esTurnoJugador ? $"⚡ TU TURNO  [{energyBar}]  Turno {turnoNum}" : $"🤖 TURNO RIVAL  —  Turno {turnoNum}");
 		Color color = esTurnoJugador ? Colors.LightGreen : Colors.OrangeRed;
 
 		var lbl = new Label();
@@ -571,6 +581,26 @@ public partial class Campo1 : Node2D
 	private async void EjecutarTurnoIA()
 	{
 		if (juegoTerminado || esTurnoJugador) return;
+
+		// Fase de apertura: la IA llena sus 3 carriles sin atacar
+		if (_faseApertura)
+		{
+			await ToSignal(GetTree().CreateTimer(0.9f), "timeout");
+			string[] spotsRival = { "ModRival1", "ModRival2", "ModRival3" };
+			foreach (string nombre in spotsRival)
+			{
+				if (juegoTerminado) return;
+				Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
+				InvocacionRival(zona, ElegirTropaIA());
+				ActualizarInterfaz();
+				await ToSignal(GetTree().CreateTimer(0.65f), "timeout");
+			}
+			_faseApertura = false;
+			if (!juegoTerminado) CambiarTurno();
+			return;
+		}
+
 		AjustarDificultad();
 
 		float delay = _dificultadIA == 0 ? 1.8f : _dificultadIA == 1 ? 1.2f : 0.85f;
@@ -740,10 +770,68 @@ public partial class Campo1 : Node2D
 		return mejor;
 	}
 
+	// ── HELPERS DE FASE ──────────────────────────────────────────────────
+
+	private bool TodosSpotsOcupados()
+	{
+		foreach (string nombre in new[]{"Mod1","Mod2","Mod3"})
+		{
+			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+			if (zona != null && zona.GetNodeOrNull("Ocupado") == null) return false;
+		}
+		return true;
+	}
+
+	private int ContarSpotsLibresJugador()
+	{
+		int libres = 0;
+		foreach (string nombre in new[]{"Mod1","Mod2","Mod3"})
+		{
+			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+			if (zona != null && zona.GetNodeOrNull("Ocupado") == null) libres++;
+		}
+		return libres;
+	}
+
+	private async void MostrarAvisoApertura()
+	{
+		await ToSignal(GetTree().CreateTimer(0.5f), "timeout");
+		var lbl = new Label();
+		lbl.Text = "⚔️  FASE DE APERTURA\n🃏 Coloca tus 3 tropas para iniciar la batalla";
+		lbl.AddThemeColorOverride("font_color", Colors.Gold);
+		lbl.AddThemeFontSizeOverride("font_size", 22);
+		lbl.HorizontalAlignment = HorizontalAlignment.Center;
+		lbl.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
+		lbl.OffsetTop   = 120;
+		lbl.OffsetLeft  = -400;
+		lbl.OffsetRight = 400;
+		lbl.ZIndex      = 160;
+		AddChild(lbl);
+		Tween tw = CreateTween().SetParallel(true);
+		tw.TweenProperty(lbl, "modulate:a", 0.0f, 0.8f).SetDelay(2.8f);
+		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
+	}
+
 	// ── MENÚ TROPA ────────────────────────────────────────────────────────
 	public void MostrarMenuTropa(Node2D tropa)
 	{
 		if (!esTurnoJugador || movimientosRestantes <= 0 || juegoTerminado || tropa.IsInGroup("tropas_rival")) return;
+
+		// Fase de apertura: obligatorio colocar 3 cartas antes de poder atacar
+		if (_faseApertura)
+		{
+			int faltan = ContarSpotsLibresJugador();
+			MostrarAviso($"🃏 ¡Coloca tus {faltan} tropa(s) restante(s) para empezar!", Colors.Gold);
+			return;
+		}
+
+		// Fuera de apertura: bloquear ataque si no ha invocado aún
+		if (faseInvocacion)
+		{
+			MostrarAviso("🃏 ¡Invoca una tropa primero!", Colors.Yellow);
+			return;
+		}
+
 		tropaSeleccionada = tropa;
 
 		Button btnD = menuAcciones?.GetNodeOrNull<Button>("HBoxContainer/BtnDefensa");
@@ -804,7 +892,7 @@ public partial class Campo1 : Node2D
 	// ── BARAJAR / SACRIFICIO ──────────────────────────────────────────────
 	public void _on_barajar_pressed()
 	{
-		if (!esTurnoJugador || movimientosRestantes <= 0 || usosBarajar >= MAX_BARAJAR) return;
+		if (!esTurnoJugador || movimientosRestantes <= 0 || usosBarajar >= MAX_BARAJAR || _faseApertura) return;
 		usosBarajar++; EjecutarBarajadoLogico(); RegistrarGastoMovimiento();
 	}
 
@@ -827,7 +915,7 @@ public partial class Campo1 : Node2D
 
 	public void _on_sacrificar_pressed()
 	{
-		if (!esTurnoJugador || movimientosRestantes <= 0 || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500)
+		if (!esTurnoJugador || movimientosRestantes <= 0 || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500 || _faseApertura)
 		{ if (modoSacrificioActivo) CancelarSacrificio(); return; }
 		modoSacrificioActivo = !modoSacrificioActivo;
 		Input.SetCustomMouseCursor(modoSacrificioActivo ? iconoCursorSacrificio : null);
@@ -863,6 +951,15 @@ public partial class Campo1 : Node2D
 
 		tropasInvocadasTurno++;
 		faseInvocacion = false;
+
+		// Fase de apertura: pasar turno automáticamente al llenar los 3 carriles
+		if (_faseApertura && TodosSpotsOcupados())
+		{
+			MostrarAviso("✅ ¡Tropas listas! La IA prepara sus fuerzas...", Colors.LightGreen);
+			GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) CambiarTurno(); };
+			return;
+		}
+
 		GetTree().CreateTimer(0.1f).Timeout += () =>
 		{
 			int c = 0;
@@ -961,7 +1058,7 @@ public partial class Campo1 : Node2D
 	private void CrearEscenaDeBatalla()
 	{
 		Marker2D m1 = GetNodeOrNull<Marker2D>("SpawnTrono1"), m2 = GetNodeOrNull<Marker2D>("SpawnTrono2");
-		if (m1 == null || m2 == null) return;
+		if (m1 == null || m2 == null || escenaTronoRef == null) return;
 		tronoJugador = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoJugador);
 		tronoJugador.GlobalPosition = m1.GlobalPosition; tronoJugador.CargarHuevo(escenaReyHuevoRef, false);
 		tronoRival = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoRival);
@@ -1056,8 +1153,14 @@ public partial class Campo1 : Node2D
 		if (msg.Contains("DERROTA"))
 		{
 			var escenaDerrota = GD.Load<PackedScene>("res://escenas/gameplay/PantallaDerrota.tscn");
-			var instancia = escenaDerrota.Instantiate();
-			AddChild(instancia);
+			if (escenaDerrota != null)
+			{
+				AddChild(escenaDerrota.Instantiate());
+			}
+			else
+			{
+				GD.PrintErr("[Campo1] No se encontró PantallaDerrota.tscn");
+			}
 			return;
 		}
 

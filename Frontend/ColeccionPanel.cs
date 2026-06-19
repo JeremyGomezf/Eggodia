@@ -140,8 +140,10 @@ public partial class ColeccionPanel : PanelContainer
 	{
 		textoEscrito = textoEscrito.ToLower();
 
-		foreach (CartaMini cartaVisual in _gridCartas.GetChildren())
+		foreach (Node node in _gridCartas.GetChildren())
 		{
+			if (node is not CartaMini cartaVisual) continue;
+
 			// 1. ¿Coincide con el texto escrito?
 			bool coincideTexto = cartaVisual.MisDatos.Nombre.ToLower().Contains(textoEscrito);
 

@@ -142,5 +142,5 @@ public class DatoCarta
 	public int    PuntosAtaque { get; set; }
 	public string RutaImagen   { get; set; } = "";
 	public string RutaEscena   { get; set; } = "";
-	public string? Habilidad   { get; set; }
+	public string Habilidad    { get; set; } = "";
 }

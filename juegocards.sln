@@ -6,7 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backend", "Backend", "{1AE8
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KromaNexus", "KromaNexus", "{9D48CEE9-50BC-2E75-6689-544B52FFFF81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KromaNexus.API", "Backend\KromaNexus\KromaNexus.API\KromaNexus.API.csproj", "{8C6D96F3-ABFB-74BD-B0AA-00AB5DA5CB0B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KromaNexus.API", "Backend\KromaNexus\juegocards\noname.API.csproj", "{8C6D96F3-ABFB-74BD-B0AA-00AB5DA5CB0B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

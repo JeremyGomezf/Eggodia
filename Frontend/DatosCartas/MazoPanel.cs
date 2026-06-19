@@ -27,6 +27,7 @@ public partial class MazoPanel : Control
 
 	public void AgregarCartaAlMazo(CartaData datos)
 	{
+		if (_gridMazo == null) return;
 		// 1. Candado Anti-Duplicados
 		foreach (Node slot in _gridMazo.GetChildren())
 		{

@@ -5,20 +5,22 @@ public partial class PantallaDerrota : CanvasLayer
 {
 	public override void _Ready()
 	{
-		var btnReintentar = GetNode<Button>("Overlay/VBox/BtnReintentar");
-		var btnMenu = GetNode<Button>("Overlay/VBox/BtnMenu");
+		var btnReintentar = GetNodeOrNull<Button>("Overlay/VBox/BtnReintentar");
+		var btnMenu       = GetNodeOrNull<Button>("Overlay/VBox/BtnMenu");
 
-		btnReintentar.Pressed += () => 
-		{
-			GetTree().Paused = false;
-			GetTree().ChangeSceneToFile("res://DatosCartas/MenuConstructor.tscn");
-		};
+		if (btnReintentar != null)
+			btnReintentar.Pressed += () =>
+			{
+				GetTree().Paused = false;
+				GetTree().ChangeSceneToFile("res://DatosCartas/MenuConstructor.tscn");
+			};
 
-		btnMenu.Pressed += () => 
-		{
-			GetTree().Paused = false;
-			GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
-		};
+		if (btnMenu != null)
+			btnMenu.Pressed += () =>
+			{
+				GetTree().Paused = false;
+				GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
+			};
 
 		// Animación de aparición
 		var overlay = GetNode<ColorRect>("Overlay");
