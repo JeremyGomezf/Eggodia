@@ -17,7 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-GestorCartas="*uid://g30uaqw4cooo"
+GestorCartas="*res://escenas/gameplay/GestorCartas.cs"
 PanelLogin="*uid://cmw3sg1x14hqv"
 GlobalAudioManager="*res://scripts/GlobalAudioManager.cs"
 
