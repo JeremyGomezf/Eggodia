@@ -61,7 +61,7 @@ public abstract partial class TropaBase : Area2D
 		if (estado) MostrarBarras(false);
 	}
 
-	public void RecibirDaño(int cantidad)
+	public virtual void RecibirDaño(int cantidad)
 	{
 		if (_estaMuerto) return;
 

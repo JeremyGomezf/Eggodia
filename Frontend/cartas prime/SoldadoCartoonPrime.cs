@@ -6,7 +6,7 @@ public partial class SoldadoCartoonPrime : TropaBase
 	// ── ESTADO HABILIDAD ──────────────────────────────────────────────────────
 	private bool   _habilidadActiva = false;
 	private bool   _derrotaIniciada = false;
-	private Timer  _timerRafaga;
+	private int    _ciclosRafaga    = 0;   // vueltas completas del loop "pre defensa -> habilidad"
 
 	// ── OBJETIVOS ─────────────────────────────────────────────────────────────
 	private Node2D _objetivoAtaque;   // objetivo almacenado al inicio del ataque normal
@@ -52,9 +52,9 @@ public partial class SoldadoCartoonPrime : TropaBase
 				break;
 
 			case "defender":
-				// Si la habilidad está activa, el impacto la cancela (daño ya fue absorbido al escudo por TropaBase)
+				// Si la habilidad está activa, el impacto la cancela (daño ya fue absorbido al escudo en RecibirDaño)
 				if (_habilidadActiva)
-					CancelarHabilidad();   // detiene timer → ReproducirDefensa → idle
+					CancelarHabilidad();   // → ReproducirDefensa → idle
 				else
 					ReproducirDefensa();   // TropaBase: play "defensa" → async → idle
 				break;
@@ -74,42 +74,36 @@ public partial class SoldadoCartoonPrime : TropaBase
 
 		_habilidadActiva = true;
 		habilidadUsada   = true;
+		_ciclosRafaga    = 0;
 
 		// Animación propia de la habilidad (NO reutiliza "pre defensa")
 		_anim.Play("pre defensa -> habilidad");
-
-		_timerRafaga          = new Timer();
-		_timerRafaga.WaitTime = 3.0f;
-		_timerRafaga.Timeout  += OnTickRafaga;
-		AddChild(_timerRafaga);
-		_timerRafaga.Start();
 	}
 
-	private void OnTickRafaga()
+	/// <summary>
+	/// Mientras la habilidad está activa, el soldado está en cobertura: cualquier
+	/// impacto recibido golpea únicamente el escudo (nunca la vida, sin importar
+	/// la cantidad) y cancela la habilidad de inmediato.
+	/// </summary>
+	public override void RecibirDaño(int cantidad)
 	{
-		// Condición de cancelación A: el personaje murió
-		if (!_habilidadActiva || _estaMuerto) return;
+		if (_estaMuerto) return;
 
-		// Condición de cancelación A: el objetivo en su carril murió
-		if (_objetivoRafaga == null || !IsInstanceValid(_objetivoRafaga))
+		if (_habilidadActiva)
 		{
-			CancelarHabilidad();
+			escudoActual = Mathf.Max(0, escudoActual - cantidad);
+			ActualizarBarrasUI();
+			EjecutarAccion("defender");   // → CancelarHabilidad() → "defensa" → idle
 			return;
 		}
 
-		// Disparo sostenido: 50 de daño cada 3 segundos
-		_objetivoRafaga.Call("RecibirDaño", 50);
+		base.RecibirDaño(cantidad);
 	}
 
 	private void CancelarHabilidad()
 	{
 		_habilidadActiva = false;
-		if (_timerRafaga != null && IsInstanceValid(_timerRafaga))
-		{
-			_timerRafaga.Stop();
-			_timerRafaga.QueueFree();
-			_timerRafaga = null;
-		}
+		_ciclosRafaga    = 0;
 		// "defensa" → "idle" automáticamente (TropaBase.ReproducirDefensa es async)
 		ReproducirDefensa();
 	}
@@ -125,6 +119,21 @@ public partial class SoldadoCartoonPrime : TropaBase
 		{
 			if (_objetivoAtaque != null && IsInstanceValid(_objetivoAtaque))
 				_objetivoAtaque.Call("RecibirDaño", 50);
+		}
+
+		// Habilidad: ráfaga en cobertura — 50 dmg cada 3 s, disparado en el frame 0.
+		// "pre defensa -> habilidad" tiene 18 frames a 12 fps = 1.5 s por vuelta,
+		// así que se aplica daño cada 2 vueltas (1.5 s x 2 = 3 s exactos).
+		if (anim == "pre defensa -> habilidad" && frame == 0 && _habilidadActiva)
+		{
+			_ciclosRafaga++;
+			if (_ciclosRafaga % 2 == 0)
+			{
+				if (_objetivoRafaga == null || !IsInstanceValid(_objetivoRafaga))
+					CancelarHabilidad();
+				else
+					_objetivoRafaga.Call("RecibirDaño", 50);
+			}
 		}
 
 		// Derrota: inicia fade-out en el frame 18 (antepenúltimo)
