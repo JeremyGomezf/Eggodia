@@ -21,14 +21,21 @@ public partial class CampoPruebas : Node2D
 		"res://cartas prime/CalamarG_prime.tscn",
 		"res://cartas prime/Caballo_prime.tscn",
 		"res://cartas prime/Dama_prime.tscn",
-		"res://cartas prime/Torre_prime.tscn"
+		"res://cartas prime/Torre_prime.tscn",
+		"res://cartas prime/GUERRA CARTOONS/Soldado_cartoon_prime.tscn",
+		"res://cartas prime/GUERRA CARTOONS/Campero_cartoon_prime.tscn",
+		"res://cartas prime/GUERRA CARTOONS/Granadero_cartoon_prime.tscn",
+		"res://cartas prime/GUERRA CARTOONS/Ka-Bar_cartoon_prime.tscn",
+		"res://cartas prime/GUERRA CARTOONS/Tanque_cartoon_prime.tscn"
 	};
 
 	private static readonly string[] NombresTropas =
 	{
 		"Dragón", "Golem", "Maguín", "Soldado",
 		"T-Rex",  "Tiburón", "Peón",  "Encebollado",
-		"Calamar", "Caballo", "Dama", "Torre"
+		"Calamar", "Caballo", "Dama", "Torre",
+		"Soldado Cartoon", "Campero Cartoon", "Granadero Cartoon",
+		"Ka-Bar Cartoon", "Tanque Cartoon"
 	};
 
 	private static readonly string[] NombresAliados  = { "Mod1",      "Mod2",      "Mod3"      };
