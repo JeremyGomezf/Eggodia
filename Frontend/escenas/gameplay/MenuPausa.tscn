@@ -73,7 +73,7 @@ theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
-text = "CONTINUE"
+text = "CONTINUAR"
 
 [node name="BtnSettings" type="Button" parent="Overlay/VBox"]
 custom_minimum_size = Vector2(0, 60)
@@ -82,7 +82,7 @@ theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
-text = "SETTINGS"
+text = "OPCIONES"
 
 [node name="BtnExit" type="Button" parent="Overlay/VBox"]
 custom_minimum_size = Vector2(0, 60)
@@ -91,7 +91,7 @@ theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_red")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_red_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_red_hover")
-text = "EXIT"
+text = "RENDIRSE"
 
 [node name="PanelSettings" parent="." instance=ExtResource("2_psett")]
 visible = false
@@ -120,8 +120,8 @@ alignment = 1
 [node name="Label" type="Label" parent="Overlay/PanelConfirmacion/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "¿SALIR? ¿Estás seguro de
-terminar la batalla?"
+text = "¿Seguro que quieres rendirte?
+Perderás la partida actual."
 horizontal_alignment = 1
 
 [node name="HBox" type="HBoxContainer" parent="Overlay/PanelConfirmacion/VBox"]

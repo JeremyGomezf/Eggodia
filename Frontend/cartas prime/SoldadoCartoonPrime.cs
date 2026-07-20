@@ -26,8 +26,9 @@ public partial class SoldadoCartoonPrime : TropaBase
 		_anim.AnimationFinished += OnAnimationFinished;
 	}
 
-	/// <summary>Permite que Campo1 muestre el botón ⚡ HABILIDAD para esta tropa.</summary>
-	public bool TieneHabilidadEspecial() => true;
+	/// <summary>La ráfaga (4×50 en los frames 2/4/6/8) se aplica sola vía OnFrameChanged;
+	/// el llamador no debe sumar "puntosAtaque" aparte o se duplicaría el daño.</summary>
+	public override bool AutogestionaDañoAtaque() => true;
 
 	// ── ACCIONES ──────────────────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)
@@ -91,9 +92,10 @@ public partial class SoldadoCartoonPrime : TropaBase
 
 		if (_habilidadActiva)
 		{
+			EfectoGolpe();
 			escudoActual = Mathf.Max(0, escudoActual - cantidad);
 			ActualizarBarrasUI();
-			EjecutarAccion("defender");   // → CancelarHabilidad() → "defensa" → idle
+			EjecutarAccion("defender");
 			return;
 		}
 

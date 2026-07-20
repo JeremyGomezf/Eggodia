@@ -80,6 +80,9 @@ public partial class Campo1 : Node2D
 	private int _tropasEliminadasJugador = 0;
 	private int _tropasEliminadasRival   = 0;
 
+	// ── BARRAS HP BASE ────────────────────────────────────────────────────
+	private ProgressBar _barraHPJugador, _barraHPRival;
+
 	// ── MAZO ──────────────────────────────────────────────────────────────
 	private List<int> mazoIndices       = new List<int>();
 	private int       proximoIndiceMazo = 0;
@@ -133,7 +136,7 @@ public partial class Campo1 : Node2D
 			if (hbox != null)
 			{
 				btnHabilidad          = new Button();
-				btnHabilidad.Text     = "⚡ HABILIDAD";
+				btnHabilidad.Text     = "HABILIDAD";
 				btnHabilidad.Visible  = false;
 				btnHabilidad.Pressed += _on_btn_habilidad_pressed;
 				hbox.AddChild(btnHabilidad);
@@ -162,6 +165,7 @@ public partial class Campo1 : Node2D
 		BarajarMazoInicial();
 		_faseApertura  = true;
 		faseInvocacion = true;
+		CrearBarrasHPBase();
 		ActualizarInterfaz();
 		MostrarAvisoApertura();
 
@@ -175,7 +179,7 @@ public partial class Campo1 : Node2D
 	{
 		_modoDemo = true;
 		var lbl = new Label();
-		lbl.Text = "👁 MODO DEMOSTRACIÓN — Toca para jugar";
+		lbl.Text = "MODO DEMOSTRACIÓN — Toca para jugar";
 		lbl.AddThemeColorOverride("font_color", Colors.Gold);
 		lbl.AddThemeFontSizeOverride("font_size", 16);
 		lbl.Position = new Vector2(350, 5);
@@ -225,7 +229,7 @@ public partial class Campo1 : Node2D
 	public void _on_pasar_turno_pressed()
 	{
 		if (!esTurnoJugador || juegoTerminado) return;
-		if (_faseApertura) { MostrarAviso("🃏 ¡Coloca tus 3 tropas primero!", Colors.Gold); return; }
+		if (_faseApertura) { MostrarAviso("Coloca tus 3 tropas primero", Colors.Gold); return; }
 		CambiarTurno();
 	}
 
@@ -244,11 +248,11 @@ public partial class Campo1 : Node2D
 		_lblInstruccion.AddThemeColorOverride("font_color", new Color(1f,0.3f,0.3f));
 		vbox.AddChild(_lblInstruccion);
 
-		AgregarBtnHechizo(vbox, "🧅 Encebollado", new Color(1f,0.7f,0.1f),  () => UsarEncebollado());
-		AgregarBtnHechizo(vbox, "💚 Curación",    new Color(0.2f,0.9f,0.3f), () => UsarCuracion());
-		AgregarBtnHechizo(vbox, "🃏 Robar Carta", new Color(0.3f,0.7f,1f),   () => UsarRobo());
-		AgregarBtnHechizo(vbox, "☠️ Veneno",      new Color(0.6f,0.2f,0.8f), () => IniciarSeleccion("veneno"));
-		AgregarBtnHechizo(vbox, "🔒 Bloqueo",     new Color(0.2f,0.5f,0.9f), () => IniciarSeleccion("bloqueo"));
+		AgregarBtnHechizo(vbox, "Encebollado",  new Color(1f,0.7f,0.1f),  () => UsarEncebollado());
+		AgregarBtnHechizo(vbox, "Curación",     new Color(0.2f,0.9f,0.3f), () => UsarCuracion());
+		AgregarBtnHechizo(vbox, "Robar Carta",  new Color(0.3f,0.7f,1f),   () => UsarRobo());
+		AgregarBtnHechizo(vbox, "Veneno",       new Color(0.6f,0.2f,0.8f), () => IniciarSeleccion("veneno"));
+		AgregarBtnHechizo(vbox, "Bloqueo",      new Color(0.2f,0.5f,0.9f), () => IniciarSeleccion("bloqueo"));
 
 		AddChild(panel);
 	}
@@ -461,7 +465,7 @@ public partial class Campo1 : Node2D
 		{
 			movimientosRestantes++;
 			if (esTurnoJugador)
-				MostrarAviso("💪 ¡Desesperación! +1 Energía", Colors.OrangeRed);
+				MostrarAviso("Desesperación: +1 Energía", Colors.OrangeRed);
 		}
 
 		usosBarajar    = 0;
@@ -493,12 +497,9 @@ public partial class Campo1 : Node2D
 	{
 		if (juegoTerminado) return;
 		int turnoNum  = _turnosJugados / 2 + 1;
-		int maxEnergy = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
-		string energyBar = new string('⚡', movimientosRestantes)
-						 + new string('·', Mathf.Max(0, maxEnergy - movimientosRestantes));
 		string texto = _faseApertura
-			? (esTurnoJugador ? "🃏 APERTURA — Coloca tus 3 tropas" : "🤖 APERTURA — La IA coloca sus tropas...")
-			: (esTurnoJugador ? $"⚡ TU TURNO  [{energyBar}]  Turno {turnoNum}" : $"🤖 TURNO RIVAL  —  Turno {turnoNum}");
+			? (esTurnoJugador ? "APERTURA — Coloca tus 3 tropas" : "APERTURA — La IA coloca sus tropas...")
+			: (esTurnoJugador ? $"TU TURNO — Turno {turnoNum}" : $"TURNO RIVAL — Turno {turnoNum}");
 		Color color = esTurnoJugador ? Colors.LightGreen : Colors.OrangeRed;
 
 		var lbl = new Label();
@@ -727,34 +728,60 @@ public partial class Campo1 : Node2D
 		if (!IsInstanceValid(atacante) || EstaBlockeada(atacante)) return;
 		int    daño = Gi(atacante, "puntosAtaque");
 		Node2D obj  = BuscarObjetivoEnCarril(atacante, grupoEnemigo);
+		bool   autogestionado = false;
+		try { autogestionado = (bool)atacante.Call("AutogestionaDañoAtaque"); } catch { }
+
+		float multEra = 1.0f;
+		if (obj != null && IsInstanceValid(obj))
+		{
+			multEra = ObtenerMultiplicadorEra(ObtenerEraTropa(atacante), ObtenerEraTropa(obj));
+			if (multEra != 1.0f) daño = (int)(daño * multEra);
+		}
+
+		bool critico = random.Next(100) < 10;
+		if (critico) daño = (int)(daño * 1.5f);
+
 		atacante.Call("EjecutarAccion", "atacar");
 
 		if (obj != null && IsInstanceValid(obj))
 		{
-			int vidaAntes = Gi(obj, "vidaActual");
-			obj.Call("RecibirDaño", daño);
-			int vidaDespues = Gi(obj, "vidaActual");
-			int dañoReal = vidaAntes - vidaDespues;
-			if (dañoReal > 0) MostrarDañoFlotante(obj.GlobalPosition, dañoReal);
+			if (!autogestionado)
+			{
+				int vidaAntes = Gi(obj, "vidaActual");
+				obj.Call("RecibirDaño", daño);
+				int vidaDespues = Gi(obj, "vidaActual");
+				int dañoReal = vidaAntes - vidaDespues;
+				if (dañoReal > 0)
+				{
+					if (critico)
+						MostrarDañoFlotanteCritico(obj.GlobalPosition, dañoReal);
+					else
+						MostrarDañoFlotante(obj.GlobalPosition, dañoReal);
+				}
+				MostrarVentajaEra(obj.GlobalPosition, multEra);
+				if (critico) ScreenShake(8f);
 
-			// Estadísticas
-			if (grupoEnemigo == "tropas_rival") _dañoTotalJugador += dañoReal;
-			else                                _dañoTotalRival   += dañoReal;
+				if (grupoEnemigo == "tropas_rival") _dañoTotalJugador += dañoReal;
+				else                                _dañoTotalRival   += dañoReal;
+			}
 		}
 		else
 		{
 			if (grupoEnemigo == "tropas_rival")
 			{
 				vidaRival -= daño; if (vidaRival < 0) vidaRival = 0;
-				MostrarDañoFlotante(new Vector2(900, 200), daño);
+				if (critico) MostrarDañoFlotanteCritico(new Vector2(900, 200), daño);
+				else         MostrarDañoFlotante(new Vector2(900, 200), daño);
 				_dañoTotalJugador += daño;
 			}
 			else
 			{
 				vidaJugador -= daño; if (vidaJugador < 0) vidaJugador = 0;
-				MostrarDañoFlotante(new Vector2(200, 200), daño);
+				if (critico) MostrarDañoFlotanteCritico(new Vector2(200, 200), daño);
+				else         MostrarDañoFlotante(new Vector2(200, 200), daño);
 				_dañoTotalRival += daño;
 			}
+			ScreenShake(critico ? 12f : 8f);
 			CheckEstadoJuego();
 		}
 	}
@@ -799,7 +826,7 @@ public partial class Campo1 : Node2D
 	{
 		await ToSignal(GetTree().CreateTimer(0.5f), "timeout");
 		var lbl = new Label();
-		lbl.Text = "⚔️  FASE DE APERTURA\n🃏 Coloca tus 3 tropas para iniciar la batalla";
+		lbl.Text = "FASE DE APERTURA\nColoca tus 3 tropas para iniciar la batalla";
 		lbl.AddThemeColorOverride("font_color", Colors.Gold);
 		lbl.AddThemeFontSizeOverride("font_size", 22);
 		lbl.HorizontalAlignment = HorizontalAlignment.Center;
@@ -823,14 +850,14 @@ public partial class Campo1 : Node2D
 		if (_faseApertura)
 		{
 			int faltan = ContarSpotsLibresJugador();
-			MostrarAviso($"🃏 ¡Coloca tus {faltan} tropa(s) restante(s) para empezar!", Colors.Gold);
+			MostrarAviso($"Coloca tus {faltan} tropa(s) restante(s)", Colors.Gold);
 			return;
 		}
 
 		// Fuera de apertura: bloquear ataque si no ha invocado aún
 		if (faseInvocacion)
 		{
-			MostrarAviso("🃏 ¡Invoca una tropa primero!", Colors.Yellow);
+			MostrarAviso("Invoca una tropa primero", Colors.Yellow);
 			return;
 		}
 
@@ -844,11 +871,8 @@ public partial class Campo1 : Node2D
 		}
 		if (btnHabilidad != null)
 		{
-			bool tieneH = tropa.HasMethod("TickHabilidad") ||
-						  tropa.GetType().Name == "CaballoPrime"  ||
-						  tropa.GetType().Name == "CalamarGPrime" ||
-						  tropa.GetType().Name == "GolemPrime"    ||
-						  tropa.GetType().Name == "SoldadoCartoonPrime";
+			bool tieneH = false;
+			try { tieneH = (bool)tropa.Call("TieneHabilidadEspecial"); } catch { }
 			bool usada  = HabilidadUsada(tropa);
 			btnHabilidad.Visible  = tieneH;
 			btnHabilidad.Disabled = usada;
@@ -958,7 +982,7 @@ public partial class Campo1 : Node2D
 		// Fase de apertura: pasar turno automáticamente al llenar los 3 carriles
 		if (_faseApertura && TodosSpotsOcupados())
 		{
-			MostrarAviso("✅ ¡Tropas listas! La IA prepara sus fuerzas...", Colors.LightGreen);
+			MostrarAviso("Tropas listas. La IA prepara sus fuerzas...", Colors.LightGreen);
 			GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) CambiarTurno(); };
 			return;
 		}
@@ -1032,10 +1056,10 @@ public partial class Campo1 : Node2D
 		await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
 
 		string[] pasos = {
-			"👋 ¡Bienvenido a Age of Cards!",
-			"🃏 Arrastra una carta al campo para invocar tu tropa",
-			"⚔️ Luego haz clic en tu tropa para atacar",
-			"🧅 Usa hechizos para potenciar tus tropas o dañar al rival"
+			"Bienvenido a Age of Cards",
+			"Arrastra una carta al campo para invocar tu tropa",
+			"Haz clic en tu tropa para atacar o defender",
+			"Usa hechizos para potenciar tus tropas o dañar al rival"
 		};
 
 		for (int i = 0; i < pasos.Length; i++)
@@ -1108,20 +1132,20 @@ public partial class Campo1 : Node2D
 	{
 		if (btnBarajar != null)    { bool b = !esTurnoJugador||usosBarajar>=MAX_BARAJAR||movimientosRestantes<=0; btnBarajar.Disabled=b; btnBarajar.Modulate=b?new Color(1,1,1,0.4f):Colors.White; }
 		if (btnSacrificio != null) { bool s = !esTurnoJugador||usosSacrificio>=MAX_SACRIFICIO||vidaJugador<=500||movimientosRestantes<=0; btnSacrificio.Disabled=s; btnSacrificio.Modulate=s?new Color(1,1,1,0.4f):Colors.White; }
-		if (HasNode("Vida1"))   GetNode<Label>("Vida1").Text = $"Vida: {vidaJugador}";
-		if (HasNode("Vida2"))   GetNode<Label>("Vida2").Text = $"Vida: {vidaRival}";
+		if (HasNode("Vida1"))   GetNode<Label>("Vida1").Text = $"HP {vidaJugador}/{vidaMaxJugador}";
+		if (HasNode("Vida2"))   GetNode<Label>("Vida2").Text = $"HP {vidaRival}/{vidaMaxJugador}";
+		if (_barraHPJugador != null) _barraHPJugador.Value = (float)vidaJugador / vidaMaxJugador * 100;
+		if (_barraHPRival   != null) _barraHPRival.Value   = (float)vidaRival   / vidaMaxJugador * 100;
 		if (HasNode("Tiempo"))  { int m=tiempoTotalPartida/60,s=tiempoTotalPartida%60; GetNode<Label>("Tiempo").Text=$"Tiempo: {m}:{s:00}"; }
 		if (HasNode("LabelTurnoInfo"))
 		{
 			var l = GetNode<Label>("LabelTurnoInfo");
-			string dif     = _dificultadIA == 0 ? "🟢 Fácil" : _dificultadIA == 1 ? "🟡 Medio" : "🔴 Difícil";
+			string dif     = _dificultadIA == 0 ? "Fácil" : _dificultadIA == 1 ? "Normal" : "Difícil";
 			bool urgente   = esTurnoJugador && tiempoTurnoActual <= 8;
-			string timer   = urgente ? $"⚠️ {tiempoTurnoActual}s!" : $"⏱ {tiempoTurnoActual}s";
+			string timer   = urgente ? $"{tiempoTurnoActual}s!" : $"{tiempoTurnoActual}s";
 			int maxEnergy  = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
-			string eBar    = new string('⚡', movimientosRestantes)
-						   + new string('·', Mathf.Max(0, maxEnergy - movimientosRestantes));
 			int turnoNum   = _turnosJugados / 2 + 1;
-			l.Text = $"Turno {turnoNum}  {dif}\n{eBar} {movimientosRestantes}/{maxEnergy} Energía\n{(esTurnoJugador ? "TU TURNO" : "TURNO RIVAL")}  {timer}";
+			l.Text = $"Turno {turnoNum}  |  {dif}\nEnergía {movimientosRestantes}/{maxEnergy}\n{(esTurnoJugador ? "TU TURNO" : "TURNO RIVAL")}  {timer}";
 			l.Modulate = urgente      ? Colors.Red
 					   : esTurnoJugador ? new Color(0, 0.55f, 0)
 					   : new Color(0.85f, 0, 0);
@@ -1183,7 +1207,7 @@ public partial class Campo1 : Node2D
 		// ── Nombre del jugador y racha ────────────────────────────────────────
 		string nombreJ = SesionJuego.Instance?.NombreJugador ?? "Jugador";
 		var lblNombre = new Label();
-		lblNombre.Text = $"👤 {nombreJ}";
+		lblNombre.Text = nombreJ;
 		lblNombre.AddThemeColorOverride("font_color", Colors.LightBlue);
 		lblNombre.AddThemeFontSizeOverride("font_size", 17);
 		lblNombre.Position = new Vector2(50, 55);
@@ -1192,7 +1216,7 @@ public partial class Campo1 : Node2D
 		if (_rachaVictorias > 1)
 		{
 			var lblRacha = new Label();
-			lblRacha.Text = $"🔥 Racha: {_rachaVictorias} victorias seguidas";
+			lblRacha.Text = $"Racha: {_rachaVictorias} victorias seguidas";
 			lblRacha.AddThemeColorOverride("font_color", Colors.OrangeRed);
 			lblRacha.AddThemeFontSizeOverride("font_size", 16);
 			lblRacha.Position = new Vector2(50, 80);
@@ -1201,7 +1225,7 @@ public partial class Campo1 : Node2D
 
 		// ── Estadísticas ──────────────────────────────────────────────────────
 		var lblStats = new Label();
-		lblStats.Text = $"📊 ESTADÍSTICAS\n" +
+		lblStats.Text = $"ESTADÍSTICAS\n" +
 						$"Daño infligido:     {_dañoTotalJugador}\n" +
 						$"Daño recibido:      {_dañoTotalRival}\n" +
 						$"Tropas eliminadas:  {_tropasEliminadasRival}\n" +
@@ -1215,14 +1239,14 @@ public partial class Campo1 : Node2D
 
 		// ── Botones ───────────────────────────────────────────────────────────
 		var btnReinicio = new Button();
-		btnReinicio.Text              = "🔄 Jugar de nuevo";
+		btnReinicio.Text              = "Jugar de nuevo";
 		btnReinicio.Position          = new Vector2(50, 300);
 		btnReinicio.CustomMinimumSize = new Vector2(190, 48);
 		btnReinicio.Pressed += () => GetTree().ReloadCurrentScene();
 		pantalla.AddChild(btnReinicio);
 
 		var btnMenu = new Button();
-		btnMenu.Text              = "🏠 Menú Principal";
+		btnMenu.Text              = "Menú Principal";
 		btnMenu.Position          = new Vector2(255, 300);
 		btnMenu.CustomMinimumSize = new Vector2(190, 48);
 		btnMenu.Pressed += () => GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
@@ -1231,7 +1255,7 @@ public partial class Campo1 : Node2D
 		if (SesionJuego.Instance?.EstaLogueado == true)
 		{
 			var btnRanking = new Button();
-			btnRanking.Text              = "🏆 Ver Ranking";
+			btnRanking.Text              = "Ver Ranking";
 			btnRanking.Position          = new Vector2(50, 358);
 			btnRanking.CustomMinimumSize = new Vector2(395, 44);
 			btnRanking.SelfModulate      = Colors.Gold;
@@ -1286,9 +1310,9 @@ public partial class Campo1 : Node2D
 			else era3++;
 		}
 
-		string nombreEra = era1 >= era2 && era1 >= era3 ? "🦕 Era Primordial"
-						 : era2 >= era1 && era2 >= era3 ? "⚔️ Era Medieval"
-														: "🔮 Era Mística";
+		string nombreEra = era1 >= era2 && era1 >= era3 ? "Era Primordial"
+						 : era2 >= era1 && era2 >= era3 ? "Era Medieval"
+														: "Era Mística";
 
 		// Mostrar nombre de la era al inicio
 		var aviso = new Label();
@@ -1360,14 +1384,14 @@ public partial class Campo1 : Node2D
 			if (!_logroPrimeraVictoria)
 			{
 				_logroPrimeraVictoria = true;
-				MostrarLogroEnPantalla("🏆 LOGRO: ¡Primera Victoria!");
+				MostrarLogroEnPantalla("LOGRO: Primera Victoria");
 			}
 			// Racha
 			_rachaVictorias++;
 			if (SesionJuego.Instance != null)
 				SesionJuego.Instance.RachaActual = _rachaVictorias;
 			if (_rachaVictorias >= 3)
-				MostrarLogroEnPantalla($"🔥 ¡RACHA DE {_rachaVictorias} VICTORIAS!");
+				MostrarLogroEnPantalla($"RACHA DE {_rachaVictorias} VICTORIAS");
 		}
 		else
 		{
@@ -1384,7 +1408,7 @@ public partial class Campo1 : Node2D
 				if (n is Node2D t && HabilidadUsada(t))
 				{
 					_logroHabilidadUsada = true;
-					MostrarLogroEnPantalla("⚡ LOGRO: ¡Usaste una habilidad especial!");
+					MostrarLogroEnPantalla("LOGRO: Habilidad especial activada");
 					break;
 				}
 			}
@@ -1454,6 +1478,118 @@ public partial class Campo1 : Node2D
 		t.SetMeta("bloqueado", true); t.SetMeta("turnosBloqueo", turnos);
 		t.Modulate = new Color(0.4f, 0.6f, 1.4f);
 		ActualizarIconosEstado(t);
+	}
+
+	// ── SCREEN SHAKE ──────────────────────────────────────────────────────
+	private void ScreenShake(float intensidad = 6f)
+	{
+		if (!PanelSettings.ScreenShakeEnabled) return;
+		Vector2 orig = Position;
+		Tween tw = CreateTween();
+		for (int i = 0; i < 4; i++)
+		{
+			Vector2 off = new Vector2(
+				(float)GD.RandRange(-intensidad, intensidad),
+				(float)GD.RandRange(-intensidad * 0.5f, intensidad * 0.5f));
+			tw.TweenProperty(this, "position", orig + off, 0.03f);
+		}
+		tw.TweenProperty(this, "position", orig, 0.03f);
+	}
+
+	// ── GOLPE CRÍTICO (números dorados grandes) ──────────────────────────
+	private void MostrarDañoFlotanteCritico(Vector2 posGlobal, int cantidad)
+	{
+		var lbl = new Label();
+		lbl.Text = $"CRIT {cantidad}";
+		lbl.AddThemeColorOverride("font_color", Colors.Gold);
+		lbl.AddThemeFontSizeOverride("font_size", 30);
+		lbl.ZIndex = 310;
+		lbl.GlobalPosition = posGlobal + new Vector2(-30, -70);
+		AddChild(lbl);
+
+		Tween tw = CreateTween().SetParallel(true);
+		tw.TweenProperty(lbl, "position:y", lbl.Position.Y - 80f, 1.1f);
+		tw.TweenProperty(lbl, "modulate:a", 0.0f, 1.1f);
+		tw.TweenProperty(lbl, "scale", new Vector2(1.3f, 1.3f), 0.15f);
+		tw.Chain().TweenProperty(lbl, "scale", Vector2.One, 0.2f);
+		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
+	}
+
+	// ── ERA: VENTAJA DE TIPO ─────────────────────────────────────────────
+	private string ObtenerEraTropa(Node2D tropa)
+	{
+		string tipo = tropa.GetType().Name;
+		return tipo switch
+		{
+			"TRexPrime" or "TiburonPrime" or "CalamarGPrime" => "primordial",
+			"DragonPrime" or "GolemPrime" or "MaguinPrime"   => "mistica",
+			"SoldadoCartoonPrime"                             => "moderna",
+			_ => "medieval"
+		};
+	}
+
+	private float ObtenerMultiplicadorEra(string eraAtk, string eraDef)
+	{
+		if (eraAtk == eraDef) return 1.0f;
+		if (eraAtk == "primordial" && eraDef == "medieval")  return 1.2f;
+		if (eraAtk == "medieval"   && eraDef == "moderna")   return 1.2f;
+		if (eraAtk == "moderna"    && eraDef == "mistica")   return 1.2f;
+		if (eraAtk == "mistica"    && eraDef == "primordial") return 1.2f;
+		if (eraAtk == "medieval"   && eraDef == "primordial") return 0.85f;
+		if (eraAtk == "moderna"    && eraDef == "medieval")   return 0.85f;
+		if (eraAtk == "mistica"    && eraDef == "moderna")    return 0.85f;
+		if (eraAtk == "primordial" && eraDef == "mistica")    return 0.85f;
+		return 1.0f;
+	}
+
+	private void MostrarVentajaEra(Vector2 pos, float mult)
+	{
+		if (mult == 1.0f) return;
+		var lbl = new Label();
+		lbl.Text = mult > 1f ? "▲ VENTAJA" : "▼ DESVENTAJA";
+		lbl.AddThemeColorOverride("font_color", mult > 1f ? Colors.LightGreen : Colors.OrangeRed);
+		lbl.AddThemeFontSizeOverride("font_size", 14);
+		lbl.ZIndex = 280;
+		lbl.GlobalPosition = pos + new Vector2(-35, -45);
+		AddChild(lbl);
+		Tween tw = CreateTween();
+		tw.TweenInterval(0.8f);
+		tw.TweenProperty(lbl, "modulate:a", 0.0f, 0.3f);
+		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
+	}
+
+	// ── BARRAS DE VIDA BASE ──────────────────────────────────────────────
+	private void CrearBarrasHPBase()
+	{
+		var lblV1 = GetNodeOrNull<Label>("Vida1");
+		var lblV2 = GetNodeOrNull<Label>("Vida2");
+		_barraHPJugador = CrearBarraHP(lblV1, new Color(0.2f, 0.75f, 0.25f));
+		_barraHPRival   = CrearBarraHP(lblV2, new Color(0.8f, 0.2f, 0.2f));
+	}
+
+	private ProgressBar CrearBarraHP(Label lblRef, Color color)
+	{
+		var bar = new ProgressBar();
+		bar.CustomMinimumSize = new Vector2(180, 14);
+		bar.MinValue = 0; bar.MaxValue = 100; bar.Value = 100;
+		bar.ShowPercentage = false;
+		bar.ZIndex = 50;
+		var bg = new StyleBoxFlat();
+		bg.BgColor = new Color(0.1f, 0.1f, 0.1f, 0.7f);
+		bg.CornerRadiusTopLeft = bg.CornerRadiusTopRight =
+		bg.CornerRadiusBottomLeft = bg.CornerRadiusBottomRight = 3;
+		bar.AddThemeStyleboxOverride("background", bg);
+		var fill = new StyleBoxFlat();
+		fill.BgColor = color;
+		fill.CornerRadiusTopLeft = fill.CornerRadiusTopRight =
+		fill.CornerRadiusBottomLeft = fill.CornerRadiusBottomRight = 3;
+		bar.AddThemeStyleboxOverride("fill", fill);
+		if (lblRef != null)
+		{
+			bar.Position = lblRef.Position + new Vector2(0, 28);
+			AddChild(bar);
+		}
+		return bar;
 	}
 
 	private int  Gi(Node2D n, string p) { try { return (int)n.Get(p); } catch { return 0; } }

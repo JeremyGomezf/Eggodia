@@ -86,8 +86,8 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
 theme_override_font_sizes/font_size = 20
-text = "Las fuerzas enemigas te han superado.
-¿Qué deseas hacer ahora?"
+text = "Tu ejército ha caído.
+Modifica tu estrategia e inténtalo de nuevo."
 horizontal_alignment = 1
 
 [node name="BtnReintentar" type="Button" parent="Overlay/VBox"]
@@ -97,7 +97,7 @@ theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn1")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn1_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn1_hover")
-text = "🔄 VOLVER A JUGAR (Modificar Mazo)"
+text = "REINTENTAR"
 
 [node name="BtnMenu" type="Button" parent="Overlay/VBox"]
 custom_minimum_size = Vector2(0, 60)
@@ -106,4 +106,4 @@ theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn2")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn2_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn2_hover")
-text = "🏠 SALIR AL MENÚ PRINCIPAL"
+text = "MENÚ PRINCIPAL"

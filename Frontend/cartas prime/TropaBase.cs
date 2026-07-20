@@ -18,6 +18,7 @@ public abstract partial class TropaBase : Area2D
 	public  bool habilidadUsada  = false;
 	protected bool _estaMuerto   = false;
 	protected bool _yaActuo      = false;
+	private  Tween _tweenGolpe;
 
 	// ── REFERENCIAS ───────────────────────────────────────────────────────
 	protected AnimatedSprite2D _anim;
@@ -64,6 +65,7 @@ public abstract partial class TropaBase : Area2D
 	public virtual void RecibirDaño(int cantidad)
 	{
 		if (_estaMuerto) return;
+		EfectoGolpe();
 
 		if (_anim.Animation == "pre defensa")
 		{
@@ -88,6 +90,26 @@ public abstract partial class TropaBase : Area2D
 		{
 			EjecutarAccion("recibir_daño");
 		}
+	}
+
+	/// <summary>
+	/// Si es true, la tropa aplica su propio daño de ataque internamente durante
+	/// EjecutarAccion("atacar") (p. ej. multi-hit sincronizado a fotogramas).
+	/// El llamador (Campo1 / CampoPruebas) NO debe aplicar "puntosAtaque" directo
+	/// al objetivo en ese caso, para no duplicar el daño.
+	/// </summary>
+	public virtual bool AutogestionaDañoAtaque() => false;
+
+	public virtual bool TieneHabilidadEspecial() => true;
+
+	protected void EfectoGolpe()
+	{
+		if (_estaMuerto) return;
+		_tweenGolpe?.Kill();
+		Color antes = Modulate;
+		_tweenGolpe = CreateTween();
+		_tweenGolpe.TweenProperty(this, "modulate", new Color(3f, 0.4f, 0.4f, 1f), 0.05f);
+		_tweenGolpe.TweenProperty(this, "modulate", antes, 0.15f);
 	}
 
 	/// <summary>Polimorfismo: las subclases pueden extender este método.</summary>

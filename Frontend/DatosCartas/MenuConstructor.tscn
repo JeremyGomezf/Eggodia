@@ -192,7 +192,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.98039216, 0.9882353, 1, 1)
 theme_override_fonts/font = SubResource("FontVariation_idawy")
 theme_override_font_sizes/font_size = 32
-text = "GUÍA DE SELECCIÓN DE CARTAS"
+text = "CONSTRUCTOR DE MAZO"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/HeaderBar/HeaderContent"]
@@ -208,7 +208,7 @@ theme_override_constants/separation = 4
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.90, 0.98, 1)
 theme_override_font_sizes/font_size = 13
-text = "USER PROGRESS"
+text = "PROGRESO"
 horizontal_alignment = 2
 
 [node name="ProgressBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/HeaderBar/HeaderContent/ProgressSection"]
@@ -254,7 +254,7 @@ theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_back")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_back_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_back_hover")
-text = "◄  BACK"
+text = "VOLVER"
 
 [node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/ActionBar/ActionContent"]
 layout_mode = 2
@@ -280,4 +280,4 @@ theme_override_font_sizes/font_size = 19
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_continue")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_continue_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_continue_hover")
-text = "CONTINUE"
+text = "JUGAR"

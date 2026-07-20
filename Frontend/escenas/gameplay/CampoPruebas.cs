@@ -70,6 +70,8 @@ public partial class CampoPruebas : Node2D
 	public override void _Process(double delta)
 	{
 		SincronizarSlots();
+		ManejarMuerte();   // revisa cada frame: el daño de tropas con ráfaga (multi-hit
+		                    // por fotograma) llega de forma asíncrona, no en el instante del clic
 		ActualizarStats();
 	}
 
@@ -288,12 +290,23 @@ public partial class CampoPruebas : Node2D
 		if (objetivo == null || !IsInstanceValid(objetivo)) { Log("❌ Sin tropa objetivo en ese slot"); return; }
 
 		int daño = 0; try { daño = (int)atacante.Get("puntosAtaque"); } catch { }
+		bool autogestionado = false;
+		try { autogestionado = (bool)atacante.Call("AutogestionaDañoAtaque"); } catch { }
+
 		atacante.Call("SetActivo", true);
 		atacante.EjecutarAccion("atacar");
-		MostrarDaño(objetivo.GlobalPosition, daño);
-		objetivo.Call("RecibirDaño", daño);
+
+		// Tropas con ráfaga (p. ej. SoldadoCartoonPrime) aplican su propio daño por
+		// fotograma dentro de EjecutarAccion("atacar"); aplicarlo aquí lo duplicaría.
+		if (!autogestionado)
+		{
+			MostrarDaño(objetivo.GlobalPosition, daño);
+			objetivo.Call("RecibirDaño", daño);
+		}
 		ManejarMuerte();
-		Log($"⚔  {daño} daño de {TipoNombre(atacante)} → {TipoNombre(objetivo)}");
+		Log(autogestionado
+			? $"⚔  {TipoNombre(atacante)} dispara su ráfaga → {TipoNombre(objetivo)}"
+			: $"⚔  {daño} daño de {TipoNombre(atacante)} → {TipoNombre(objetivo)}");
 	}
 
 	private void OrdenarDefensa(int idx)
@@ -477,8 +490,8 @@ public partial class CampoPruebas : Node2D
 
 	private string FormatStats(TropaBase t)
 	{
-		int vida    = Gi(t, "vidaActual"),  vidaMax  = Gi(t, "vidaMaxima");
-		int esc     = Gi(t, "escudoActual"), escMax  = Gi(t, "escudoMaximo");
+		int vida    = Mathf.Max(0, Gi(t, "vidaActual")),  vidaMax  = Gi(t, "vidaMaxima");
+		int esc     = Mathf.Max(0, Gi(t, "escudoActual")), escMax  = Gi(t, "escudoMaximo");
 		int atk     = Gi(t, "puntosAtaque");
 		bool habUsada = false; try { habUsada = (bool)t.Get("habilidadUsada"); } catch { }
 		bool env    = t.HasMeta("envenenado") && (bool)t.GetMeta("envenenado");
