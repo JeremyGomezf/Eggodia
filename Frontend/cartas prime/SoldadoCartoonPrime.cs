@@ -75,9 +75,8 @@ public partial class SoldadoCartoonPrime : TropaBase
 		_habilidadActiva = true;
 		habilidadUsada   = true;
 
-		// Reutiliza la animación "pre defensa" (postura de cobertura con casco)
-		// OnAnimationFinished la congela en el último frame
-		_anim.Play("pre defensa");
+		// Animación propia de la habilidad (NO reutiliza "pre defensa")
+		_anim.Play("pre defensa -> habilidad");
 
 		_timerRafaga          = new Timer();
 		_timerRafaga.WaitTime = 3.0f;

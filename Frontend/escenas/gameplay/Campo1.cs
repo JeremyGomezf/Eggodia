@@ -92,7 +92,8 @@ public partial class Campo1 : Node2D
 		"res://imagenes/CartasPng/TReXCart.png",     "res://imagenes/CartasPng/TiburonCart.png",
 		"res://imagenes/CartasPng/PeonCart.png",     "res://imagenes/CartasPng/EncebolladoCart.png",
 		"res://imagenes/CartasPng/CalamarGCart.png", "res://imagenes/CartasPng/CaballoCart.png",
-		"res://imagenes/CartasPng/DamaCart.png",     "res://imagenes/CartasPng/TorreCart.png"
+		"res://imagenes/CartasPng/DamaCart.png",     "res://imagenes/CartasPng/TorreCart.png",
+		"res://imagenes/CartasPng/SoldadoCartoonCart.png"
 	};
 
 	private string[] escenasTropas = {
@@ -101,7 +102,8 @@ public partial class Campo1 : Node2D
 		"res://cartas prime/TRex_prime.tscn",     "res://cartas prime/Tiburon_prime.tscn",
 		"res://cartas prime/Peon_prime.tscn",     "res://cartas prime/Encebollado_prime.tscn",
 		"res://cartas prime/CalamarG_prime.tscn", "res://cartas prime/Caballo_prime.tscn",
-		"res://cartas prime/Dama_prime.tscn",     "res://cartas prime/Torre_prime.tscn"
+		"res://cartas prime/Dama_prime.tscn",     "res://cartas prime/Torre_prime.tscn",
+		"res://cartas prime/GUERRA CARTOONS/Soldado_cartoon_prime.tscn"
 	};
 
 	[Export] private PackedScene escenaTronoRef     = GD.Load<PackedScene>("res://escenas/gameplay/tronocampo.tscn");
@@ -845,7 +847,8 @@ public partial class Campo1 : Node2D
 			bool tieneH = tropa.HasMethod("TickHabilidad") ||
 						  tropa.GetType().Name == "CaballoPrime"  ||
 						  tropa.GetType().Name == "CalamarGPrime" ||
-						  tropa.GetType().Name == "GolemPrime";
+						  tropa.GetType().Name == "GolemPrime"    ||
+						  tropa.GetType().Name == "SoldadoCartoonPrime";
 			bool usada  = HabilidadUsada(tropa);
 			btnHabilidad.Visible  = tieneH;
 			btnHabilidad.Disabled = usada;
