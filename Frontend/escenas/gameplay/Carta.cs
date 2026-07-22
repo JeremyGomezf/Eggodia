@@ -14,13 +14,14 @@ public partial class Carta : Control
 	private bool _bloqueada = false;
 	private Vector2 _offsetMouse;
 	
-	private Vector2 _escalaNormalMano = new Vector2(6.5f, 6.5f); // GIGANTE
-	private Vector2 _escalaAlArrastrar = new Vector2(4.0f, 4.0f); // MEDIANA
+	private Vector2 _escalaNormalMano  = new Vector2(3.0f, 3.0f); // COMPACTA en mano
+	private Vector2 _escalaHover       = new Vector2(6.5f, 6.5f); // GRANDE al pasar dedo
+	private Vector2 _escalaAlArrastrar = new Vector2(3.5f, 3.5f); // MEDIANA al arrastrar
 
 	public override void _Ready()
 	{
-		PivotOffset = Size / 2; 
-		MouseFilter = MouseFilterEnum.Stop; 
+		PivotOffset = Size / 2;
+		MouseFilter = MouseFilterEnum.Stop;
 		Scale = _escalaNormalMano;
 	}
 
@@ -118,17 +119,21 @@ public partial class Carta : Control
 
 		if (!EstaEnMano || EstaArrastrando || _bloqueada) return;
 		ZIndex = 150;
+		Vector2 pivotAntes = PivotOffset;
+		PivotOffset = new Vector2(Size.X * 0.5f, Size.Y);   // crece hacia arriba (no tapa las otras)
 		Tween t = CreateTween();
-		t.TweenProperty(this, "scale", _escalaNormalMano * 1.05f, 0.1f);
+		t.TweenProperty(this, "scale", _escalaHover, 0.12f)
+		 .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 	}
 
 	public void _on_mouse_exited()
 	{
-		if (!EstaArrastrando) 
+		if (!EstaArrastrando)
 		{
 			ZIndex = 1;
 			Tween t = CreateTween();
-			t.TweenProperty(this, "scale", _escalaNormalMano, 0.1f);
+			t.TweenProperty(this, "scale", _escalaNormalMano, 0.12f);
+			t.Finished += () => { if (IsInstanceValid(this)) PivotOffset = Size / 2; };
 		}
 	}
 }

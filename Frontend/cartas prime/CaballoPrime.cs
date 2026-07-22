@@ -4,6 +4,8 @@ using System.Collections.Generic;
 /// <summary>Caballo — habilidad: ataca los 2 carriles adyacentes en patrón L con doble daño.</summary>
 public partial class CaballoPrime : TropaBase
 {
+	public override string Tipo => Tipos.METAL;
+
 	public override void _Ready()
 	{
 		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 230; escudoActual = escudoMaximo = 250; puntosAtaque = 200; }

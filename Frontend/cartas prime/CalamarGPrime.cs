@@ -4,6 +4,8 @@ using System.Collections.Generic;
 /// <summary>Calamar Gigante — habilidad: bloquea las 2 tropas enemigas más cercanas por 1 turno.</summary>
 public partial class CalamarGPrime : TropaBase
 {
+	public override string Tipo => Tipos.SOMBRA;
+
 	public override void _Ready()
 	{
 		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 400; escudoActual = escudoMaximo = 380; puntosAtaque = 370; }

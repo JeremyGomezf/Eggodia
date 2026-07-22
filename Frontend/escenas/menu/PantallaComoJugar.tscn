@@ -1,0 +1,308 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://escenas/menu/PantallaComoJugar.cs" id="1_pcj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.09, 0.12, 0.18, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.55, 0.85, 0.55)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 22.0
+content_margin_top = 18.0
+content_margin_right = 22.0
+content_margin_bottom = 18.0
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
+bg_color = Color(0.05, 0.08, 0.13, 0.9)
+border_width_bottom = 2
+border_color = Color(0.35, 0.55, 0.85, 0.5)
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 32.0
+content_margin_top = 16.0
+content_margin_right = 32.0
+content_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_back"]
+bg_color = Color(0.16, 0.22, 0.32, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.55, 0.75, 0.7)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_back_hover"]
+bg_color = Color(0.24, 0.32, 0.46, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.65, 0.8, 1.0, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+
+[node name="PantallaComoJugar" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pcj")
+
+[node name="Fondo" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.06, 0.11, 1)
+
+[node name="FondoGrad" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.15, 0.28, 0.35)
+
+[node name="Root" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="Root"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
+
+[node name="HBox" type="HBoxContainer" parent="Root/Header"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Deco" type="Label" parent="Root/Header/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.65, 0.95, 1)
+theme_override_font_sizes/font_size = 30
+text = "≡"
+vertical_alignment = 1
+
+[node name="Titulo" type="Label" parent="Root/Header/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "CÓMO JUGAR"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Root/Header/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnVolver" type="Button" parent="Root/Header/HBox"]
+custom_minimum_size = Vector2(140, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_back")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_back_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_back_hover")
+text = "VOLVER"
+
+[node name="Scroll" type="ScrollContainer" parent="Root"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Margin" type="MarginContainer" parent="Root/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 40
+
+[node name="Contenido" type="VBoxContainer" parent="Root/Scroll/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Intro" type="Label" parent="Root/Scroll/Margin/Contenido"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 17
+text = "Age of Cards es un juego de batallas por turnos donde invocas tropas, atacas y usas habilidades para reducir el HP del rival a cero. Cada turno tienes energía limitada — úsala con cabeza."
+autowrap_mode = 2
+
+[node name="Grid" type="GridContainer" parent="Root/Scroll/Margin/Contenido"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+
+[node name="Card1" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card1"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card1/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "1 · Invoca tus tropas"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card1/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Arrastra una carta de tu mano a uno de los tres carriles. En la apertura debes llenar los tres antes de atacar."
+autowrap_mode = 2
+
+[node name="Card2" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card2"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card2/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "2 · Ataca o defiende"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card2/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Haz clic en una tropa tuya para abrir su menú: Atacar al carril rival, Defender (reduce el próximo daño) o usar su Habilidad especial."
+autowrap_mode = 2
+
+[node name="Card3" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card3"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card3/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "3 · Sistema de tipos"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card3/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Cada tropa tiene un tipo elemental (Fuego, Agua, Naturaleza, Metal o Sombra). Atacar con ventaja da +25% de daño; con desventaja, -20%."
+autowrap_mode = 2
+
+[node name="ChipsRow" type="HBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card3/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Card4" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card4"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card4/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "4 · Hechizos"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card4/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Cinco hechizos por partida: Encebollado (buff), Curación, Robar Carta, Veneno y Bloqueo. Cada uno se usa una sola vez."
+autowrap_mode = 2
+
+[node name="Card5" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card5"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card5/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "5 · Energía y turnos"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card5/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Empiezas con 3 de energía por turno. Cada 3 turnos completos ganas +1 (hasta 5). Si tu HP baja del 30%, ganas 1 extra ese turno."
+autowrap_mode = 2
+
+[node name="Card6" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card6"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card6/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "6 · Golpes críticos"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card6/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Cada ataque tiene 10% de probabilidad de ser un golpe crítico que hace 1.5× de daño. Se combina con el bonus de tipo."
+autowrap_mode = 2
+
+[node name="Tip" type="Label" parent="Root/Scroll/Margin/Contenido"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.75, 0.35, 1)
+theme_override_font_sizes/font_size = 14
+text = "Consejo: dentro de la partida, pulsa el botón «?» arriba a la derecha para ver la tabla completa de tipos."
+horizontal_alignment = 1
+autowrap_mode = 2

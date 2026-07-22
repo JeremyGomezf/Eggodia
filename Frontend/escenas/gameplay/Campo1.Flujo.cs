@@ -1,0 +1,361 @@
+using Godot;
+using System;
+using System.Collections.Generic;
+
+public partial class Campo1 : Node2D
+{
+	// ── HELPERS DE FASE ──────────────────────────────────────────────────
+
+	private bool TodosSpotsOcupados()
+	{
+		foreach (string nombre in new[]{"Mod1","Mod2","Mod3"})
+		{
+			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+			if (zona != null && zona.GetNodeOrNull("Ocupado") == null) return false;
+		}
+		return true;
+	}
+
+	private int ContarSpotsLibresJugador()
+	{
+		int libres = 0;
+		foreach (string nombre in new[]{"Mod1","Mod2","Mod3"})
+		{
+			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+			if (zona != null && zona.GetNodeOrNull("Ocupado") == null) libres++;
+		}
+		return libres;
+	}
+
+	private async void MostrarAvisoApertura()
+	{
+		await ToSignal(GetTree().CreateTimer(0.5f), "timeout");
+		var lbl = new Label();
+		lbl.Text = "FASE DE APERTURA\nColoca tus 3 tropas para iniciar la batalla";
+		lbl.AddThemeColorOverride("font_color", Colors.Gold);
+		lbl.AddThemeFontSizeOverride("font_size", 22);
+		lbl.HorizontalAlignment = HorizontalAlignment.Center;
+		lbl.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
+		lbl.OffsetTop   = 120;
+		lbl.OffsetLeft  = -400;
+		lbl.OffsetRight = 400;
+		lbl.ZIndex      = 160;
+		AddChild(lbl);
+		Tween tw = CreateTween().SetParallel(true);
+		tw.TweenProperty(lbl, "modulate:a", 0.0f, 0.8f).SetDelay(2.8f);
+		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
+	}
+
+	// ── MENÚ TROPA ────────────────────────────────────────────────────────
+	public void MostrarMenuTropa(Node2D tropa)
+	{
+		if (!esTurnoJugador || movimientosRestantes <= 0 || juegoTerminado || tropa.IsInGroup("tropas_rival")) return;
+
+		// Fase de apertura: obligatorio colocar 3 cartas antes de poder atacar
+		if (_faseApertura)
+		{
+			int faltan = ContarSpotsLibresJugador();
+			MostrarAviso($"Coloca tus {faltan} tropa(s) restante(s)", Colors.Gold);
+			return;
+		}
+
+		// Fuera de apertura: bloquear ataque si no ha invocado aún
+		if (faseInvocacion)
+		{
+			MostrarAviso("Invoca una tropa primero", Colors.Yellow);
+			return;
+		}
+
+		tropaSeleccionada = tropa;
+
+		Button btnD = menuAcciones?.GetNodeOrNull<Button>("HBoxContainer/BtnDefensa");
+		if (btnD != null)
+		{
+			bool sin = Gi(tropa,"escudoActual") <= 0;
+			btnD.Disabled = sin; btnD.Modulate = sin ? new Color(1,1,1,0.4f) : Colors.White;
+		}
+		if (btnHabilidad != null)
+		{
+			bool tieneH = false;
+			try { tieneH = (bool)tropa.Call("TieneHabilidadEspecial"); } catch { }
+			bool usada  = HabilidadUsada(tropa);
+			btnHabilidad.Visible  = tieneH;
+			btnHabilidad.Disabled = usada;
+			btnHabilidad.Modulate = usada ? new Color(1,1,1,0.4f) : Colors.White;
+		}
+		menuAcciones.GlobalPosition = tropa.GetGlobalTransformWithCanvas().Origin + new Vector2(-50,-110);
+		menuAcciones.Visible = true;
+	}
+
+	public void _on_btn_ataque_pressed()
+	{
+		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
+		if (EstaBlockeada(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
+
+		ProcesarCombateFrontal(tropaSeleccionada, "tropas_rival");
+		tropaSeleccionada.Call("SetActivo", false);
+		menuAcciones.Visible = false;
+		RegistrarGastoMovimiento();
+	}
+
+	public void _on_btn_defensa_pressed()
+	{
+		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
+		if (EstaBlockeada(tropaSeleccionada) || Gi(tropaSeleccionada,"escudoActual") <= 0)
+		{ menuAcciones.Visible = false; return; }
+		tropaSeleccionada.Call("EjecutarAccion", "preparar_defensa");
+		tropaSeleccionada.Call("SetActivo", false);
+		menuAcciones.Visible = false;
+		RegistrarGastoMovimiento();
+	}
+
+	public void _on_btn_habilidad_pressed()
+	{
+		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
+		if (HabilidadUsada(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
+		tropaSeleccionada.Call("EjecutarAccion", "usar_habilidad");
+		tropaSeleccionada.Call("SetActivo", false);
+		menuAcciones.Visible = false;
+		RegistrarGastoMovimiento();
+	}
+
+	private bool HabilidadUsada(Node2D t) { try { return (bool)t.Get("habilidadUsada"); } catch { return false; } }
+
+	// ── BARAJAR / SACRIFICIO ──────────────────────────────────────────────
+	public void _on_barajar_pressed()
+	{
+		if (!esTurnoJugador || movimientosRestantes <= 0 || usosBarajar >= MAX_BARAJAR || _faseApertura) return;
+		usosBarajar++; EjecutarBarajadoLogico(); RegistrarGastoMovimiento();
+	}
+
+	private void EjecutarBarajadoLogico()
+	{
+		foreach (Node n in contenedorMano.GetChildren()) if (n is Carta c) { c.NombreSpot = "X"; c.QueueFree(); }
+		GetTree().CreateTimer(0.1f).Timeout += () => { PrepararMazoSinRepetir(); BarajarMazoInicial(); };
+	}
+
+	private void CompletarManoAlInicio()
+	{
+		foreach (string s in new[]{"Spot1","Spot2","Spot3"})
+		{
+			bool o = false;
+			foreach (Node n in contenedorMano.GetChildren())
+				if (n is Carta c && c.NombreSpot == s && !c.IsQueuedForDeletion()) o = true;
+			if (!o) CrearNuevaCartaEnSpot(s);
+		}
+	}
+
+	public void _on_sacrificar_pressed()
+	{
+		if (!esTurnoJugador || movimientosRestantes <= 0 || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500 || _faseApertura)
+		{ if (modoSacrificioActivo) CancelarSacrificio(); return; }
+		modoSacrificioActivo = !modoSacrificioActivo;
+		Input.SetCustomMouseCursor(modoSacrificioActivo ? iconoCursorSacrificio : null);
+	}
+
+	private void VerificarSacrificioEnCampo(Vector2 p)
+	{
+		foreach (Node2D punto in GetTree().GetNodesInGroup("zonas_invocacion"))
+		{
+			if (punto.GlobalPosition.DistanceTo(p) >= 110f) continue;
+			Node m = punto.GetNodeOrNull("Ocupado");
+			if (m == null || !m.HasMeta("tropa_instanciada")) continue;
+			Node2D t = (Node2D)m.GetMeta("tropa_instanciada");
+			if (!IsInstanceValid(t)) continue;
+			usosSacrificio++; EjecutarMuerteTropaSacrificada(t); CancelarSacrificio(); RegistrarGastoMovimiento(); break;
+		}
+	}
+
+	private void CancelarSacrificio() { modoSacrificioActivo = false; Input.SetCustomMouseCursor(null); }
+
+	// ── INVOCACIÓN ────────────────────────────────────────────────────────
+	public void TropaInvocada(Node2D puntoMod, PackedScene escenaTropa)
+	{
+		if (juegoTerminado || !esTurnoJugador || !puntoMod.IsInGroup("zonas_invocacion")) return;
+		if (puntoMod.GetNodeOrNull("Ocupado") != null || escenaTropa == null) return;
+		Node2D t = (Node2D)escenaTropa.Instantiate();
+		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition;
+		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
+		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
+
+		// Activar inmediatamente para que se pueda usar en el mismo turno
+		if (t.HasMethod("SetActivo")) t.Call("SetActivo", true);
+
+		tropasInvocadasTurno++;
+		faseInvocacion = false;
+
+		// Fase de apertura: pasar turno automáticamente al llenar los 3 carriles
+		if (_faseApertura && TodosSpotsOcupados())
+		{
+			MostrarAviso("Tropas listas. La IA prepara sus fuerzas...", Colors.LightGreen);
+			GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) CambiarTurno(); };
+			return;
+		}
+
+		GetTree().CreateTimer(0.1f).Timeout += () =>
+		{
+			int c = 0;
+			foreach (Node n in contenedorMano.GetChildren())
+				if (n is Carta ct && !ct.IsQueuedForDeletion() && ct.NombreSpot != "X") c++;
+			if (c == 0) GetTree().CreateTimer(1.0f).Timeout += () => { if (!juegoTerminado) EjecutarBarajadoLogico(); };
+		};
+	}
+
+	private void InvocacionRival(Node2D puntoMod, PackedScene escenaTropa)
+	{
+		if (escenaTropa == null) return;
+		Node2D t = (Node2D)escenaTropa.Instantiate();
+		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition; t.Scale = new Vector2(-1,1);
+		t.AddToGroup("tropas_rival"); t.SetMeta("carril", puntoMod.Name);
+		Node m = new Node(); m.Name = "Ocupado"; puntoMod.AddChild(m); m.SetMeta("tropa_instanciada", t);
+	}
+
+	// ── MUERTE ────────────────────────────────────────────────────────────
+	public void EjecutarMuerteTropaSacrificada(Node2D tropa)
+	{
+		if (!IsInstanceValid(tropa)) return;
+		tropa.Call("ReproducirDerrota");
+		int castigo = Gi(tropa, "vidaMaxima");
+
+		if (tropa.IsInGroup("tropas_rival"))
+		{
+			vidaRival -= castigo; if (vidaRival < 0) vidaRival = 0;
+			_tropasEliminadasRival++;
+		}
+		else
+		{
+			vidaJugador -= castigo; if (vidaJugador < 0) vidaJugador = 0;
+			_tropasEliminadasJugador++;
+		}
+
+		string carril = (string)tropa.GetMeta("carril");
+		Node2D zona = GetTree().Root.FindChild(carril, true, false) as Node2D;
+		zona?.GetNodeOrNull("Ocupado")?.Free();
+		Tween tw = CreateTween(); tw.TweenInterval(0.8f); tw.TweenProperty(tropa,"modulate:a",0.0f,0.6f);
+		tw.Finished += () => { if (IsInstanceValid(tropa)) tropa.QueueFree(); };
+		CheckEstadoJuego(); ActualizarInterfaz();
+	}
+
+	// ── MAZO ──────────────────────────────────────────────────────────────
+	private void PrepararMazoSinRepetir()
+	{
+		mazoIndices.Clear();
+		for (int i = 0; i < imagenesCartas.Length; i++) mazoIndices.Add(i);
+		for (int i = 0; i < mazoIndices.Count; i++)
+		{ int r = random.Next(i, mazoIndices.Count); (mazoIndices[i], mazoIndices[r]) = (mazoIndices[r], mazoIndices[i]); }
+		proximoIndiceMazo = 0;
+	}
+
+	public void BarajarMazoInicial()
+	{
+		CrearNuevaCartaEnSpot("Spot1");
+		CrearNuevaCartaEnSpot("Spot2");
+		CrearNuevaCartaEnSpot("Spot3");
+		MostrarTutorialInicio();
+	}
+
+	private async void MostrarTutorialInicio()
+	{
+		if (_turnosJugados > 0) return; // solo en el primer turno
+
+		await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
+
+		string[] pasos = {
+			"Bienvenido a Age of Cards",
+			"Arrastra una carta al campo para invocar tu tropa",
+			"Haz clic en tu tropa para atacar o defender",
+			"Usa hechizos para potenciar tus tropas o dañar al rival"
+		};
+
+		for (int i = 0; i < pasos.Length; i++)
+		{
+			MostrarAviso(pasos[i], Colors.White);
+			await ToSignal(GetTree().CreateTimer(2.5f), "timeout");
+		}
+	}
+
+	private void CrearNuevaCartaEnSpot(string id)
+	{
+		if (juegoTerminado || escenaCartaBase == null || contenedorMano == null) return;
+		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return;
+		Carta n = (Carta)escenaCartaBase.Instantiate(); n.NombreSpot = id; contenedorMano.AddChild(n);
+		Vector2 esc = new Vector2(6.5f,6.5f); n.Scale = esc;
+		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2);
+		n.GuardarEstadoOriginal();
+		if (proximoIndiceMazo >= mazoIndices.Count) PrepararMazoSinRepetir();
+		int idx = mazoIndices[proximoIndiceMazo++];
+		n.AsignarDatos(imagenesCartas[idx], escenasTropas[idx], idx);
+	}
+
+	private void CrearEscenaDeBatalla()
+	{
+		Marker2D m1 = GetNodeOrNull<Marker2D>("SpawnTrono1"), m2 = GetNodeOrNull<Marker2D>("SpawnTrono2");
+		if (m1 == null || m2 == null || escenaTronoRef == null) return;
+		tronoJugador = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoJugador);
+		tronoJugador.GlobalPosition = m1.GlobalPosition; tronoJugador.CargarHuevo(escenaReyHuevoRef, false);
+		tronoRival = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoRival);
+		tronoRival.GlobalPosition = m2.GlobalPosition; tronoRival.CargarHuevo(escenaDinoHuevoRef, true);
+	}
+
+	// Coloca 1 tropa inicial por lado en el carril central para que turno 1 sea accionable
+	private void ColocarTropasIniciales()
+	{
+		// Tropa del jugador — carril central (Mod2)
+		Node2D zonaJugador = GetTree().Root.FindChild("Mod2", true, false) as Node2D;
+		if (zonaJugador != null && zonaJugador.GetNodeOrNull("Ocupado") == null)
+		{
+			int idx = mazoIndices[proximoIndiceMazo % mazoIndices.Count];
+			proximoIndiceMazo++;
+			var escena = GD.Load<PackedScene>(escenasTropas[idx]);
+			if (escena != null)
+			{
+				Node2D t = (Node2D)escena.Instantiate();
+				AddChild(t); t.GlobalPosition = zonaJugador.GlobalPosition;
+				t.AddToGroup("tropas_jugador"); t.SetMeta("carril", "Mod2");
+				Node m = new Node(); m.Name = "Ocupado"; zonaJugador.AddChild(m); m.SetMeta("tropa_instanciada", t);
+				if (t.HasMethod("SetActivo")) t.Call("SetActivo", true);
+			}
+		}
+
+		// Tropa del rival — carril central (ModRival2)
+		Node2D zonaRival = GetTree().Root.FindChild("ModRival2", true, false) as Node2D;
+		if (zonaRival != null && zonaRival.GetNodeOrNull("Ocupado") == null)
+		{
+			var escena = ElegirTropaIA();
+			if (escena != null)
+			{
+				Node2D t = (Node2D)escena.Instantiate();
+				AddChild(t); t.GlobalPosition = zonaRival.GlobalPosition; t.Scale = new Vector2(-1, 1);
+				t.AddToGroup("tropas_rival"); t.SetMeta("carril", "ModRival2");
+				Node m = new Node(); m.Name = "Ocupado"; zonaRival.AddChild(m); m.SetMeta("tropa_instanciada", t);
+			}
+		}
+	}
+
+	// ── INTERFAZ ──────────────────────────────────────────────────────────
+	private void ActualizarInterfaz()
+	{
+		if (btnBarajar != null)    { bool b = !esTurnoJugador||usosBarajar>=MAX_BARAJAR||movimientosRestantes<=0; btnBarajar.Disabled=b; btnBarajar.Modulate=b?new Color(1,1,1,0.4f):Colors.White; }
+		if (btnSacrificio != null) { bool s = !esTurnoJugador||usosSacrificio>=MAX_SACRIFICIO||vidaJugador<=500||movimientosRestantes<=0; btnSacrificio.Disabled=s; btnSacrificio.Modulate=s?new Color(1,1,1,0.4f):Colors.White; }
+		if (_lblVida1 != null) _lblVida1.Text = $"HP {vidaJugador}/{vidaMaxJugador}";
+		if (_lblVida2 != null) _lblVida2.Text = $"HP {vidaRival}/{vidaMaxJugador}";
+		if (_barraHPJugador != null) _barraHPJugador.Value = (float)vidaJugador / vidaMaxJugador * 100;
+		if (_barraHPRival   != null) _barraHPRival.Value   = (float)vidaRival   / vidaMaxJugador * 100;
+		if (_lblTiempo != null) { int m=tiempoTotalPartida/60,s=tiempoTotalPartida%60; _lblTiempo.Text = $"Tiempo {m}:{s:00}"; }
+		if (_lblTurnoInfo != null)
+		{
+			var l = _lblTurnoInfo;
+			string dif     = _dificultadIA == 0 ? "Fácil" : _dificultadIA == 1 ? "Normal" : "Difícil";
+			bool urgente   = esTurnoJugador && tiempoTurnoActual <= 8;
+			string timer   = urgente ? $"{tiempoTurnoActual}s!" : $"{tiempoTurnoActual}s";
+			int maxEnergy  = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
+			int turnoNum   = _turnosJugados / 2 + 1;
+			l.Text = $"Turno {turnoNum}  ·  {dif}\nEnergía {movimientosRestantes}/{maxEnergy}\n{(esTurnoJugador ? "TU TURNO" : "TURNO RIVAL")}  {timer}";
+			l.Modulate = Colors.White;
+			Color acento = urgente        ? new Color(1f, 0.4f, 0.35f)
+						 : esTurnoJugador ? new Color(0.5f, 1f, 0.6f)
+						 :                  new Color(1f, 0.55f, 0.5f);
+			l.AddThemeColorOverride("font_color", acento);
+		}
+	}
+}

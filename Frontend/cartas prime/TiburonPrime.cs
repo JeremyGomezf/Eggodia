@@ -2,6 +2,8 @@ using Godot;
 
 public partial class TiburonPrime : TropaBase
 {
+	public override string Tipo => Tipos.AGUA;
+
 	private bool    _mordidaCargada;
 	private int     _ataqueOriginal;
 	private Vector2 _escalaOrig;

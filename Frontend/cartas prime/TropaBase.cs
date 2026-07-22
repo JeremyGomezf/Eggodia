@@ -38,6 +38,7 @@ public abstract partial class TropaBase : Area2D
 		_anim = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 		_contenedorStats = GetNodeOrNull<Control>("StatsTropa");
 		if (_contenedorStats != null) _contenedorStats.Visible = false;
+		CrearBadgeTipo();
 		ReproducirIdle();
 	}
 
@@ -101,6 +102,39 @@ public abstract partial class TropaBase : Area2D
 	public virtual bool AutogestionaDañoAtaque() => false;
 
 	public virtual bool TieneHabilidadEspecial() => true;
+
+	/// <summary>Tipo elemental de la tropa. Subclases lo sobreescriben. Ver Tipos.cs para matchups.</summary>
+	public virtual string Tipo => Tipos.NEUTRO;
+
+	protected void CrearBadgeTipo()
+	{
+		if (Tipo == Tipos.NEUTRO) return;
+		var badge = new Panel();
+		badge.Name = "BadgeTipo";
+		badge.CustomMinimumSize = new Vector2(22, 22);
+		badge.Size = new Vector2(22, 22);
+		badge.Position = new Vector2(-42, -58);
+		badge.ZIndex = 40;
+		var sb = new StyleBoxFlat();
+		sb.BgColor = Tipos.Color(Tipo);
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
+		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 11;
+		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
+		sb.BorderColor = new Color(0, 0, 0, 0.8f);
+		badge.AddThemeStyleboxOverride("panel", sb);
+		var lbl = new Label();
+		lbl.Text = Tipos.Inicial(Tipo);
+		lbl.AddThemeColorOverride("font_color", Colors.White);
+		lbl.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.9f));
+		lbl.AddThemeConstantOverride("shadow_offset_x", 1);
+		lbl.AddThemeConstantOverride("shadow_offset_y", 1);
+		lbl.AddThemeFontSizeOverride("font_size", 13);
+		lbl.HorizontalAlignment = HorizontalAlignment.Center;
+		lbl.VerticalAlignment   = VerticalAlignment.Center;
+		lbl.AnchorRight = 1; lbl.AnchorBottom = 1;
+		badge.AddChild(lbl);
+		AddChild(badge);
+	}
 
 	protected void EfectoGolpe()
 	{

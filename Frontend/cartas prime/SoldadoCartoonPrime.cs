@@ -3,6 +3,8 @@ using Godot;
 /// <summary>SoldadoCartoon — Era Moderna: ráfaga de 4 balas (200 dmg total) y cobertura sostenida (50 dmg cada 3 s).</summary>
 public partial class SoldadoCartoonPrime : TropaBase
 {
+	public override string Tipo => Tipos.METAL;
+
 	// ── ESTADO HABILIDAD ──────────────────────────────────────────────────────
 	private bool   _habilidadActiva = false;
 	private bool   _derrotaIniciada = false;

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public partial class TRexPrime : TropaBase
 {
+	public override string Tipo => Tipos.NATURALEZA;
+
 	private bool _rugidoActivo;
 	private int  _turnosRugido;
 	private List<(Node2D tropa, int ataqueOrig)> _afectados = new();

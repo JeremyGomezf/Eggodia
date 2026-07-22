@@ -4,6 +4,8 @@ using System.Collections.Generic;
 /// <summary>Golem — habilidad: da +200 escudo a los 2 aliados más débiles.</summary>
 public partial class GolemPrime : TropaBase
 {
+	public override string Tipo => Tipos.METAL;
+
 	public override void _Ready()
 	{
 		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 450; escudoActual = escudoMaximo = 500; puntosAtaque = 350; }

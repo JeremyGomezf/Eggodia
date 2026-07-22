@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public partial class DamaPrime : TropaBase
 {
+	public override string Tipo => Tipos.SOMBRA;
+
 	private bool _inspiracionActiva;
 	private int  _turnosInspiracion;
 	private List<(Node2D tropa, int ataqueOrig)> _inspirados = new();

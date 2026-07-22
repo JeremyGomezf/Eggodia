@@ -1,10 +1,13 @@
 using Godot;
+using System;
 
 public partial class MenuPrincipal : Control
 {
 	[Export] public string RutaEscenaJuego     = "res://escenas/gameplay/campo_1.tscn";
 	[Export] public string RutaConstructorMazo = "res://DatosCartas/MenuConstructor.tscn";
 	[Export] public string RutaCampoPruebas    = "res://escenas/gameplay/campo_pruebas.tscn";
+	[Export] public string RutaComoJugar       = "res://escenas/menu/PantallaComoJugar.tscn";
+	[Export] public string RutaBestiario       = "res://escenas/menu/PantallaBestiario.tscn";
 
 	private AudioStreamPlayer _musicaFondo;
 	private PanelContainer _panelSettings;
@@ -16,6 +19,13 @@ public partial class MenuPrincipal : Control
 		var btnSalir    = GetNodeOrNull<Button>("VBoxContainer/SALIR");
 
 		_panelSettings = GetNodeOrNull<PanelContainer>("PanelSettings");
+
+		// HUD de monedas — esquina superior derecha
+		var hudMonedas = MonedasHUD.Crear();
+		hudMonedas.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+		hudMonedas.OffsetLeft = -180; hudMonedas.OffsetTop = 20;
+		hudMonedas.OffsetRight = -20; hudMonedas.OffsetBottom = 56;
+		AddChild(hudMonedas);
 
 		if (btnJugar    != null) 
 		{
@@ -63,7 +73,41 @@ public partial class MenuPrincipal : Control
 			// Insertar antes de SALIR (índice 2)
 			vbox.AddChild(btnPruebas);
 			vbox.MoveChild(btnPruebas, 2);
+
+			var btnBestiario = CrearBotonAzul("BESTIARIO", 28, () => GetTree().ChangeSceneToFile(RutaBestiario));
+			vbox.AddChild(btnBestiario);
+			vbox.MoveChild(btnBestiario, 2);
+
+			var btnAyuda = CrearBotonAzul("CÓMO JUGAR", 28, () => GetTree().ChangeSceneToFile(RutaComoJugar));
+			vbox.AddChild(btnAyuda);
+			vbox.MoveChild(btnAyuda, 2);
 		}
+	}
+
+	private Button CrearBotonAzul(string texto, int fontSize, Action onPress)
+	{
+		var btn = new Button();
+		btn.Text              = texto;
+		btn.CustomMinimumSize = new Vector2(250, 70);
+		btn.AddThemeFontSizeOverride("font_size", fontSize);
+
+		var est = new StyleBoxFlat();
+		est.BgColor     = new Color(0.10f, 0.22f, 0.40f, 0.90f);
+		est.BorderColor = new Color(0.40f, 0.70f, 1.00f, 0.85f);
+		est.SetBorderWidthAll(3);
+		est.SetCornerRadiusAll(10);
+		btn.AddThemeStyleboxOverride("normal", est);
+
+		var estHover = new StyleBoxFlat();
+		estHover.BgColor     = new Color(0.15f, 0.35f, 0.60f, 0.95f);
+		estHover.BorderColor = new Color(0.55f, 0.85f, 1.00f, 1.00f);
+		estHover.SetBorderWidthAll(3);
+		estHover.SetCornerRadiusAll(10);
+		btn.AddThemeStyleboxOverride("hover", estHover);
+
+		btn.Pressed += () => onPress();
+		AgregarAnimacionHover(btn);
+		return btn;
 	}
 
 	private void AgregarAnimacionHover(Button btn)

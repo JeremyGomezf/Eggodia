@@ -1,0 +1,199 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://escenas/gameplay/PantallaVictoria.cs" id="1_pvict"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn1"]
+bg_color = Color(0.85, 0.65, 0.15, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0.9, 0.7, 0.2, 0.5)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn1_hover"]
+bg_color = Color(1.0, 0.78, 0.25, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(1.0, 0.8, 0.3, 0.7)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn2"]
+bg_color = Color(0.2, 0.25, 0.35, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn2_hover"]
+bg_color = Color(0.3, 0.4, 0.6, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_statspanel"]
+bg_color = Color(0.06, 0.08, 0.14, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85, 0.7, 0.25, 0.6)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 22.0
+content_margin_top = 16.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+
+[node name="PantallaVictoria" type="CanvasLayer"]
+process_mode = 3
+layer = 150
+script = ExtResource("1_pvict")
+
+[node name="Overlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.02, 0.05, 0.88)
+
+[node name="Rayos" type="ColorRect" parent="Overlay"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1.0, 0.85, 0.35, 0.06)
+
+[node name="Confetti" type="CPUParticles2D" parent="Overlay"]
+position = Vector2(640, -30)
+amount = 120
+lifetime = 4.0
+emission_shape = 3
+emission_rect_extents = Vector2(700, 1)
+direction = Vector2(0, 1)
+spread = 25.0
+gravity = Vector2(0, 180)
+initial_velocity_min = 80.0
+initial_velocity_max = 180.0
+angular_velocity_min = -180.0
+angular_velocity_max = 180.0
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+color = Color(1, 0.85, 0.3, 1)
+color_ramp = null
+
+[node name="VBox" type="VBoxContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -220.0
+offset_right = 280.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 22
+
+[node name="Titulo" type="Label" parent="Overlay/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.85, 0.3, 1)
+theme_override_colors/font_shadow_color = Color(0.5, 0.35, 0, 1)
+theme_override_constants/shadow_offset_y = 6
+theme_override_constants/shadow_offset_x = 0
+theme_override_font_sizes/font_size = 68
+text = "¡VICTORIA!"
+horizontal_alignment = 1
+
+[node name="Subtitulo" type="Label" parent="Overlay/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 18
+text = "Tu ejército se alza triunfante en el campo de batalla."
+horizontal_alignment = 1
+
+[node name="PanelStats" type="PanelContainer" parent="Overlay/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_statspanel")
+
+[node name="StatsGrid" type="GridContainer" parent="Overlay/VBox/PanelStats"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 8
+
+[node name="LblDañoK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 15
+text = "Daño infligido"
+
+[node name="LblDañoV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+
+[node name="LblElimK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 15
+text = "Tropas eliminadas"
+
+[node name="LblElimV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+
+[node name="LblTurnosK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 15
+text = "Turnos jugados"
+
+[node name="LblTurnosV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+
+[node name="LblRachaK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 15
+text = "Racha actual"
+
+[node name="LblRachaV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.75, 0.3, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+
+[node name="BtnJugarDeNuevo" type="Button" parent="Overlay/VBox"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.1, 0.02, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn1")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn1_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn1_hover")
+text = "JUGAR DE NUEVO"
+
+[node name="BtnMenu" type="Button" parent="Overlay/VBox"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn2_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn2_hover")
+text = "MENÚ PRINCIPAL"

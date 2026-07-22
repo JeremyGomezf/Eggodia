@@ -3,6 +3,8 @@ using Godot;
 /// <summary>Torre — habilidad: Forma Gigante por 2 turnos (x2 ataque y escudo, x1.6 tamaño).</summary>
 public partial class TorrePrime : TropaBase
 {
+	public override string Tipo => Tipos.METAL;
+
 	private bool    _habilidadActiva = false;
 	private int     _turnosHabilidad = 0;
 	private int     _ataqueOrig, _escudoMaxOrig;
