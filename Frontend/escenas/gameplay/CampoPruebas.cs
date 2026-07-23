@@ -71,7 +71,7 @@ public partial class CampoPruebas : Node2D
 	{
 		SincronizarSlots();
 		ManejarMuerte();   // revisa cada frame: el daño de tropas con ráfaga (multi-hit
-		                    // por fotograma) llega de forma asíncrona, no en el instante del clic
+							// por fotograma) llega de forma asíncrona, no en el instante del clic
 		ActualizarStats();
 	}
 

@@ -3,8 +3,8 @@
 [ext_resource type="Script" uid="uid://dkgrsfn4rs1ty" path="res://cartas prime/SoldadoRealPrime.cs" id="1_8siqb"]
 [ext_resource type="Texture2D" uid="uid://yok2ggvm5g5k" path="res://imagenes/sprites/Guerra Cartoons/soldado explosivo 1.png" id="2_eqcln"]
 [ext_resource type="Texture2D" uid="uid://bm752dc1dukw0" path="res://imagenes/sprites/Guerra Cartoons/soldado explosivo 2.png" id="3_a3amn"]
-[ext_resource type="Texture2D" uid="uid://b4vpav7caat8" path="res://imagenes/sprites/Guerra Cartoons/Soldado explosivo 3.png" id="4_41iuf"]
-[ext_resource type="Texture2D" uid="uid://b3lkfng2lbvbq" path="res://imagenes/sprites/Guerra Cartoons/Daño 4 soldado explosivo .png" id="5_ym364"]
+[ext_resource type="Texture2D" uid="uid://djmjqa33qgyl0" path="res://imagenes/sprites/Guerra Cartoons/Soldado explosivo 3.png" id="4_41iuf"]
+[ext_resource type="Texture2D" uid="uid://d3sgih4h05dxb" path="res://imagenes/sprites/Guerra Cartoons/Daño 4 soldado explosivo_.png" id="5_8siqb"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]
 size = Vector2(146, 126)
@@ -169,24 +169,24 @@ region = Rect2(11284, 4293, 1612, 1431)
 atlas = ExtResource("4_41iuf")
 region = Rect2(12896, 4293, 1612, 1431)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_a065i"]
-atlas = ExtResource("5_ym364")
+[sub_resource type="AtlasTexture" id="AtlasTexture_eqcln"]
+atlas = ExtResource("5_8siqb")
 region = Rect2(0, 0, 1612, 1431)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_v75sh"]
-atlas = ExtResource("5_ym364")
+[sub_resource type="AtlasTexture" id="AtlasTexture_a3amn"]
+atlas = ExtResource("5_8siqb")
 region = Rect2(1612, 0, 1612, 1431)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_qp6df"]
-atlas = ExtResource("5_ym364")
+[sub_resource type="AtlasTexture" id="AtlasTexture_41iuf"]
+atlas = ExtResource("5_8siqb")
 region = Rect2(3224, 0, 1612, 1431)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_t7kum"]
-atlas = ExtResource("5_ym364")
+[sub_resource type="AtlasTexture" id="AtlasTexture_ym364"]
+atlas = ExtResource("5_8siqb")
 region = Rect2(4836, 0, 1612, 1431)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_4n1p5"]
-atlas = ExtResource("5_ym364")
+[sub_resource type="AtlasTexture" id="AtlasTexture_a065i"]
+atlas = ExtResource("5_8siqb")
 region = Rect2(6448, 0, 1612, 1431)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_d5gxi"]
@@ -763,19 +763,19 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_eqcln")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a3amn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_41iuf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ym364")
+}, {
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_a065i")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_v75sh")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_qp6df")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_t7kum")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_4n1p5")
 }],
 "loop": false,
 "name": &"daño 4",
@@ -1357,7 +1357,7 @@ shape = SubResource("RectangleShape2D_opij5")
 position = Vector2(-2, -57.000004)
 scale = Vector2(0.167, 0.167)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"idle 1"
+animation = &"daño 4"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://csdtgt7ruliwf"
-path="res://.godot/imported/Soldado3.png-8b54424e3995cd2d1851e6f991aed549.ctex"
+uid="uid://d3sgih4h05dxb"
+path="res://.godot/imported/Daño 4 soldado explosivo_.png-074046529458f3981d4d65561c160870.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/sprites/Soldado3.png"
-dest_files=["res://.godot/imported/Soldado3.png-8b54424e3995cd2d1851e6f991aed549.ctex"]
+source_file="res://imagenes/sprites/Guerra Cartoons/Daño 4 soldado explosivo_.png"
+dest_files=["res://.godot/imported/Daño 4 soldado explosivo_.png-074046529458f3981d4d65561c160870.ctex"]
 
 [params]
 

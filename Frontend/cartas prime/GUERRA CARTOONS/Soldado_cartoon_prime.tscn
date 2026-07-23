@@ -385,7 +385,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"idle",
-"speed": 12.0
+"speed": 11.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -512,6 +512,7 @@ position = Vector2(6, -37)
 scale = Vector2(0.2, 0.2)
 sprite_frames = SubResource("SpriteFrames_4s16o")
 animation = &"idle"
+frame_progress = 0.9496332
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3
