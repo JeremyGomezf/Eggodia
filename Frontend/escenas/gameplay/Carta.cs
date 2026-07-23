@@ -31,13 +31,16 @@ public partial class Carta : Control
 	{
 		IdCarta = id;
 		var foto = GetNodeOrNull<TextureRect>("foto");
-		if (foto != null) 
+		if (foto != null && ResourceLoader.Exists(rutaImg))
 		{
 			foto.Texture = GD.Load<Texture2D>(rutaImg);
 			foto.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 			foto.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 		}
-		EscenaTropa = GD.Load<PackedScene>(rutaTropa);
+		if (ResourceLoader.Exists(rutaTropa))
+			EscenaTropa = GD.Load<PackedScene>(rutaTropa);
+		else
+			GD.PrintErr($"[Carta] Escena de tropa no encontrada: {rutaTropa}");
 	}
 
 	public override void _GuiInput(InputEvent @event)

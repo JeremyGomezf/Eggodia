@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dpjsmimi7gyi4"]
 
-[ext_resource type="Script" uid="uid://dh8g1axcnwvxm" path="res://ColeccionPanel.cs" id="1_col"]
+[ext_resource type="Script" path="res://ColeccionPanel.cs" id="1_col"]
 [ext_resource type="PackedScene" uid="uid://cc4dl7d6qlseb" path="res://DatosCartas/CartaMini.tscn" id="2_mini"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_col_bg"]

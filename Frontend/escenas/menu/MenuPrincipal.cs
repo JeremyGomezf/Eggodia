@@ -78,10 +78,28 @@ public partial class MenuPrincipal : Control
 			vbox.AddChild(btnBestiario);
 			vbox.MoveChild(btnBestiario, 2);
 
-			var btnAyuda = CrearBotonAzul("CÓMO JUGAR", 28, () => GetTree().ChangeSceneToFile(RutaComoJugar));
-			vbox.AddChild(btnAyuda);
-			vbox.MoveChild(btnAyuda, 2);
+			// "CÓMO JUGAR" solo aparece si el jugador aún no ha visto el tutorial
+			if (!Preferencias.TutorialVisto)
+			{
+				var btnAyuda = CrearBotonAzul("CÓMO JUGAR", 28, AbrirComoJugar);
+				vbox.AddChild(btnAyuda);
+				vbox.MoveChild(btnAyuda, 2);
+			}
 		}
+
+		// Primer inicio del juego: abrir el tutorial automáticamente (una sola vez)
+		if (!Preferencias.TutorialVisto)
+		{
+			Preferencias.TutorialVisto = true;   // marcar ya visto (evita repetir y bucles)
+			// Callable.From evita el fallo silencioso de CallDeferred(nombre) con métodos privados de C#
+			Callable.From(AbrirComoJugar).CallDeferred();
+		}
+	}
+
+	private void AbrirComoJugar()
+	{
+		Preferencias.TutorialVisto = true;
+		GetTree().ChangeSceneToFile(RutaComoJugar);
 	}
 
 	private Button CrearBotonAzul(string texto, int fontSize, Action onPress)

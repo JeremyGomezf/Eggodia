@@ -30,20 +30,29 @@ public partial class Campo1 : Node2D
 	private async void MostrarAvisoApertura()
 	{
 		await ToSignal(GetTree().CreateTimer(0.5f), "timeout");
+		if (juegoTerminado) return;
+
+		var host = new CenterContainer();
+		host.SetAnchorsPreset(Control.LayoutPreset.VcenterWide);
+		host.OffsetTop = -60; host.OffsetBottom = 60;
+		host.MouseFilter = Control.MouseFilterEnum.Ignore;
+		host.ZIndex = 160;
+
 		var lbl = new Label();
 		lbl.Text = "FASE DE APERTURA\nColoca tus 3 tropas para iniciar la batalla";
 		lbl.AddThemeColorOverride("font_color", Colors.Gold);
-		lbl.AddThemeFontSizeOverride("font_size", 22);
+		lbl.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.9f));
+		lbl.AddThemeConstantOverride("shadow_offset_y", 2);
+		lbl.AddThemeConstantOverride("outline_size", 5);
+		lbl.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.9f));
+		lbl.AddThemeFontSizeOverride("font_size", 24);
 		lbl.HorizontalAlignment = HorizontalAlignment.Center;
-		lbl.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
-		lbl.OffsetTop   = 120;
-		lbl.OffsetLeft  = -400;
-		lbl.OffsetRight = 400;
-		lbl.ZIndex      = 160;
-		AddChild(lbl);
+		host.AddChild(lbl);
+		CapaHUD().AddChild(host);
+
 		Tween tw = CreateTween().SetParallel(true);
-		tw.TweenProperty(lbl, "modulate:a", 0.0f, 0.8f).SetDelay(2.8f);
-		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
+		tw.TweenProperty(host, "modulate:a", 0.0f, 0.8f).SetDelay(2.8f);
+		tw.Finished += () => { if (IsInstanceValid(host)) host.QueueFree(); };
 	}
 
 	// ── MENÚ TROPA ────────────────────────────────────────────────────────
@@ -192,12 +201,10 @@ public partial class Campo1 : Node2D
 			return;
 		}
 
-		GetTree().CreateTimer(0.1f).Timeout += () =>
+		// La mano SIEMPRE se mantiene en 3 cartas: repone el hueco tras invocar
+		GetTree().CreateTimer(0.12f).Timeout += () =>
 		{
-			int c = 0;
-			foreach (Node n in contenedorMano.GetChildren())
-				if (n is Carta ct && !ct.IsQueuedForDeletion() && ct.NombreSpot != "X") c++;
-			if (c == 0) GetTree().CreateTimer(1.0f).Timeout += () => { if (!juegoTerminado) EjecutarBarajadoLogico(); };
+			if (!juegoTerminado) CompletarManoAlInicio();
 		};
 	}
 
@@ -279,7 +286,7 @@ public partial class Campo1 : Node2D
 		if (juegoTerminado || escenaCartaBase == null || contenedorMano == null) return;
 		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return;
 		Carta n = (Carta)escenaCartaBase.Instantiate(); n.NombreSpot = id; contenedorMano.AddChild(n);
-		Vector2 esc = new Vector2(6.5f,6.5f); n.Scale = esc;
+		Vector2 esc = new Vector2(3.0f,3.0f); n.Scale = esc;   // compacta; crece al pasar el dedo
 		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2);
 		n.GuardarEstadoOriginal();
 		if (proximoIndiceMazo >= mazoIndices.Count) PrepararMazoSinRepetir();

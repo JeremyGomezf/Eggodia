@@ -53,22 +53,40 @@ public partial class Campo1 : Node2D
 		AnimarToast(panel, subida: 40f, duracion: 2.2f);
 	}
 
+	private Control _avisoActual;
+
 	private void MostrarAviso(string texto, Color color)
 	{
-		var panel = ConstruirToast(texto, color, 16);
-		panel.Position = new Vector2(440, 100);
-		panel.ZIndex = 200;
-		AddChild(panel);
-		AnimarToast(panel, subida: 0f, duracion: 2.0f);
+		// y=175: debajo del bloque de info de turno (que ocupa ~78-150)
+		MostrarAvisoCentrado(ConstruirToast(texto, color, 16), 175f, 2.0f);
 	}
 
 	private void MostrarAvisoFase(string msg)
 	{
-		var panel = ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), 16);
-		panel.Position = new Vector2(440, 30);
+		MostrarAvisoCentrado(ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), 16), 175f, 2.0f);
+	}
+
+	// Muestra un aviso centrado en la parte superior. Solo uno a la vez (evita solapamiento).
+	private void MostrarAvisoCentrado(PanelContainer panel, float top, float duracion)
+	{
+		if (_avisoActual != null && IsInstanceValid(_avisoActual)) _avisoActual.QueueFree();
+
+		var host = new CenterContainer();
+		host.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+		host.OffsetTop = top; host.OffsetBottom = top + 60;
+		host.MouseFilter = Control.MouseFilterEnum.Ignore;
+		host.ZIndex = 200;
 		panel.ZIndex = 200;
-		AddChild(panel);
-		AnimarToast(panel, subida: 0f, duracion: 2.0f);
+		host.AddChild(panel);
+		CapaHUD().AddChild(host);
+		_avisoActual = host;
+
+		host.Modulate = new Color(1, 1, 1, 0);
+		Tween tw = host.CreateTween();
+		tw.TweenProperty(host, "modulate:a", 1.0f, 0.22f);
+		tw.TweenInterval(duracion);
+		tw.TweenProperty(host, "modulate:a", 0.0f, 0.4f);
+		tw.Finished += () => { if (IsInstanceValid(host)) host.QueueFree(); };
 	}
 
 	private PanelContainer ConstruirToast(string texto, Color acento, int fontSize, string badge = null)

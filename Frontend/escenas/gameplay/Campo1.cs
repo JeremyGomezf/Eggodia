@@ -97,7 +97,7 @@ public partial class Campo1 : Node2D
 		"res://imagenes/CartasPng/PeonCart.png",     "res://imagenes/CartasPng/EncebolladoCart.png",
 		"res://imagenes/CartasPng/CalamarGCart.png", "res://imagenes/CartasPng/CaballoCart.png",
 		"res://imagenes/CartasPng/DamaCart.png",     "res://imagenes/CartasPng/TorreCart.png",
-		"res://imagenes/CartasPng/SoldadoCartoonCart.png"
+		"res://imagenes/CartasPng/SoldRealCart.png"   // placeholder: SoldadoCartoonCart.png aún no existe
 	};
 
 	private string[] escenasTropas = {
