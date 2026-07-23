@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://inps3xbcbpi4"
-path="res://.godot/imported/escenario1.png-a8a1cb46ab99d855d2506da94f1d6957.ctex"
+uid="uid://i88c3872560d"
+path="res://.godot/imported/Menu 2.png-0c4bbce424b3682a79a977117a5d436b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/PersonajesPng/escenario1.png"
-dest_files=["res://.godot/imported/escenario1.png-a8a1cb46ab99d855d2506da94f1d6957.ctex"]
+source_file="res://imagenes/MenuPng/Menu 2.png"
+dest_files=["res://.godot/imported/Menu 2.png-0c4bbce424b3682a79a977117a5d436b.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

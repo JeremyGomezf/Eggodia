@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://b0kjxhih543ce"]
 
-[ext_resource type="Texture2D" uid="uid://djdsv3gcq1ash" path="res://imagenes/MenuPng/Tematicafondo.png" id="1_bj1uy"]
 [ext_resource type="Script" uid="uid://irvsriti704n" path="res://escenas/menu/MenuPrincipal.cs" id="1_kni6g"]
 [ext_resource type="Texture2D" uid="uid://nhaihcreuvkw" path="res://imagenes/MenuPng/Play.png" id="2_gmcsc"]
 [ext_resource type="Texture2D" uid="uid://bfwg4iyvsnyld" path="res://imagenes/MenuPng/Play1.png" id="2_ul6ys"]
+[ext_resource type="Texture2D" uid="uid://i88c3872560d" path="res://imagenes/MenuPng/Menu 2.png" id="2_vvvfs"]
 [ext_resource type="Texture2D" uid="uid://dc1m7m3uykmeq" path="res://imagenes/MenuPng/Settings3.png" id="3_a6518"]
 [ext_resource type="Texture2D" uid="uid://cbw6olkiw2yq0" path="res://imagenes/MenuPng/Play2.png" id="4_ns3he"]
 [ext_resource type="Texture2D" uid="uid://c7fboml60kgfx" path="res://imagenes/MenuPng/Settings1.png" id="5_yxm4i"]
@@ -40,18 +40,6 @@ texture = ExtResource("9_kni6g")
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_palpy"]
 texture = ExtResource("10_nx6e2")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_settings_bg"]
-bg_color = Color(0.08, 0.1, 0.14, 0.95)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.4, 0.6, 0.9, 0.8)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-
 [node name="MenuPrincipal" type="Control" unique_id=1669744344]
 layout_mode = 3
 anchors_preset = 15
@@ -60,17 +48,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_kni6g")
-RutaEscenaJuego = "res://escenas/gameplay/campo_1.tscn"
-RutaConstructorMazo = "res://DatosCartas/MenuConstructor.tscn"
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=393314323]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_left = -0.20104167
+anchor_top = -0.012037037
+anchor_right = 1.2798177
+anchor_bottom = 1.2314814
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("1_bj1uy")
+scale = Vector2(0.96000016, 1)
+texture = ExtResource("2_vvvfs")
 expand_mode = 1
 stretch_mode = 6
 metadata/_edit_use_anchors_ = true
@@ -114,6 +103,6 @@ theme_override_styles/normal = SubResource("StyleBoxTexture_kcxxd")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_ul6ys")
 theme_override_styles/hover = SubResource("StyleBoxTexture_palpy")
 
-[node name="PanelSettings" parent="." instance=ExtResource("11_sett")]
+[node name="PanelSettings" parent="." unique_id=1345093295 instance=ExtResource("11_sett")]
 visible = false
 layout_mode = 1
