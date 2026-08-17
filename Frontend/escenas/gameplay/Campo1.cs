@@ -173,6 +173,7 @@ public partial class Campo1 : Node2D
 		BajarManoManual();
 		ActualizarInterfaz();
 		MostrarAvisoApertura();
+		EstilizarIndicadoresInvocacion();
 
 		// Restaurar racha desde sesión
 		if (SesionJuego.Instance != null)
@@ -236,5 +237,44 @@ public partial class Campo1 : Node2D
 		if (!esTurnoJugador || juegoTerminado) return;
 		if (_faseApertura) { MostrarAviso("Coloca tus 3 tropas primero", Colors.Gold); return; }
 		CambiarTurno();
+	}
+
+	private void EstilizarIndicadoresInvocacion()
+	{
+		foreach (var grupo in new[] { "zonas_invocacion", "zonas_invocacion_rival" })
+		{
+			bool esRival = grupo.Contains("rival");
+			foreach (Node2D zona in GetTree().GetNodesInGroup(grupo))
+			{
+				var ind = zona.GetNodeOrNull<ColorRect>("Indicador");
+				if (ind != null)
+				{
+					ind.Visible = false; // Ocultamos el feo original
+
+					// Crear un nuevo indicador circular brillante
+					var panel = new Panel();
+					panel.Name = "IndicadorMejorado";
+					panel.CustomMinimumSize = new Vector2(40, 40);
+					panel.Size = new Vector2(40, 40);
+					panel.Position = new Vector2(-20, -20); // Centrado
+
+					var style = new StyleBoxFlat();
+					style.BgColor = new Color(0, 0, 0, 0.25f); // Fondo translúcido oscuro
+					style.BorderWidthLeft = style.BorderWidthRight = style.BorderWidthTop = style.BorderWidthBottom = 2;
+					style.BorderColor = esRival ? new Color(1f, 0.15f, 0.2f, 0.85f) : new Color(0.15f, 0.65f, 1f, 0.85f);
+					style.CornerRadiusTopLeft = style.CornerRadiusTopRight = style.CornerRadiusBottomLeft = style.CornerRadiusBottomRight = 20; // Círculo
+					style.ShadowColor = esRival ? new Color(1f, 0.15f, 0.2f, 0.5f) : new Color(0.15f, 0.65f, 1f, 0.5f);
+					style.ShadowSize = 8;
+
+					panel.AddThemeStyleboxOverride("panel", style);
+					zona.AddChild(panel);
+
+					// Animación de pulso
+					Tween tw = panel.CreateTween().SetLoops();
+					tw.TweenProperty(panel, "modulate:a", 0.35f, 0.8f);
+					tw.TweenProperty(panel, "modulate:a", 1.0f, 0.8f);
+				}
+			}
+		}
 	}
 }

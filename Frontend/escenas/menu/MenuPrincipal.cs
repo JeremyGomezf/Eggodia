@@ -9,90 +9,169 @@ public partial class MenuPrincipal : Control
 	[Export] public string RutaComoJugar       = "res://escenas/menu/PantallaComoJugar.tscn";
 	[Export] public string RutaBestiario       = "res://escenas/menu/PantallaBestiario.tscn";
 
-	private AudioStreamPlayer _musicaFondo;
+	// Nodos de animación y UI
+	private Control _islaContainer;
+	private TextureRect _portalNode;
+	private TextureRect _reyHuevoNode;
+	
+	private Label _lblCoins;
 	private PanelContainer _panelSettings;
+	private PanelContainer _popupDialog;
+
+	// Posiciones iniciales
+	private Vector2 _posInicialIsla;
+	private Vector2 _posInicialReyHuevo;
+
+	private float _tiempoAcumulado = 0f;
 
 	public override void _Ready()
 	{
-		var btnJugar    = GetNodeOrNull<Button>("VBoxContainer/JUGAR");
-		var btnOpciones = GetNodeOrNull<Button>("VBoxContainer/OPCIONES");
-		var btnSalir    = GetNodeOrNull<Button>("VBoxContainer/SALIR");
+		// 1. Obtener referencias del escenario, portal y huevo coronado
+		_islaContainer     = GetNodeOrNull<Control>("IslaContainer");
+		_portalNode        = GetNodeOrNull<TextureRect>("IslaContainer/Portal");
+		_reyHuevoNode      = GetNodeOrNull<TextureRect>("IslaContainer/ReyHuevoCrowned");
 
+		// Guardar posiciones iniciales si los nodos existen
+		if (_islaContainer   != null) _posInicialIsla = _islaContainer.Position;
+		if (_reyHuevoNode    != null) 
+		{
+			_posInicialReyHuevo = _reyHuevoNode.Position;
+			_reyHuevoNode.PivotOffset = new Vector2(_reyHuevoNode.Size.X / 2, _reyHuevoNode.Size.Y * 0.8f);
+			AgregarAnimacionHover(_reyHuevoNode);
+		}
+
+		// 2. Obtener UI de ajustes y diálogos
 		_panelSettings = GetNodeOrNull<PanelContainer>("PanelSettings");
+		_popupDialog   = GetNodeOrNull<PanelContainer>("PopupDialog");
 
-		// HUD de monedas — esquina superior derecha
-		var hudMonedas = MonedasHUD.Crear();
-		hudMonedas.SetAnchorsPreset(Control.LayoutPreset.TopRight);
-		hudMonedas.OffsetLeft = -180; hudMonedas.OffsetTop = 20;
-		hudMonedas.OffsetRight = -20; hudMonedas.OffsetBottom = 56;
-		AddChild(hudMonedas);
-
-		if (btnJugar    != null) 
+		// 3. Vincular botones principales (Cartas, Tienda, VS Bot, Online)
+		var btnCartas = GetNodeOrNull<TextureButton>("CARTAS");
+		if (btnCartas != null)
 		{
-			btnJugar.Pressed += () => GetTree().ChangeSceneToFile(RutaConstructorMazo); 
-			AgregarAnimacionHover(btnJugar);
-		}
-		if (btnOpciones != null) 
-		{
-			btnOpciones.Pressed += MostrarSettings;
-			AgregarAnimacionHover(btnOpciones);
-		}
-		if (btnSalir    != null)
-		{
-			btnSalir.Pressed += () => GetTree().Quit();
-			AgregarAnimacionHover(btnSalir);
+			btnCartas.Pressed += () => GetTree().ChangeSceneToFile(RutaConstructorMazo);
+			AgregarAnimacionHover(btnCartas);
 		}
 
-		// Botón PRUEBAS — creado por código para no necesitar assets de imagen
-		var vbox = GetNodeOrNull<VBoxContainer>("VBoxContainer");
-		if (vbox != null)
+		var btnTienda = GetNodeOrNull<TextureButton>("TIENDA");
+		if (btnTienda != null)
 		{
-			var btnPruebas = new Button();
-			btnPruebas.Name              = "PRUEBAS";
-			btnPruebas.Text              = "PRUEBAS";
-			btnPruebas.CustomMinimumSize = new Vector2(250, 70);
-			btnPruebas.AddThemeFontSizeOverride("font_size", 32);
+			btnTienda.Pressed += () => MostrarPopup("TIENDA", "La tienda de cartas estará disponible en una próxima actualización.");
+			AgregarAnimacionHover(btnTienda);
+		}
 
-			var estilo = new StyleBoxFlat();
-			estilo.BgColor     = new Color(0.10f, 0.22f, 0.40f, 0.90f);
-			estilo.BorderColor = new Color(0.40f, 0.70f, 1.00f, 0.85f);
-			estilo.SetBorderWidthAll(3);
-			estilo.SetCornerRadiusAll(10);
-			btnPruebas.AddThemeStyleboxOverride("normal", estilo);
+		var btnOnline = GetNodeOrNull<Button>("BottomButtons/BtnOnline");
+		if (btnOnline != null)
+		{
+			btnOnline.Pressed += () => MostrarPopup("MODO ONLINE", "El modo multijugador online estará disponible próximamente.");
+			AgregarAnimacionHover(btnOnline);
+		}
 
-			var estiloHover = new StyleBoxFlat();
-			estiloHover.BgColor     = new Color(0.15f, 0.35f, 0.60f, 0.95f);
-			estiloHover.BorderColor = new Color(0.55f, 0.85f, 1.00f, 1.00f);
-			estiloHover.SetBorderWidthAll(3);
-			estiloHover.SetCornerRadiusAll(10);
-			btnPruebas.AddThemeStyleboxOverride("hover", estiloHover);
+		var btnVsBot = GetNodeOrNull<Button>("BottomButtons/BtnVsBot");
+		if (btnVsBot != null)
+		{
+			btnVsBot.Pressed += () => GetTree().ChangeSceneToFile(RutaEscenaJuego);
+			AgregarAnimacionHover(btnVsBot);
+		}
 
+		// 4. Vincular botones secundarios (Bestiario, Cómo Jugar, Pruebas)
+		var btnBestiario = GetNodeOrNull<Button>("SecondaryButtons/BtnBestiario");
+		if (btnBestiario != null)
+		{
+			btnBestiario.Pressed += () => GetTree().ChangeSceneToFile(RutaBestiario);
+			AgregarAnimacionHover(btnBestiario);
+		}
+
+		var btnComoJugar = GetNodeOrNull<Button>("SecondaryButtons/BtnComoJugar");
+		if (btnComoJugar != null)
+		{
+			btnComoJugar.Pressed += AbrirComoJugar;
+			AgregarAnimacionHover(btnComoJugar);
+		}
+
+		var btnPruebas = GetNodeOrNull<Button>("SecondaryButtons/BtnPruebas");
+		if (btnPruebas != null)
+		{
 			btnPruebas.Pressed += () => GetTree().ChangeSceneToFile(RutaCampoPruebas);
 			AgregarAnimacionHover(btnPruebas);
-
-			// Insertar antes de SALIR (índice 2)
-			vbox.AddChild(btnPruebas);
-			vbox.MoveChild(btnPruebas, 2);
-
-			var btnBestiario = CrearBotonAzul("BESTIARIO", 28, () => GetTree().ChangeSceneToFile(RutaBestiario));
-			vbox.AddChild(btnBestiario);
-			vbox.MoveChild(btnBestiario, 2);
-
-			// "CÓMO JUGAR" solo aparece si el jugador aún no ha visto el tutorial
-			if (!Preferencias.TutorialVisto)
-			{
-				var btnAyuda = CrearBotonAzul("CÓMO JUGAR", 28, AbrirComoJugar);
-				vbox.AddChild(btnAyuda);
-				vbox.MoveChild(btnAyuda, 2);
-			}
 		}
 
-		// Primer inicio del juego: abrir el tutorial automáticamente (una sola vez)
+		// 5. Vincular Ajustes y Cierre de Popups
+		var btnSettings = GetNodeOrNull<TextureButton>("BtnSettings");
+		if (btnSettings != null)
+		{
+			btnSettings.Pressed += MostrarSettings;
+			AgregarAnimacionHover(btnSettings);
+		}
+
+		var btnClosePopup = GetNodeOrNull<Button>("PopupDialog/VBox/BtnClosePopup");
+		if (btnClosePopup != null)
+		{
+			btnClosePopup.Pressed += OcultarPopup;
+			AgregarAnimacionHover(btnClosePopup);
+		}
+
+		// 6. Conectar dinámicamente el HUD de Monedas superior
+		_lblCoins = GetNodeOrNull<Label>("TopHUD/CoinsPanel/HBox/LabelVal");
+		var eco = Economia.Instancia();
+		if (eco != null)
+		{
+			eco.MonedasCambiaron += OnMonedasCambiaron;
+			OnMonedasCambiaron(eco.Monedas);
+		}
+
+		// 7. Primer inicio del juego: abrir el tutorial automáticamente (una sola vez)
 		if (!Preferencias.TutorialVisto)
 		{
-			Preferencias.TutorialVisto = true;   // marcar ya visto (evita repetir y bucles)
-			// Callable.From evita el fallo silencioso de CallDeferred(nombre) con métodos privados de C#
+			Preferencias.TutorialVisto = true;
 			Callable.From(AbrirComoJugar).CallDeferred();
+		}
+	}
+
+	public override void _ExitTree()
+	{
+		if (Economia.Instance != null)
+		{
+			Economia.Instance.MonedasCambiaron -= OnMonedasCambiaron;
+		}
+	}
+
+	public override void _Process(double delta)
+	{
+		_tiempoAcumulado += (float)delta;
+
+		// A. Portal girando continuamente
+		if (_portalNode != null)
+		{
+			_portalNode.Rotation += 0.35f * (float)delta;
+		}
+
+		// B. Isla flotando en el cielo (bobbing suave)
+		if (_islaContainer != null)
+		{
+			_islaContainer.Position = new Vector2(
+				_posInicialIsla.X,
+				_posInicialIsla.Y + MathF.Sin(_tiempoAcumulado * 1.5f) * 8f
+			);
+		}
+
+		// C. Huevo Coronado (Rey Huevo) visible y respirando suavemente en el centro del nido
+		if (_reyHuevoNode != null)
+		{
+			float escalaY = 1.0f + MathF.Sin(_tiempoAcumulado * 2.2f) * 0.02f;
+			float escalaX = 1.0f - MathF.Sin(_tiempoAcumulado * 2.2f) * 0.012f;
+			_reyHuevoNode.Scale = new Vector2(escalaX, escalaY);
+			_reyHuevoNode.Position = new Vector2(
+				_posInicialReyHuevo.X,
+				_posInicialReyHuevo.Y + MathF.Sin(_tiempoAcumulado * 2.2f) * 3f
+			);
+		}
+	}
+
+	private void OnMonedasCambiaron(int total)
+	{
+		if (_lblCoins != null)
+		{
+			_lblCoins.Text = total.ToString();
 		}
 	}
 
@@ -102,49 +181,73 @@ public partial class MenuPrincipal : Control
 		GetTree().ChangeSceneToFile(RutaComoJugar);
 	}
 
-	private Button CrearBotonAzul(string texto, int fontSize, Action onPress)
+	private void AgregarAnimacionHover(Control btn)
 	{
-		var btn = new Button();
-		btn.Text              = texto;
-		btn.CustomMinimumSize = new Vector2(250, 70);
-		btn.AddThemeFontSizeOverride("font_size", fontSize);
+		btn.PivotOffset = btn.Size / 2;
+		btn.Resized += () => btn.PivotOffset = btn.Size / 2;
 
-		var est = new StyleBoxFlat();
-		est.BgColor     = new Color(0.10f, 0.22f, 0.40f, 0.90f);
-		est.BorderColor = new Color(0.40f, 0.70f, 1.00f, 0.85f);
-		est.SetBorderWidthAll(3);
-		est.SetCornerRadiusAll(10);
-		btn.AddThemeStyleboxOverride("normal", est);
-
-		var estHover = new StyleBoxFlat();
-		estHover.BgColor     = new Color(0.15f, 0.35f, 0.60f, 0.95f);
-		estHover.BorderColor = new Color(0.55f, 0.85f, 1.00f, 1.00f);
-		estHover.SetBorderWidthAll(3);
-		estHover.SetCornerRadiusAll(10);
-		btn.AddThemeStyleboxOverride("hover", estHover);
-
-		btn.Pressed += () => onPress();
-		AgregarAnimacionHover(btn);
-		return btn;
-	}
-
-	private void AgregarAnimacionHover(Button btn)
-	{
-		btn.PivotOffset = btn.CustomMinimumSize / 2;
 		btn.MouseEntered += () => 
 		{
 			var tween = btn.CreateTween();
-			tween.TweenProperty(btn, "scale", new Vector2(1.1f, 1.1f), 0.15f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+			tween.TweenProperty(btn, "scale", new Vector2(1.08f, 1.08f), 0.15f)
+				 .SetTrans(Tween.TransitionType.Back)
+				 .SetEase(Tween.EaseType.Out);
 		};
 		btn.MouseExited += () => 
 		{
 			var tween = btn.CreateTween();
-			tween.TweenProperty(btn, "scale", Vector2.One, 0.15f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+			tween.TweenProperty(btn, "scale", Vector2.One, 0.15f)
+				 .SetTrans(Tween.TransitionType.Sine)
+				 .SetEase(Tween.EaseType.Out);
 		};
+
+		if (btn is BaseButton baseBtn)
+		{
+			baseBtn.ButtonDown += () =>
+			{
+				if (btn.Name == "CARTAS" || btn.Name == "TIENDA")
+				{
+					btn.SelfModulate = new Color(0.5f, 0.5f, 0.5f);
+				}
+			};
+
+			baseBtn.ButtonUp += () =>
+			{
+				if (btn.Name == "CARTAS" || btn.Name == "TIENDA")
+				{
+					btn.SelfModulate = Colors.White;
+				}
+			};
+		}
 	}
 
 	private void MostrarSettings()
 	{
 		if (_panelSettings != null) _panelSettings.Visible = true;
+	}
+
+	private void MostrarPopup(string titulo, string mensaje)
+	{
+		if (_popupDialog != null)
+		{
+			_popupDialog.GetNode<Label>("VBox/Title").Text = titulo;
+			_popupDialog.GetNode<Label>("VBox/Message").Text = mensaje;
+			_popupDialog.Visible = true;
+
+			_popupDialog.Scale = new Vector2(0.6f, 0.6f);
+			_popupDialog.PivotOffset = _popupDialog.Size / 2;
+			var tw = _popupDialog.CreateTween();
+			tw.TweenProperty(_popupDialog, "scale", Vector2.One, 0.25f)
+			  .SetTrans(Tween.TransitionType.Back)
+			  .SetEase(Tween.EaseType.Out);
+		}
+	}
+
+	private void OcultarPopup()
+	{
+		if (_popupDialog != null)
+		{
+			_popupDialog.Visible = false;
+		}
 	}
 }

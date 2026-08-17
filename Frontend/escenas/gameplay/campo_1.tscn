@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://bh0x6bv5ndeh6" path="res://escenas/gameplay/carta_base.tscn" id="2_qk0di"]
 [ext_resource type="Texture2D" uid="uid://bf6jv88tiwm8o" path="res://imagenes/PersonajesPng/escenario nuevo.png" id="3_jjuwa"]
 [ext_resource type="PackedScene" uid="uid://mpausa123" path="res://escenas/gameplay/MenuPausa.tscn" id="3_mpausa"]
+[ext_resource type="Texture2D" path="res://imagenes/mano_cartas.png" id="4_mano"]
 
 [node name="Campo1" type="Node2D" unique_id=807187685]
 script = ExtResource("1_ar4p3")
@@ -97,21 +98,30 @@ offset_bottom = 20.0
 [node name="ManoManual" type="Control" parent="." unique_id=145652396]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 687.0
-offset_top = 485.0
-offset_right = 727.0
-offset_bottom = 525.0
+offset_left = 732.0
+offset_top = 545.0
+offset_right = 772.0
+offset_bottom = 585.0
+
+[node name="ManoVisual" type="Sprite2D" parent="ManoManual" unique_id=38472910]
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("4_mano")
 
 [node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
-position = Vector2(-73.75256, 20)
-rotation = -0.2617994
+position = Vector2(-113, -139)
+rotation = -0.436
 
 [node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
-position = Vector2(65.24744, -36)
+position = Vector2(-41, -181)
+rotation = -0.14
 
 [node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
-position = Vector2(209.24744, 14)
-rotation = 0.43633232
+position = Vector2(43, -193)
+rotation = 0.14
+
+[node name="Spot4" type="Marker2D" parent="ManoManual" unique_id=184729106]
+position = Vector2(115, -163)
+rotation = 0.436
 
 [node name="Mod1" type="Marker2D" parent="." unique_id=698830398 groups=["zonas_invocacion"]]
 position = Vector2(494, 333)

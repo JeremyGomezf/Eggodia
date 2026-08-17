@@ -145,7 +145,7 @@ public partial class Campo1 : Node2D
 
 	private void CompletarManoAlInicio()
 	{
-		foreach (string s in new[]{"Spot1","Spot2","Spot3"})
+		foreach (string s in new[]{"Spot1","Spot2","Spot3","Spot4"})
 		{
 			bool o = false;
 			foreach (Node n in contenedorMano.GetChildren())
@@ -258,6 +258,7 @@ public partial class Campo1 : Node2D
 		CrearNuevaCartaEnSpot("Spot1");
 		CrearNuevaCartaEnSpot("Spot2");
 		CrearNuevaCartaEnSpot("Spot3");
+		CrearNuevaCartaEnSpot("Spot4");
 		MostrarTutorialInicio();
 	}
 
@@ -286,7 +287,8 @@ public partial class Campo1 : Node2D
 		if (juegoTerminado || escenaCartaBase == null || contenedorMano == null) return;
 		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return;
 		Carta n = (Carta)escenaCartaBase.Instantiate(); n.NombreSpot = id; contenedorMano.AddChild(n);
-		Vector2 esc = new Vector2(3.0f,3.0f); n.Scale = esc;   // compacta; crece al pasar el dedo
+		n.Rotation = spot.Rotation;
+		Vector2 esc = new Vector2(0.85f, 0.85f); n.Scale = esc;   // tamaño en mano 0.85; crece al pasar el dedo
 		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2);
 		n.GuardarEstadoOriginal();
 		if (proximoIndiceMazo >= mazoIndices.Count) PrepararMazoSinRepetir();

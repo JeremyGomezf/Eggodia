@@ -7,6 +7,8 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 	private float _lastVolume = 0.5f;
 	private bool _isMuted = false;
 
+	private AudioStreamWav _clickSound;
+
 	public override void _Ready()
 	{
 		if (Instance == null)
@@ -23,11 +25,139 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 				Play();
 				CambiarVolumen(_lastVolume);
 			}
+
+			// Hook automatically to any new button added to the tree to play a click sound
+			GetTree().NodeAdded += OnNodeAdded;
 		}
 		else
 		{
 			QueueFree();
 		}
+	}
+
+	private const int SFX_POOL_SIZE = 3;
+	private AudioStreamPlayer[] _sfxPool = new AudioStreamPlayer[SFX_POOL_SIZE];
+	private int _nextPoolIndex = 0;
+
+	private const int HOVER_POOL_SIZE = 3;
+	private AudioStreamPlayer[] _hoverPool = new AudioStreamPlayer[HOVER_POOL_SIZE];
+	private int _nextHoverIndex = 0;
+
+	private AudioStreamWav _hoverSound;
+
+	private void OnNodeAdded(Node node)
+	{
+		if (node is BaseButton btn)
+		{
+			btn.ButtonDown += () => PlayClickSound();
+			btn.MouseEntered += () => PlayHoverSound();
+		}
+	}
+
+	public void PlayClickSound()
+	{
+		if (_clickSound == null)
+		{
+			_clickSound = GenerateClickSound();
+		}
+
+		var player = _sfxPool[_nextPoolIndex];
+		if (player == null || !IsInstanceValid(player))
+		{
+			player = new AudioStreamPlayer();
+			player.Stream = _clickSound;
+			player.VolumeDb = -4.0f; // Clear audible volume
+			player.ProcessMode = ProcessModeEnum.Always;
+			AddChild(player);
+			_sfxPool[_nextPoolIndex] = player;
+		}
+
+		player.Play();
+		_nextPoolIndex = (_nextPoolIndex + 1) % SFX_POOL_SIZE;
+	}
+
+	public void PlayHoverSound()
+	{
+		if (_hoverSound == null)
+		{
+			_hoverSound = GenerateHoverSound();
+		}
+
+		var player = _hoverPool[_nextHoverIndex];
+		if (player == null || !IsInstanceValid(player))
+		{
+			player = new AudioStreamPlayer();
+			player.Stream = _hoverSound;
+			player.VolumeDb = -12.0f; // Soft click/tick sound
+			player.ProcessMode = ProcessModeEnum.Always;
+			AddChild(player);
+			_hoverPool[_nextHoverIndex] = player;
+		}
+
+		player.Play();
+		_nextHoverIndex = (_nextHoverIndex + 1) % HOVER_POOL_SIZE;
+	}
+
+	private AudioStreamWav GenerateClickSound()
+	{
+		int sampleRate = 44100;
+		float duration = 0.08f;
+		int numSamples = (int)(sampleRate * duration);
+		byte[] data = new byte[numSamples * 2];
+
+		for (int i = 0; i < numSamples; i++)
+		{
+			float t = (float)i / sampleRate;
+			float freq = 500f - (t / duration) * 250f;
+			float angle = 2f * Mathf.Pi * freq * t;
+			float amplitude = Mathf.Sin(angle);
+
+			float envelope = 1.0f - (float)i / numSamples;
+			amplitude *= envelope * envelope;
+
+			short sampleVal = (short)(amplitude * 32767);
+			data[i * 2] = (byte)(sampleVal & 0xFF);
+			data[i * 2 + 1] = (byte)((sampleVal >> 8) & 0xFF);
+		}
+
+		AudioStreamWav stream = new AudioStreamWav();
+		stream.Format = AudioStreamWav.FormatEnum.Format16Bits;
+		stream.MixRate = sampleRate;
+		stream.Data = data;
+		stream.Stereo = false;
+
+		return stream;
+	}
+
+	private AudioStreamWav GenerateHoverSound()
+	{
+		int sampleRate = 44100;
+		float duration = 0.03f; // 30ms very short soft tick
+		int numSamples = (int)(sampleRate * duration);
+		byte[] data = new byte[numSamples * 2];
+
+		for (int i = 0; i < numSamples; i++)
+		{
+			float t = (float)i / sampleRate;
+			float freq = 800f; // Higher pitch soft tick
+			float angle = 2f * Mathf.Pi * freq * t;
+			float amplitude = Mathf.Sin(angle);
+
+			float envelope = 1.0f - (float)i / numSamples;
+			amplitude *= envelope * envelope;
+
+			short sampleVal = (short)(amplitude * 16384);
+			data[i * 2] = (byte)(sampleVal & 0xFF);
+			data[i * 2 + 1] = (byte)((sampleVal >> 8) & 0xFF);
+		}
+
+		AudioStreamWav stream = new AudioStreamWav();
+		stream.Format = AudioStreamWav.FormatEnum.Format16Bits;
+		stream.MixRate = sampleRate;
+		stream.Data = data;
+		stream.Stereo = false;
+
+		return stream;
 	}
 
 	public void CambiarVolumen(float valor)

@@ -11,12 +11,14 @@ public partial class Carta : Control
 	public int IdCarta;
 
 	private Vector2 _posicionOriginal;
+	private float   _rotacionOriginal;
 	private bool _bloqueada = false;
 	private Vector2 _offsetMouse;
+	private Tween   _tweenAnim;
 	
-	private Vector2 _escalaNormalMano  = new Vector2(3.0f, 3.0f); // COMPACTA en mano
-	private Vector2 _escalaHover       = new Vector2(6.5f, 6.5f); // GRANDE al pasar dedo
-	private Vector2 _escalaAlArrastrar = new Vector2(3.5f, 3.5f); // MEDIANA al arrastrar
+	private Vector2 _escalaNormalMano  = new Vector2(0.85f, 0.85f); // COMPACTA en mano
+	private Vector2 _escalaHover       = new Vector2(1.8f, 1.8f); // GRANDE al pasar dedo
+	private Vector2 _escalaAlArrastrar = new Vector2(1.1f, 1.1f); // MEDIANA al arrastrar
 
 	public override void _Ready()
 	{
@@ -25,7 +27,11 @@ public partial class Carta : Control
 		Scale = _escalaNormalMano;
 	}
 
-	public void GuardarEstadoOriginal() => _posicionOriginal = Position;
+	public void GuardarEstadoOriginal()
+	{
+		_posicionOriginal = Position;
+		_rotacionOriginal = Rotation;
+	}
 
 	public void AsignarDatos(string rutaImg, string rutaTropa, int id)
 	{
@@ -64,8 +70,9 @@ public partial class Carta : Control
 				EstaArrastrando = true;
 				_offsetMouse = GetGlobalMousePosition() - GlobalPosition;
 				ZIndex = 200;
-				Tween t = CreateTween();
-				t.TweenProperty(this, "scale", _escalaAlArrastrar, 0.1f);
+				_tweenAnim?.Kill();
+				_tweenAnim = CreateTween();
+				_tweenAnim.TweenProperty(this, "scale", _escalaAlArrastrar, 0.1f);
 			}
 			else if (EstaArrastrando)
 			{
@@ -110,9 +117,11 @@ public partial class Carta : Control
 	private void RegresarAMano()
 	{
 		ZIndex = 1;
-		Tween t = CreateTween().SetParallel(true);
-		t.TweenProperty(this, "position", _posicionOriginal, 0.2f);
-		t.TweenProperty(this, "scale", _escalaNormalMano, 0.2f);
+		_tweenAnim?.Kill();
+		_tweenAnim = CreateTween().SetParallel(true);
+		_tweenAnim.TweenProperty(this, "position", _posicionOriginal, 0.2f);
+		_tweenAnim.TweenProperty(this, "scale", _escalaNormalMano, 0.2f);
+		_tweenAnim.TweenProperty(this, "rotation", _rotacionOriginal, 0.2f);
 	}
 
 	public void _on_mouse_entered()
@@ -124,9 +133,11 @@ public partial class Carta : Control
 		ZIndex = 150;
 		Vector2 pivotAntes = PivotOffset;
 		PivotOffset = new Vector2(Size.X * 0.5f, Size.Y);   // crece hacia arriba (no tapa las otras)
-		Tween t = CreateTween();
-		t.TweenProperty(this, "scale", _escalaHover, 0.12f)
+		_tweenAnim?.Kill();
+		_tweenAnim = CreateTween().SetParallel(true);
+		_tweenAnim.TweenProperty(this, "scale", _escalaHover, 0.12f)
 		 .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		_tweenAnim.TweenProperty(this, "rotation", 0.0f, 0.12f);
 	}
 
 	public void _on_mouse_exited()
@@ -134,9 +145,11 @@ public partial class Carta : Control
 		if (!EstaArrastrando)
 		{
 			ZIndex = 1;
-			Tween t = CreateTween();
-			t.TweenProperty(this, "scale", _escalaNormalMano, 0.12f);
-			t.Finished += () => { if (IsInstanceValid(this)) PivotOffset = Size / 2; };
+			_tweenAnim?.Kill();
+			_tweenAnim = CreateTween().SetParallel(true);
+			_tweenAnim.TweenProperty(this, "scale", _escalaNormalMano, 0.12f);
+			_tweenAnim.TweenProperty(this, "rotation", _rotacionOriginal, 0.12f);
+			_tweenAnim.Finished += () => { if (IsInstanceValid(this)) PivotOffset = Size / 2; };
 		}
 	}
 }
