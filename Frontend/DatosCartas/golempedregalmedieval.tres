@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("1_38o3r")
-Nombre = "GOLEM PEDREGAL MEDIEVAL"
-Imagen = ExtResource("1_62sng")
-RutaEscena = "res://cartas prime/Golem_prime.tscn"
+Nombre = "Golem Pedregal"
+Elemento = "Metal"
+Era = "Era Mística"
+Costo = 5
 Ataque = 350
 Defensa = 500
 Vida = 450
-Descripcion = "Una mole inmensa de roca viva forjada con magia olvidada. Es lento y pesado, pero sus golpes caen como meteoritos y su resistencia es casi infinita."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Velocidad = "LENTA"
+Rango = "CORTO"
+FuerteContra = "Fuego"
+DebilContra = "Sombra"
+Descripcion = "Muralla: absorbe daño masivo"
+RutaEscena = "res://cartas prime/Golem_prime.tscn"
+Imagen = ExtResource("1_62sng")

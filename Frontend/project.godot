@@ -12,13 +12,13 @@ config_version=5
 
 config/name="juegoecotec"
 run/main_scene="uid://b0kjxhih543ce"
-config/features=PackedStringArray("4.6", "C#", "Mobile")
+config/features=PackedStringArray("4.7", "C#", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
 GestorCartas="*res://escenas/gameplay/GestorCartas.cs"
-PanelLogin="*uid://cmw3sg1x14hqv"
+SesionJuego="*res://escenas/gameplay/SesionJuego.cs"
 GlobalAudioManager="*res://scripts/GlobalAudioManager.cs"
 Economia="*res://escenas/gameplay/Economia.cs"
 

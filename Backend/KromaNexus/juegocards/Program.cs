@@ -17,12 +17,12 @@ builder.Services.AddCors(options => {
     });
 });
 
-// --- PASO 1 CONECTAR LA BASE DE DATOS (ESTO ES LO QUE FALTABA) ---
+// --- PASO 1 CONECTAR LA BASE DE DATOS ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, new MariaDbServerVersion(new Version(10, 4, 32))));
-// -----------------------------------------------------------------
+    options.UseSqlite(connectionString));
+// ----------------------------------------
 
 var app = builder.Build();
 
@@ -38,5 +38,12 @@ app.UseCors("AllowAll");
 
 app.UseAuthorization();
 app.MapControllers();
+
+// Inicializar la base de datos de SQLite de forma automática
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+}
 
 app.Run();

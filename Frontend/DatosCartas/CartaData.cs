@@ -20,8 +20,12 @@ public partial class CartaData : Resource
 	// Ruta de la escena para instanciar en batalla
 	[Export(PropertyHint.File, "*.tscn")] public string RutaEscena = "";
 	
+	// Era y Elemento
+	[Export] public string Era = "Era Medieval";
+	[Export] public string Elemento = "Metal"; // Fuego, Metal, Agua, Naturaleza, Sombra
+	
 	// Stats principales
-	[Export] public int Costo = 0;
+	[Export] public int Costo = 3;
 	[Export] public int Ataque = 0;
 	[Export] public int Defensa = 0;
 	[Export] public int Vida = 0;

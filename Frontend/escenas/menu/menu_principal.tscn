@@ -1,44 +1,215 @@
 [gd_scene format=3 uid="uid://b0kjxhih543ce"]
 
 [ext_resource type="Script" uid="uid://irvsriti704n" path="res://escenas/menu/MenuPrincipal.cs" id="1_kni6g"]
-[ext_resource type="Texture2D" uid="uid://nhaihcreuvkw" path="res://imagenes/MenuPng/Play.png" id="2_gmcsc"]
-[ext_resource type="Texture2D" uid="uid://bfwg4iyvsnyld" path="res://imagenes/MenuPng/Play1.png" id="2_ul6ys"]
-[ext_resource type="Texture2D" uid="uid://i88c3872560d" path="res://imagenes/MenuPng/Menu 2.png" id="2_vvvfs"]
-[ext_resource type="Texture2D" uid="uid://dc1m7m3uykmeq" path="res://imagenes/MenuPng/Settings3.png" id="3_a6518"]
-[ext_resource type="Texture2D" uid="uid://cbw6olkiw2yq0" path="res://imagenes/MenuPng/Play2.png" id="4_ns3he"]
-[ext_resource type="Texture2D" uid="uid://c7fboml60kgfx" path="res://imagenes/MenuPng/Settings1.png" id="5_yxm4i"]
-[ext_resource type="Texture2D" uid="uid://c7gy742o4ekkc" path="res://imagenes/MenuPng/Settings2.png" id="6_a6518"]
-[ext_resource type="Texture2D" uid="uid://bg4fr2apg5ew5" path="res://imagenes/MenuPng/exit1.png" id="8_xpioy"]
-[ext_resource type="Texture2D" uid="uid://xsw3j6diq1kp" path="res://imagenes/MenuPng/exit2.png" id="9_kni6g"]
-[ext_resource type="Texture2D" uid="uid://bguo2eel58il7" path="res://imagenes/MenuPng/exit3.png" id="10_nx6e2"]
+[ext_resource type="Texture2D" uid="uid://c6a5mu6kukhqx" path="res://imagenes/MenuNuevo/FondoMenu.png" id="2_fondo"]
+[ext_resource type="Texture2D" uid="uid://cyeuio8ssuhg6" path="res://imagenes/MenuNuevo/IslaMenu.png" id="3_isla"]
+[ext_resource type="Texture2D" uid="uid://bwt8vhdaw1udt" path="res://imagenes/MenuNuevo/PortalMenu.png" id="4_portal"]
+[ext_resource type="Texture2D" uid="uid://dyyv26vvywi2d" path="res://imagenes/MenuNuevo/ObjetosMenu.png" id="5_objetos"]
+[ext_resource type="Texture2D" uid="uid://gf6jp87xs42m" path="res://imagenes/MenuNuevo/BotonCartas.png" id="6_btn_cartas"]
+[ext_resource type="Texture2D" uid="uid://526p8y83mt3f" path="res://imagenes/MenuNuevo/BotonCartasNegativo.png" id="7_btn_cartas_neg"]
+[ext_resource type="Texture2D" uid="uid://bcbpmj85dc43b" path="res://imagenes/MenuNuevo/BotonTienda.png" id="8_btn_tienda"]
+[ext_resource type="Texture2D" uid="uid://c5utt6tl7bxxr" path="res://imagenes/MenuNuevo/BotonTiendaNegativo.png" id="9_btn_tienda_neg"]
+[ext_resource type="Texture2D" uid="uid://fi0ijmmiv1nc" path="res://imagenes/MenuNuevo/BotonConf.png" id="10_btn_conf"]
 [ext_resource type="PackedScene" uid="uid://psettings123" path="res://escenas/menu/PanelSettings.tscn" id="11_sett"]
+[ext_resource type="Texture2D" uid="uid://dbq7l6a8lpkro" path="res://imagenes/MenuNuevo/ReyHuevoCrowned.png" id="12_rey_huevo"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ns3he"]
-texture = ExtResource("2_ul6ys")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_level"]
+bg_color = Color(0.0431373, 0.0705882, 0.12549, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.133333, 0.827451, 0.933333, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.133333, 0.827451, 0.933333, 0.25)
+shadow_size = 6
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yxm4i"]
-texture = ExtResource("2_gmcsc")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_coins"]
+content_margin_left = 12.0
+content_margin_right = 12.0
+bg_color = Color(0.0431373, 0.0705882, 0.12549, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.952941, 0.780392, 0.25098, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.952941, 0.780392, 0.25098, 0.25)
+shadow_size = 6
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_fa1tu"]
-texture = ExtResource("4_ns3he")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_coin_icon"]
+bg_color = Color(1, 0.823529, 0.25098, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.752941, 0.54902, 0.0980392, 1)
+corner_radius_top_left = 11
+corner_radius_top_right = 11
+corner_radius_bottom_right = 11
+corner_radius_bottom_left = 11
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_611wp"]
-texture = ExtResource("5_yxm4i")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_user"]
+bg_color = Color(0.0431373, 0.0705882, 0.12549, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.35, 0.95, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.6, 0.35, 0.95, 0.25)
+shadow_size = 6
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dcvsf"]
-texture = ExtResource("3_a6518")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sec_btn"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.0431373, 0.0705882, 0.12549, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.133333, 0.827451, 0.933333, 0.5)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_xpioy"]
-texture = ExtResource("6_a6518")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sec_btn_hover"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.08, 0.14, 0.24, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.133333, 0.827451, 0.933333, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kcxxd"]
-texture = ExtResource("8_xpioy")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_online_normal"]
+bg_color = Color(0.164706, 0.0470588, 0.0705882, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.956863, 0.247059, 0.368627, 0.9)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.882353, 0.113725, 0.282353, 0.4)
+shadow_size = 14
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ul6ys"]
-texture = ExtResource("9_kni6g")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_online_pressed"]
+bg_color = Color(0.101961, 0.0235294, 0.0392157, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.75, 0.12, 0.22, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_palpy"]
-texture = ExtResource("10_nx6e2")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_online_hover"]
+bg_color = Color(0.266667, 0.0784314, 0.117647, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.443137, 0.521569, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(1, 0.2, 0.35, 0.7)
+shadow_size = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bot_normal"]
+bg_color = Color(0.0470588, 0.0980392, 0.180392, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.219608, 0.741176, 0.972549, 0.9)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.00784314, 0.517647, 0.780392, 0.4)
+shadow_size = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bot_pressed"]
+bg_color = Color(0.0235294, 0.054902, 0.109804, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.00784314, 0.4, 0.65, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bot_hover"]
+bg_color = Color(0.0862745, 0.176471, 0.305882, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.490196, 0.827451, 0.988235, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.1, 0.75, 1, 0.7)
+shadow_size = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup"]
+content_margin_left = 25.0
+content_margin_top = 25.0
+content_margin_right = 25.0
+content_margin_bottom = 25.0
+bg_color = Color(0.0431373, 0.0705882, 0.12549, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.133333, 0.827451, 0.933333, 0.8)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+shadow_color = Color(0.133333, 0.827451, 0.933333, 0.3)
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup_btn"]
+content_margin_left = 15.0
+content_margin_top = 8.0
+content_margin_right = 15.0
+content_margin_bottom = 8.0
+bg_color = Color(0.08, 0.14, 0.24, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.133333, 0.827451, 0.933333, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="MenuPrincipal" type="Control" unique_id=1669744344]
 layout_mode = 3
@@ -49,60 +220,333 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_kni6g")
 
-[node name="TextureRect" type="TextureRect" parent="." unique_id=393314323]
+[node name="Fondo" type="TextureRect" parent="." unique_id=393314323]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = -0.20104167
-anchor_top = -0.012037037
-anchor_right = 1.2798177
-anchor_bottom = 1.2314814
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.96000016, 1)
-texture = ExtResource("2_vvvfs")
+texture = ExtResource("2_fondo")
 expand_mode = 1
 stretch_mode = 6
-metadata/_edit_use_anchors_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1684899832]
+[node name="IslaContainer" type="Control" parent="." unique_id=1096408613]
 layout_mode = 1
-anchors_preset = -1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -125.0
-offset_top = -190.0
-offset_right = 125.0
-offset_bottom = 190.0
+offset_left = -667.0
+offset_top = -430.0
+offset_right = 667.0
+offset_bottom = 652.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 25
 
-[node name="JUGAR" type="Button" parent="VBoxContainer" unique_id=676802008]
-custom_minimum_size = Vector2(250, 70)
-layout_mode = 2
-theme_override_font_sizes/font_size = 45
-theme_override_styles/normal = SubResource("StyleBoxTexture_ns3he")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_yxm4i")
-theme_override_styles/hover = SubResource("StyleBoxTexture_fa1tu")
+[node name="Isla" type="TextureRect" parent="IslaContainer" unique_id=1687723678]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_isla")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="OPCIONES" type="Button" parent="VBoxContainer" unique_id=360754257]
-custom_minimum_size = Vector2(250, 70)
-layout_mode = 2
-theme_override_font_sizes/font_size = 45
-theme_override_styles/normal = SubResource("StyleBoxTexture_611wp")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_dcvsf")
-theme_override_styles/hover = SubResource("StyleBoxTexture_xpioy")
+[node name="Portal" type="TextureRect" parent="IslaContainer" unique_id=474972807]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(684, 441)
+texture = ExtResource("4_portal")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="SALIR" type="Button" parent="VBoxContainer" unique_id=1425523835]
-custom_minimum_size = Vector2(250, 70)
+[node name="Objetos" type="TextureRect" parent="IslaContainer" unique_id=895920122]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_objetos")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ReyHuevoCrowned" type="TextureRect" parent="IslaContainer" unique_id=250296756]
+layout_mode = 0
+offset_left = 552.0
+offset_top = 313.0
+offset_right = 747.0
+offset_bottom = 663.0
+pivot_offset = Vector2(97, 240)
+texture = ExtResource("12_rey_huevo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CARTAS" type="TextureButton" parent="." unique_id=1172999173]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 400.0
+offset_right = 519.0
+offset_bottom = 671.0
+texture_normal = ExtResource("6_btn_cartas")
+texture_pressed = ExtResource("7_btn_cartas_neg")
+texture_hover = ExtResource("7_btn_cartas_neg")
+stretch_mode = 3
+
+[node name="TIENDA" type="TextureButton" parent="." unique_id=311225293]
+layout_mode = 0
+offset_left = 1400.0
+offset_top = 400.0
+offset_right = 1799.0
+offset_bottom = 671.0
+texture_normal = ExtResource("8_btn_tienda")
+texture_pressed = ExtResource("9_btn_tienda_neg")
+texture_hover = ExtResource("9_btn_tienda_neg")
+stretch_mode = 3
+
+[node name="TopHUD" type="HBoxContainer" parent="." unique_id=972495174]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 25.0
+offset_right = 725.0
+offset_bottom = 75.0
+theme_override_constants/separation = 15
+
+[node name="LevelPanel" type="PanelContainer" parent="TopHUD" unique_id=1990317443]
+custom_minimum_size = Vector2(120, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 45
-theme_override_styles/normal = SubResource("StyleBoxTexture_kcxxd")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_ul6ys")
-theme_override_styles/hover = SubResource("StyleBoxTexture_palpy")
+theme_override_styles/panel = SubResource("StyleBoxFlat_level")
+
+[node name="Label" type="Label" parent="TopHUD/LevelPanel" unique_id=1328965670]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.133333, 0.827451, 0.933333, 1)
+theme_override_font_sizes/font_size = 20
+text = "Lv 2."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CoinsPanel" type="PanelContainer" parent="TopHUD" unique_id=631957148]
+custom_minimum_size = Vector2(160, 50)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_coins")
+
+[node name="HBox" type="HBoxContainer" parent="TopHUD/CoinsPanel" unique_id=284793023]
+layout_mode = 2
+alignment = 1
+
+[node name="CoinIcon" type="Panel" parent="TopHUD/CoinsPanel/HBox" unique_id=1468562319]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_coin_icon")
+
+[node name="Label" type="Label" parent="TopHUD/CoinsPanel/HBox/CoinIcon" unique_id=868002567]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.4, 0.28, 0.05, 1)
+theme_override_font_sizes/font_size = 14
+text = "$"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LabelVal" type="Label" parent="TopHUD/CoinsPanel/HBox" unique_id=1858180210]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.952941, 0.780392, 0.25098, 1)
+theme_override_font_sizes/font_size = 20
+text = "2304"
+vertical_alignment = 1
+
+[node name="UserPanel" type="PanelContainer" parent="TopHUD" unique_id=1949122023]
+custom_minimum_size = Vector2(180, 50)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_user")
+
+[node name="Label" type="Label" parent="TopHUD/UserPanel" unique_id=1352896183]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "SrGonza"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnSettings" type="TextureButton" parent="." unique_id=1136148258]
+layout_mode = 0
+offset_left = 1775.0
+offset_top = 25.0
+offset_right = 1895.0
+offset_bottom = 145.0
+texture_normal = ExtResource("10_btn_conf")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="SecondaryButtons" type="VBoxContainer" parent="." unique_id=1123693990]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -260.0
+offset_top = 160.0
+offset_right = -25.0
+offset_bottom = 400.0
+grow_horizontal = 0
+theme_override_constants/separation = 15
+
+[node name="BtnBestiario" type="Button" parent="SecondaryButtons" unique_id=673808462]
+custom_minimum_size = Vector2(235, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_sec_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_sec_btn_hover")
+text = "BESTIARIO"
+
+[node name="BtnComoJugar" type="Button" parent="SecondaryButtons" unique_id=882141722]
+custom_minimum_size = Vector2(235, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_sec_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_sec_btn_hover")
+text = "CÓMO JUGAR"
+
+[node name="BtnPruebas" type="Button" parent="SecondaryButtons" unique_id=1573578891]
+custom_minimum_size = Vector2(235, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_sec_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_sec_btn_hover")
+text = "PRUEBAS"
+
+[node name="BottomButtons" type="HBoxContainer" parent="." unique_id=779704060]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -340.0
+offset_top = -140.0
+offset_right = 340.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="BtnOnline" type="Button" parent="BottomButtons" unique_id=320589428]
+custom_minimum_size = Vector2(300, 85)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_online_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_online_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_online_hover")
+
+[node name="VBox" type="VBoxContainer" parent="BottomButtons/BtnOnline" unique_id=521007182]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="LblTitle" type="Label" parent="BottomButtons/BtnOnline/VBox" unique_id=2105177191]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "ONLINE"
+horizontal_alignment = 1
+
+[node name="LblSub" type="Label" parent="BottomButtons/BtnOnline/VBox" unique_id=1171432230]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 13
+text = "MULTIJUGADOR"
+horizontal_alignment = 1
+
+[node name="BtnVsBot" type="Button" parent="BottomButtons" unique_id=1655798339]
+custom_minimum_size = Vector2(300, 85)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_bot_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_bot_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bot_hover")
+
+[node name="VBox" type="VBoxContainer" parent="BottomButtons/BtnVsBot" unique_id=1307810635]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="LblTitle" type="Label" parent="BottomButtons/BtnVsBot/VBox" unique_id=933358562]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "VS BOT"
+horizontal_alignment = 1
+
+[node name="LblSub" type="Label" parent="BottomButtons/BtnVsBot/VBox" unique_id=710466514]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "MODO CAMPAÑA / IA"
+horizontal_alignment = 1
 
 [node name="PanelSettings" parent="." unique_id=1345093295 instance=ExtResource("11_sett")]
 visible = false
 layout_mode = 1
+
+[node name="PopupDialog" type="PanelContainer" parent="." unique_id=188539696]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -120.0
+offset_right = 250.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_popup")
+
+[node name="VBox" type="VBoxContainer" parent="PopupDialog" unique_id=422199836]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Title" type="Label" parent="PopupDialog/VBox" unique_id=1849960166]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.133333, 0.827451, 0.933333, 1)
+theme_override_font_sizes/font_size = 26
+text = "PRÓXIMAMENTE"
+horizontal_alignment = 1
+
+[node name="Message" type="Label" parent="PopupDialog/VBox" unique_id=1950052396]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.901961, 0.901961, 0.901961, 1)
+theme_override_font_sizes/font_size = 18
+text = "Este modo estará disponible en una próxima actualización."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="BtnClosePopup" type="Button" parent="PopupDialog/VBox" unique_id=572010023]
+custom_minimum_size = Vector2(140, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_popup_btn")
+text = "ENTENDIDO"

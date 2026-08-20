@@ -57,7 +57,7 @@ public partial class Campo1 : Node2D
 	private void UsarRobo()
 	{
 		if (!ValidarHechizo() || usadoRobo) return;
-		foreach (string s in new[]{"Spot1","Spot2","Spot3"})
+		foreach (string s in new[]{"Spot1","Spot2","Spot3","Spot4"})
 		{
 			bool ok = false;
 			foreach (Node n in contenedorMano.GetChildren())

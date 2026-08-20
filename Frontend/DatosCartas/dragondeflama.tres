@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("1_3dtud")
-Nombre = "DRAGON DE FLAMA MEDIEVAL"
-Imagen = ExtResource("1_1r3hj")
-RutaEscena = "res://cartas prime/Dragon_prime.tscn"
+Nombre = "Dragón de Flama"
+Elemento = "Fuego"
+Era = "Era Mística"
+Costo = 4
 Ataque = 280
 Defensa = 250
 Vida = 350
-Descripcion = "Una bestia alada que domina los cielos. Escupe un fuego abrasador capaz de reducir a cenizas escuadrones enteros antes de que puedan levantar sus escudos."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Velocidad = "MEDIA"
+Rango = "LARGO"
+FuerteContra = "Naturaleza"
+DebilContra = "Agua"
+Descripcion = "Aliento de fuego: daño AoE al 40% del ataque"
+RutaEscena = "res://cartas prime/Dragon_prime.tscn"
+Imagen = ExtResource("1_1r3hj")

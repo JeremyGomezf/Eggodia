@@ -4,87 +4,85 @@
 [ext_resource type="PackedScene" uid="uid://cc4dl7d6qlseb" path="res://DatosCartas/CartaMini.tscn" id="2_lxy0p"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mazo_bg"]
-bg_color = Color(0.92941176, 0.91372549, 0.88235294, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.7254902, 0.69019608, 0.64313725, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(0, 0, 0, 0.08)
-shadow_size = 6
-shadow_offset = Vector2(0, 4)
+bg_color = Color(0.11764706, 0.16078431, 0.23137255, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.08)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 12
+shadow_offset = Vector2(0, 8)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot_top"]
-bg_color = Color(0.12156863, 0.16078432, 0.21960784, 0.5)
+bg_color = Color(0.08, 0.12, 0.18, 0.35)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.2, 0.3, 0.4, 0.4)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_color = Color(0, 0, 0, 0.2)
-shadow_size = 5
-shadow_offset = Vector2(0, 3)
+border_color = Color(0.13333333, 0.82745098, 0.93333333, 0.45)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slot_bottom"]
-bg_color = Color(0.12156863, 0.16078432, 0.21960784, 0.5)
+bg_color = Color(0.08, 0.12, 0.18, 0.35)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.2, 0.3, 0.4, 0.4)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
+border_color = Color(0.13333333, 0.82745098, 0.93333333, 0.45)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_remover"]
-bg_color = Color(0.98039216, 0.96862745, 0.94901961, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.43137255, 0.39215686, 0.34509804, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-shadow_color = Color(0, 0, 0, 0.1)
-shadow_size = 2
-shadow_offset = Vector2(0, 2)
+bg_color = Color(0.09, 0.13, 0.20, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.13333333, 0.82745098, 0.93333333, 0.6)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_remover_hover"]
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.23137255, 0.20784314, 0.18039216, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-shadow_color = Color(0, 0, 0, 0.15)
-shadow_size = 3
-shadow_offset = Vector2(0, 2)
+bg_color = Color(0.13333333, 0.82745098, 0.93333333, 0.2)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.13333333, 0.82745098, 0.93333333, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.13333333, 0.82745098, 0.93333333, 0.4)
+shadow_size = 6
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
-bg_color = Color(0.79607843, 0.76470588, 0.72156863, 1)
+bg_color = Color(0.15, 0.22, 0.32, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.13333333, 0.82745098, 0.93333333, 0.4)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
-expand_margin_left = 10.0
-expand_margin_top = 2.0
-expand_margin_right = 10.0
-expand_margin_bottom = 2.0
+expand_margin_left = 8.0
+expand_margin_top = 3.0
+expand_margin_right = 8.0
+expand_margin_bottom = 3.0
 
 [node name="MazoPanel" type="PanelContainer" unique_id=2094166136 node_paths=PackedStringArray("_gridMazo", "_btnRemover")]
 offset_right = 430.0
@@ -112,9 +110,23 @@ theme_override_constants/separation = 10
 
 [node name="TU MAZO" type="Label" parent="MarginContainer/VBoxContainer/HeaderMazo" unique_id=197373484]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.18039216, 0.16078432, 0.14901961, 1)
+theme_override_colors/font_color = Color(0.96, 0.97, 1.0, 1)
 theme_override_font_sizes/font_size = 22
 text = "TU MAZO"
+
+[node name="SpacerMazo" type="Control" parent="MarginContainer/VBoxContainer/HeaderMazo"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PillElixir" type="PanelContainer" parent="MarginContainer/VBoxContainer/HeaderMazo"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+
+[node name="LblElixir" type="Label" parent="MarginContainer/VBoxContainer/HeaderMazo/PillElixir"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.13333333, 0.82745098, 0.93333333, 1)
+theme_override_font_sizes/font_size = 11
+text = "COSTE MEDIO: 3.5 💧"
 
 
 

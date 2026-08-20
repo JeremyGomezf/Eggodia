@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("1_goo7v")
-Nombre = "T-REX Z PREHISTORIA"
-Imagen = ExtResource("1_j8wyx")
-RutaEscena = "res://cartas prime/TRex_prime.tscn"
+Nombre = "T-Rex Z"
+Elemento = "Naturaleza"
+Era = "Era Primordial"
+Costo = 5
 Ataque = 400
 Defensa = 350
 Vida = 400
-Descripcion = "El rey jurásico traído de vuelta a la vida con furia renovada. Su mordida aplasta las defensas y su rugido paraliza de terror a las tropas más débiles."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Velocidad = "RÁPIDA"
+Rango = "CORTO"
+FuerteContra = "Agua"
+DebilContra = "Metal"
+Descripcion = "Rugido primordial: -30% ataque enemigo 2 turnos"
+RutaEscena = "res://cartas prime/TRex_prime.tscn"
+Imagen = ExtResource("1_j8wyx")

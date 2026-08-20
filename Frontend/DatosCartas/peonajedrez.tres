@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("1_dact2")
-Nombre = "PEÓN AJEDREZ"
-Imagen = ExtResource("1_qoiut")
-RutaEscena = "res://cartas prime/Peon_prime.tscn"
+Nombre = "Peón"
+Elemento = "Naturaleza"
+Era = "Era Medieval"
+Costo = 2
 Ataque = 100
 Defensa = 150
 Vida = 150
-Descripcion = "El guerrero de infantería básica. Puede parecer inofensivo por sí solo, pero cuando marcha en grupo forma un muro estratégico difícil de penetrar."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Velocidad = "MEDIA"
+Rango = "CORTO"
+FuerteContra = "Agua"
+DebilContra = "Metal"
+Descripcion = "Sacrificio heroico: cura al aliado más débil"
+RutaEscena = "res://cartas prime/Peon_prime.tscn"
+Imagen = ExtResource("1_qoiut")

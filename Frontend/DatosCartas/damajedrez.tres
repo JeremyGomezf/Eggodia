@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("1_a3pim")
-Nombre = "DAMA AJEDREZ"
-Imagen = ExtResource("1_86a8u")
+Nombre = "Dama"
+Elemento = "Sombra"
+Era = "Era Medieval"
+Costo = 4
+Ataque = 180
+Defensa = 200
+Vida = 220
+Velocidad = "RÁPIDA"
+Rango = "MEDIO"
+FuerteContra = "Metal"
+DebilContra = "Fuego"
+Descripcion = "Inspiración real: +100 ATK aliados 2 turnos"
 RutaEscena = "res://cartas prime/Dama_prime.tscn"
-Ataque = 350
-Defensa = 300
-Vida = 350
-Descripcion = "La pieza más letal del tablero. Su elegancia oculta una fuerza destructiva absoluta, capaz de moverse libremente para aniquilar amenazas en un abrir y cerrar de ojos."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Imagen = ExtResource("1_86a8u")

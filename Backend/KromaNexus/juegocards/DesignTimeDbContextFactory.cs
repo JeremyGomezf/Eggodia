@@ -14,10 +14,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
         // Cadena de conexión hardcodeada solo para migraciones
-        optionsBuilder.UseMySql(
-            "Server=127.0.0.1;Port=3306;Database=cardsdatabase;User=root;Password=;",
-            new MariaDbServerVersion(new Version(10, 4, 32))
-        );
+        optionsBuilder.UseSqlite("Data Source=cards.db");
 
         return new AppDbContext(optionsBuilder.Options);
     }

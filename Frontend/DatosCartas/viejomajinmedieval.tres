@@ -5,10 +5,17 @@
 
 [resource]
 script = ExtResource("2_5s6o6")
-Nombre = "VIEJO MAJIN MEDIEVAL"
-Imagen = ExtResource("1_pksid")
+Nombre = "Maguín"
+Elemento = "Agua"
+Era = "Era Mística"
+Costo = 3
+Ataque = 200
+Defensa = 150
+Vida = 220
+Velocidad = "MEDIA"
+Rango = "LARGO"
+FuerteContra = "Fuego"
+DebilContra = "Naturaleza"
+Descripcion = "Ventisca: 100 daño de hielo y bloqueo 1 turno"
 RutaEscena = "res://cartas prime/Maguin_prime.tscn"
-Ataque = 250
-Defensa = 220
-Vida = 200
-Descripcion = "Un hechicero ermitaño que ha dominado las artes místicas durante siglos. Su magia antigua puede no parecer ágil, pero su conocimiento en el campo de batalla es letal para los incautos."
+Imagen = ExtResource("1_pksid")

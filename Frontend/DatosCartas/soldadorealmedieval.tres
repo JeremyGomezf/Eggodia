@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("1_lyybi")
-Nombre = "SOLDADO REAL MEDIEVAL"
-Imagen = ExtResource("1_55xal")
-RutaEscena = "res://cartas prime/SoldadoReal_prime.tscn"
-Ataque = 150
+Nombre = "Soldado Real"
+Elemento = "Metal"
+Era = "Era Medieval"
+Costo = 4
+Ataque = 200
 Defensa = 300
-Vida = 250
-Descripcion = "La columna vertebral de la guardia. Equipado con armadura pesada y una lealtad inquebrantable, es el primero en cargar y el último en retirarse."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Vida = 280
+Velocidad = "MEDIA"
+Rango = "CORTO"
+FuerteContra = "Sombra"
+DebilContra = "Fuego"
+Descripcion = "Formación: +150 escudo a todos los aliados"
+RutaEscena = "res://cartas prime/SoldadoReal_prime.tscn"
+Imagen = ExtResource("1_55xal")

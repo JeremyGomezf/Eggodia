@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("1_bawxg")
-Nombre = "TORRE AJEDREZ"
-Imagen = ExtResource("1_p4pcv")
+Nombre = "Torre"
+Elemento = "Metal"
+Era = "Era Medieval"
+Costo = 4
+Ataque = 220
+Defensa = 400
+Vida = 350
+Velocidad = "LENTA"
+Rango = "CORTO"
+FuerteContra = "Sombra"
+DebilContra = "Fuego"
+Descripcion = "Forma gigante: se agranda para tanquear"
 RutaEscena = "res://cartas prime/Torre_prime.tscn"
-Ataque = 350
-Defensa = 450
-Vida = 500
-Descripcion = "Una fortaleza andante de piedra inamovible. Diseñada para defender las líneas aliadas con una solidez impenetrable; chocar contra ella es un suicidio."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Imagen = ExtResource("1_p4pcv")

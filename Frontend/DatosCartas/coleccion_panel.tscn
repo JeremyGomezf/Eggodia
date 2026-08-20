@@ -4,22 +4,22 @@
 [ext_resource type="PackedScene" uid="uid://cc4dl7d6qlseb" path="res://DatosCartas/CartaMini.tscn" id="2_mini"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_col_bg"]
-bg_color = Color(0.92941176, 0.91372549, 0.88235294, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.7254902, 0.69019608, 0.64313725, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(0, 0, 0, 0.08)
-shadow_size = 6
-shadow_offset = Vector2(0, 4)
+bg_color = Color(0.11764706, 0.16078431, 0.23137255, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.08)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 12
+shadow_offset = Vector2(0, 8)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_search"]
-bg_color = Color(1, 1, 1, 0.9)
+bg_color = Color(0.08, 0.12, 0.18, 0.9)
 content_margin_left = 12.0
 content_margin_top = 6.0
 content_margin_right = 12.0
@@ -28,14 +28,14 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.76862745, 0.74117647, 0.70196078, 1)
+border_color = Color(0.13333333, 0.82745098, 0.93333333, 0.6)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_filter"]
-bg_color = Color(0.22, 0.24, 0.28, 1)
+bg_color = Color(0.14, 0.18, 0.26, 0.9)
 content_margin_left = 14.0
 content_margin_top = 6.0
 content_margin_right = 14.0
@@ -44,14 +44,14 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.35, 0.38, 0.42, 1)
+border_color = Color(0.13333333, 0.82745098, 0.93333333, 0.4)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_filter_hover"]
-bg_color = Color(0.32, 0.35, 0.40, 1)
+bg_color = Color(0.13333333, 0.82745098, 0.93333333, 0.25)
 content_margin_left = 14.0
 content_margin_top = 6.0
 content_margin_right = 14.0
@@ -60,12 +60,11 @@ border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.50, 0.55, 0.62, 1)
+border_color = Color(0.13333333, 0.82745098, 0.93333333, 1)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
-
 
 [node name="ColeccionPanel" type="PanelContainer" unique_id=1749755602 node_paths=PackedStringArray("_buscador", "_gridCartas", "_btnTodas", "_btnUnidades", "_btnHechizos", "_btnEstructuras")]
 offset_right = 550.0
@@ -98,7 +97,7 @@ theme_override_constants/separation = 10
 [node name="TituloCol" type="Label" parent="MarginContainer/VBoxContainer/HeaderCol"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.18039216, 0.16078432, 0.14901961, 1)
+theme_override_colors/font_color = Color(0.96, 0.97, 1.0, 1)
 theme_override_font_sizes/font_size = 20
 text = "CARTAS DISPONIBLES"
 
@@ -106,7 +105,8 @@ text = "CARTAS DISPONIBLES"
 custom_minimum_size = Vector2(150, 36)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_search")
-placeholder_text = "🔍"
+theme_override_colors/font_color = Color(0.96, 0.97, 1.0, 1)
+placeholder_text = "🔍 Buscar..."
 max_length = 30
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]

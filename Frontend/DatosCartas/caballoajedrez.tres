@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("1_y4una")
-Nombre = "CABALLO AJEDREZ"
-Imagen = ExtResource("1_8gq41")
+Nombre = "Caballo"
+Elemento = "Metal"
+Era = "Era Medieval"
+Costo = 3
+Ataque = 250
+Defensa = 200
+Vida = 300
+Velocidad = "RÁPIDA"
+Rango = "CORTO"
+FuerteContra = "Naturaleza"
+DebilContra = "Fuego"
+Descripcion = "Carga rápida"
 RutaEscena = "res://cartas prime/Caballo_prime.tscn"
-Ataque = 200
-Defensa = 250
-Vida = 230
-Descripcion = "Un caballero táctico impredecible. Su estilo de combate le permite saltar las líneas enemigas y atacar los puntos débiles desde ángulos que nadie espera."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Imagen = ExtResource("1_8gq41")

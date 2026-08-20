@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("2_d73ys")
-Nombre = "TIBURON BLANCO ARRECIFE"
-Imagen = ExtResource("1_o86g0")
+Nombre = "Tiburón"
+Elemento = "Agua"
+Era = "Era Primordial"
+Costo = 4
+Ataque = 320
+Defensa = 180
+Vida = 260
+Velocidad = "RÁPIDA"
+Rango = "CORTO"
+FuerteContra = "Fuego"
+DebilContra = "Naturaleza"
+Descripcion = "Mordida feroz: siguiente ataque hace x2 daño"
 RutaEscena = "res://cartas prime/Tiburon_prime.tscn"
-Ataque = 230
-Defensa = 200
-Vida = 300
-Descripcion = "El depredador definitivo de los mares, ahora en tierra firme. Sus mandíbulas están diseñadas para destrozar armaduras gruesas con una ferocidad inigualable."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Imagen = ExtResource("1_o86g0")

@@ -5,11 +5,17 @@
 
 [resource]
 script = ExtResource("1_4ewec")
-Nombre = "CALAMAR GIGANTE ARRECIFE"
-Imagen = ExtResource("1_ce6uv")
-RutaEscena = "res://cartas prime/CalamarG_prime.tscn"
+Nombre = "Calamar Gigante"
+Elemento = "Sombra"
+Era = "Era Primordial"
+Costo = 4
 Ataque = 370
 Defensa = 380
 Vida = 400
-Descripcion = "Un monstruo abismal que acecha en las sombras. Usa sus tentáculos asfixiantes para atrapar a múltiples enemigos a la vez y arrastrarlos a su perdición."
-metadata/_custom_type_script = "uid://b0kjpa4bu8g5t"
+Velocidad = "MEDIA"
+Rango = "LARGO"
+FuerteContra = "Metal"
+DebilContra = "Fuego"
+Descripcion = "Depredador acuático"
+RutaEscena = "res://cartas prime/CalamarG_prime.tscn"
+Imagen = ExtResource("1_ce6uv")

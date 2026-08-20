@@ -32,7 +32,7 @@ public partial class CartaMini : Control // (O el nodo que uses de raíz, como V
 			_nombreTexto.ClipText = true;
 			_nombreTexto.MaxLinesVisible = 2;
 			_nombreTexto.AddThemeFontSizeOverride("font_size", 14); // Aumentado a 14
-			_nombreTexto.AddThemeColorOverride("font_color", new Color(0.1f, 0.1f, 0.1f, 1f)); // Oscuro
+			_nombreTexto.AddThemeColorOverride("font_color", new Color(0.96f, 0.97f, 1.0f, 1f));
 			
 			_nombreTexto.CustomMinimumSize = new Vector2(80, 42); // Un poco más de espacio vertical
 			this.CustomMinimumSize = new Vector2(85, 130);
@@ -45,7 +45,7 @@ public partial class CartaMini : Control // (O el nodo que uses de raíz, como V
 			_nombreTexto.ClipText = false;
 			_nombreTexto.MaxLinesVisible = -1; // Ilimitado
 			_nombreTexto.AddThemeFontSizeOverride("font_size", 14); // Aumentado a 14
-			_nombreTexto.AddThemeColorOverride("font_color", new Color(0.1f, 0.1f, 0.1f, 1f)); // Oscuro para colección clara
+			_nombreTexto.AddThemeColorOverride("font_color", new Color(0.96f, 0.97f, 1.0f, 1f));
 			
 			_nombreTexto.CustomMinimumSize = new Vector2(90, 56);
 			this.CustomMinimumSize = new Vector2(100, 150);
