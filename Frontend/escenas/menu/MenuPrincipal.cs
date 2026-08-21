@@ -44,7 +44,29 @@ public partial class MenuPrincipal : Control
 		_panelSettings = GetNodeOrNull<PanelContainer>("PanelSettings");
 		_popupDialog   = GetNodeOrNull<PanelContainer>("PopupDialog");
 
-		// 3. Vincular botones principales (Cartas, Tienda, VS Bot, Online)
+		// 3a. Botones del layout antiguo (VBoxContainer)
+		var btnJugar = GetNodeOrNull<Button>("VBoxContainer/JUGAR");
+		if (btnJugar != null)
+		{
+			btnJugar.Pressed += () => GetTree().ChangeSceneToFile(RutaEscenaJuego);
+			AgregarAnimacionHover(btnJugar);
+		}
+
+		var btnOpciones = GetNodeOrNull<Button>("VBoxContainer/OPCIONES");
+		if (btnOpciones != null)
+		{
+			btnOpciones.Pressed += MostrarSettings;
+			AgregarAnimacionHover(btnOpciones);
+		}
+
+		var btnSalir = GetNodeOrNull<Button>("VBoxContainer/SALIR");
+		if (btnSalir != null)
+		{
+			btnSalir.Pressed += () => GetTree().Quit();
+			AgregarAnimacionHover(btnSalir);
+		}
+
+		// 3b. Vincular botones principales (Cartas, Tienda, VS Bot, Online)
 		var btnCartas = GetNodeOrNull<TextureButton>("CARTAS");
 		if (btnCartas != null)
 		{
