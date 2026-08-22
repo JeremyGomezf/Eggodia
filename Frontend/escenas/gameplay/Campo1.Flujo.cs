@@ -384,7 +384,7 @@ public partial class Campo1 : Node2D
 		Node2D zonaRival = GetTree().Root.FindChild("ModRival2", true, false) as Node2D;
 		if (zonaRival != null && zonaRival.GetNodeOrNull("Ocupado") == null)
 		{
-			var escena = ElegirTropaIA();
+			var escena = ElegirTropaCPU();
 			if (escena != null)
 			{
 				InvocacionRival(zonaRival, escena);
@@ -405,7 +405,7 @@ public partial class Campo1 : Node2D
 		if (_lblTurnoInfo != null)
 		{
 			var l = _lblTurnoInfo;
-			string dif     = _dificultadIA == 0 ? "Fácil" : _dificultadIA == 1 ? "Normal" : "Difícil";
+			string dif     = _dificultadCPU == 0 ? "Fácil" : _dificultadCPU == 1 ? "Normal" : "Difícil";
 			bool urgente   = esTurnoJugador && tiempoTurnoActual <= 8;
 			string timer   = urgente ? $"{tiempoTurnoActual}s!" : $"{tiempoTurnoActual}s";
 			int maxEnergy  = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);

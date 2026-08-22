@@ -205,8 +205,8 @@ public partial class Campo1 : Node2D
 		tw.Finished += () => { if (IsInstanceValid(aviso)) aviso.QueueFree(); };
 	}
 
-	// ── IA HECHIZOS ──────────────────────────────────────────────────────
-	private void IAUsarHechizo()
+	// ── CPU HECHIZOS ─────────────────────────────────────────────────────
+	private void CPUUsarHechizo()
 	{
 		// Buscar tropa del jugador con más vida para envenenaría
 		Node2D objetivo = null;

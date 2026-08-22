@@ -95,8 +95,8 @@ public partial class Campo1 : Node2D
 	private System.Collections.Generic.List<int> _poolHechizos = new();
 	private int     _slotPendiente = -1;
 
-	// ── IA ADAPTATIVA ─────────────────────────────────────────────────────
-	private int  _dificultadIA        = 1; // 0=fácil, 1=medio, 2=difícil
+	// ── CPU ADAPTATIVA ────────────────────────────────────────────────────
+	private int  _dificultadCPU       = 1; // 0=fácil, 1=medio, 2=difícil
 	private int  _victoriasJugador    = 0;
 	private int  _derrotasJugador     = 0;
 	private int  _turnosJugados       = 0;
@@ -295,14 +295,14 @@ public partial class Campo1 : Node2D
 
 		_timerDemo = new Timer();
 		_timerDemo.WaitTime = 0.5f;
-		_timerDemo.Timeout  += () => { if (_modoDemo && esTurnoJugador) EjecutarTurnoIADemo(); };
+		_timerDemo.Timeout  += () => { if (_modoDemo && esTurnoJugador) EjecutarTurnoCPUDemo(); };
 		AddChild(_timerDemo);
 		_timerDemo.Start();
 
 		SetProcessInput(true);
 	}
 
-	private async void EjecutarTurnoIADemo()
+	private async void EjecutarTurnoCPUDemo()
 	{
 		if (juegoTerminado || !_modoDemo) return;
 		await ToSignal(GetTree().CreateTimer(1.2f), "timeout");

@@ -4,25 +4,24 @@ using System.Collections.Generic;
 
 public partial class Campo1 : Node2D
 {
-	// ── IA ADAPTATIVA ─────────────────────────────────────────────────────
+	// ── CPU ADAPTATIVA ────────────────────────────────────────────────────
 	// Ajusta la dificultad según el rendimiento del jugador
 	private void AjustarDificultad()
 	{
-		// Si el jugador tiene mucha vida y el rival poca → subir dificultad
 		float pctJugador = (float)vidaJugador / vidaMaxJugador;
 		float pctRival   = (float)vidaRival   / vidaMaxJugador;
 
-		if (pctJugador > 0.7f && pctRival < 0.4f && _dificultadIA < 2)
-			_dificultadIA++;
-		else if (pctJugador < 0.3f && pctRival > 0.6f && _dificultadIA > 0)
-			_dificultadIA--;
+		if (pctJugador > 0.7f && pctRival < 0.4f && _dificultadCPU < 2)
+			_dificultadCPU++;
+		else if (pctJugador < 0.3f && pctRival > 0.6f && _dificultadCPU > 0)
+			_dificultadCPU--;
 	}
 
-	private async void EjecutarTurnoIA()
+	private async void EjecutarTurnoCPU()
 	{
 		if (juegoTerminado || esTurnoJugador) return;
 
-		// Fase de apertura: la IA llena sus 3 carriles sin atacar
+		// Fase de apertura: la CPU llena sus 3 carriles sin atacar
 		if (_faseApertura)
 		{
 			await ToSignal(GetTree().CreateTimer(0.9f), "timeout");
@@ -32,7 +31,7 @@ public partial class Campo1 : Node2D
 				if (juegoTerminado) return;
 				Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
 				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
-				InvocacionRival(zona, ElegirTropaIA());
+				InvocacionRival(zona, ElegirTropaCPU());
 				ActualizarInterfaz();
 				await ToSignal(GetTree().CreateTimer(0.65f), "timeout");
 			}
@@ -43,11 +42,10 @@ public partial class Campo1 : Node2D
 
 		AjustarDificultad();
 
-		float delay = _dificultadIA == 0 ? 1.8f : _dificultadIA == 1 ? 1.2f : 0.85f;
+		float delay = _dificultadCPU == 0 ? 1.8f : _dificultadCPU == 1 ? 1.2f : 0.85f;
 		await ToSignal(GetTree().CreateTimer(delay * 0.4f), "timeout");
 		if (juegoTerminado) return;
 
-		// Evaluar estado del campo
 		int tropasEnCampo = 0;
 		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 			if (IsInstanceValid(n as Node2D)) tropasEnCampo++;
@@ -58,11 +56,10 @@ public partial class Campo1 : Node2D
 
 		if (atacarPrimero)
 		{
-			// Con tropas en campo: atacar primero (gasta energía)
 			var bots = new List<Node2D>();
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 				if (n is Node2D n2 && IsInstanceValid(n2)) bots.Add(n2);
-			if (_dificultadIA == 2)
+			if (_dificultadCPU == 2)
 				bots.Sort((a, b) => Gi(b, "puntosAtaque").CompareTo(Gi(a, "puntosAtaque")));
 
 			foreach (Node2D tropa in bots)
@@ -70,27 +67,26 @@ public partial class Campo1 : Node2D
 				if (movimientosRestantes <= 0 || juegoTerminado || !IsInstanceValid(tropa)) break;
 				if (EstaBlockeada(tropa)) continue;
 				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
-				if (!HabilidadUsada(tropa) && _dificultadIA >= 1 && random.Next(3) == 0)
+				if (!HabilidadUsada(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0)
 					tropa.Call("EjecutarAccion", "usar_habilidad");
 				else if (DebeDefender(tropa, objetivo))
 					tropa.Call("EjecutarAccion", "preparar_defensa");
 				else
 					ProcesarCombateFrontal(tropa, "tropas_jugador");
-				if (_dificultadIA == 2 && random.Next(5) == 0) IAUsarHechizo();
+				if (_dificultadCPU == 2 && random.Next(5) == 0) CPUUsarHechizo();
 				movimientosRestantes--;
 				ActualizarInterfaz();
 				await ToSignal(GetTree().CreateTimer(delay), "timeout");
 				if (juegoTerminado) return;
 			}
-			// Reforzar zonas vacías GRATIS (invocar no gasta energía)
-			int maxNuevos = _dificultadIA + 1;
+			int maxNuevos = _dificultadCPU + 1;
 			int reforzadas = 0;
 			foreach (string nombre in puntos)
 			{
 				if (reforzadas >= maxNuevos || juegoTerminado) break;
 				Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
 				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
-				InvocacionRival(zona, ElegirTropaIA());
+				InvocacionRival(zona, ElegirTropaCPU());
 				reforzadas++;
 				ActualizarInterfaz();
 				await ToSignal(GetTree().CreateTimer(delay * 0.7f), "timeout");
@@ -99,26 +95,24 @@ public partial class Campo1 : Node2D
 		}
 		else
 		{
-			// Sin tropas suficientes: invocar primero GRATIS, luego atacar (gasta energía)
-			int aInvocar = _dificultadIA == 0 ? 1 : _dificultadIA == 1 ? 2 : 3;
+			int aInvocar = _dificultadCPU == 0 ? 1 : _dificultadCPU == 1 ? 2 : 3;
 			int invocadas = 0;
 			foreach (string nombre in puntos)
 			{
 				if (invocadas >= aInvocar || juegoTerminado) break;
 				Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
 				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
-				InvocacionRival(zona, ElegirTropaIA());
+				InvocacionRival(zona, ElegirTropaCPU());
 				invocadas++;
 				ActualizarInterfaz();
 				await ToSignal(GetTree().CreateTimer(delay), "timeout");
 				if (juegoTerminado) return;
 			}
 
-			// Atacar con todas las tropas (incluyendo las recién invocadas)
 			var bots = new List<Node2D>();
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 				if (n is Node2D n2 && IsInstanceValid(n2)) bots.Add(n2);
-			if (_dificultadIA == 2)
+			if (_dificultadCPU == 2)
 				bots.Sort((a, b) => Gi(b, "puntosAtaque").CompareTo(Gi(a, "puntosAtaque")));
 
 			foreach (Node2D tropa in bots)
@@ -126,13 +120,13 @@ public partial class Campo1 : Node2D
 				if (movimientosRestantes <= 0 || juegoTerminado || !IsInstanceValid(tropa)) break;
 				if (EstaBlockeada(tropa)) continue;
 				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
-				if (!HabilidadUsada(tropa) && _dificultadIA >= 1 && random.Next(3) == 0)
+				if (!HabilidadUsada(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0)
 					tropa.Call("EjecutarAccion", "usar_habilidad");
 				else if (DebeDefender(tropa, objetivo))
 					tropa.Call("EjecutarAccion", "preparar_defensa");
 				else
 					ProcesarCombateFrontal(tropa, "tropas_jugador");
-				if (_dificultadIA == 2 && random.Next(5) == 0) IAUsarHechizo();
+				if (_dificultadCPU == 2 && random.Next(5) == 0) CPUUsarHechizo();
 				movimientosRestantes--;
 				ActualizarInterfaz();
 				await ToSignal(GetTree().CreateTimer(delay), "timeout");
@@ -143,18 +137,17 @@ public partial class Campo1 : Node2D
 		if (!esTurnoJugador && !juegoTerminado) CambiarTurno();
 	}
 
-	private PackedScene ElegirTropaIA()
+	private PackedScene ElegirTropaCPU()
 	{
-		if (_dificultadIA == 2) return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length / 2, escenasTropas.Length)]);
-		if (_dificultadIA == 0) return GD.Load<PackedScene>(escenasTropas[random.Next(0, escenasTropas.Length / 2)]);
+		if (_dificultadCPU == 2) return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length / 2, escenasTropas.Length)]);
+		if (_dificultadCPU == 0) return GD.Load<PackedScene>(escenasTropas[random.Next(0, escenasTropas.Length / 2)]);
 		return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length)]);
 	}
 
 	private bool DebeDefender(Node2D t, Node2D obj)
 	{
 		int vida = Gi(t,"vidaActual"), esc = Gi(t,"escudoActual");
-		// Difícil defiende más inteligentemente
-		float umbralVida = _dificultadIA == 2 ? 0.4f : 0.25f;
+		float umbralVida = _dificultadCPU == 2 ? 0.4f : 0.25f;
 		if (obj != null) return ((float)vida / Mathf.Max(Gi(t,"vidaMaxima"),1) < umbralVida && esc > 50);
 		return vida < 100 && esc > 0;
 	}

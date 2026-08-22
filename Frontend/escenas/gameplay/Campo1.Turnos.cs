@@ -53,7 +53,7 @@ public partial class Campo1 : Node2D
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
 				if (n.HasMethod("SetActivo")) n.Call("SetActivo", true);
 		}
-		else EjecutarTurnoIA();
+		else EjecutarTurnoCPU();
 
 		AnunciarTurno();
 		ActualizarInterfaz();
