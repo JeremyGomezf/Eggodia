@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/BotonTienda.png-cf1b3c32a83de162886eeef86cd93
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

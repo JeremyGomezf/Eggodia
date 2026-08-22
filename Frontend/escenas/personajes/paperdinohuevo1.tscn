@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://dbqur0dsx22xy"]
+
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_y2583"]
+[ext_resource type="Texture2D" uid="uid://bm2ach0uttvx8" path="res://imagenes/sprites/Papel/Huevo Dino sprites.png" id="2_y2583"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ikhn3"]
+atlas = ExtResource("2_y2583")
+region = Rect2(0, 2114, 942, 1057)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iac2d"]
+atlas = ExtResource("2_y2583")
+region = Rect2(0, 3171, 942, 1057)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1qmae"]
+atlas = ExtResource("2_y2583")
+region = Rect2(0, 4228, 942, 1057)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_8kwib"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ikhn3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iac2d")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1qmae")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 4.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
+size = Vector2(108, 133.5)
+
+[node name="Paper Dino Huevo" type="Area2D" unique_id=745771741]
+script = ExtResource("1_y2583")
+IdPersonaje = "dino_huevo"
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1743464124]
+position = Vector2(22.000008, -28)
+scale = Vector2(0.2, 0.2)
+sprite_frames = SubResource("SpriteFrames_8kwib")
+animation = &"idle"
+frame_progress = 0.5354467
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=789237659]
+shape = SubResource("RectangleShape2D_8ramd")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=782052654]
+
+[node name="Label" type="Label" parent="." unique_id=271387681]
+visible = false
+offset_right = 40.0
+offset_bottom = 23.0

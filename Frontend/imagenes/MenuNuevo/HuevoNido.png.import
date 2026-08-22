@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/HuevoNido.png-286d05b9ba54bf977476150dfcacf34
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

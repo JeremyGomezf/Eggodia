@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bypafn5mbft83"]
 
-[ext_resource type="Script" uid="uid://dkgrsfn4rs1ty" path="res://cartas prime/SoldadoRealPrime.cs" id="1_hy2mn"]
+[ext_resource type="Script" uid="uid://bot21fqhxefy6" path="res://cartas prime/GUERRA CARTOONS/CamperoCartoonPrime.cs" id="1_fefla"]
 [ext_resource type="Texture2D" uid="uid://dut4iodci03kb" path="res://imagenes/sprites/Guerra Cartoons/cartoon campero.png" id="2_hy2mn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]
@@ -98,6 +98,18 @@ region = Rect2(3624, 3840, 1812, 960)
 atlas = ExtResource("2_hy2mn")
 region = Rect2(5436, 3840, 1812, 960)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_wt1bb"]
+atlas = ExtResource("2_hy2mn")
+region = Rect2(7248, 3840, 1812, 960)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tlyqh"]
+atlas = ExtResource("2_hy2mn")
+region = Rect2(0, 4800, 1812, 960)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tqng7"]
+atlas = ExtResource("2_hy2mn")
+region = Rect2(1812, 4800, 1812, 960)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_73dtl"]
 atlas = ExtResource("2_hy2mn")
 region = Rect2(3624, 4800, 1812, 960)
@@ -146,18 +158,6 @@ region = Rect2(5436, 1920, 1812, 960)
 atlas = ExtResource("2_hy2mn")
 region = Rect2(7248, 1920, 1812, 960)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_wt1bb"]
-atlas = ExtResource("2_hy2mn")
-region = Rect2(7248, 3840, 1812, 960)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_tlyqh"]
-atlas = ExtResource("2_hy2mn")
-region = Rect2(0, 4800, 1812, 960)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_tqng7"]
-atlas = ExtResource("2_hy2mn")
-region = Rect2(1812, 4800, 1812, 960)
-
 [sub_resource type="SpriteFrames" id="SpriteFrames_4s16o"]
 animations = [{
 "frames": [{
@@ -194,7 +194,7 @@ animations = [{
 "duration": 1.1,
 "texture": SubResource("AtlasTexture_jevgy")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 11.0
 }, {
@@ -214,7 +214,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_orrye")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 10.0
 }, {
@@ -237,8 +237,8 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_rk78t")
 }],
-"loop": false,
-"name": &"defensa ",
+"loop": 0,
+"name": &"defensa",
 "speed": 10.0
 }, {
 "frames": [{
@@ -305,9 +305,47 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_hrgop")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
 "speed": 11.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wt1bb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tlyqh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tqng7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wt1bb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wt1bb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wt1bb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wt1bb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tlyqh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tqng7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wt1bb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wt1bb")
+}],
+"loop": 0,
+"name": &"habilidad",
+"speed": 10.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -349,7 +387,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_4e6fn")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 9.0
 }, {
@@ -369,46 +407,8 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_6pfu3")
 }],
-"loop": false,
-"name": &"pre defensa ",
-"speed": 10.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_wt1bb")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_tlyqh")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_tqng7")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_wt1bb")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_wt1bb")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_wt1bb")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_wt1bb")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_tlyqh")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_tqng7")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_wt1bb")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_wt1bb")
-}],
-"loop": false,
-"name": &"pre defensa -> habilidad",
+"loop": 0,
+"name": &"pre defensa",
 "speed": 10.0
 }]
 
@@ -418,8 +418,8 @@ bg_color = Color(0, 0.72156864, 0.101960786, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0kohr"]
 bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
 
-[node name="Soldado Cartoon" type="Area2D" unique_id=424789757]
-script = ExtResource("1_hy2mn")
+[node name="Campero Cartoon" type="Area2D" unique_id=424789757]
+script = ExtResource("1_fefla")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=356585527]
 position = Vector2(-5, -14)
@@ -429,7 +429,7 @@ shape = SubResource("RectangleShape2D_opij5")
 position = Vector2(47, -19)
 scale = Vector2(0.16, 0.16)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"idle"
+animation = &"pre defensa"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3

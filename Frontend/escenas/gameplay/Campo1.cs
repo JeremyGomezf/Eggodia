@@ -4,6 +4,11 @@ using System.Collections.Generic;
 
 public partial class Campo1 : Node2D
 {
+	// ── MÚSICA Y AUDIO ───────────────────────────────────────────────────
+	[Export] private AudioStream _musicaPartida = GD.Load<AudioStream>("res://musica/DECISIVE BATTLE.mp3");
+	[Export] private float _volumenMusicaDb = -17.0f;
+	private AudioStreamPlayer _reproductorMusica;
+
 	// ── VIDA ──────────────────────────────────────────────────────────────
 	[Export] public int vidaJugador   = 2000;
 	[Export] public int vidaRival     = 2000;
@@ -23,7 +28,7 @@ public partial class Campo1 : Node2D
 
 	// ── SISTEMA DE COMBOS Y RACHAS ────────────────────────────────────────
 	private int  _comboTurno          = 0;   // tropas eliminadas en turno actual
-	private int  _rachaVictorias      = 0;   // victorias consecutivas (persiste en SesionJuego)
+	private int  _rachaVictorias      = 0;   // victorias consecutivas
 	private int  _totalTropasElimIA   = 0;   // para logros
 
 	// ── LOGROS ────────────────────────────────────────────────────────────
@@ -32,7 +37,7 @@ public partial class Campo1 : Node2D
 	private bool _logroHabilidadUsada   = false;
 	private bool _logroHechizosUsados   = false;
 
-	// ── FASE DE APERTURA (inicio de partida: obligatorio colocar 3 tropas) ─
+	// ── FASE DE APERTURA ─────────────────────────────────────────────────
 	private bool _faseApertura         = true;
 
 	// ── MODO DEMO ─────────────────────────────────────────────────────────
@@ -68,8 +73,7 @@ public partial class Campo1 : Node2D
 	private Label  _lblInstruccion;
 
 	// ── IA ADAPTATIVA ─────────────────────────────────────────────────────
-	// Empieza en dificultad media (0=fácil, 1=medio, 2=difícil)
-	private int  _dificultadIA        = 1;
+	private int  _dificultadIA        = 1; // 0=fácil, 1=medio, 2=difícil
 	private int  _victoriasJugador    = 0;
 	private int  _derrotasJugador     = 0;
 	private int  _turnosJugados       = 0;
@@ -93,21 +97,24 @@ public partial class Campo1 : Node2D
 	private string[] imagenesCartas = {
 		"res://imagenes/CartasPng/DragonCart.png",   "res://imagenes/CartasPng/GolemCart.png",
 		"res://imagenes/CartasPng/MaguinCart.png",   "res://imagenes/CartasPng/SoldRealCart.png",
-		"res://imagenes/CartasPng/TReXCart.png",     "res://imagenes/CartasPng/TiburonCart.png",
-		"res://imagenes/CartasPng/PeonCart.png",     "res://imagenes/CartasPng/EncebolladoCart.png",
+		"res://imagenes/CartasPng/PaperReXCart.png",     "res://imagenes/CartasPng/TiburonCart.png",
+		"res://imagenes/CartasPng/PeonCart.png",     
 		"res://imagenes/CartasPng/CalamarGCart.png", "res://imagenes/CartasPng/CaballoCart.png",
 		"res://imagenes/CartasPng/DamaCart.png",     "res://imagenes/CartasPng/TorreCart.png",
-		"res://imagenes/CartasPng/SoldRealCart.png"   // placeholder: SoldadoCartoonCart.png aún no existe
+		"res://imagenes/CartasPng/SoldCartoonCart.png", "res://imagenes/CartasPng/CamperoCart.png",
+		"res://imagenes/CartasPng/ArfilCart.png"
 	};
 
 	private string[] escenasTropas = {
 		"res://cartas prime/Dragon_prime.tscn",   "res://cartas prime/Golem_prime.tscn",
 		"res://cartas prime/Maguin_prime.tscn",   "res://cartas prime/SoldadoReal_prime.tscn",
-		"res://cartas prime/TRex_prime.tscn",     "res://cartas prime/Tiburon_prime.tscn",
-		"res://cartas prime/Peon_prime.tscn",     "res://cartas prime/Encebollado_prime.tscn",
-		"res://cartas prime/CalamarG_prime.tscn", "res://cartas prime/Caballo_prime.tscn",
-		"res://cartas prime/Dama_prime.tscn",     "res://cartas prime/Torre_prime.tscn",
-		"res://cartas prime/GUERRA CARTOONS/Soldado_cartoon_prime.tscn"
+		"res://cartas prime/PAPEL/Paper_Rex.tscn",      "res://cartas prime/Tiburon_prime.tscn",
+		"res://cartas prime/AJEDREZ/Peon_prime.tscn",    
+		"res://cartas prime/CalamarG_prime.tscn", "res://cartas prime/AJEDREZ/Caballo_prime.tscn",
+		"res://cartas prime/AJEDREZ/Dama_prime.tscn",      "res://cartas prime/AJEDREZ/Torre_prime.tscn",
+		"res://cartas prime/GUERRA CARTOONS/Soldado_cartoon_prime.tscn",
+		"res://cartas prime/GUERRA CARTOONS/Campero_cartoon_prime.tscn",
+		"res://cartas prime/AJEDREZ/Arfil_prime.tscn"
 	};
 
 	[Export] private PackedScene escenaTronoRef     = GD.Load<PackedScene>("res://escenas/gameplay/tronocampo.tscn");
@@ -119,6 +126,10 @@ public partial class Campo1 : Node2D
 	// ══════════════════════════════════════════════════════════════════════
 	public override void _Ready()
 	{
+		// Silencia el menú e inicia la canción de combate (de tu script)
+		SilenciarOtrasMusicas();
+		IniciarMusicaPartida();
+
 		timerReloj = new Timer();
 		timerReloj.WaitTime = 1.0f;
 		timerReloj.Timeout  += OnTickReloj;
@@ -136,7 +147,7 @@ public partial class Campo1 : Node2D
 			var hbox = menuAcciones.GetNodeOrNull<HBoxContainer>("HBoxContainer");
 			if (hbox != null)
 			{
-				btnHabilidad          = new Button();
+				btnHabilidad         = new Button();
 				btnHabilidad.Text     = "HABILIDAD";
 				btnHabilidad.Visible  = false;
 				btnHabilidad.Pressed += _on_btn_habilidad_pressed;
@@ -146,13 +157,12 @@ public partial class Campo1 : Node2D
 
 		CrearPanelHechizos();
 
-		// Si contenedorMano no está asignado en el inspector, buscarlo por nombre
 		if (contenedorMano == null)
 			contenedorMano = GetNodeOrNull<Control>("ManoManual");
 		if (contenedorMano == null)
 			GD.PrintErr("[Campo1] ¡contenedorMano no encontrado! Asígnalo en el Inspector o crea un nodo ManoManual.");
 
-		// Usar mazo del jugador si lo armó en el constructor
+		// Mazo desde sesión del jugador
 		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
 		{
 			imagenesCartas = SesionJuego.Instance.ImagenesMazo.ToArray();
@@ -173,11 +183,74 @@ public partial class Campo1 : Node2D
 		BajarManoManual();
 		ActualizarInterfaz();
 		MostrarAvisoApertura();
+
+		// Mejora estética integrada de zonas de invocación (del amigo)
 		EstilizarIndicadoresInvocacion();
 
-		// Restaurar racha desde sesión
 		if (SesionJuego.Instance != null)
 			_rachaVictorias = SesionJuego.Instance.RachaActual;
+	}
+
+	// ── CORRECCIÓN DE ORIENTACIÓN PARA TROPAS RIVALES ────────────────────
+	public void AsegurarOrientacionRival(Node2D tropa)
+	{
+		if (!IsInstanceValid(tropa)) return;
+
+		// Mantiene la escala Y positiva para que nunca se ponga patas arriba
+		Vector2 escalaActual = tropa.Scale;
+		escalaActual.X = Mathf.Abs(escalaActual.X);
+		escalaActual.Y = Mathf.Abs(escalaActual.Y);
+		tropa.Scale = escalaActual;
+
+		// Voltea únicamente la textura de la tropa con FlipH
+		var animSprite = tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+		var sprite2D   = tropa.GetNodeOrNull<Sprite2D>("Sprite2D");
+
+		if (animSprite != null) animSprite.FlipH = true;
+		if (sprite2D != null)   sprite2D.FlipH = true;
+	}
+
+	// ── SISTEMA DE CONTROL DE MÚSICA ─────────────────────────────────────
+	private void SilenciarOtrasMusicas()
+	{
+		Node musicaGlobal = GetTree().Root.GetNodeOrNull("MusicaGlobal");
+		if (musicaGlobal != null)
+		{
+			if (musicaGlobal is AudioStreamPlayer player)
+			{
+				player.Stop();
+			}
+			else if (musicaGlobal.HasMethod("DetenerMusica"))
+			{
+				musicaGlobal.Call("DetenerMusica");
+			}
+		}
+
+		foreach (Node nodo in GetTree().Root.GetChildren())
+		{
+			if (nodo is AudioStreamPlayer asp && asp != _reproductorMusica)
+			{
+				asp.Stop();
+			}
+		}
+	}
+
+	private void IniciarMusicaPartida()
+	{
+		if (_musicaPartida == null)
+		{
+			GD.PrintErr("⚠ No se encontró el archivo de música res://musica/DECISIVE BATTLE.mp3");
+			return;
+		}
+
+		_reproductorMusica = new AudioStreamPlayer();
+		_reproductorMusica.Stream = _musicaPartida;
+		_reproductorMusica.Name = "MusicaDecisiveBattle";
+		_reproductorMusica.VolumeDb = _volumenMusicaDb;
+		
+		AddChild(_reproductorMusica);
+		_reproductorMusica.Play();
+		GD.Print("🎵 Canción DECISIVE BATTLE.mp3 sonando en Campo1.");
 	}
 
 	// ── MODO DEMO: IA vs IA ───────────────────────────────────────────────
@@ -192,14 +265,12 @@ public partial class Campo1 : Node2D
 		lbl.ZIndex   = 50;
 		AddChild(lbl);
 
-		// En modo demo el jugador también es IA
 		_timerDemo = new Timer();
 		_timerDemo.WaitTime = 0.5f;
 		_timerDemo.Timeout  += () => { if (_modoDemo && esTurnoJugador) EjecutarTurnoIADemo(); };
 		AddChild(_timerDemo);
 		_timerDemo.Start();
 
-		// Clic en pantalla sale del demo
 		SetProcessInput(true);
 	}
 
@@ -217,7 +288,7 @@ public partial class Campo1 : Node2D
 			await ToSignal(GetTree().CreateTimer(0.8f), "timeout");
 		}
 
-		var tropas = new System.Collections.Generic.List<Node2D>();
+		var tropas = new List<Node2D>();
 		foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
 			if (n is Node2D n2 && IsInstanceValid(n2)) tropas.Add(n2);
 
@@ -232,13 +303,30 @@ public partial class Campo1 : Node2D
 	}
 
 	public void _on_timer_timeout() { }
+
+	// ── GESTIÓN DE PASAR TURNO Y CONTADOR DE VIDA EN CAMPO ───────────────
+	public void IncrementarTurnosTropasJugador()
+	{
+		foreach (Node nodo in GetTree().GetNodesInGroup("tropas_jugador"))
+		{
+			if (nodo is Node2D tropa && IsInstanceValid(tropa))
+			{
+				int turnos = tropa.HasMeta("turnos_en_campo") ? (int)tropa.GetMeta("turnos_en_campo") : 1;
+				tropa.SetMeta("turnos_en_campo", turnos + 1);
+			}
+		}
+	}
+
 	public void _on_pasar_turno_pressed()
 	{
 		if (!esTurnoJugador || juegoTerminado) return;
 		if (_faseApertura) { MostrarAviso("Coloca tus 3 tropas primero", Colors.Gold); return; }
+		
+		IncrementarTurnosTropasJugador();
 		CambiarTurno();
 	}
 
+	// ── ESTILIZADO MEJORADO DE INDICADORES (Aporte Visual Amigo) ──────────
 	private void EstilizarIndicadoresInvocacion()
 	{
 		foreach (var grupo in new[] { "zonas_invocacion", "zonas_invocacion_rival" })
@@ -249,27 +337,25 @@ public partial class Campo1 : Node2D
 				var ind = zona.GetNodeOrNull<ColorRect>("Indicador");
 				if (ind != null)
 				{
-					ind.Visible = false; // Ocultamos el feo original
+					ind.Visible = false;
 
-					// Crear un nuevo indicador circular brillante
 					var panel = new Panel();
 					panel.Name = "IndicadorMejorado";
 					panel.CustomMinimumSize = new Vector2(40, 40);
 					panel.Size = new Vector2(40, 40);
-					panel.Position = new Vector2(-20, -20); // Centrado
+					panel.Position = new Vector2(-20, -20);
 
 					var style = new StyleBoxFlat();
-					style.BgColor = new Color(0, 0, 0, 0.25f); // Fondo translúcido oscuro
+					style.BgColor = new Color(0, 0, 0, 0.25f);
 					style.BorderWidthLeft = style.BorderWidthRight = style.BorderWidthTop = style.BorderWidthBottom = 2;
 					style.BorderColor = esRival ? new Color(1f, 0.15f, 0.2f, 0.85f) : new Color(0.15f, 0.65f, 1f, 0.85f);
-					style.CornerRadiusTopLeft = style.CornerRadiusTopRight = style.CornerRadiusBottomLeft = style.CornerRadiusBottomRight = 20; // Círculo
+					style.CornerRadiusTopLeft = style.CornerRadiusTopRight = style.CornerRadiusBottomLeft = style.CornerRadiusBottomRight = 20;
 					style.ShadowColor = esRival ? new Color(1f, 0.15f, 0.2f, 0.5f) : new Color(0.15f, 0.65f, 1f, 0.5f);
 					style.ShadowSize = 8;
 
 					panel.AddThemeStyleboxOverride("panel", style);
 					zona.AddChild(panel);
 
-					// Animación de pulso
 					Tween tw = panel.CreateTween().SetLoops();
 					tw.TweenProperty(panel, "modulate:a", 0.35f, 0.8f);
 					tw.TweenProperty(panel, "modulate:a", 1.0f, 0.8f);

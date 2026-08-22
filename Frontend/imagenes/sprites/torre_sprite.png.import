@@ -3,19 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://552gnfg3qojb"
-path="res://.godot/imported/torre_sprite.png-ff0262d8e55460b5d1c86807d6f0adce.ctex"
+path.s3tc="res://.godot/imported/torre_sprite.png-ff0262d8e55460b5d1c86807d6f0adce.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/torre_sprite.png"
-dest_files=["res://.godot/imported/torre_sprite.png-ff0262d8e55460b5d1c86807d6f0adce.ctex"]
+dest_files=["res://.godot/imported/torre_sprite.png-ff0262d8e55460b5d1c86807d6f0adce.s3tc.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

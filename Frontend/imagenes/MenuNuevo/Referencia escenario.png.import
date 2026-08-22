@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/Referencia escenario.png-eda8b0f672cd12c03db3
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

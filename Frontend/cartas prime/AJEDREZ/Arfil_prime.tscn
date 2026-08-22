@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://tturui5087to"]
 
-[ext_resource type="Script" uid="uid://c1f7iq66138gk" path="res://cartas prime/TorrePrime.cs" id="1_3gx85"]
+[ext_resource type="Script" uid="uid://b0juuey67rfxm" path="res://cartas prime/AJEDREZ/ArfilPrime.cs" id="1_wvr0f"]
 [ext_resource type="Texture2D" uid="uid://bwdwwwt8axta4" path="res://imagenes/sprites/Ajedrez/Arfil Ajedrez.png" id="2_wvr0f"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_nkj7l"]
@@ -168,7 +168,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_o2l78")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 10.0
 }, {
@@ -182,7 +182,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_8146b")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 10.0
 }, {
@@ -196,7 +196,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_e6nv4")
 }],
-"loop": false,
+"loop": 0,
 "name": &"defensa",
 "speed": 10.0
 }, {
@@ -231,7 +231,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_yqn6w")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
 "speed": 10.0
 }, {
@@ -260,7 +260,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_0dn3t")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 9.0
 }, {
@@ -271,7 +271,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_8fb5v")
 }],
-"loop": false,
+"loop": 0,
 "name": &"pre defensa",
 "speed": 7.0
 }]
@@ -283,7 +283,7 @@ bg_color = Color(0, 0.72156864, 0.101960786, 1)
 bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
 
 [node name="arfil" type="Area2D" unique_id=1111717749]
-script = ExtResource("1_3gx85")
+script = ExtResource("1_wvr0f")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=225252504]
 position = Vector2(2.5, -39)
@@ -293,7 +293,7 @@ shape = SubResource("RectangleShape2D_nkj7l")
 position = Vector2(34, -76)
 scale = Vector2(0.155, 0.15828604)
 sprite_frames = SubResource("SpriteFrames_ow3ik")
-animation = &"idle"
+animation = &"pre defensa"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=638377521]
 layout_mode = 3

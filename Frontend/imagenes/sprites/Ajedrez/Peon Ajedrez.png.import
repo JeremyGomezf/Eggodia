@@ -3,19 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c4chfssapoipn"
-path="res://.godot/imported/Peon Ajedrez.png-50b0fcf1212ed5704678ee58d3df6273.ctex"
+path.s3tc="res://.godot/imported/Peon Ajedrez.png-50b0fcf1212ed5704678ee58d3df6273.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Ajedrez/Peon Ajedrez.png"
-dest_files=["res://.godot/imported/Peon Ajedrez.png-50b0fcf1212ed5704678ee58d3df6273.ctex"]
+dest_files=["res://.godot/imported/Peon Ajedrez.png-50b0fcf1212ed5704678ee58d3df6273.s3tc.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

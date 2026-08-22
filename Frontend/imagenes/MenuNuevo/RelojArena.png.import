@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/RelojArena.png-593cbf42cadd272b53e7f9db7d8ee1
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

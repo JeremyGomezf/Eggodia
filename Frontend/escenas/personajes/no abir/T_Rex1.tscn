@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://78xs3oemv85c"]
+
+[ext_resource type="Texture2D" uid="uid://bymyvdmsoh3ko" path="res://imagenes/PersonajesPng/T-Rex.png" id="1_6xrcu"]
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_63u3n"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
+size = Vector2(263, 193.5)
+
+[node name="T-Rex" type="Area2D" unique_id=745771741]
+script = ExtResource("1_63u3n")
+IdPersonaje = "T-rex"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=808250596]
+texture_filter = 1
+scale = Vector2(0.3192261, 0.29110104)
+texture = ExtResource("1_6xrcu")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1272217055]
+shape = SubResource("RectangleShape2D_8ramd")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=1209462573]
+
+[node name="Label" type="Label" parent="." unique_id=2101990718]
+offset_right = 40.0
+offset_bottom = 23.0

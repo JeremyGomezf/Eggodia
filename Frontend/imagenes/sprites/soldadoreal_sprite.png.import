@@ -3,19 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://danehte1tdb56"
-path="res://.godot/imported/soldadoreal_sprite.png-e6596478c43c2eb6343f7de7057e1271.ctex"
+path.s3tc="res://.godot/imported/soldadoreal_sprite.png-e6596478c43c2eb6343f7de7057e1271.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/soldadoreal_sprite.png"
-dest_files=["res://.godot/imported/soldadoreal_sprite.png-e6596478c43c2eb6343f7de7057e1271.ctex"]
+dest_files=["res://.godot/imported/soldadoreal_sprite.png-e6596478c43c2eb6343f7de7057e1271.s3tc.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

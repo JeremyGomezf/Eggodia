@@ -3,19 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bn7bvir33in4g"
-path="res://.godot/imported/caballo_sprite.png-7f4079c5313ba2e842979b2d1d9ac900.ctex"
+path.s3tc="res://.godot/imported/caballo_sprite.png-7f4079c5313ba2e842979b2d1d9ac900.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/caballo_sprite.png"
-dest_files=["res://.godot/imported/caballo_sprite.png-7f4079c5313ba2e842979b2d1d9ac900.ctex"]
+dest_files=["res://.godot/imported/caballo_sprite.png-7f4079c5313ba2e842979b2d1d9ac900.s3tc.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

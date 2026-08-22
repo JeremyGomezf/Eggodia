@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/RelojAlarma.png-da27f2489d0cc70037984a8ce0381
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

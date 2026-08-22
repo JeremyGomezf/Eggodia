@@ -8,7 +8,7 @@ public partial class Campo1 : Node2D
 
 	private bool TodosSpotsOcupados()
 	{
-		foreach (string nombre in new[]{"Mod1","Mod2","Mod3"})
+		foreach (string nombre in new[] { "Mod1", "Mod2", "Mod3" })
 		{
 			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
 			if (zona != null && zona.GetNodeOrNull("Ocupado") == null) return false;
@@ -19,7 +19,7 @@ public partial class Campo1 : Node2D
 	private int ContarSpotsLibresJugador()
 	{
 		int libres = 0;
-		foreach (string nombre in new[]{"Mod1","Mod2","Mod3"})
+		foreach (string nombre in new[] { "Mod1", "Mod2", "Mod3" })
 		{
 			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
 			if (zona != null && zona.GetNodeOrNull("Ocupado") == null) libres++;
@@ -80,19 +80,19 @@ public partial class Campo1 : Node2D
 		Button btnD = menuAcciones?.GetNodeOrNull<Button>("HBoxContainer/BtnDefensa");
 		if (btnD != null)
 		{
-			bool sin = Gi(tropa,"escudoActual") <= 0;
-			btnD.Disabled = sin; btnD.Modulate = sin ? new Color(1,1,1,0.4f) : Colors.White;
+			bool sin = Gi(tropa, "escudoActual") <= 0;
+			btnD.Disabled = sin; btnD.Modulate = sin ? new Color(1, 1, 1, 0.4f) : Colors.White;
 		}
 		if (btnHabilidad != null)
 		{
 			bool tieneH = false;
 			try { tieneH = (bool)tropa.Call("TieneHabilidadEspecial"); } catch { }
-			bool usada  = HabilidadUsada(tropa);
-			btnHabilidad.Visible  = tieneH;
+			bool usada = HabilidadUsada(tropa);
+			btnHabilidad.Visible = tieneH;
 			btnHabilidad.Disabled = usada;
-			btnHabilidad.Modulate = usada ? new Color(1,1,1,0.4f) : Colors.White;
+			btnHabilidad.Modulate = usada ? new Color(1, 1, 1, 0.4f) : Colors.White;
 		}
-		menuAcciones.GlobalPosition = tropa.GetGlobalTransformWithCanvas().Origin + new Vector2(-50,-110);
+		menuAcciones.GlobalPosition = tropa.GetGlobalTransformWithCanvas().Origin + new Vector2(-50, -110);
 		menuAcciones.Visible = true;
 	}
 
@@ -110,7 +110,7 @@ public partial class Campo1 : Node2D
 	public void _on_btn_defensa_pressed()
 	{
 		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
-		if (EstaBlockeada(tropaSeleccionada) || Gi(tropaSeleccionada,"escudoActual") <= 0)
+		if (EstaBlockeada(tropaSeleccionada) || Gi(tropaSeleccionada, "escudoActual") <= 0)
 		{ menuAcciones.Visible = false; return; }
 		tropaSeleccionada.Call("EjecutarAccion", "preparar_defensa");
 		tropaSeleccionada.Call("SetActivo", false);
@@ -145,7 +145,7 @@ public partial class Campo1 : Node2D
 
 	private void CompletarManoAlInicio()
 	{
-		foreach (string s in new[]{"Spot1","Spot2","Spot3","Spot4"})
+		foreach (string s in new[] { "Spot1", "Spot2", "Spot3", "Spot4" })
 		{
 			bool o = false;
 			foreach (Node n in contenedorMano.GetChildren())
@@ -177,7 +177,7 @@ public partial class Campo1 : Node2D
 
 	private void CancelarSacrificio() { modoSacrificioActivo = false; Input.SetCustomMouseCursor(null); }
 
-	// ── INVOCACIÓN ────────────────────────────────────────────────────────
+	// ── INVOCACIÓN Y TRANSFORMACIÓN ───────────────────────────────────────
 	public void TropaInvocada(Node2D puntoMod, PackedScene escenaTropa)
 	{
 		if (juegoTerminado || !esTurnoJugador || !puntoMod.IsInGroup("zonas_invocacion")) return;
@@ -208,13 +208,65 @@ public partial class Campo1 : Node2D
 		};
 	}
 
-	private void InvocacionRival(Node2D puntoMod, PackedScene escenaTropa)
+	public void InvocacionRival(Node2D puntoMod, PackedScene escenaTropa)
 	{
-		if (escenaTropa == null) return;
+		if (escenaTropa == null || puntoMod == null) return;
 		Node2D t = (Node2D)escenaTropa.Instantiate();
-		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition; t.Scale = new Vector2(-1,1);
-		t.AddToGroup("tropas_rival"); t.SetMeta("carril", puntoMod.Name);
-		Node m = new Node(); m.Name = "Ocupado"; puntoMod.AddChild(m); m.SetMeta("tropa_instanciada", t);
+		AddChild(t); 
+		t.GlobalPosition = puntoMod.GlobalPosition; 
+		t.AddToGroup("tropas_rival"); 
+		t.SetMeta("carril", puntoMod.Name);
+
+		// Corregir orientación sin romper escala ni rotaciones
+		AsegurarOrientacionRival(t);
+
+		Node m = puntoMod.GetNodeOrNull("Ocupado");
+		if (m == null)
+		{
+			m = new Node(); 
+			m.Name = "Ocupado"; 
+			puntoMod.AddChild(m); 
+		}
+		m.SetMeta("tropa_instanciada", t);
+	}
+
+	// 🔄 SISTEMA DE TRANSFORMACIÓN (Ejemplo: Promoción del Peón)
+	public void ReemplazarTropaTransformada(Node2D tropaOriginal, PackedScene nuevaEscena)
+	{
+		if (!IsInstanceValid(tropaOriginal) || nuevaEscena == null) return;
+
+		bool esRival = tropaOriginal.IsInGroup("tropas_rival");
+		string carril = tropaOriginal.HasMeta("carril") ? (string)tropaOriginal.GetMeta("carril") : "";
+
+		// Instanciar nueva tropa
+		Node2D nuevaTropa = (Node2D)nuevaEscena.Instantiate();
+		AddChild(nuevaTropa);
+		nuevaTropa.GlobalPosition = tropaOriginal.GlobalPosition;
+
+		if (esRival)
+		{
+			nuevaTropa.AddToGroup("tropas_rival");
+			AsegurarOrientacionRival(nuevaTropa);
+		}
+		else
+		{
+			nuevaTropa.AddToGroup("tropas_jugador");
+			if (nuevaTropa.HasMethod("SetActivo")) nuevaTropa.Call("SetActivo", true);
+		}
+
+		if (!string.IsNullOrEmpty(carril))
+		{
+			nuevaTropa.SetMeta("carril", carril);
+			Node2D zona = GetTree().Root.FindChild(carril, true, false) as Node2D;
+			Node ocupado = zona?.GetNodeOrNull("Ocupado");
+			if (ocupado != null)
+			{
+				ocupado.SetMeta("tropa_instanciada", nuevaTropa);
+			}
+		}
+
+		// Limpiar la versión anterior del Peón
+		tropaOriginal.QueueFree();
 	}
 
 	// ── MUERTE ────────────────────────────────────────────────────────────
@@ -235,10 +287,14 @@ public partial class Campo1 : Node2D
 			_tropasEliminadasJugador++;
 		}
 
-		string carril = (string)tropa.GetMeta("carril");
-		Node2D zona = GetTree().Root.FindChild(carril, true, false) as Node2D;
-		zona?.GetNodeOrNull("Ocupado")?.Free();
-		Tween tw = CreateTween(); tw.TweenInterval(0.8f); tw.TweenProperty(tropa,"modulate:a",0.0f,0.6f);
+		if (tropa.HasMeta("carril"))
+		{
+			string carril = (string)tropa.GetMeta("carril");
+			Node2D zona = GetTree().Root.FindChild(carril, true, false) as Node2D;
+			zona?.GetNodeOrNull("Ocupado")?.Free();
+		}
+
+		Tween tw = CreateTween(); tw.TweenInterval(0.8f); tw.TweenProperty(tropa, "modulate:a", 0.0f, 0.6f);
 		tw.Finished += () => { if (IsInstanceValid(tropa)) tropa.QueueFree(); };
 		CheckEstadoJuego(); ActualizarInterfaz();
 	}
@@ -264,7 +320,7 @@ public partial class Campo1 : Node2D
 
 	private async void MostrarTutorialInicio()
 	{
-		if (_turnosJugados > 0) return; // solo en el primer turno
+		if (_turnosJugados > 0) return;
 
 		await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
 
@@ -288,7 +344,7 @@ public partial class Campo1 : Node2D
 		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return;
 		Carta n = (Carta)escenaCartaBase.Instantiate(); n.NombreSpot = id; contenedorMano.AddChild(n);
 		n.Rotation = spot.Rotation;
-		Vector2 esc = new Vector2(0.85f, 0.85f); n.Scale = esc;   // tamaño en mano 0.85; crece al pasar el dedo
+		Vector2 esc = new Vector2(0.85f, 0.85f); n.Scale = esc;
 		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2);
 		n.GuardarEstadoOriginal();
 		if (proximoIndiceMazo >= mazoIndices.Count) PrepararMazoSinRepetir();
@@ -306,10 +362,8 @@ public partial class Campo1 : Node2D
 		tronoRival.GlobalPosition = m2.GlobalPosition; tronoRival.CargarHuevo(escenaDinoHuevoRef, true);
 	}
 
-	// Coloca 1 tropa inicial por lado en el carril central para que turno 1 sea accionable
 	private void ColocarTropasIniciales()
 	{
-		// Tropa del jugador — carril central (Mod2)
 		Node2D zonaJugador = GetTree().Root.FindChild("Mod2", true, false) as Node2D;
 		if (zonaJugador != null && zonaJugador.GetNodeOrNull("Ocupado") == null)
 		{
@@ -326,17 +380,13 @@ public partial class Campo1 : Node2D
 			}
 		}
 
-		// Tropa del rival — carril central (ModRival2)
 		Node2D zonaRival = GetTree().Root.FindChild("ModRival2", true, false) as Node2D;
 		if (zonaRival != null && zonaRival.GetNodeOrNull("Ocupado") == null)
 		{
 			var escena = ElegirTropaIA();
 			if (escena != null)
 			{
-				Node2D t = (Node2D)escena.Instantiate();
-				AddChild(t); t.GlobalPosition = zonaRival.GlobalPosition; t.Scale = new Vector2(-1, 1);
-				t.AddToGroup("tropas_rival"); t.SetMeta("carril", "ModRival2");
-				Node m = new Node(); m.Name = "Ocupado"; zonaRival.AddChild(m); m.SetMeta("tropa_instanciada", t);
+				InvocacionRival(zonaRival, escena);
 			}
 		}
 	}
@@ -344,13 +394,13 @@ public partial class Campo1 : Node2D
 	// ── INTERFAZ ──────────────────────────────────────────────────────────
 	private void ActualizarInterfaz()
 	{
-		if (btnBarajar != null)    { bool b = !esTurnoJugador||usosBarajar>=MAX_BARAJAR||movimientosRestantes<=0; btnBarajar.Disabled=b; btnBarajar.Modulate=b?new Color(1,1,1,0.4f):Colors.White; }
-		if (btnSacrificio != null) { bool s = !esTurnoJugador||usosSacrificio>=MAX_SACRIFICIO||vidaJugador<=500||movimientosRestantes<=0; btnSacrificio.Disabled=s; btnSacrificio.Modulate=s?new Color(1,1,1,0.4f):Colors.White; }
+		if (btnBarajar != null)    { bool b = !esTurnoJugador || usosBarajar >= MAX_BARAJAR || movimientosRestantes <= 0; btnBarajar.Disabled = b; btnBarajar.Modulate = b ? new Color(1, 1, 1, 0.4f) : Colors.White; }
+		if (btnSacrificio != null) { bool s = !esTurnoJugador || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500 || movimientosRestantes <= 0; btnSacrificio.Disabled = s; btnSacrificio.Modulate = s ? new Color(1, 1, 1, 0.4f) : Colors.White; }
 		if (_lblVida1 != null) _lblVida1.Text = $"HP {vidaJugador}/{vidaMaxJugador}";
 		if (_lblVida2 != null) _lblVida2.Text = $"HP {vidaRival}/{vidaMaxJugador}";
 		if (_barraHPJugador != null) _barraHPJugador.Value = (float)vidaJugador / vidaMaxJugador * 100;
 		if (_barraHPRival   != null) _barraHPRival.Value   = (float)vidaRival   / vidaMaxJugador * 100;
-		if (_lblTiempo != null) { int m=tiempoTotalPartida/60,s=tiempoTotalPartida%60; _lblTiempo.Text = $"Tiempo {m}:{s:00}"; }
+		if (_lblTiempo != null) { int m = tiempoTotalPartida / 60, s = tiempoTotalPartida % 60; _lblTiempo.Text = $"Tiempo {m}:{s:00}"; }
 		if (_lblTurnoInfo != null)
 		{
 			var l = _lblTurnoInfo;
@@ -361,7 +411,7 @@ public partial class Campo1 : Node2D
 			int turnoNum   = _turnosJugados / 2 + 1;
 			l.Text = $"Turno {turnoNum}  ·  {dif}\nEnergía {movimientosRestantes}/{maxEnergy}\n{(esTurnoJugador ? "TU TURNO" : "TURNO RIVAL")}  {timer}";
 			l.Modulate = Colors.White;
-			Color acento = urgente        ? new Color(1f, 0.4f, 0.35f)
+			Color acento = urgente         ? new Color(1f, 0.4f, 0.35f)
 						 : esTurnoJugador ? new Color(0.5f, 1f, 0.6f)
 						 :                  new Color(1f, 0.55f, 0.5f);
 			l.AddThemeColorOverride("font_color", acento);

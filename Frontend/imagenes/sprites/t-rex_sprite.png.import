@@ -3,19 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://0j6m4h2hutte"
-path="res://.godot/imported/t-rex_sprite.png-4ee80264c788c33dc294efd4704c36ac.ctex"
+path.s3tc="res://.godot/imported/t-rex_sprite.png-4ee80264c788c33dc294efd4704c36ac.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/t-rex_sprite.png"
-dest_files=["res://.godot/imported/t-rex_sprite.png-4ee80264c788c33dc294efd4704c36ac.ctex"]
+dest_files=["res://.godot/imported/t-rex_sprite.png-4ee80264c788c33dc294efd4704c36ac.s3tc.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

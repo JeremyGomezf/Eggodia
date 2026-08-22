@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/ManecillaHoras.png-49aa0cde3a8a287663935aec38
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

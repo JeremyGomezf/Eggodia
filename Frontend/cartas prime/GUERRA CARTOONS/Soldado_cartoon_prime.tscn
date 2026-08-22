@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bm3qgnidx6hrs"]
 
-[ext_resource type="Script" uid="uid://4q6txxpemxyu" path="res://cartas prime/SoldadoCartoonPrime.cs" id="1_vmkn6"]
+[ext_resource type="Script" uid="uid://4q6txxpemxyu" path="res://cartas prime/GUERRA CARTOONS/SoldadoCartoonPrime.cs" id="1_vmkn6"]
 [ext_resource type="Texture2D" uid="uid://c68bdqcefplmv" path="res://imagenes/sprites/Guerra Cartoons/soldado-cartoon.png" id="2_d3h4m"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]
@@ -126,6 +126,18 @@ region = Rect2(6072, 921, 1012, 921)
 atlas = ExtResource("2_d3h4m")
 region = Rect2(7084, 921, 1012, 921)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_1lu7o"]
+atlas = ExtResource("2_d3h4m")
+region = Rect2(0, 0, 1012, 921)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d7q0c"]
+atlas = ExtResource("2_d3h4m")
+region = Rect2(1012, 0, 1012, 921)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1g057"]
+atlas = ExtResource("2_d3h4m")
+region = Rect2(2024, 0, 1012, 921)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_ktla1"]
 atlas = ExtResource("2_d3h4m")
 region = Rect2(0, 5526, 1012, 921)
@@ -198,18 +210,6 @@ region = Rect2(4048, 2763, 1012, 921)
 atlas = ExtResource("2_d3h4m")
 region = Rect2(5060, 2763, 1012, 921)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_1lu7o"]
-atlas = ExtResource("2_d3h4m")
-region = Rect2(0, 0, 1012, 921)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_d7q0c"]
-atlas = ExtResource("2_d3h4m")
-region = Rect2(1012, 0, 1012, 921)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_1g057"]
-atlas = ExtResource("2_d3h4m")
-region = Rect2(2024, 0, 1012, 921)
-
 [sub_resource type="SpriteFrames" id="SpriteFrames_4s16o"]
 animations = [{
 "frames": [{
@@ -246,7 +246,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_btm4m")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 12.0
 }, {
@@ -269,7 +269,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_80coe")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 12.0
 }, {
@@ -298,7 +298,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_fxfmr")
 }],
-"loop": false,
+"loop": 0,
 "name": &"defensa",
 "speed": 12.0
 }, {
@@ -366,72 +366,8 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_23waw")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
-"speed": 12.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_ktla1")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_731ke")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_wnfu8")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_cjgyb")
-}],
-"loop": true,
-"name": &"idle",
-"speed": 11.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_1tq1m")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_mu07e")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_y71cu")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_knsc4")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_eb7n7")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_p1trr")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_mh43a")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_smtj8")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_qwglo")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_1f8nq")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_1i4av")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_o0ecy")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_f5g7y")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_knicn")
-}],
-"loop": false,
-"name": &"pre defensa",
 "speed": 12.0
 }, {
 "frames": [{
@@ -489,8 +425,72 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_1g057")
 }],
-"loop": true,
-"name": &"pre defensa -> habilidad",
+"loop": 1,
+"name": &"habilidad",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ktla1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_731ke")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wnfu8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cjgyb")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 11.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1tq1m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mu07e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y71cu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_knsc4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eb7n7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p1trr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mh43a")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_smtj8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qwglo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1f8nq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1i4av")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o0ecy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_f5g7y")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_knicn")
+}],
+"loop": 0,
+"name": &"pre defensa",
 "speed": 12.0
 }]
 
@@ -512,7 +512,6 @@ position = Vector2(6, -37)
 scale = Vector2(0.2, 0.2)
 sprite_frames = SubResource("SpriteFrames_4s16o")
 animation = &"idle"
-frame_progress = 0.9496332
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3

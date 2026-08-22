@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/DialReloj.png-4c63c4f84c079d280df9ed0d954cf53
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -14,14 +14,14 @@ public partial class CampoPruebas : Node2D
 		"res://cartas prime/Golem_prime.tscn",
 		"res://cartas prime/Maguin_prime.tscn",
 		"res://cartas prime/SoldadoReal_prime.tscn",
-		"res://cartas prime/TRex_prime.tscn",
+		"res://cartas prime/PAPEL/Paper_Rex.tscn",
 		"res://cartas prime/Tiburon_prime.tscn",
-		"res://cartas prime/Peon_prime.tscn",
-		"res://cartas prime/Encebollado_prime.tscn",
 		"res://cartas prime/CalamarG_prime.tscn",
-		"res://cartas prime/Caballo_prime.tscn",
-		"res://cartas prime/Dama_prime.tscn",
-		"res://cartas prime/Torre_prime.tscn",
+		"res://cartas prime/AJEDREZ/Peon_prime.tscn",
+		"res://cartas prime/AJEDREZ/Caballo_prime.tscn",
+		"res://cartas prime/AJEDREZ/Arfil_prime.tscn",
+		"res://cartas prime/AJEDREZ/Torre_prime.tscn",
+		"res://cartas prime/AJEDREZ/Dama_prime.tscn",
 		"res://cartas prime/GUERRA CARTOONS/Soldado_cartoon_prime.tscn",
 		"res://cartas prime/GUERRA CARTOONS/Campero_cartoon_prime.tscn",
 		"res://cartas prime/GUERRA CARTOONS/Granadero_cartoon_prime.tscn",
@@ -32,13 +32,13 @@ public partial class CampoPruebas : Node2D
 	private static readonly string[] NombresTropas =
 	{
 		"Dragón", "Golem", "Maguín", "Soldado",
-		"T-Rex",  "Tiburón", "Peón",  "Encebollado",
-		"Calamar", "Caballo", "Dama", "Torre",
+		"Paper-Rex",  "Tiburón",
+		"Calamar", "Peón", "Caballo", "Arfil", "Torre", "Dama",
 		"Soldado Cartoon", "Campero Cartoon", "Granadero Cartoon",
 		"Ka-Bar Cartoon", "Tanque Cartoon"
 	};
 
-	private static readonly string[] NombresAliados  = { "Mod1",      "Mod2",      "Mod3"      };
+	private static readonly string[] NombresAliados   = { "Mod1",      "Mod2",      "Mod3"      };
 	private static readonly string[] NombresEnemigos = { "ModRival1", "ModRival2", "ModRival3" };
 
 	// Tropas en campo
@@ -352,8 +352,8 @@ public partial class CampoPruebas : Node2D
 		var t = ObtenerObjetivoHechizo();
 		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
 		int ata = Gi(t, "puntosAtaque"), esc = Gi(t, "escudoActual"), escMax = Gi(t, "escudoMaximo");
-		try { t.Set("puntosAtaque", ata + 100); }                      catch { }
-		try { t.Set("escudoActual", esc + 100); }                      catch { }
+		try { t.Set("puntosAtaque", ata + 100); }                       catch { }
+		try { t.Set("escudoActual", esc + 100); }                       catch { }
 		try { t.Set("escudoMaximo", Mathf.Max(escMax, esc + 100)); }   catch { }
 		MostrarDaño(t.GlobalPosition, 100, true);
 		var tw = t.CreateTween();
@@ -587,4 +587,31 @@ public partial class CampoPruebas : Node2D
 
 	private int  Gi(Node2D n, string p) { try { return (int)n.Get(p); } catch { return 0; } }
 	private string TipoNombre(Node2D n) => n?.GetType().Name.Replace("Prime", "") ?? "?";
+
+	// ── REEMPLAZO DE TROPA PARA PROMOCIÓN ──────────────────────────────────────
+	public void ReemplazarTropa(TropaBase vieja, TropaBase nueva)
+	{
+		if (vieja == null || !IsInstanceValid(vieja)) return;
+
+		string carril = vieja.HasMeta("carril") ? vieja.GetMeta("carril").AsString() : "";
+
+		for (int i = 0; i < 3; i++)
+		{
+			if (NombresAliados[i] == carril || _aliadas[i] == vieja)
+			{
+				_aliadas[i] = nueva;
+				var marcador = _slotsA[i]?.GetNodeOrNull("Ocupado");
+				if (marcador != null) marcador.SetMeta("tropa_instanciada", nueva);
+				return;
+			}
+
+			if (NombresEnemigos[i] == carril || _enemigas[i] == vieja)
+			{
+				_enemigas[i] = nueva;
+				var marcador = _slotsE[i]?.GetNodeOrNull("Ocupado");
+				if (marcador != null) marcador.SetMeta("tropa_instanciada", nueva);
+				return;
+			}
+		}
+	}
 }
