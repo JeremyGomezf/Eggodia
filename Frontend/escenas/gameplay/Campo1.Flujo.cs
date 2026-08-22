@@ -197,7 +197,7 @@ public partial class Campo1 : Node2D
 		// Fase de apertura: pasar turno automáticamente al llenar los 3 carriles
 		if (_faseApertura && TodosSpotsOcupados())
 		{
-			MostrarAviso("Tropas listas. La IA prepara sus fuerzas...", Colors.LightGreen);
+			MostrarAviso("Tropas listas. La CPU prepara sus fuerzas...", Colors.LightGreen);
 			GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) CambiarTurno(); };
 			return;
 		}
@@ -410,7 +410,7 @@ public partial class Campo1 : Node2D
 			string timer   = urgente ? $"{tiempoTurnoActual}s!" : $"{tiempoTurnoActual}s";
 			int maxEnergy  = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
 			int turnoNum   = _turnosJugados / 2 + 1;
-			l.Text = $"Turno {turnoNum}  ·  {dif}\nEnergía {movimientosRestantes}/{maxEnergy}\n{(esTurnoJugador ? "TU TURNO" : "TURNO RIVAL")}  {timer}";
+			l.Text = $"Turno {turnoNum}  ·  {dif}\nEnergía {movimientosRestantes}/{maxEnergy}\n{(esTurnoJugador ? "TU TURNO" : "TURNO CPU")}  {timer}";
 			l.Modulate = Colors.White;
 			Color acento = urgente         ? new Color(1f, 0.4f, 0.35f)
 						 : esTurnoJugador ? new Color(0.5f, 1f, 0.6f)

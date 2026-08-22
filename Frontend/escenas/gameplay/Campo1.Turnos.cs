@@ -64,8 +64,8 @@ public partial class Campo1 : Node2D
 		if (juegoTerminado) return;
 		int turnoNum  = _turnosJugados / 2 + 1;
 		string texto = _faseApertura
-			? (esTurnoJugador ? "APERTURA — Coloca tus 3 tropas" : "APERTURA — La IA prepara su formación")
-			: (esTurnoJugador ? $"TU TURNO · Turno {turnoNum}" : $"TURNO RIVAL · Turno {turnoNum}");
+			? (esTurnoJugador ? "APERTURA — Coloca tus 3 tropas" : "APERTURA — La CPU prepara su formación")
+			: (esTurnoJugador ? $"TU TURNO · Turno {turnoNum}" : $"TURNO CPU · Turno {turnoNum}");
 		Color color = esTurnoJugador ? new Color(0.5f, 1f, 0.6f) : new Color(1f, 0.55f, 0.4f);
 
 		var panel = new PanelContainer();
