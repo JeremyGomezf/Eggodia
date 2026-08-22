@@ -58,7 +58,7 @@ public partial class MenuPausa : CanvasLayer
 		}
 	}
 
-	private void Pausar()
+	public void Pausar()
 	{
 		GetTree().Paused = true;
 		_overlay.Visible = true;

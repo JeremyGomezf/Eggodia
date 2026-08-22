@@ -50,7 +50,11 @@ public partial class MenuConstructor : Control
 			_panelMazo.OnMazoCambiado += ActualizarContador;
 		}
 
-		if (_btnBatallar != null) _btnBatallar.Pressed += IrABatalla;
+		if (_btnBatallar != null)
+		{
+			_btnBatallar.Pressed += IrABatalla;
+			_btnBatallar.Visible = false;
+		}
 		if (_btnVolver != null)
 			_btnVolver.Pressed += () => {
 				string ruta = !string.IsNullOrEmpty(RutaMenu) ? RutaMenu : "res://escenas/menu/menu_principal.tscn";

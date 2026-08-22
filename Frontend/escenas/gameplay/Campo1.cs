@@ -72,6 +72,27 @@ public partial class Campo1 : Node2D
 	private string _hechizoPendiente    = "";
 	private Label  _lblInstruccion;
 
+	// Pool visual de hechizos — mano de 3 cartas aleatorias de 5 posibles
+	private static readonly string[] POOL_HECHIZO_NOMBRE = { "Encebollado", "Curación", "Robar Carta", "Veneno", "Bloqueo" };
+	private static readonly string[] POOL_HECHIZO_RUTA = {
+		"res://imagenes/HechizosPng/Encebo_hechizo.png",
+		"res://imagenes/HechizosPng/Cura_hechizo.png",
+		"res://imagenes/HechizosPng/Robo_hechizo.png",
+		"res://imagenes/HechizosPng/Veneno_hechizo.png",
+		"res://imagenes/HechizosPng/Bloqueo_hechizo.png"
+	};
+	private static readonly Color[] POOL_HECHIZO_COLOR = {
+		new Color(1f,0.65f,0.15f), new Color(0.25f,0.80f,0.35f),
+		new Color(0.30f,0.65f,1f), new Color(0.60f,0.30f,0.75f), new Color(0.25f,0.55f,0.90f)
+	};
+	private int[]   _hechizosMano     = new int[3];
+	private Panel[] _tarjetasHechizo  = new Panel[3];
+	private Panel[] _overlayHechizo   = new Panel[3];
+	private Label[] _lblEstadoHechizo = new Label[3];
+	private bool    _usadoCambioHechizo = false;
+	private bool    _modoCambioHechizo  = false;
+	private Button  _btnCambiarHechizo;
+
 	// ── IA ADAPTATIVA ─────────────────────────────────────────────────────
 	private int  _dificultadIA        = 1; // 0=fácil, 1=medio, 2=difícil
 	private int  _victoriasJugador    = 0;
@@ -179,6 +200,7 @@ public partial class Campo1 : Node2D
 		CrearBarrasHPBase();
 		CrearBotonAyudaTipos();
 		CrearBotonHistorial();
+		CrearBotonPausa();
 		EstilizarLabelsHUD();
 		BajarManoManual();
 		ActualizarInterfaz();

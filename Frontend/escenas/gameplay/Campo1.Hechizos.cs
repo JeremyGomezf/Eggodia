@@ -100,6 +100,7 @@ public partial class Campo1 : Node2D
 		_modoSeleccionObjetivo = false;
 		_hechizoPendiente      = "";
 		if (_lblInstruccion != null) _lblInstruccion.Visible = false;
+		ActualizarVisualesHechizos();
 		RegistrarGastoMovimiento();
 	}
 

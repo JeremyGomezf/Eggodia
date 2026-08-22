@@ -8,6 +8,7 @@ public partial class MenuPrincipal : Control
 	[Export] public string RutaCampoPruebas    = "res://escenas/gameplay/campo_pruebas.tscn";
 	[Export] public string RutaComoJugar       = "res://escenas/menu/PantallaComoJugar.tscn";
 	[Export] public string RutaBestiario       = "res://escenas/menu/PantallaBestiario.tscn";
+	[Export] public string RutaTienda          = "res://escenas/menu/Tienda.tscn";
 
 	// Nodos de animación y UI
 	private Control _islaContainer;
@@ -77,7 +78,7 @@ public partial class MenuPrincipal : Control
 		var btnTienda = GetNodeOrNull<TextureButton>("TIENDA");
 		if (btnTienda != null)
 		{
-			btnTienda.Pressed += () => MostrarPopup("TIENDA", "La tienda de cartas estará disponible en una próxima actualización.");
+			btnTienda.Pressed += () => GetTree().ChangeSceneToFile(RutaTienda);
 			AgregarAnimacionHover(btnTienda);
 		}
 

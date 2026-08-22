@@ -104,6 +104,7 @@ offset_right = 772.0
 offset_bottom = 585.0
 
 [node name="ManoVisual" type="Sprite2D" parent="ManoManual" unique_id=38472910]
+visible = false
 scale = Vector2(0.6, 0.6)
 texture = ExtResource("4_mano")
 

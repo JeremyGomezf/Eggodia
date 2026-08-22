@@ -139,112 +139,260 @@ public partial class Campo1 : Node2D
 		}
 	}
 
-	// ── PANEL DE HECHIZOS (desplegable, mobile-friendly) ─────────────────
-	private PanelContainer _cardHechizos;
-	private Button         _btnToggleHechizos;
-	private bool           _hechizosAbiertos = false;
-
+	// ── PANEL DE HECHIZOS — tarjetas con imagen en el lado derecho ────────
 	private void CrearPanelHechizos()
 	{
-		// Botón toggle compacto — siempre visible
-		_btnToggleHechizos = new Button();
-		_btnToggleHechizos.Name = "BtnToggleHechizos";
-		_btnToggleHechizos.Text = "✦  HECHIZOS";
-		_btnToggleHechizos.CustomMinimumSize = new Vector2(155, 48);
-		_btnToggleHechizos.SetAnchorsPreset(Control.LayoutPreset.BottomLeft);
-		_btnToggleHechizos.OffsetLeft   = 20;
-		_btnToggleHechizos.OffsetTop    = -75;
-		_btnToggleHechizos.OffsetRight  = 175;
-		_btnToggleHechizos.OffsetBottom = -27;
-		_btnToggleHechizos.ZIndex = 50;
-		_btnToggleHechizos.AddThemeFontSizeOverride("font_size", 17);
-		_btnToggleHechizos.AddThemeColorOverride("font_color", new Color(0.95f, 0.97f, 1f));
+		// Elegir 3 hechizos aleatorios del pool de 5
+		var idx = new List<int> { 0, 1, 2, 3, 4 };
+		for (int i = 0; i < idx.Count; i++) { int r = random.Next(i, idx.Count); (idx[i], idx[r]) = (idx[r], idx[i]); }
+		for (int i = 0; i < 3; i++) _hechizosMano[i] = idx[i];
 
-		var tglN = new StyleBoxFlat();
-		tglN.BgColor = new Color(0.10f, 0.15f, 0.25f, 0.95f);
-		tglN.BorderWidthLeft = 4;
-		tglN.BorderColor = new Color(0.55f, 0.35f, 0.85f);
-		tglN.CornerRadiusTopLeft = tglN.CornerRadiusTopRight =
-		tglN.CornerRadiusBottomLeft = tglN.CornerRadiusBottomRight = 10;
-		tglN.ShadowColor = new Color(0, 0, 0, 0.4f); tglN.ShadowSize = 4;
-		_btnToggleHechizos.AddThemeStyleboxOverride("normal", tglN);
+		// Contenedor vertical fijo en el lado derecho
+		var col = new VBoxContainer();
+		col.Name = "PanelHechizos";
+		col.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+		col.GrowHorizontal = Control.GrowDirection.Begin;
+		col.OffsetLeft   = -185;
+		col.OffsetRight  = -8;
+		col.OffsetTop    =  55;
+		col.ZIndex = 50;
+		col.AddThemeConstantOverride("separation", 6);
 
-		var tglH = new StyleBoxFlat();
-		tglH.BgColor = new Color(0.20f, 0.28f, 0.45f, 1f);
-		tglH.BorderWidthLeft = 4;
-		tglH.BorderColor = new Color(0.75f, 0.55f, 1f);
-		tglH.CornerRadiusTopLeft = tglH.CornerRadiusTopRight =
-		tglH.CornerRadiusBottomLeft = tglH.CornerRadiusBottomRight = 10;
-		_btnToggleHechizos.AddThemeStyleboxOverride("hover", tglH);
-		_btnToggleHechizos.AddThemeStyleboxOverride("pressed", tglH);
-
-		_btnToggleHechizos.Pressed += ToggleHechizos;
-		CapaHUD().AddChild(_btnToggleHechizos);
-
-		// Panel de hechizos — oculto por defecto
-		var card = new PanelContainer();
-		card.Name = "PanelHechizos";
-		card.CustomMinimumSize = new Vector2(200, 320);
-		card.SetAnchorsPreset(Control.LayoutPreset.BottomLeft);
-		card.OffsetLeft   = 20;
-		card.OffsetTop    = -410;
-		card.OffsetRight  = 220;
-		card.OffsetBottom = -90;
-		card.ZIndex = 60;
-		card.Visible = false;
-		_cardHechizos = card;
-
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.06f, 0.09f, 0.14f, 0.92f);
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
-		sb.BorderColor = new Color(0.30f, 0.50f, 0.85f, 0.55f);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 10;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 10;
-		sb.ShadowColor = new Color(0, 0, 0, 0.4f);
-		sb.ShadowSize  = 6;
-		card.AddThemeStyleboxOverride("panel", sb);
-
-		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 6);
-		card.AddChild(vbox);
-
-		var header = new HBoxContainer();
 		var titulo = new Label();
-		titulo.Text = "HECHIZOS";
-		titulo.AddThemeColorOverride("font_color", new Color(0.85f, 0.90f, 1f));
-		titulo.AddThemeFontSizeOverride("font_size", 15);
-		titulo.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		titulo.VerticalAlignment = VerticalAlignment.Center;
-		header.AddChild(titulo);
-		var btnX = new Button();
-		btnX.Text = "×";
-		btnX.CustomMinimumSize = new Vector2(30, 30);
-		btnX.AddThemeFontSizeOverride("font_size", 20);
-		btnX.AddThemeColorOverride("font_color", new Color(0.9f, 0.9f, 1f));
-		btnX.Pressed += ToggleHechizos;
-		header.AddChild(btnX);
-		vbox.AddChild(header);
+		titulo.Text = "✦  HECHIZOS";
+		titulo.AddThemeColorOverride("font_color", new Color(0.82f, 0.74f, 1f));
+		titulo.AddThemeFontSizeOverride("font_size", 13);
+		titulo.HorizontalAlignment = HorizontalAlignment.Center;
+		col.AddChild(titulo);
+		col.AddChild(new HSeparator());
 
-		var sep = new HSeparator();
-		vbox.AddChild(sep);
+		for (int i = 0; i < 3; i++) col.AddChild(CrearTarjetaHechizo(i));
 
 		_lblInstruccion = new Label();
 		_lblInstruccion.Text    = "Haz clic en una\ntropa enemiga";
 		_lblInstruccion.Visible = false;
 		_lblInstruccion.HorizontalAlignment = HorizontalAlignment.Center;
 		_lblInstruccion.AddThemeColorOverride("font_color", new Color(1f, 0.55f, 0.4f));
-		_lblInstruccion.AddThemeFontSizeOverride("font_size", 12);
-		vbox.AddChild(_lblInstruccion);
+		_lblInstruccion.AddThemeFontSizeOverride("font_size", 11);
+		col.AddChild(_lblInstruccion);
 
-		AgregarBtnHechizo(vbox, "Encebollado", "Buff aliado",   new Color(1f,0.65f,0.15f),  () => UsarEncebollado());
-		AgregarBtnHechizo(vbox, "Curación",    "+200 HP",       new Color(0.25f,0.80f,0.35f), () => UsarCuracion());
-		AgregarBtnHechizo(vbox, "Robar Carta", "Reponer mano",  new Color(0.30f,0.65f,1f),   () => UsarRobo());
-		AgregarBtnHechizo(vbox, "Veneno",      "50 dmg / turno",new Color(0.60f,0.30f,0.75f), () => IniciarSeleccion("veneno"));
-		AgregarBtnHechizo(vbox, "Bloqueo",     "Anular 2 turnos",new Color(0.25f,0.55f,0.90f), () => IniciarSeleccion("bloqueo"));
+		// Botón intercambiar (una vez)
+		_btnCambiarHechizo = new Button();
+		_btnCambiarHechizo.Text = "↺  CAMBIAR (1)";
+		_btnCambiarHechizo.CustomMinimumSize = new Vector2(170, 36);
+		_btnCambiarHechizo.AddThemeFontSizeOverride("font_size", 12);
+		_btnCambiarHechizo.AddThemeColorOverride("font_color", Colors.White);
+		_btnCambiarHechizo.AddThemeStyleboxOverride("normal",  HudEstilo(new Color(0.22f,0.15f,0.40f,0.95f), new Color(0.65f,0.45f,1f)));
+		_btnCambiarHechizo.AddThemeStyleboxOverride("hover",   HudEstilo(new Color(0.38f,0.25f,0.65f),      new Color(0.88f,0.68f,1f)));
+		_btnCambiarHechizo.AddThemeStyleboxOverride("pressed", HudEstilo(new Color(0.38f,0.25f,0.65f),      new Color(0.88f,0.68f,1f)));
+		_btnCambiarHechizo.Pressed += ActivarModoCambio;
+		col.AddChild(_btnCambiarHechizo);
 
-		CapaHUD().AddChild(card);
+		CapaHUD().AddChild(col);
+	}
+
+	private Panel CrearTarjetaHechizo(int slotIdx)
+	{
+		int   pi    = _hechizosMano[slotIdx];
+		Color color = POOL_HECHIZO_COLOR[pi];
+
+		var panel = new Panel();
+		panel.CustomMinimumSize = new Vector2(172, 78);
+		panel.MouseFilter = Control.MouseFilterEnum.Stop;
+		panel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		panel.AddThemeStyleboxOverride("panel", HudEstilo(new Color(0.07f,0.05f,0.14f,0.96f), color, shadowColor: color * new Color(1,1,1,0.35f)));
+
+		var hbox = new HBoxContainer();
+		hbox.AddThemeConstantOverride("separation", 6);
+		hbox.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		hbox.OffsetLeft = 4; hbox.OffsetRight = -4; hbox.OffsetTop = 4; hbox.OffsetBottom = -4;
+
+		var tex = new TextureRect();
+		tex.CustomMinimumSize = new Vector2(56, 70);
+		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		var t = GD.Load<Texture2D>(POOL_HECHIZO_RUTA[pi]);
+		if (t != null) tex.Texture = t;
+		hbox.AddChild(tex);
+
+		var vbox = new VBoxContainer();
+		vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		vbox.AddThemeConstantOverride("separation", 3);
+		var lblN = new Label();
+		lblN.Text = POOL_HECHIZO_NOMBRE[pi];
+		lblN.AddThemeColorOverride("font_color", color);
+		lblN.AddThemeFontSizeOverride("font_size", 11);
+		lblN.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		vbox.AddChild(lblN);
+		var lblE = new Label();
+		lblE.Text = "DISPONIBLE";
+		lblE.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.55f));
+		lblE.AddThemeFontSizeOverride("font_size", 9);
+		_lblEstadoHechizo[slotIdx] = lblE;
+		vbox.AddChild(lblE);
+		hbox.AddChild(vbox);
+		panel.AddChild(hbox);
+
+		// Overlay "USADO"
+		var ov = new Panel();
+		ov.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		ov.Visible = false;
+		var sbOv = new StyleBoxFlat();
+		sbOv.BgColor = new Color(0,0,0,0.68f);
+		sbOv.CornerRadiusTopLeft = sbOv.CornerRadiusTopRight =
+		sbOv.CornerRadiusBottomLeft = sbOv.CornerRadiusBottomRight = 8;
+		ov.AddThemeStyleboxOverride("panel", sbOv);
+		var lblUs = new Label();
+		lblUs.Text = "USADO";
+		lblUs.AddThemeColorOverride("font_color", new Color(1f,0.38f,0.38f));
+		lblUs.AddThemeFontSizeOverride("font_size", 15);
+		lblUs.SetAnchorsPreset(Control.LayoutPreset.Center);
+		lblUs.OffsetLeft = -32; lblUs.OffsetRight = 32;
+		lblUs.OffsetTop  = -13; lblUs.OffsetBottom = 13;
+		ov.AddChild(lblUs);
+		panel.AddChild(ov);
+		_overlayHechizo[slotIdx]   = ov;
+		_tarjetasHechizo[slotIdx]  = panel;
+
+		int captured = slotIdx;
+		panel.GuiInput += (@event) => {
+			if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+				EjecutarHechizo(captured);
+		};
+		return panel;
+	}
+
+	// Helper de estilo compartido
+	private static StyleBoxFlat HudEstilo(Color bg, Color border, int cornerR = 8, int borderW = 2, Color shadowColor = default)
+	{
+		var sb = new StyleBoxFlat();
+		sb.BgColor = bg;
+		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = borderW;
+		sb.BorderColor = border;
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
+		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = cornerR;
+		sb.ContentMarginLeft = sb.ContentMarginRight =
+		sb.ContentMarginTop  = sb.ContentMarginBottom = 5;
+		if (shadowColor != default) { sb.ShadowColor = shadowColor; sb.ShadowSize = 4; }
+		return sb;
+	}
+
+	private void EjecutarHechizo(int slotIdx)
+	{
+		if (_modoCambioHechizo) { EjecutarCambioHechizo(slotIdx); return; }
+		if (!ValidarHechizo() || EsHechizoUsado(slotIdx)) return;
+		int pi = _hechizosMano[slotIdx];
+		switch (pi)
+		{
+			case 0: UsarEncebollado(); break;
+			case 1: UsarCuracion();    break;
+			case 2: UsarRobo();        break;
+			case 3: IniciarSeleccion("veneno");  break;
+			case 4: IniciarSeleccion("bloqueo"); break;
+		}
+		if (pi != 3 && pi != 4) ActualizarVisualesHechizos();
+	}
+
+	public bool EsHechizoUsado(int slotIdx) => _hechizosMano[slotIdx] switch
+	{
+		0 => usadoEncebollado, 1 => usadoCuracion, 2 => usadoRobo,
+		3 => usadoVeneno,      4 => usadoBloqueo,  _ => false
+	};
+
+	public void ActualizarVisualesHechizos()
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (_overlayHechizo[i] == null || !IsInstanceValid(_overlayHechizo[i])) continue;
+			bool usado = EsHechizoUsado(i);
+			_overlayHechizo[i].Visible = usado;
+			if (_lblEstadoHechizo[i] != null && IsInstanceValid(_lblEstadoHechizo[i]))
+			{
+				_lblEstadoHechizo[i].Text = usado ? "USADO" : "DISPONIBLE";
+				_lblEstadoHechizo[i].AddThemeColorOverride("font_color",
+					usado ? new Color(1f,0.4f,0.4f) : new Color(0.4f,1f,0.55f));
+			}
+		}
+	}
+
+	private void ActivarModoCambio()
+	{
+		if (_usadoCambioHechizo) return;
+		_modoCambioHechizo = !_modoCambioHechizo;
+		_btnCambiarHechizo.Text = _modoCambioHechizo ? "Elige un hechizo..." : "↺  CAMBIAR (1)";
+		for (int i = 0; i < 3; i++)
+			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
+				_tarjetasHechizo[i].Modulate = _modoCambioHechizo && !EsHechizoUsado(i)
+					? new Color(1.25f, 1.25f, 0.45f) : Colors.White;
+	}
+
+	private void EjecutarCambioHechizo(int slotIdx)
+	{
+		var disponibles = new List<int>();
+		for (int p = 0; p < 5; p++)
+			if (p != _hechizosMano[0] && p != _hechizosMano[1] && p != _hechizosMano[2])
+				disponibles.Add(p);
+
+		if (disponibles.Count == 0) { _modoCambioHechizo = false; return; }
+
+		_hechizosMano[slotIdx] = disponibles[random.Next(disponibles.Count)];
+		_usadoCambioHechizo    = true;
+		_modoCambioHechizo     = false;
+
+		// Reconstruir visualmente la tarjeta cambiada
+		var padre = _tarjetasHechizo[slotIdx]?.GetParent() as VBoxContainer;
+		if (padre != null && IsInstanceValid(_tarjetasHechizo[slotIdx]))
+		{
+			int pos = _tarjetasHechizo[slotIdx].GetIndex();
+			_tarjetasHechizo[slotIdx].QueueFree();
+			var nueva = CrearTarjetaHechizo(slotIdx);
+			padre.AddChild(nueva);
+			padre.MoveChild(nueva, pos);
+		}
+
+		_btnCambiarHechizo.Text     = "↺  CAMBIAR (usado)";
+		_btnCambiarHechizo.Disabled = true;
+		_btnCambiarHechizo.Modulate = new Color(0.55f, 0.55f, 0.55f);
+		for (int i = 0; i < 3; i++)
+			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
+				_tarjetasHechizo[i].Modulate = Colors.White;
+	}
+
+	private void CrearBotonPausa()
+	{
+		var btn = new Button();
+		btn.Text = "⚙";
+		btn.CustomMinimumSize = new Vector2(58, 58);
+		btn.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
+		btn.OffsetLeft = 8; btn.OffsetTop = 8;
+		btn.OffsetRight = 66; btn.OffsetBottom = 66;
+		btn.AddThemeFontSizeOverride("font_size", 26);
+		btn.AddThemeColorOverride("font_color", Colors.White);
+		btn.ZIndex = 100;
+
+		var n = new StyleBoxFlat();
+		n.BgColor = new Color(0.08f, 0.08f, 0.14f, 0.88f);
+		n.BorderWidthLeft = n.BorderWidthTop = n.BorderWidthRight = n.BorderWidthBottom = 2;
+		n.BorderColor = new Color(0.55f, 0.55f, 0.80f, 0.8f);
+		n.CornerRadiusTopLeft = n.CornerRadiusTopRight =
+		n.CornerRadiusBottomLeft = n.CornerRadiusBottomRight = 12;
+		n.ShadowColor = new Color(0, 0, 0, 0.5f); n.ShadowSize = 5;
+		btn.AddThemeStyleboxOverride("normal", n);
+
+		var h = new StyleBoxFlat();
+		h.BgColor = new Color(0.20f, 0.20f, 0.35f, 0.96f);
+		h.BorderWidthLeft = h.BorderWidthTop = h.BorderWidthRight = h.BorderWidthBottom = 2;
+		h.BorderColor = new Color(0.75f, 0.75f, 1f);
+		h.CornerRadiusTopLeft = h.CornerRadiusTopRight =
+		h.CornerRadiusBottomLeft = h.CornerRadiusBottomRight = 12;
+		btn.AddThemeStyleboxOverride("hover", h);
+		btn.AddThemeStyleboxOverride("pressed", h);
+
+		btn.Pressed += () => {
+			var pausa = GetNodeOrNull<MenuPausa>("MenuPausa");
+			pausa?.Pausar();
+		};
+		CapaHUD().AddChild(btn);
 	}
 
 	private CanvasLayer _capaHUD;
@@ -260,66 +408,6 @@ public partial class Campo1 : Node2D
 			AddChild(_capaHUD);
 		}
 		return _capaHUD;
-	}
-
-	private void ToggleHechizos()
-	{
-		if (_cardHechizos == null) return;
-		_hechizosAbiertos = !_hechizosAbiertos;
-		if (_hechizosAbiertos)
-		{
-			_cardHechizos.Visible = true;
-			_cardHechizos.Modulate = new Color(1, 1, 1, 0);
-			_cardHechizos.Scale = new Vector2(0.9f, 0.9f);
-			_cardHechizos.PivotOffset = new Vector2(0, _cardHechizos.CustomMinimumSize.Y);
-			var tw = _cardHechizos.CreateTween().SetParallel(true);
-			tw.TweenProperty(_cardHechizos, "modulate:a", 1f, 0.18f);
-			tw.TweenProperty(_cardHechizos, "scale", Vector2.One, 0.22f)
-			  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-			_btnToggleHechizos.Text = "✦  CERRAR";
-		}
-		else
-		{
-			var tw = _cardHechizos.CreateTween().SetParallel(true);
-			tw.TweenProperty(_cardHechizos, "modulate:a", 0f, 0.14f);
-			tw.TweenProperty(_cardHechizos, "scale", new Vector2(0.9f, 0.9f), 0.14f);
-			tw.Chain().TweenCallback(Callable.From(() =>
-			{ if (IsInstanceValid(_cardHechizos)) _cardHechizos.Visible = false; }));
-			_btnToggleHechizos.Text = "✦  HECHIZOS";
-		}
-	}
-
-	private void AgregarBtnHechizo(BoxContainer parent, string texto, string subtexto, Color color, Action onPress)
-	{
-		var btn = new Button();
-		btn.CustomMinimumSize = new Vector2(0, 44);
-		btn.Alignment = HorizontalAlignment.Left;
-		btn.AddThemeColorOverride("font_color", Colors.White);
-		btn.AddThemeFontSizeOverride("font_size", 13);
-		btn.Text = $"  {texto}\n  {subtexto}";
-		btn.AutowrapMode = TextServer.AutowrapMode.Off;
-		btn.Pressed += () => onPress();
-
-		var sbN = new StyleBoxFlat();
-		sbN.BgColor = color * new Color(1f, 1f, 1f, 0.85f);
-		sbN.BorderWidthLeft = 3;
-		sbN.BorderColor = color;
-		sbN.CornerRadiusTopLeft = sbN.CornerRadiusTopRight =
-		sbN.CornerRadiusBottomLeft = sbN.CornerRadiusBottomRight = 6;
-		sbN.ContentMarginLeft = 4; sbN.ContentMarginRight = 8;
-		btn.AddThemeStyleboxOverride("normal", sbN);
-
-		var sbH = new StyleBoxFlat();
-		sbH.BgColor = color;
-		sbH.BorderWidthLeft = 4;
-		sbH.BorderColor = new Color(1f, 1f, 1f, 0.9f);
-		sbH.CornerRadiusTopLeft = sbH.CornerRadiusTopRight =
-		sbH.CornerRadiusBottomLeft = sbH.CornerRadiusBottomRight = 6;
-		sbH.ContentMarginLeft = 4; sbH.ContentMarginRight = 8;
-		btn.AddThemeStyleboxOverride("hover", sbH);
-		btn.AddThemeStyleboxOverride("pressed", sbH);
-
-		parent.AddChild(btn);
 	}
 
 	// ── NÚMEROS FLOTANTES DE DAÑO ─────────────────────────────────────────
