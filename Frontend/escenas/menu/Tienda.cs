@@ -9,14 +9,6 @@ public partial class Tienda : Control
 	private Label _lblMonedas;
 	private VBoxContainer _contenidoScroll;
 
-	private static readonly (string nombre, string desc, int precio, string icono)[] ITEMS_TIENDA = {
-		("Hechizo Extra",     "+1 uso de hechizo por partida",    150, "✦"),
-		("Baraja Especial",   "Cartas raras en tu mazo",          300, "🃏"),
-		("Amuleto de Vida",   "+200 HP al inicio de partida",     200, "❤"),
-		("Energía Adicional", "+1 movimiento por turno",          400, "⚡"),
-		("Carta Legendaria",  "Invoca una tropa legendaria",      500, "⭐"),
-		("Escudo Mágico",     "Absorbe el primer daño recibido",  250, "🛡"),
-	};
 
 	public override void _Ready()
 	{
@@ -96,9 +88,9 @@ public partial class Tienda : Control
 		AgregarSeccion("SKINS DE HUEVO 🥚", new Color(1f, 0.65f, 0.25f));
 		AgregarGridSkins();
 
-		// Sección 2: Items de combate
-		AgregarSeccion("ITEMS DE COMBATE ⚔️", new Color(0.55f, 0.85f, 1f));
-		AgregarGridItems();
+		// Sección 2: Skins de cartas
+		AgregarSeccion("SKINS DE CARTAS 🃏", new Color(0.55f, 0.85f, 1f));
+		AgregarGridSkinsCartas();
 	}
 
 	private void AgregarSeccion(string titulo, Color color)
@@ -126,7 +118,7 @@ public partial class Tienda : Control
 			grid.AddChild(CrearItemSkin(i));
 	}
 
-	private void AgregarGridItems()
+	private void AgregarGridSkinsCartas()
 	{
 		var grid = new GridContainer();
 		grid.Columns = 3;
@@ -134,9 +126,7 @@ public partial class Tienda : Control
 		grid.AddThemeConstantOverride("v_separation", 16);
 		grid.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		_contenidoScroll.AddChild(grid);
-
-		foreach (var item in ITEMS_TIENDA)
-			grid.AddChild(CrearItemTienda(item.nombre, item.desc, item.precio, item.icono));
+		grid.AddChild(CrearItemCartaNoDisponible("T-Rex Prime", "res://cartas prime/PAPEL/TRex_prime.tscn"));
 	}
 
 	private Control CrearItemSkin(int idx)
@@ -217,8 +207,9 @@ public partial class Tienda : Control
 		}
 		else
 		{
+			int precio = Preferencias.SKIN_PRECIOS[idx];
 			var btnComprar = new Button();
-			btnComprar.Text = "🪙 250";
+			btnComprar.Text = $"🪙 {precio}";
 			btnComprar.CustomMinimumSize = new Vector2(0, 34);
 			btnComprar.AddThemeFontSizeOverride("font_size", 13);
 			int capIdx = idx;
@@ -234,7 +225,8 @@ public partial class Tienda : Control
 	{
 		var eco = Economia.Instancia();
 		if (eco == null) return;
-		if (!eco.Gastar(250))
+		int precio = Preferencias.SKIN_PRECIOS[idx];
+		if (!eco.Gastar(precio))
 		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); return; }
 
 		Preferencias.DesbloquearSkin(idx);
@@ -243,69 +235,57 @@ public partial class Tienda : Control
 		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
 	}
 
-	private Control CrearItemTienda(string nombre, string desc, int precio, string icono)
+	private Control CrearItemCartaNoDisponible(string nombre, string rutaEscena)
 	{
 		var panel = new PanelContainer();
-		panel.CustomMinimumSize = new Vector2(200, 185);
+		panel.CustomMinimumSize = new Vector2(200, 220);
 
 		var sb = new StyleBoxFlat();
 		sb.BgColor = new Color(0.09f, 0.11f, 0.22f, 0.96f);
 		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
-		sb.BorderColor = new Color(0.35f, 0.55f, 0.90f);
+		sb.BorderColor = new Color(0.45f, 0.45f, 0.55f);
 		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
 		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 10;
 		sb.ContentMarginLeft = sb.ContentMarginRight =
 		sb.ContentMarginTop  = sb.ContentMarginBottom = 12;
 		sb.ShadowColor = new Color(0, 0, 0, 0.35f); sb.ShadowSize = 5;
 		panel.AddThemeStyleboxOverride("panel", sb);
+		panel.Modulate = new Color(0.6f, 0.6f, 0.6f);
 
 		var vbox = new VBoxContainer();
 		vbox.AddThemeConstantOverride("separation", 8);
 
+		// Intentar cargar imagen de la escena como ícono (muestra 🃏 si no hay imagen)
 		var lblIcono = new Label();
-		lblIcono.Text = icono;
-		lblIcono.AddThemeFontSizeOverride("font_size", 38);
+		lblIcono.Text = "🃏";
+		lblIcono.AddThemeFontSizeOverride("font_size", 50);
 		lblIcono.HorizontalAlignment = HorizontalAlignment.Center;
 		vbox.AddChild(lblIcono);
 
 		var lblNombre = new Label();
 		lblNombre.Text = nombre;
-		lblNombre.AddThemeColorOverride("font_color", new Color(0.92f, 0.94f, 1f));
+		lblNombre.AddThemeColorOverride("font_color", new Color(0.80f, 0.80f, 0.85f));
 		lblNombre.AddThemeFontSizeOverride("font_size", 14);
 		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
 		lblNombre.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		vbox.AddChild(lblNombre);
 
-		var lblDesc = new Label();
-		lblDesc.Text = desc;
-		lblDesc.AddThemeColorOverride("font_color", new Color(0.62f, 0.70f, 0.85f));
-		lblDesc.AddThemeFontSizeOverride("font_size", 11);
-		lblDesc.HorizontalAlignment = HorizontalAlignment.Center;
-		lblDesc.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		lblDesc.SizeFlagsVertical = SizeFlags.ExpandFill;
-		vbox.AddChild(lblDesc);
+		var lblNoDisp = new Label();
+		lblNoDisp.Text = "🔒 NO DISPONIBLE";
+		lblNoDisp.AddThemeColorOverride("font_color", new Color(1f, 0.55f, 0.35f));
+		lblNoDisp.AddThemeFontSizeOverride("font_size", 13);
+		lblNoDisp.HorizontalAlignment = HorizontalAlignment.Center;
+		vbox.AddChild(lblNoDisp);
 
-		var btnComprar = new Button();
-		btnComprar.Text = $"🪙 {precio}";
-		btnComprar.CustomMinimumSize = new Vector2(0, 36);
-		btnComprar.AddThemeFontSizeOverride("font_size", 14);
-		var btnCaptura = btnComprar;
-		btnComprar.Pressed += () => IntentarCompra(nombre, precio, btnCaptura);
-		vbox.AddChild(btnComprar);
+		var lblProxi = new Label();
+		lblProxi.Text = "Próximamente";
+		lblProxi.AddThemeColorOverride("font_color", new Color(0.55f, 0.65f, 0.75f));
+		lblProxi.AddThemeFontSizeOverride("font_size", 11);
+		lblProxi.HorizontalAlignment = HorizontalAlignment.Center;
+		vbox.AddChild(lblProxi);
 
 		panel.AddChild(vbox);
 		return panel;
-	}
-
-	private void IntentarCompra(string nombre, int precio, Button btn)
-	{
-		var eco = Economia.Instancia();
-		if (eco == null) return;
-		if (!eco.Gastar(precio))
-		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); return; }
-		btn.Text     = "✓ Comprado";
-		btn.Disabled = true;
-		MostrarMensaje($"¡{nombre} adquirido!", Colors.Gold);
 	}
 
 	private async void MostrarMensaje(string texto, Color color)

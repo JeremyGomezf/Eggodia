@@ -14,6 +14,12 @@ public partial class tronocampo : StaticBody2D
 			marker.AddChild(huevoInstancia);
 			huevoInstancia.Position = Vector2.Zero;
 			if (voltear) huevoInstancia.Scale = new Vector2(-1, 1);
+			// Reproducir animación idle si el personaje la tiene
+			var anim = huevoInstancia.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+			if (anim != null && anim.SpriteFrames != null && anim.SpriteFrames.HasAnimation("idle"))
+			{
+				anim.Play("idle");
+			}
 		}
 	}
 

@@ -22,15 +22,18 @@ public static class Preferencias
 		"res://escenas/personajes/capitanhuevo1.tscn",
 		"res://escenas/personajes/dinohuevo1.tscn",
 		"res://escenas/personajes/majestadhuevo1.tscn",
+		"res://escenas/personajes/paperdinohuevo1.tscn",
 	};
+	public static readonly int[] SKIN_PRECIOS = { 0, 250, 250, 250, 350 };
 	public static readonly string[] SKIN_NOMBRES = {
-		"Rey Huevo", "Capitán Huevo", "Dino Huevo", "Majestad Huevo"
+		"Rey Huevo", "Capitán Huevo", "Dino Huevo", "Majestad Huevo", "Paper Dino Huevo"
 	};
 	public static readonly string[] SKIN_IMAGENES = {
 		"res://imagenes/PersonajesPng/ReyHuevo.png",
 		"res://imagenes/PersonajesPng/CapitanHuevo.png",
 		"res://imagenes/PersonajesPng/DinoHuevo.png",
 		"res://imagenes/PersonajesPng/MajestadHuevo.png",
+		"res://imagenes/PersonajesPng/DinoHuevo.png",
 	};
 
 	public static int SkinActivaIdx

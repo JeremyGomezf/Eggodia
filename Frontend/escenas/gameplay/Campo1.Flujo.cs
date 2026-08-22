@@ -202,11 +202,7 @@ public partial class Campo1 : Node2D
 			return;
 		}
 
-		// La mano SIEMPRE se mantiene en 3 cartas: repone el hueco tras invocar
-		GetTree().CreateTimer(0.12f).Timeout += () =>
-		{
-			if (!juegoTerminado) CompletarManoAlInicio();
-		};
+		// Las nuevas cartas solo aparecen al inicio del siguiente turno del jugador
 	}
 
 	public void InvocacionRival(Node2D puntoMod, PackedScene escenaTropa)
@@ -346,7 +342,7 @@ public partial class Campo1 : Node2D
 		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return;
 		Carta n = (Carta)escenaCartaBase.Instantiate(); n.NombreSpot = id; contenedorMano.AddChild(n);
 		n.Rotation = spot.Rotation;
-		Vector2 esc = new Vector2(0.85f, 0.85f); n.Scale = esc;
+		Vector2 esc = new Vector2(1.05f, 1.05f); n.Scale = esc;
 		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2);
 		n.GuardarEstadoOriginal();
 		if (proximoIndiceMazo >= mazoIndices.Count) PrepararMazoSinRepetir();

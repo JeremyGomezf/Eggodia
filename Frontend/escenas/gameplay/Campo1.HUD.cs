@@ -139,62 +139,84 @@ public partial class Campo1 : Node2D
 		}
 	}
 
-	// ── PANEL DE HECHIZOS — tarjetas en spots del mundo (parte inferior derecha)
+	// ── PANEL DE HECHIZOS — 2 tarjetas en HUD, posición X=657 Y=123 (screen)
+	private const float HECHIZO_X = 657f;
+	private const float HECHIZO_Y = 123f;
+	private const float HECHIZO_W = 100f;
+	private const float HECHIZO_H = 140f;
+	private const float HECHIZO_GAP = 112f;
+
 	private void CrearPanelHechizos()
 	{
-		// Elegir 3 hechizos aleatorios del pool de 5
-		var idx = new List<int> { 0, 1, 2, 3, 4 };
-		for (int i = 0; i < idx.Count; i++) { int r = random.Next(i, idx.Count); (idx[i], idx[r]) = (idx[r], idx[i]); }
-		for (int i = 0; i < 3; i++) _hechizosMano[i] = idx[i];
+		// Barajar pool [0..4] y sacar 2 para la mano inicial
+		_poolHechizos = new System.Collections.Generic.List<int> { 0, 1, 2, 3, 4 };
+		for (int i = 0; i < _poolHechizos.Count; i++)
+		{
+			int r = random.Next(i, _poolHechizos.Count);
+			(_poolHechizos[i], _poolHechizos[r]) = (_poolHechizos[r], _poolHechizos[i]);
+		}
+		for (int i = 0; i < 2; i++) { _hechizosMano[i] = _poolHechizos[0]; _poolHechizos.RemoveAt(0); }
 
-		string[] spotNames = { "SpotH1", "SpotH2", "SpotH3" };
-		for (int i = 0; i < 3; i++)
+		// Colocar 2 cartas en HUD
+		for (int i = 0; i < 2; i++)
 		{
 			var card = CrearTarjetaHechizo(i);
-			card.ZIndex = 80;
-
-			if (_contenedorHechizos != null)
-			{
-				var spot = _contenedorHechizos.GetNodeOrNull<Marker2D>(spotNames[i]);
-				if (spot != null)
-				{
-					card.Rotation = spot.Rotation;
-					_contenedorHechizos.AddChild(card);
-					card.Position = spot.Position - new Vector2(card.Size.X * 0.5f, card.Size.Y);
-				}
-				else { _contenedorHechizos.AddChild(card); }
-			}
-			else { CapaHUD().AddChild(card); }
+			card.Position = new Vector2(HECHIZO_X + i * HECHIZO_GAP, HECHIZO_Y);
+			card.Size     = new Vector2(HECHIZO_W, HECHIZO_H);
+			CapaHUD().AddChild(card);
 		}
 
-		// Etiqueta de instrucción en HUD (esquina inferior derecha)
+		// Instrucción (oculta por defecto)
 		_lblInstruccion = new Label();
 		_lblInstruccion.Text    = "Toca una tropa\nenemiga";
 		_lblInstruccion.Visible = false;
-		_lblInstruccion.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
-		_lblInstruccion.GrowHorizontal = Control.GrowDirection.Begin;
-		_lblInstruccion.OffsetLeft = -190; _lblInstruccion.OffsetRight = -8;
-		_lblInstruccion.OffsetTop  = -120; _lblInstruccion.OffsetBottom = -80;
+		_lblInstruccion.Position = new Vector2(HECHIZO_X, HECHIZO_Y + HECHIZO_H + 6);
+		_lblInstruccion.Size     = new Vector2(HECHIZO_W * 2 + HECHIZO_GAP, 40);
 		_lblInstruccion.HorizontalAlignment = HorizontalAlignment.Center;
 		_lblInstruccion.AddThemeColorOverride("font_color", new Color(1f, 0.55f, 0.4f));
-		_lblInstruccion.AddThemeFontSizeOverride("font_size", 13);
+		_lblInstruccion.AddThemeFontSizeOverride("font_size", 12);
 		CapaHUD().AddChild(_lblInstruccion);
 
-		// Botón intercambiar (una vez) — HUD esquina inferior derecha
+		// Botón CAMBIAR
 		_btnCambiarHechizo = new Button();
-		_btnCambiarHechizo.Text = "↺  CAMBIAR (1)";
-		_btnCambiarHechizo.CustomMinimumSize = new Vector2(170, 42);
-		_btnCambiarHechizo.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
-		_btnCambiarHechizo.GrowHorizontal = Control.GrowDirection.Begin;
-		_btnCambiarHechizo.OffsetLeft  = -185; _btnCambiarHechizo.OffsetRight  = -8;
-		_btnCambiarHechizo.OffsetTop   = -55;  _btnCambiarHechizo.OffsetBottom = -8;
-		_btnCambiarHechizo.AddThemeFontSizeOverride("font_size", 13);
+		_btnCambiarHechizo.Text = "↺ CAMBIAR (1)";
+		_btnCambiarHechizo.Position = new Vector2(HECHIZO_X, HECHIZO_Y + HECHIZO_H + 50);
+		_btnCambiarHechizo.Size     = new Vector2(HECHIZO_W * 2 + HECHIZO_GAP, 40);
+		_btnCambiarHechizo.AddThemeFontSizeOverride("font_size", 12);
 		_btnCambiarHechizo.AddThemeColorOverride("font_color", Colors.White);
 		_btnCambiarHechizo.AddThemeStyleboxOverride("normal",  HudEstilo(new Color(0.22f,0.15f,0.40f,0.95f), new Color(0.65f,0.45f,1f)));
 		_btnCambiarHechizo.AddThemeStyleboxOverride("hover",   HudEstilo(new Color(0.38f,0.25f,0.65f),      new Color(0.88f,0.68f,1f)));
 		_btnCambiarHechizo.AddThemeStyleboxOverride("pressed", HudEstilo(new Color(0.38f,0.25f,0.65f),      new Color(0.88f,0.68f,1f)));
 		_btnCambiarHechizo.Pressed += ActivarModoCambio;
 		CapaHUD().AddChild(_btnCambiarHechizo);
+	}
+
+	// Reemplaza automáticamente la carta usada con la siguiente del pool
+	private void AutoReemplazarHechizo(int slotIdx)
+	{
+		if (slotIdx < 0 || slotIdx >= 2) return;
+		if (_poolHechizos.Count == 0)
+		{
+			if (_tarjetasHechizo[slotIdx] != null && IsInstanceValid(_tarjetasHechizo[slotIdx]))
+				_tarjetasHechizo[slotIdx].QueueFree();
+			_tarjetasHechizo[slotIdx] = null;
+			return;
+		}
+		_hechizosMano[slotIdx] = _poolHechizos[0];
+		_poolHechizos.RemoveAt(0);
+
+		var padre = _tarjetasHechizo[slotIdx]?.GetParent();
+		if (padre != null && IsInstanceValid(_tarjetasHechizo[slotIdx]))
+		{
+			int   pos     = _tarjetasHechizo[slotIdx].GetIndex();
+			Vector2 cardPos = _tarjetasHechizo[slotIdx].Position;
+			_tarjetasHechizo[slotIdx].QueueFree();
+			var nueva = CrearTarjetaHechizo(slotIdx);
+			nueva.Position = cardPos;
+			nueva.Size     = new Vector2(HECHIZO_W, HECHIZO_H);
+			padre.AddChild(nueva);
+			padre.MoveChild(nueva, pos);
+		}
 	}
 
 	private Panel CrearTarjetaHechizo(int slotIdx)
@@ -303,24 +325,28 @@ public partial class Campo1 : Node2D
 		int pi = _hechizosMano[slotIdx];
 		switch (pi)
 		{
-			case 0: UsarEncebollado(); break;
-			case 1: UsarCuracion();    break;
-			case 2: UsarRobo();        break;
-			case 3: IniciarSeleccion("veneno");  break;
-			case 4: IniciarSeleccion("bloqueo"); break;
+			case 0: UsarEncebollado(); AutoReemplazarHechizo(slotIdx); break;
+			case 1: UsarCuracion();    AutoReemplazarHechizo(slotIdx); break;
+			case 2: UsarRobo();        AutoReemplazarHechizo(slotIdx); break;
+			case 3: IniciarSeleccion("veneno",  slotIdx); break;
+			case 4: IniciarSeleccion("bloqueo", slotIdx); break;
 		}
 		if (pi != 3 && pi != 4) ActualizarVisualesHechizos();
 	}
 
-	public bool EsHechizoUsado(int slotIdx) => _hechizosMano[slotIdx] switch
+	public bool EsHechizoUsado(int slotIdx)
 	{
-		0 => usadoEncebollado, 1 => usadoCuracion, 2 => usadoRobo,
-		3 => usadoVeneno,      4 => usadoBloqueo,  _ => false
-	};
+		if (slotIdx < 0 || slotIdx >= 2 || _tarjetasHechizo[slotIdx] == null) return false;
+		return _hechizosMano[slotIdx] switch
+		{
+			0 => usadoEncebollado, 1 => usadoCuracion, 2 => usadoRobo,
+			3 => usadoVeneno,      4 => usadoBloqueo,  _ => false
+		};
+	}
 
 	public void ActualizarVisualesHechizos()
 	{
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 2; i++)
 		{
 			if (_overlayHechizo[i] == null || !IsInstanceValid(_overlayHechizo[i])) continue;
 			bool usado = EsHechizoUsado(i);
@@ -339,7 +365,7 @@ public partial class Campo1 : Node2D
 		if (_usadoCambioHechizo) return;
 		_modoCambioHechizo = !_modoCambioHechizo;
 		_btnCambiarHechizo.Text = _modoCambioHechizo ? "Elige un hechizo..." : "↺  CAMBIAR (1)";
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 2; i++)
 			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
 				_tarjetasHechizo[i].Modulate = _modoCambioHechizo && !EsHechizoUsado(i)
 					? new Color(1.25f, 1.25f, 0.45f) : Colors.White;
@@ -347,37 +373,15 @@ public partial class Campo1 : Node2D
 
 	private void EjecutarCambioHechizo(int slotIdx)
 	{
-		var disponibles = new List<int>();
-		for (int p = 0; p < 5; p++)
-			if (p != _hechizosMano[0] && p != _hechizosMano[1] && p != _hechizosMano[2])
-				disponibles.Add(p);
-
-		if (disponibles.Count == 0) { _modoCambioHechizo = false; return; }
-
-		_hechizosMano[slotIdx] = disponibles[random.Next(disponibles.Count)];
-		_usadoCambioHechizo    = true;
-		_modoCambioHechizo     = false;
-
-		// Reconstruir visualmente la tarjeta cambiada
-		var padre = _tarjetasHechizo[slotIdx]?.GetParent();
-		if (padre != null && IsInstanceValid(_tarjetasHechizo[slotIdx]))
-		{
-			int pos = _tarjetasHechizo[slotIdx].GetIndex();
-			float rot = _tarjetasHechizo[slotIdx].Rotation;
-			Vector2 posCard = _tarjetasHechizo[slotIdx].Position;
-			_tarjetasHechizo[slotIdx].QueueFree();
-			var nueva = CrearTarjetaHechizo(slotIdx);
-			nueva.ZIndex = 80;
-			nueva.Rotation = rot;
-			padre.AddChild(nueva);
-			padre.MoveChild(nueva, pos);
-			nueva.Position = posCard;
-		}
+		if (slotIdx < 0 || slotIdx >= 2) { _modoCambioHechizo = false; return; }
+		_usadoCambioHechizo = true;
+		_modoCambioHechizo  = false;
+		AutoReemplazarHechizo(slotIdx);
 
 		_btnCambiarHechizo.Text     = "↺  CAMBIAR (usado)";
 		_btnCambiarHechizo.Disabled = true;
 		_btnCambiarHechizo.Modulate = new Color(0.55f, 0.55f, 0.55f);
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 2; i++)
 			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
 				_tarjetasHechizo[i].Modulate = Colors.White;
 	}

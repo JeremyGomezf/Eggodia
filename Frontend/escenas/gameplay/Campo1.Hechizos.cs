@@ -68,13 +68,14 @@ public partial class Campo1 : Node2D
 		RegistrarGastoMovimiento();
 	}
 
-	private void IniciarSeleccion(string hechizo)
+	private void IniciarSeleccion(string hechizo, int slotIdx = -1)
 	{
 		if (!ValidarHechizo()) return;
 		if (hechizo == "veneno"  && usadoVeneno)  return;
 		if (hechizo == "bloqueo" && usadoBloqueo) return;
 		_modoSeleccionObjetivo = true;
 		_hechizoPendiente      = hechizo;
+		_slotPendiente         = slotIdx;
 		if (_lblInstruccion != null) _lblInstruccion.Visible = true;
 	}
 
@@ -100,6 +101,8 @@ public partial class Campo1 : Node2D
 		_modoSeleccionObjetivo = false;
 		_hechizoPendiente      = "";
 		if (_lblInstruccion != null) _lblInstruccion.Visible = false;
+		AutoReemplazarHechizo(_slotPendiente);
+		_slotPendiente = -1;
 		ActualizarVisualesHechizos();
 		RegistrarGastoMovimiento();
 	}

@@ -85,13 +85,15 @@ public partial class Campo1 : Node2D
 		new Color(1f,0.65f,0.15f), new Color(0.25f,0.80f,0.35f),
 		new Color(0.30f,0.65f,1f), new Color(0.60f,0.30f,0.75f), new Color(0.25f,0.55f,0.90f)
 	};
-	private int[]   _hechizosMano     = new int[3];
-	private Panel[] _tarjetasHechizo  = new Panel[3];
-	private Panel[] _overlayHechizo   = new Panel[3];
-	private Label[] _lblEstadoHechizo = new Label[3];
+	private int[]   _hechizosMano     = new int[2];
+	private Panel[] _tarjetasHechizo  = new Panel[2];
+	private Panel[] _overlayHechizo   = new Panel[2];
+	private Label[] _lblEstadoHechizo = new Label[2];
 	private bool    _usadoCambioHechizo = false;
 	private bool    _modoCambioHechizo  = false;
 	private Button  _btnCambiarHechizo;
+	private System.Collections.Generic.List<int> _poolHechizos = new();
+	private int     _slotPendiente = -1;
 
 	// ── IA ADAPTATIVA ─────────────────────────────────────────────────────
 	private int  _dificultadIA        = 1; // 0=fácil, 1=medio, 2=difícil
