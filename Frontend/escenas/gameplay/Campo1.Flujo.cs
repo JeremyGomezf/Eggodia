@@ -185,6 +185,7 @@ public partial class Campo1 : Node2D
 		Node2D t = (Node2D)escenaTropa.Instantiate();
 		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
+		t.ZIndex = puntoMod.Name switch { "Mod2" => 3, "Mod3" => 2, _ => 1 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
 
 		// Activar inmediatamente para que se pueda usar en el mismo turno
@@ -212,10 +213,11 @@ public partial class Campo1 : Node2D
 	{
 		if (escenaTropa == null || puntoMod == null) return;
 		Node2D t = (Node2D)escenaTropa.Instantiate();
-		AddChild(t); 
-		t.GlobalPosition = puntoMod.GlobalPosition; 
-		t.AddToGroup("tropas_rival"); 
+		AddChild(t);
+		t.GlobalPosition = puntoMod.GlobalPosition;
+		t.AddToGroup("tropas_rival");
 		t.SetMeta("carril", puntoMod.Name);
+		t.ZIndex = puntoMod.Name switch { "ModRival2" => 3, "ModRival3" => 2, _ => 1 };
 
 		// Corregir orientación sin romper escala ni rotaciones
 		AsegurarOrientacionRival(t);
@@ -357,7 +359,10 @@ public partial class Campo1 : Node2D
 		Marker2D m1 = GetNodeOrNull<Marker2D>("SpawnTrono1"), m2 = GetNodeOrNull<Marker2D>("SpawnTrono2");
 		if (m1 == null || m2 == null || escenaTronoRef == null) return;
 		tronoJugador = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoJugador);
-		tronoJugador.GlobalPosition = m1.GlobalPosition; tronoJugador.CargarHuevo(escenaReyHuevoRef, false);
+		tronoJugador.GlobalPosition = m1.GlobalPosition;
+		string skinPath = Preferencias.RutaSkinActiva;
+		var skinScene = ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : escenaReyHuevoRef;
+		tronoJugador.CargarHuevo(skinScene ?? escenaReyHuevoRef, false);
 		tronoRival = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoRival);
 		tronoRival.GlobalPosition = m2.GlobalPosition; tronoRival.CargarHuevo(escenaDinoHuevoRef, true);
 	}

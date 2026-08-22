@@ -7,9 +7,9 @@ public partial class Tienda : Control
 	[Export] public string RutaMenuPrincipal = "res://escenas/menu/menu_principal.tscn";
 
 	private Label _lblMonedas;
+	private VBoxContainer _contenidoScroll;
 
-	// Catálogo de ítems (nombre, descripción, precio, icono)
-	private static readonly (string nombre, string desc, int precio, string icono)[] ITEMS = {
+	private static readonly (string nombre, string desc, int precio, string icono)[] ITEMS_TIENDA = {
 		("Hechizo Extra",     "+1 uso de hechizo por partida",    150, "✦"),
 		("Baraja Especial",   "Cartas raras en tu mazo",          300, "🃏"),
 		("Amuleto de Vida",   "+200 HP al inicio de partida",     200, "❤"),
@@ -21,7 +21,6 @@ public partial class Tienda : Control
 	public override void _Ready()
 	{
 		ConstruirUI();
-
 		var eco = Economia.Instancia();
 		if (eco != null)
 		{
@@ -38,7 +37,6 @@ public partial class Tienda : Control
 
 	private void ConstruirUI()
 	{
-		// Fondo oscuro
 		var fondo = new ColorRect();
 		fondo.SetAnchorsPreset(LayoutPreset.FullRect);
 		fondo.Color = new Color(0.04f, 0.05f, 0.13f);
@@ -81,28 +79,168 @@ public partial class Tienda : Control
 		_lblMonedas.VerticalAlignment = VerticalAlignment.Center;
 		topBar.AddChild(_lblMonedas);
 
-		var sep = new HSeparator();
-		sep.SetAnchorsPreset(LayoutPreset.TopWide);
-		sep.OffsetTop = 64; sep.OffsetBottom = 66;
-		AddChild(sep);
-
-		// Grid con scroll
+		// Scroll container principal
 		var scroll = new ScrollContainer();
 		scroll.SetAnchorsPreset(LayoutPreset.FullRect);
-		scroll.OffsetTop = 72; scroll.OffsetLeft = 24;
-		scroll.OffsetRight = -24; scroll.OffsetBottom = -20;
+		scroll.OffsetTop = 72; scroll.OffsetLeft = 16;
+		scroll.OffsetRight = -16; scroll.OffsetBottom = -12;
 		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
 		AddChild(scroll);
 
+		_contenidoScroll = new VBoxContainer();
+		_contenidoScroll.AddThemeConstantOverride("separation", 24);
+		_contenidoScroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		scroll.AddChild(_contenidoScroll);
+
+		// Sección 1: Skins de huevo
+		AgregarSeccion("SKINS DE HUEVO 🥚", new Color(1f, 0.65f, 0.25f));
+		AgregarGridSkins();
+
+		// Sección 2: Items de combate
+		AgregarSeccion("ITEMS DE COMBATE ⚔️", new Color(0.55f, 0.85f, 1f));
+		AgregarGridItems();
+	}
+
+	private void AgregarSeccion(string titulo, Color color)
+	{
+		var lbl = new Label();
+		lbl.Text = titulo;
+		lbl.AddThemeColorOverride("font_color", color);
+		lbl.AddThemeFontSizeOverride("font_size", 18);
+		lbl.AddThemeConstantOverride("outline_size", 3);
+		lbl.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.7f));
+		_contenidoScroll.AddChild(lbl);
+		var sep = new HSeparator(); _contenidoScroll.AddChild(sep);
+	}
+
+	private void AgregarGridSkins()
+	{
+		var grid = new GridContainer();
+		grid.Columns = 4;
+		grid.AddThemeConstantOverride("h_separation", 12);
+		grid.AddThemeConstantOverride("v_separation", 12);
+		grid.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_contenidoScroll.AddChild(grid);
+
+		for (int i = 0; i < Preferencias.SKIN_NOMBRES.Length; i++)
+			grid.AddChild(CrearItemSkin(i));
+	}
+
+	private void AgregarGridItems()
+	{
 		var grid = new GridContainer();
 		grid.Columns = 3;
 		grid.AddThemeConstantOverride("h_separation", 16);
 		grid.AddThemeConstantOverride("v_separation", 16);
 		grid.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		scroll.AddChild(grid);
+		_contenidoScroll.AddChild(grid);
 
-		foreach (var item in ITEMS)
+		foreach (var item in ITEMS_TIENDA)
 			grid.AddChild(CrearItemTienda(item.nombre, item.desc, item.precio, item.icono));
+	}
+
+	private Control CrearItemSkin(int idx)
+	{
+		bool esDefault = idx == 0;
+		bool poseida   = Preferencias.TieneSkin(idx);
+		bool activa    = Preferencias.SkinActivaIdx == idx;
+
+		var panel = new PanelContainer();
+		panel.CustomMinimumSize = new Vector2(160, 220);
+
+		var sbNormal = new StyleBoxFlat();
+		sbNormal.BgColor = activa
+			? new Color(0.14f, 0.22f, 0.10f, 0.97f)
+			: new Color(0.09f, 0.11f, 0.22f, 0.96f);
+		sbNormal.BorderWidthLeft = sbNormal.BorderWidthTop = sbNormal.BorderWidthRight = sbNormal.BorderWidthBottom = 2;
+		sbNormal.BorderColor = activa ? new Color(0.4f, 1f, 0.4f) : new Color(0.70f, 0.55f, 0.25f);
+		sbNormal.CornerRadiusTopLeft = sbNormal.CornerRadiusTopRight =
+		sbNormal.CornerRadiusBottomLeft = sbNormal.CornerRadiusBottomRight = 10;
+		sbNormal.ContentMarginLeft = sbNormal.ContentMarginRight =
+		sbNormal.ContentMarginTop  = sbNormal.ContentMarginBottom = 10;
+		sbNormal.ShadowColor = new Color(0,0,0,0.4f); sbNormal.ShadowSize = 5;
+		panel.AddThemeStyleboxOverride("panel", sbNormal);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 6);
+
+		// Imagen del personaje
+		var tex = new TextureRect();
+		tex.CustomMinimumSize = new Vector2(120, 120);
+		tex.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		var textura = GD.Load<Texture2D>(Preferencias.SKIN_IMAGENES[idx]);
+		if (textura != null) tex.Texture = textura;
+		vbox.AddChild(tex);
+
+		var lblNombre = new Label();
+		lblNombre.Text = Preferencias.SKIN_NOMBRES[idx];
+		lblNombre.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
+		lblNombre.AddThemeFontSizeOverride("font_size", 13);
+		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
+		lblNombre.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		vbox.AddChild(lblNombre);
+
+		if (activa)
+		{
+			var lblActiva = new Label();
+			lblActiva.Text = "✓ EQUIPADA";
+			lblActiva.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
+			lblActiva.AddThemeFontSizeOverride("font_size", 12);
+			lblActiva.HorizontalAlignment = HorizontalAlignment.Center;
+			vbox.AddChild(lblActiva);
+		}
+		else if (poseida)
+		{
+			var btnEquipar = new Button();
+			btnEquipar.Text = "EQUIPAR";
+			btnEquipar.CustomMinimumSize = new Vector2(0, 34);
+			btnEquipar.AddThemeFontSizeOverride("font_size", 13);
+			btnEquipar.Pressed += () => {
+				Preferencias.SkinActivaIdx = idx;
+				GetTree().ReloadCurrentScene();
+			};
+			vbox.AddChild(btnEquipar);
+		}
+		else if (esDefault)
+		{
+			var btnEquipar = new Button();
+			btnEquipar.Text = "EQUIPAR";
+			btnEquipar.CustomMinimumSize = new Vector2(0, 34);
+			btnEquipar.AddThemeFontSizeOverride("font_size", 13);
+			btnEquipar.Pressed += () => {
+				Preferencias.SkinActivaIdx = 0;
+				GetTree().ReloadCurrentScene();
+			};
+			vbox.AddChild(btnEquipar);
+		}
+		else
+		{
+			var btnComprar = new Button();
+			btnComprar.Text = "🪙 250";
+			btnComprar.CustomMinimumSize = new Vector2(0, 34);
+			btnComprar.AddThemeFontSizeOverride("font_size", 13);
+			int capIdx = idx;
+			btnComprar.Pressed += () => IntentarComprarSkin(capIdx, btnComprar);
+			vbox.AddChild(btnComprar);
+		}
+
+		panel.AddChild(vbox);
+		return panel;
+	}
+
+	private void IntentarComprarSkin(int idx, Button btn)
+	{
+		var eco = Economia.Instancia();
+		if (eco == null) return;
+		if (!eco.Gastar(250))
+		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); return; }
+
+		Preferencias.DesbloquearSkin(idx);
+		Preferencias.SkinActivaIdx = idx;
+		MostrarMensaje($"¡{Preferencias.SKIN_NOMBRES[idx]} desbloqueada!", Colors.Gold);
+		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
 	}
 
 	private Control CrearItemTienda(string nombre, string desc, int precio, string icono)
@@ -163,13 +301,8 @@ public partial class Tienda : Control
 	{
 		var eco = Economia.Instancia();
 		if (eco == null) return;
-
 		if (!eco.Gastar(precio))
-		{
-			MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f));
-			return;
-		}
-
+		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); return; }
 		btn.Text     = "✓ Comprado";
 		btn.Disabled = true;
 		MostrarMensaje($"¡{nombre} adquirido!", Colors.Gold);
@@ -189,7 +322,6 @@ public partial class Tienda : Control
 		lbl.HorizontalAlignment = HorizontalAlignment.Center;
 		lbl.ZIndex = 100;
 		AddChild(lbl);
-
 		var tw = lbl.CreateTween();
 		tw.TweenProperty(lbl, "modulate:a", 0f, 1.4f).SetDelay(0.8f);
 		await ToSignal(tw, "finished");

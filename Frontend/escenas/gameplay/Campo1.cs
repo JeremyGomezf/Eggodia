@@ -105,6 +105,9 @@ public partial class Campo1 : Node2D
 	private int _tropasEliminadasJugador = 0;
 	private int _tropasEliminadasRival   = 0;
 
+	// ── MANO DE HECHIZOS (contenedor en espacio de mundo) ────────────────────
+	public Control _contenedorHechizos;
+
 	// ── BARRAS HP BASE ────────────────────────────────────────────────────
 	private ProgressBar _barraHPJugador, _barraHPRival;
 	private Label _lblVida1, _lblVida2, _lblTiempo, _lblTurnoInfo;
@@ -176,6 +179,7 @@ public partial class Campo1 : Node2D
 			}
 		}
 
+		_contenedorHechizos = GetNodeOrNull<Control>("ManoHechizos");
 		CrearPanelHechizos();
 
 		if (contenedorMano == null)

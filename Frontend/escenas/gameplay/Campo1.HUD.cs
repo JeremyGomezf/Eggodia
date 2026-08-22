@@ -139,7 +139,7 @@ public partial class Campo1 : Node2D
 		}
 	}
 
-	// ── PANEL DE HECHIZOS — tarjetas con imagen en el lado derecho ────────
+	// ── PANEL DE HECHIZOS — tarjetas en spots del mundo (parte inferior derecha)
 	private void CrearPanelHechizos()
 	{
 		// Elegir 3 hechizos aleatorios del pool de 5
@@ -147,48 +147,54 @@ public partial class Campo1 : Node2D
 		for (int i = 0; i < idx.Count; i++) { int r = random.Next(i, idx.Count); (idx[i], idx[r]) = (idx[r], idx[i]); }
 		for (int i = 0; i < 3; i++) _hechizosMano[i] = idx[i];
 
-		// Contenedor vertical fijo en el lado derecho
-		var col = new VBoxContainer();
-		col.Name = "PanelHechizos";
-		col.SetAnchorsPreset(Control.LayoutPreset.TopRight);
-		col.GrowHorizontal = Control.GrowDirection.Begin;
-		col.OffsetLeft   = -185;
-		col.OffsetRight  = -8;
-		col.OffsetTop    =  55;
-		col.ZIndex = 50;
-		col.AddThemeConstantOverride("separation", 6);
+		string[] spotNames = { "SpotH1", "SpotH2", "SpotH3" };
+		for (int i = 0; i < 3; i++)
+		{
+			var card = CrearTarjetaHechizo(i);
+			card.ZIndex = 80;
 
-		var titulo = new Label();
-		titulo.Text = "✦  HECHIZOS";
-		titulo.AddThemeColorOverride("font_color", new Color(0.82f, 0.74f, 1f));
-		titulo.AddThemeFontSizeOverride("font_size", 13);
-		titulo.HorizontalAlignment = HorizontalAlignment.Center;
-		col.AddChild(titulo);
-		col.AddChild(new HSeparator());
+			if (_contenedorHechizos != null)
+			{
+				var spot = _contenedorHechizos.GetNodeOrNull<Marker2D>(spotNames[i]);
+				if (spot != null)
+				{
+					card.Rotation = spot.Rotation;
+					_contenedorHechizos.AddChild(card);
+					card.Position = spot.Position - new Vector2(card.Size.X * 0.5f, card.Size.Y);
+				}
+				else { _contenedorHechizos.AddChild(card); }
+			}
+			else { CapaHUD().AddChild(card); }
+		}
 
-		for (int i = 0; i < 3; i++) col.AddChild(CrearTarjetaHechizo(i));
-
+		// Etiqueta de instrucción en HUD (esquina inferior derecha)
 		_lblInstruccion = new Label();
-		_lblInstruccion.Text    = "Haz clic en una\ntropa enemiga";
+		_lblInstruccion.Text    = "Toca una tropa\nenemiga";
 		_lblInstruccion.Visible = false;
+		_lblInstruccion.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
+		_lblInstruccion.GrowHorizontal = Control.GrowDirection.Begin;
+		_lblInstruccion.OffsetLeft = -190; _lblInstruccion.OffsetRight = -8;
+		_lblInstruccion.OffsetTop  = -120; _lblInstruccion.OffsetBottom = -80;
 		_lblInstruccion.HorizontalAlignment = HorizontalAlignment.Center;
 		_lblInstruccion.AddThemeColorOverride("font_color", new Color(1f, 0.55f, 0.4f));
-		_lblInstruccion.AddThemeFontSizeOverride("font_size", 11);
-		col.AddChild(_lblInstruccion);
+		_lblInstruccion.AddThemeFontSizeOverride("font_size", 13);
+		CapaHUD().AddChild(_lblInstruccion);
 
-		// Botón intercambiar (una vez)
+		// Botón intercambiar (una vez) — HUD esquina inferior derecha
 		_btnCambiarHechizo = new Button();
 		_btnCambiarHechizo.Text = "↺  CAMBIAR (1)";
-		_btnCambiarHechizo.CustomMinimumSize = new Vector2(170, 36);
-		_btnCambiarHechizo.AddThemeFontSizeOverride("font_size", 12);
+		_btnCambiarHechizo.CustomMinimumSize = new Vector2(170, 42);
+		_btnCambiarHechizo.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
+		_btnCambiarHechizo.GrowHorizontal = Control.GrowDirection.Begin;
+		_btnCambiarHechizo.OffsetLeft  = -185; _btnCambiarHechizo.OffsetRight  = -8;
+		_btnCambiarHechizo.OffsetTop   = -55;  _btnCambiarHechizo.OffsetBottom = -8;
+		_btnCambiarHechizo.AddThemeFontSizeOverride("font_size", 13);
 		_btnCambiarHechizo.AddThemeColorOverride("font_color", Colors.White);
 		_btnCambiarHechizo.AddThemeStyleboxOverride("normal",  HudEstilo(new Color(0.22f,0.15f,0.40f,0.95f), new Color(0.65f,0.45f,1f)));
 		_btnCambiarHechizo.AddThemeStyleboxOverride("hover",   HudEstilo(new Color(0.38f,0.25f,0.65f),      new Color(0.88f,0.68f,1f)));
 		_btnCambiarHechizo.AddThemeStyleboxOverride("pressed", HudEstilo(new Color(0.38f,0.25f,0.65f),      new Color(0.88f,0.68f,1f)));
 		_btnCambiarHechizo.Pressed += ActivarModoCambio;
-		col.AddChild(_btnCambiarHechizo);
-
-		CapaHUD().AddChild(col);
+		CapaHUD().AddChild(_btnCambiarHechizo);
 	}
 
 	private Panel CrearTarjetaHechizo(int slotIdx)
@@ -197,41 +203,54 @@ public partial class Campo1 : Node2D
 		Color color = POOL_HECHIZO_COLOR[pi];
 
 		var panel = new Panel();
-		panel.CustomMinimumSize = new Vector2(172, 78);
+		panel.CustomMinimumSize = new Vector2(100, 140);
+		panel.Size              = new Vector2(100, 140);
 		panel.MouseFilter = Control.MouseFilterEnum.Stop;
 		panel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-		panel.AddThemeStyleboxOverride("panel", HudEstilo(new Color(0.07f,0.05f,0.14f,0.96f), color, shadowColor: color * new Color(1,1,1,0.35f)));
 
-		var hbox = new HBoxContainer();
-		hbox.AddThemeConstantOverride("separation", 6);
-		hbox.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		hbox.OffsetLeft = 4; hbox.OffsetRight = -4; hbox.OffsetTop = 4; hbox.OffsetBottom = -4;
+		var sb = new StyleBoxFlat();
+		sb.BgColor = new Color(0.07f, 0.05f, 0.14f, 0.96f);
+		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
+		sb.BorderColor = color;
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
+		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 8;
+		sb.ShadowColor = color * new Color(1,1,1,0.4f); sb.ShadowSize = 5;
+		sb.ContentMarginLeft = sb.ContentMarginRight =
+		sb.ContentMarginTop  = sb.ContentMarginBottom = 4;
+		panel.AddThemeStyleboxOverride("panel", sb);
+
+		var vbox = new VBoxContainer();
+		vbox.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		vbox.OffsetLeft = 4; vbox.OffsetRight = -4; vbox.OffsetTop = 4; vbox.OffsetBottom = -4;
+		vbox.AddThemeConstantOverride("separation", 2);
 
 		var tex = new TextureRect();
-		tex.CustomMinimumSize = new Vector2(56, 70);
+		tex.CustomMinimumSize = new Vector2(90, 88);
+		tex.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		tex.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
 		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
 		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 		var t = GD.Load<Texture2D>(POOL_HECHIZO_RUTA[pi]);
 		if (t != null) tex.Texture = t;
-		hbox.AddChild(tex);
+		vbox.AddChild(tex);
 
-		var vbox = new VBoxContainer();
-		vbox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		vbox.AddThemeConstantOverride("separation", 3);
 		var lblN = new Label();
 		lblN.Text = POOL_HECHIZO_NOMBRE[pi];
 		lblN.AddThemeColorOverride("font_color", color);
-		lblN.AddThemeFontSizeOverride("font_size", 11);
+		lblN.AddThemeFontSizeOverride("font_size", 10);
+		lblN.HorizontalAlignment = HorizontalAlignment.Center;
 		lblN.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		vbox.AddChild(lblN);
+
 		var lblE = new Label();
 		lblE.Text = "DISPONIBLE";
 		lblE.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.55f));
 		lblE.AddThemeFontSizeOverride("font_size", 9);
+		lblE.HorizontalAlignment = HorizontalAlignment.Center;
 		_lblEstadoHechizo[slotIdx] = lblE;
 		vbox.AddChild(lblE);
-		hbox.AddChild(vbox);
-		panel.AddChild(hbox);
+
+		panel.AddChild(vbox);
 
 		// Overlay "USADO"
 		var ov = new Panel();
@@ -340,14 +359,19 @@ public partial class Campo1 : Node2D
 		_modoCambioHechizo     = false;
 
 		// Reconstruir visualmente la tarjeta cambiada
-		var padre = _tarjetasHechizo[slotIdx]?.GetParent() as VBoxContainer;
+		var padre = _tarjetasHechizo[slotIdx]?.GetParent();
 		if (padre != null && IsInstanceValid(_tarjetasHechizo[slotIdx]))
 		{
 			int pos = _tarjetasHechizo[slotIdx].GetIndex();
+			float rot = _tarjetasHechizo[slotIdx].Rotation;
+			Vector2 posCard = _tarjetasHechizo[slotIdx].Position;
 			_tarjetasHechizo[slotIdx].QueueFree();
 			var nueva = CrearTarjetaHechizo(slotIdx);
+			nueva.ZIndex = 80;
+			nueva.Rotation = rot;
 			padre.AddChild(nueva);
 			padre.MoveChild(nueva, pos);
+			nueva.Position = posCard;
 		}
 
 		_btnCambiarHechizo.Text     = "↺  CAMBIAR (usado)";

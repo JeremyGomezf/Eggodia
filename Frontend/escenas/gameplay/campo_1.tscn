@@ -198,6 +198,25 @@ offset_right = 76.0
 offset_bottom = 51.0
 text = "TURNO"
 
+[node name="ManoHechizos" type="Control" parent="." unique_id=550129384]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 1120.0
+offset_top = 600.0
+offset_right = 1160.0
+offset_bottom = 640.0
+
+[node name="SpotH1" type="Marker2D" parent="ManoHechizos" unique_id=550129385]
+position = Vector2(-90, -110)
+rotation = -0.18
+
+[node name="SpotH2" type="Marker2D" parent="ManoHechizos" unique_id=550129386]
+position = Vector2(0, -130)
+
+[node name="SpotH3" type="Marker2D" parent="ManoHechizos" unique_id=550129387]
+position = Vector2(90, -110)
+rotation = 0.18
+
 [node name="InterfazMenu" type="CanvasLayer" parent="." unique_id=916174861]
 
 [node name="MenuAcciones" type="Control" parent="InterfazMenu" unique_id=224335847]

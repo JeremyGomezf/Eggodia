@@ -34,11 +34,16 @@ public partial class MenuPrincipal : Control
 
 		// Guardar posiciones iniciales si los nodos existen
 		if (_islaContainer   != null) _posInicialIsla = _islaContainer.Position;
-		if (_reyHuevoNode    != null) 
+		if (_reyHuevoNode    != null)
 		{
 			_posInicialReyHuevo = _reyHuevoNode.Position;
 			_reyHuevoNode.PivotOffset = new Vector2(_reyHuevoNode.Size.X / 2, _reyHuevoNode.Size.Y * 0.8f);
 			AgregarAnimacionHover(_reyHuevoNode);
+			_reyHuevoNode.MouseFilter = Control.MouseFilterEnum.Stop;
+			_reyHuevoNode.GuiInput += (ev) => {
+				if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+					AbrirSelectorSkin();
+			};
 		}
 
 		// 2. Obtener UI de ajustes y diálogos
@@ -242,6 +247,159 @@ public partial class MenuPrincipal : Control
 				}
 			};
 		}
+	}
+
+	private void AbrirSelectorSkin()
+	{
+		// Evitar doble apertura
+		if (GetNodeOrNull("SelectorSkin") != null) return;
+
+		var overlay = new ColorRect();
+		overlay.Name = "SelectorSkin";
+		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		overlay.Color = new Color(0, 0, 0, 0.78f);
+		overlay.ZIndex = 200;
+		overlay.MouseFilter = Control.MouseFilterEnum.Stop;
+		AddChild(overlay);
+
+		var panel = new PanelContainer();
+		panel.SetAnchorsPreset(Control.LayoutPreset.Center);
+		panel.CustomMinimumSize = new Vector2(680, 440);
+		panel.OffsetLeft = -340; panel.OffsetRight = 340;
+		panel.OffsetTop  = -220; panel.OffsetBottom = 220;
+
+		var sb = new StyleBoxFlat();
+		sb.BgColor = new Color(0.06f, 0.08f, 0.16f, 0.98f);
+		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
+		sb.BorderColor = new Color(1f, 0.80f, 0.25f);
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
+		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 14;
+		sb.ContentMarginLeft = sb.ContentMarginRight =
+		sb.ContentMarginTop  = sb.ContentMarginBottom = 16;
+		sb.ShadowColor = new Color(0,0,0,0.6f); sb.ShadowSize = 10;
+		panel.AddThemeStyleboxOverride("panel", sb);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 14);
+		panel.AddChild(vbox);
+
+		// Cabecera
+		var header = new HBoxContainer();
+		var lblTitulo = new Label();
+		lblTitulo.Text = "SELECCIONA TU HUEVO";
+		lblTitulo.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
+		lblTitulo.AddThemeFontSizeOverride("font_size", 22);
+		lblTitulo.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		header.AddChild(lblTitulo);
+		var btnX = new Button();
+		btnX.Text = "✕";
+		btnX.CustomMinimumSize = new Vector2(40, 40);
+		btnX.AddThemeFontSizeOverride("font_size", 18);
+		btnX.Pressed += () => overlay.QueueFree();
+		header.AddChild(btnX);
+		vbox.AddChild(header);
+
+		// Grid de skins
+		var grid = new GridContainer();
+		grid.Columns = 4;
+		grid.AddThemeConstantOverride("h_separation", 12);
+		grid.AddThemeConstantOverride("v_separation", 12);
+		vbox.AddChild(grid);
+
+		for (int i = 0; i < Preferencias.SKIN_NOMBRES.Length; i++)
+		{
+			int capI = i;
+			bool poseida = Preferencias.TieneSkin(i);
+			bool activa  = Preferencias.SkinActivaIdx == i;
+
+			var skinPanel = new PanelContainer();
+			skinPanel.CustomMinimumSize = new Vector2(148, 200);
+
+			var sbSkin = new StyleBoxFlat();
+			sbSkin.BgColor = activa ? new Color(0.12f, 0.22f, 0.10f) : new Color(0.08f, 0.10f, 0.20f, 0.95f);
+			sbSkin.BorderWidthLeft = sbSkin.BorderWidthTop = sbSkin.BorderWidthRight = sbSkin.BorderWidthBottom = 2;
+			sbSkin.BorderColor = activa ? new Color(0.4f, 1f, 0.4f)
+							  : poseida ? new Color(0.85f, 0.65f, 0.2f)
+							  :           new Color(0.35f, 0.35f, 0.55f);
+			sbSkin.CornerRadiusTopLeft = sbSkin.CornerRadiusTopRight =
+			sbSkin.CornerRadiusBottomLeft = sbSkin.CornerRadiusBottomRight = 10;
+			sbSkin.ContentMarginLeft = sbSkin.ContentMarginRight =
+			sbSkin.ContentMarginTop  = sbSkin.ContentMarginBottom = 8;
+			skinPanel.AddThemeStyleboxOverride("panel", sbSkin);
+
+			var svbox = new VBoxContainer();
+			svbox.AddThemeConstantOverride("separation", 6);
+
+			var tex = new TextureRect();
+			tex.CustomMinimumSize = new Vector2(110, 110);
+			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+			tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			var txImg = GD.Load<Texture2D>(Preferencias.SKIN_IMAGENES[capI]);
+			if (txImg != null) tex.Texture = txImg;
+			// Grayscale para skins no poseídas
+			if (!poseida) tex.Modulate = new Color(0.4f, 0.4f, 0.4f);
+			svbox.AddChild(tex);
+
+			var lblN = new Label();
+			lblN.Text = Preferencias.SKIN_NOMBRES[capI];
+			lblN.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
+			lblN.AddThemeFontSizeOverride("font_size", 12);
+			lblN.HorizontalAlignment = HorizontalAlignment.Center;
+			lblN.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+			svbox.AddChild(lblN);
+
+			if (activa)
+			{
+				var lbl = new Label();
+				lbl.Text = "✓ EQUIPADA";
+				lbl.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
+				lbl.AddThemeFontSizeOverride("font_size", 11);
+				lbl.HorizontalAlignment = HorizontalAlignment.Center;
+				svbox.AddChild(lbl);
+			}
+			else if (poseida)
+			{
+				var btnEquip = new Button();
+				btnEquip.Text = "EQUIPAR";
+				btnEquip.CustomMinimumSize = new Vector2(0, 32);
+				btnEquip.AddThemeFontSizeOverride("font_size", 12);
+				btnEquip.Pressed += () => {
+					Preferencias.SkinActivaIdx = capI;
+					overlay.QueueFree();
+					// Actualizar la imagen del huevo visible en el menú
+					ActualizarHuevoMenu();
+				};
+				svbox.AddChild(btnEquip);
+			}
+			else
+			{
+				var lblLocked = new Label();
+				lblLocked.Text = "🔒 No poseída";
+				lblLocked.AddThemeColorOverride("font_color", new Color(0.6f, 0.6f, 0.6f));
+				lblLocked.AddThemeFontSizeOverride("font_size", 11);
+				lblLocked.HorizontalAlignment = HorizontalAlignment.Center;
+				svbox.AddChild(lblLocked);
+			}
+
+			skinPanel.AddChild(svbox);
+			grid.AddChild(skinPanel);
+		}
+
+		overlay.AddChild(panel);
+
+		// Animación de entrada
+		panel.Scale = new Vector2(0.7f, 0.7f);
+		panel.PivotOffset = panel.CustomMinimumSize / 2;
+		var tw = panel.CreateTween();
+		tw.TweenProperty(panel, "scale", Vector2.One, 0.22f)
+		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+	}
+
+	private void ActualizarHuevoMenu()
+	{
+		// El huevo visualmente en el menú siempre muestra ReyHuevoCrowned.png (el nodo del .tscn)
+		// Solo el personaje en batalla cambia — no hay que cambiar la textura aquí.
 	}
 
 	private void MostrarSettings()
