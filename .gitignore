@@ -2,6 +2,9 @@
 Frontend/.godot/
 Frontend/android/
 
+# Backups de proyecto MSBuild
+*.csproj.old.*
+
 # --- Reglas de .NET y Visual Studio (Backend) ---
 
 ## Ignore Visual Studio temporary files, build results, and
