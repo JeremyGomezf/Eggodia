@@ -398,6 +398,9 @@ scale = Vector2(0.27, 0.27)
 sprite_frames = SubResource("SpriteFrames_4s16o")
 animation = &"idle"
 
+[node name="SpotCañon" type="Marker2D" parent="." unique_id=987654321]
+position = Vector2(195, -68)
+
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3
 anchors_preset = 0
