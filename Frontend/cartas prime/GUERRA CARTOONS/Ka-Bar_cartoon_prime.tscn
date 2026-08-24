@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c3yc5rchjv02r"]
 
-[ext_resource type="Script" uid="uid://dkgrsfn4rs1ty" path="res://cartas prime/SoldadoRealPrime.cs" id="1_2i7kk"]
+[ext_resource type="Script" path="res://cartas prime/GUERRA CARTOONS/KaBarCartoonPrime.cs" id="1_2i7kk"]
 [ext_resource type="Texture2D" uid="uid://brrkm07kjycou" path="res://imagenes/sprites/Guerra Cartoons/soldado fantasma_.png" id="2_2i7kk"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]
