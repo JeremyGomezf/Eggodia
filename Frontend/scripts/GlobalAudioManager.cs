@@ -23,8 +23,10 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 				Stream = stream;
 				Autoplay = true;
 				Play();
-				CambiarVolumen(_lastVolume);
 			}
+
+			// Aplicar volumen inicial al bus Master para que afecte todo el audio
+			AudioServer.SetBusVolumeDb(0, (float)Mathf.LinearToDb(_lastVolume));
 
 			// Hook automatically to any new button added to the tree to play a click sound
 			GetTree().NodeAdded += OnNodeAdded;
@@ -47,11 +49,9 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 
 	private void OnNodeAdded(Node node)
 	{
+		// Solo click sound: el juego es para móvil y MouseEntered no aplica en touch
 		if (node is BaseButton btn)
-		{
 			btn.ButtonDown += () => PlayClickSound();
-			btn.MouseEntered += () => PlayHoverSound();
-		}
 	}
 
 	public void PlayClickSound()
@@ -164,16 +164,14 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 	{
 		_lastVolume = valor;
 		if (!_isMuted)
-		{
-			VolumeDb = (float)Mathf.LinearToDb(valor);
-		}
+			AudioServer.SetBusVolumeDb(0, (float)Mathf.LinearToDb(valor));
 	}
 
 	public void SetMute(bool isMuted)
 	{
 		_isMuted = isMuted;
-		if (_isMuted) VolumeDb = -80f;
-		else VolumeDb = (float)Mathf.LinearToDb(_lastVolume);
+		// Bus Master (índice 0) — afecta TODO el audio del juego
+		AudioServer.SetBusVolumeDb(0, _isMuted ? -80f : (float)Mathf.LinearToDb(_lastVolume));
 	}
 
 	public float GetVolumen() => _lastVolume;
