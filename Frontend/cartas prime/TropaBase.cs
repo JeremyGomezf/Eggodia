@@ -35,6 +35,7 @@ public abstract partial class TropaBase : Area2D
 	/// </summary>
 	public override void _Ready()
 	{
+		InputPickable = true;
 		_anim = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 		_contenedorStats = GetNodeOrNull<Control>("StatsTropa");
 		if (_contenedorStats != null) _contenedorStats.Visible = false;
@@ -42,17 +43,21 @@ public abstract partial class TropaBase : Area2D
 		ReproducirIdle();
 	}
 
-	/// <summary>Polimorfismo: cada carta reacciona al clic igual, pero puede extenderse.</summary>
+	/// <summary>Si false, Campo1 oculta/deshabilita el botón de defensa para esta tropa.</summary>
+	public virtual bool TienePosturaDefensiva() => true;
+
+	/// <summary>Polimorfismo: cada carta reacciona al clic o toque igual, pero puede extenderse.</summary>
 	public override void _InputEvent(Viewport viewport, InputEvent @event, int shapeIdx)
 	{
-		if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
-		{
-			if (IsInGroup("tropas_rival")) { MostrarBarras(true); return; }
-			MostrarBarras(true);
-			if (_estaMuerto || _yaActuo) return;
-			var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
-			if (campo != null) campo.MostrarMenuTropa(this);
-		}
+		bool presionado = (@event is InputEventMouseButton mb  && mb.Pressed  && mb.ButtonIndex == MouseButton.Left)
+		               || (@event is InputEventScreenTouch st && st.Pressed);
+		if (!presionado) return;
+
+		if (IsInGroup("tropas_rival")) { MostrarBarras(true); return; }
+		MostrarBarras(true);
+		if (_estaMuerto || _yaActuo) return;
+		var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
+		if (campo != null) campo.MostrarMenuTropa(this);
 	}
 
 	// ── COMPORTAMIENTO COMPARTIDO ──────────────────────────────────────────

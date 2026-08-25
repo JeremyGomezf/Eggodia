@@ -151,6 +151,7 @@ public partial class TanqueCartoonPrime : TropaBase
 		Node2D misil = (Node2D)_escenaMisil.Instantiate();
 		GetTree().Root.AddChild(misil);
 		misil.GlobalPosition = origen;
+		misil.ZIndex = 50;
 
 		// Orientar el misil hacia el destino (útil si tiene sprite direccional)
 		misil.Rotation = origen.AngleToPoint(destino);
@@ -182,6 +183,7 @@ public partial class TanqueCartoonPrime : TropaBase
 		Node2D explosion = (Node2D)_escenaExplosion.Instantiate();
 		GetTree().Root.AddChild(explosion);
 		explosion.GlobalPosition = posicion;
+		explosion.ZIndex = 55;
 
 		var animExp = explosion.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 		if (animExp != null)

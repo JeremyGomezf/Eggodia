@@ -75,20 +75,25 @@ public partial class Campo1 : Node2D
 			return;
 		}
 
+		// Evitar refresco redundante si el menú ya está abierto para esta misma tropa
+		if (tropaSeleccionada == tropa && menuAcciones.Visible) return;
 		tropaSeleccionada = tropa;
 
 		// Botón Ataque: siempre visible y habilitado
 		Button btnA = menuAcciones?.GetNodeOrNull<Button>("HBoxContainer/BtnAtaque");
 		if (btnA != null) { btnA.Visible = true; btnA.Disabled = false; btnA.Modulate = Colors.White; }
 
-		// Botón Defensa: visible siempre, deshabilitado si sin escudo
+		// Botón Defensa: visible siempre; deshabilitado si sin escudo o la tropa no tiene postura
 		Button btnD = menuAcciones?.GetNodeOrNull<Button>("HBoxContainer/BtnDefensa");
 		if (btnD != null)
 		{
-			bool sinEscudo = Gi(tropa, "escudoActual") <= 0;
+			bool sinEscudo    = Gi(tropa, "escudoActual") <= 0;
+			bool tieneDefensa = true;
+			try { tieneDefensa = (bool)tropa.Call("TienePosturaDefensiva"); } catch { }
+			bool bloquear = sinEscudo || !tieneDefensa;
 			btnD.Visible  = true;
-			btnD.Disabled = sinEscudo;
-			btnD.Modulate = sinEscudo ? new Color(1, 1, 1, 0.4f) : Colors.White;
+			btnD.Disabled = bloquear;
+			btnD.Modulate = bloquear ? new Color(1, 1, 1, 0.4f) : Colors.White;
 		}
 
 		// Botón Habilidad: siempre visible, deshabilitado si no tiene o ya usó
