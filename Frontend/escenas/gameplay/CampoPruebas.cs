@@ -177,7 +177,6 @@ public partial class CampoPruebas : Node2D
 		vbox.AddChild(_optHechizo);
 
 		var hbxH1 = new HBoxContainer(); vbox.AddChild(hbxH1);
-		hbxH1.AddChild(MkBtn("🧅 Encebollado", UsarEncebollado, new Color(1f, 0.7f, 0.1f)));
 		hbxH1.AddChild(MkBtn("💚 Curación",    UsarCuracion,    new Color(0.2f, 0.9f, 0.3f)));
 
 		var hbxH2 = new HBoxContainer(); vbox.AddChild(hbxH2);
@@ -345,21 +344,6 @@ public partial class CampoPruebas : Node2D
 	{
 		int idx = _optHechizo.Selected;
 		return idx < 3 ? _aliadas[idx] : _enemigas[idx - 3];
-	}
-
-	private void UsarEncebollado()
-	{
-		var t = ObtenerObjetivoHechizo();
-		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
-		int ata = Gi(t, "puntosAtaque"), esc = Gi(t, "escudoActual"), escMax = Gi(t, "escudoMaximo");
-		try { t.Set("puntosAtaque", ata + 100); }                       catch { }
-		try { t.Set("escudoActual", esc + 100); }                       catch { }
-		try { t.Set("escudoMaximo", Mathf.Max(escMax, esc + 100)); }   catch { }
-		MostrarDaño(t.GlobalPosition, 100, true);
-		var tw = t.CreateTween();
-		tw.TweenProperty(t, "modulate", new Color(1.6f, 1.3f, 0.2f), 0.2f);
-		tw.TweenProperty(t, "modulate", Colors.White, 0.5f);
-		Log($"🧅 Encebollado: +100 Atk/Esc en {TipoNombre(t)}");
 	}
 
 	private void UsarCuracion()

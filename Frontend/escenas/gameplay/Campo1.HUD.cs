@@ -325,13 +325,12 @@ public partial class Campo1 : Node2D
 		int pi = _hechizosMano[slotIdx];
 		switch (pi)
 		{
-			case 0: UsarEncebollado(); AutoReemplazarHechizo(slotIdx); break;
-			case 1: UsarCuracion();    AutoReemplazarHechizo(slotIdx); break;
-			case 2: UsarRobo();        AutoReemplazarHechizo(slotIdx); break;
-			case 3: IniciarSeleccion("veneno",  slotIdx); break;
-			case 4: IniciarSeleccion("bloqueo", slotIdx); break;
+			case 0: UsarCuracion();    AutoReemplazarHechizo(slotIdx); break;
+			case 1: UsarRobo();        AutoReemplazarHechizo(slotIdx); break;
+			case 2: IniciarSeleccion("veneno",  slotIdx); break;
+			case 3: IniciarSeleccion("bloqueo", slotIdx); break;
 		}
-		if (pi != 3 && pi != 4) ActualizarVisualesHechizos();
+		if (pi != 2 && pi != 3) ActualizarVisualesHechizos();
 	}
 
 	public bool EsHechizoUsado(int slotIdx)
@@ -339,8 +338,8 @@ public partial class Campo1 : Node2D
 		if (slotIdx < 0 || slotIdx >= 2 || _tarjetasHechizo[slotIdx] == null) return false;
 		return _hechizosMano[slotIdx] switch
 		{
-			0 => usadoEncebollado, 1 => usadoCuracion, 2 => usadoRobo,
-			3 => usadoVeneno,      4 => usadoBloqueo,  _ => false
+			0 => usadoCuracion, 1 => usadoRobo,
+			2 => usadoVeneno,   3 => usadoBloqueo,  _ => false
 		};
 	}
 
