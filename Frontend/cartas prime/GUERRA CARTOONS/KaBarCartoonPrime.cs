@@ -85,7 +85,7 @@ public partial class KaBarCartoonPrime : TropaBase
 		}
 	}
 
-	public override void SetActivo(bool activo)
+	public new void SetActivo(bool activo)
 	{
 		if (_modoFantasma) return;
 		base.SetActivo(activo);

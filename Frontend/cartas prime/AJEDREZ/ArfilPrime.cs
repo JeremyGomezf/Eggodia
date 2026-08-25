@@ -47,7 +47,7 @@ public partial class ArfilPrime : TropaBase
 	}
 
 	// ── MÉTODOS DE CONSULTA PARA LA UI (CAMPO1 Y CAMPOPRUEBA) ────────────────
-	public bool TieneHabilidadEspecial() => true;
+	public new bool TieneHabilidadEspecial() => true;
 
 	public bool PuedeUsarHabilidad()
 	{
