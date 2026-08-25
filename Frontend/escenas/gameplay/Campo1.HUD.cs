@@ -148,8 +148,8 @@ public partial class Campo1 : Node2D
 
 	private void CrearPanelHechizos()
 	{
-		// Barajar pool [0..4] y sacar 2 para la mano inicial
-		_poolHechizos = new System.Collections.Generic.List<int> { 0, 1, 2, 3, 4 };
+		// Barajar pool [0..3] y sacar 2 para la mano inicial
+		_poolHechizos = new System.Collections.Generic.List<int> { 0, 1, 2, 3 };
 		for (int i = 0; i < _poolHechizos.Count; i++)
 		{
 			int r = random.Next(i, _poolHechizos.Count);
