@@ -1,21 +1,38 @@
+Aquí tienes el script **`TRexPrime.cs`** limpio y optimizado. Se eliminaron por completo las referencias y comportamientos de defensa/escudo:
+
+1. **Sin UI de Defensa/Escudo:** Desactiva y remueve de la UI el botón de defensa y la barra de escudo durante el `_Ready()`.
+2. **Reacción a Ordenes de Defensa:** Si la IA o el sistema intenta enviarle una orden de `"preparar_defensa"` o `"defender"`, el T-Rex la omite e ignora la pose defensiva, manteniéndose directamente en `"idle"`.
+3. **Mantenimiento Estricto:** Se conserva el daño en **Frame 2**, estadísticas (850 HP / 370 ATK) y la habilidad de Rugido debilitador.
+
+```csharp
 using Godot;
 using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// T-Rex Prime — Tropa pesada de naturaleza (850 HP / 370 ATK / Sin Escudo).
+/// Ataque: Muerde e inflige daño en el Frame 2 de la animación.
+/// UI: Sin botón de defensa ni barra de escudo. Ignora poses defensivas.
+/// Habilidad "Rugido": Reduce el ataque de todos los enemigos al 70% durante 2 turnos.
+/// </summary>
 public partial class TRexPrime : TropaBase
 {
 	public override string Tipo => Tipos.NATURALEZA;
 
+	// ── CONSTANTES Y CONFIGURACIÓN ───────────────────────────────────────────
+	private const int FRAME_GOLPE = 2; // Frame exacto de la animación de mordisco
+
+	// ── ESTADO HABILIDAD (RUGIDO) ─────────────────────────────────────────────
 	private bool _rugidoActivo;
 	private int  _turnosRugido;
 	private List<(Node2D tropa, int ataqueOrig)> _afectados = new();
 
+	// ── CONTROL DE OBJETIVO ──────────────────────────────────────────────────
 	private Node2D _objetivoPendiente;
-	private const int FRAME_GOLPE = 2; // 🎯 Frame exacto del mordisco/daño
 
 	public override void _Ready()
 	{
-		// Estadísticas: 750 HP / 370 ATK (Sin Escudo)
+		// Estadísticas: 850 HP / 370 ATK (0 Escudo)
 		if (vidaMaxima == 0) 
 		{ 
 			vidaActual = vidaMaxima = 850; 
@@ -24,53 +41,73 @@ public partial class TRexPrime : TropaBase
 		}
 		base._Ready();
 
-		// Escuchar eventos del AnimatedSprite base (_anim viene de TropaBase)
+		// Ocultar e inactivar componentes de defensa/escudo en la UI
+		var barraEscudo = GetNodeOrNull<ProgressBar>("StatsTropa/BarraEscudo");
+		if (barraEscudo != null) barraEscudo.Visible = false;
+
+		var btnDefensa = GetNodeOrNull<Control>("UI/BtnDefensa") ?? GetNodeOrNull<Control>("BtnDefensa");
+		if (btnDefensa != null) btnDefensa.Visible = false;
+
+		// Conectar eventos de animación
 		if (_anim != null)
 		{
-			_anim.FrameChanged += OnFrameChanged;
-			_anim.AnimationFinished += OnAnimationFinished;
+			_anim.Connect(AnimatedSprite2D.SignalName.FrameChanged, Callable.From(OnFrameChanged));
+			_anim.Connect(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(OnAnimationFinished));
 		}
 	}
 
 	// ── CAPACIDADES ────────────────────────────────────────────────────────────
 	public override bool AutogestionaDañoAtaque() => true;
-	// Sin escudo ni defensa: ocultar botón defensa completamente
-	public override bool MostrarBotonDefensa() => false;
+	public override bool TieneHabilidadEspecial() => true;
+	public override bool MostrarBotonDefensa()   => false; // Sin botón de defensa
+	public override bool TienePosturaDefensiva()  => false; // Sin mecánica defensiva
 
-	// ── CONTROL DE ACCIONES Y ATAQUE ──────────────────────────────────────────
+	// ── CONTROL DE ACCIONES ───────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)
 	{
 		if (_estaMuerto) return;
 
-		if (accion == "atacar")
+		switch (accion)
 		{
-			_yaActuo = true;
-			_objetivoPendiente = BuscarObjetivoEnCarril();
-			IniciarAnimacionAtaque();
-		}
-		else
-		{
-			base.EjecutarAccion(accion);
+			case "atacar":
+				_yaActuo = true;
+				_objetivoPendiente = BuscarObjetivoEnCarril();
+				IniciarAnimacionAtaque();
+				break;
+
+			case "preparar_defensa":
+			case "defender":
+				// Sin postura defensiva: se mantiene en idle consumiendo el turno
+				_yaActuo = true;
+				ReproducirIdle();
+				break;
+
+			case "usar_habilidad":
+				UsarHabilidadPropia();
+				break;
+
+			default:
+				base.EjecutarAccion(accion);
+				break;
 		}
 	}
 
 	private void IniciarAnimacionAtaque()
 	{
 		if (_anim == null) return;
-
-		// Busca si la animación se llama "ataque" o "atacar"
 		string nombreAnim = _anim.SpriteFrames.HasAnimation("ataque") ? "ataque" : "atacar";
 		_anim.Play(nombreAnim);
 	}
 
+	// ── EVENTO: FRAME CHANGED (DAÑO EN FRAME 2) ──────────────────────────────
 	private void OnFrameChanged()
 	{
 		if (_anim == null) return;
 
-		string animActual = _anim.Animation;
+		string animActual = _anim.Animation.ToString();
 		if (animActual != "ataque" && animActual != "atacar") return;
 
-		// 💥 Aplica el daño ÚNICAMENTE cuando el sprite llega al Frame 2
+		// Inflige daño únicamente al llegar al Frame 2 de impacto
 		if (_anim.Frame == FRAME_GOLPE)
 		{
 			AplicarDañoAObjetivo();
@@ -90,18 +127,22 @@ public partial class TRexPrime : TropaBase
 			_objetivoPendiente.Call("RecibirDaño", puntosAtaque);
 		}
 
-		_objetivoPendiente = null; // Evita infligir daño doble en el mismo turno
+		_objetivoPendiente = null; // Evita daño duplicado en la misma secuencia
 	}
 
+	// ── EVENTO: FIN DE ANIMACIÓN ───────────────────────────────────────────────
 	private void OnAnimationFinished()
 	{
-		string animActual = _anim.Animation;
-		if (animActual == "ataque" || animActual == "atacar")
+		if (_anim == null) return;
+
+		string animActual = _anim.Animation.ToString();
+		if (animActual == "ataque" || animActual == "atacar" || animActual == "daño")
 		{
 			if (!_estaMuerto) ReproducirIdle();
 		}
 	}
 
+	// ── BUSCAR ENEMIGO EN CARRIL ──────────────────────────────────────────────
 	private Node2D BuscarObjetivoEnCarril()
 	{
 		if (!HasMeta("carril")) return null;
@@ -118,15 +159,18 @@ public partial class TRexPrime : TropaBase
 		return null;
 	}
 
-	// ── HABILIDAD RUGIDO ─────────────────────────────────────────────────────
+	// ── HABILIDAD: RUGIDO DEBILITADOR ─────────────────────────────────────────
 	protected override void UsarHabilidadPropia()
 	{
 		if (habilidadUsada || _estaMuerto) return;
 
+		_yaActuo = true;
+		habilidadUsada = true;
 		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
 
+		// Animación visual de rugido (escalado elástico sutil)
 		Tween tw = CreateTween();
-		tw.TweenProperty(this, "scale", Scale * 1.3f, 0.15f).SetTrans(Tween.TransitionType.Back);
+		tw.TweenProperty(this, "scale", Scale * 1.25f, 0.15f).SetTrans(Tween.TransitionType.Back);
 		tw.TweenProperty(this, "scale", Scale, 0.2f);
 
 		_afectados.Clear();
@@ -135,27 +179,32 @@ public partial class TRexPrime : TropaBase
 			if (!(n is Node2D e) || !IsInstanceValid(e)) continue;
 			int atk = 0;
 			try { atk = (int)e.Get("puntosAtaque"); } catch { continue; }
+			
 			_afectados.Add((e, atk));
 			try { e.Set("puntosAtaque", (int)(atk * 0.7f)); } catch { }
+
 			Tween te = e.CreateTween();
 			te.TweenProperty(e, "modulate", new Color(1f, 0.5f, 0.5f), 0.2f);
 		}
-		_rugidoActivo  = true;
-		_turnosRugido  = 2;
-		habilidadUsada = true;
+
+		_rugidoActivo = true;
+		_turnosRugido = 2;
 	}
 
 	public override void TickHabilidad()
 	{
 		if (!_rugidoActivo) return;
+
 		_turnosRugido--;
 		if (_turnosRugido > 0) return;
+
 		foreach (var (tropa, ataqueOrig) in _afectados)
 		{
 			if (!IsInstanceValid(tropa)) continue;
 			try { tropa.Set("puntosAtaque", ataqueOrig); } catch { }
 			tropa.Modulate = Colors.White;
 		}
+
 		_afectados.Clear();
 		_rugidoActivo = false;
 	}
