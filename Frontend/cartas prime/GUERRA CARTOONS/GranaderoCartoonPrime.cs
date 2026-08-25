@@ -6,6 +6,7 @@ using Godot;
 /// 3 facetas visuales (600-301, 300-1, 0). Sin postura defensiva.
 /// Ataque: granada parabólica (frame 2). Habilidad: mortero vertical (350 dmg, frame 12).
 /// Último aliento: en frame 3 de la derrota lanza una granada final antes de morir.
+/// Botón de defensa completamente remóvido de la UI.
 /// </summary>
 public partial class GranaderoCartoonPrime : TropaBase
 {
@@ -42,6 +43,11 @@ public partial class GranaderoCartoonPrime : TropaBase
 			puntosAtaque = 230;
 		}
 		base._Ready();
+
+		// Ocultar por completo el botón de defensa de la UI (sin dejar silueta)
+		var btnDefensa = GetNodeOrNull<Control>("UI/BtnDefensa") 
+					  ?? GetNodeOrNull<Control>("BtnDefensa");
+		if (btnDefensa != null) btnDefensa.Visible = false;
 
 		// Asignación de cada uno de los Marker2D exactos de tu escena
 		_spotGranada = GetNodeOrNull<Marker2D>("SpotGranada");
@@ -325,7 +331,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 	{
 		if (_anim == null) return;
 		string anim = _anim.Animation.ToString();
-		int   frame = _anim.Frame;
+		int    frame = _anim.Frame;
 
 		// Frame 2 de cualquier ataque → granada parabólica desde SpotGranada
 		if ((anim == "ataque 1" || anim == "ataque 2" || anim == "ataque 3") && frame == 2)
@@ -350,7 +356,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		if (_anim == null) return;
 		string anim = _anim.Animation.ToString();
 
-		// Al terminar la animación de derrota (después de disparar la granada troll), notifica al tablero
+		// Al terminar la animación de derrota, notifica al tablero
 		if (anim.StartsWith("derrota"))
 		{
 			var campo = GetTree().Root.FindChild("Campo1", true, false);

@@ -1,106 +1,155 @@
 using Godot;
 
 /// <summary>
-/// Soldado Real — Habilidad: Parada (contra-ataque).
-/// Al activar: animación "pre defensa" + aura amarilla.
-/// Si lo atacan con parada activa → 0 daño + 300 contra al atacante.
-/// El aura desaparece tras el primer contra o al fin del siguiente turno.
-/// Daño de ataque propio en frame 1 de "ataque".
+/// Soldado Real — Habilidad: Parada (Parry).
 /// </summary>
 public partial class SoldadoRealPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
 
-	private bool   _enParry         = false;
+	private bool   _enParry            = false;
 	private int    _parryTicksRestantes = 0;
 	private Node2D _objetivo;
+	private bool   _esContraataque     = false;
+	private Tween  _tweenParry; // Guardamos la referencia para detener la animación al recibir golpe
 
 	public override void _Ready()
 	{
 		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 250; escudoActual = escudoMaximo = 300; puntosAtaque = 150; }
 		base._Ready();
-		_anim.FrameChanged += OnFrameChanged;
+
+		if (_anim != null)
+		{
+			_anim.Connect(AnimatedSprite2D.SignalName.FrameChanged, Callable.From(OnFrameChanged));
+			_anim.Connect(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(OnAnimationFinished));
+		}
 	}
 
 	// ── CAPACIDADES ────────────────────────────────────────────────────────────
 	public override bool AutogestionaDañoAtaque() => true;
 	public override bool TieneHabilidadEspecial() => true;
 
-	// ── ATAQUE: daño en frame 1 ────────────────────────────────────────────────
+	// ── ACCIONES ───────────────────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)
 	{
+		if (_estaMuerto) return;
+
 		if (accion == "atacar")
 		{
-			_enParry = false;
-			_parryTicksRestantes = 0;
-			Modulate = Colors.White;
+			LimpiarEstadoParry();
 			_yaActuo = true;
 			_objetivo = BuscarObjetivoEnCarril();
-			ReproducirAtaque();
+			_anim.Play("ataque");
 			return;
 		}
 		base.EjecutarAccion(accion);
 	}
 
-	private void OnFrameChanged()
-	{
-		if ((string)_anim.Animation == "ataque" && _anim.Frame == 1)
-		{
-			if (_objetivo != null && IsInstanceValid(_objetivo))
-				_objetivo.Call("RecibirDaño", puntosAtaque);
-		}
-	}
-
-	// ── HABILIDAD: PARADA ──────────────────────────────────────────────────────
+	// ── HABILIDAD: PARADA (PARRY) ──────────────────────────────────────────────
 	protected override void UsarHabilidadPropia()
 	{
 		if (habilidadUsada || _enParry) return;
 		habilidadUsada       = true;
 		_yaActuo             = true;
 		_enParry             = true;
-		_parryTicksRestantes = 2;  // expira tras 2 cambios de turno si no lo atacan
+		_parryTicksRestantes = 2;
 
 		_anim.Play("pre defensa");
-		Modulate = new Color(2f, 1.8f, 0.3f, 1f);
+
+		// --- AURA AMARILLA SUAVE Y PULSANTE ---
+		IniciarAuraParrySuave();
 	}
 
-	// ── RECIBIR DAÑO: PARADA ──────────────────────────────────────────────────
+	// ── RECIBIR DAÑO: PARRY ABSOLUTO ──────────────────────────────────────────
 	public override void RecibirDaño(int cantidad)
 	{
 		if (_estaMuerto) return;
 
 		if (_enParry)
 		{
-			_enParry             = false;
-			_parryTicksRestantes = 0;
-			Modulate             = Colors.White;
+			LimpiarEstadoParry();
+			_esContraataque = true;
 
-			// 0 daño recibido; contra-ataque 300 al atacante del mismo carril
-			Node2D atacante = BuscarAtacanteEnCarril();
-			if (atacante != null && IsInstanceValid(atacante))
-				atacante.Call("RecibirDaño", 300);
-
-			EjecutarAccion("defender");
+			_objetivo = BuscarAtacanteEnCarril() ?? BuscarObjetivoEnCarril();
+			_anim.Play("ataque");
 			return;
 		}
 
 		base.RecibirDaño(cantidad);
 	}
 
-	// ── TICK: expirar parada si no la usaron ──────────────────────────────────
+	// ── MÉTODOS AUXILIARES PARA EL AURA Y LIMPIEZA ────────────────────────────
+	private void IniciarAuraParrySuave()
+	{
+		_tweenParry?.Kill(); // Cancelar cualquier tween previo
+		_tweenParry = CreateTween().SetLoops(); // Bucle infinito mientras dure el Parry
+
+		// Tinte base muy suave (Ligeramente cálido/dorado: R=1.2, G=1.1, B=0.8)
+		Color colorNormal = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+		Color colorBrilloSuave = new Color(1.25f, 1.15f, 0.75f, 1.0f); 
+
+		_tweenParry.TweenProperty(this, "modulate", colorBrilloSuave, 0.6f);
+		_tweenParry.TweenProperty(this, "modulate", colorNormal, 0.6f);
+	}
+
+	private void LimpiarEstadoParry()
+	{
+		_enParry = false;
+		_parryTicksRestantes = 0;
+		_esContraataque = false;
+		
+		// Detener el pulso del aura y restaurar el color original al instante
+		_tweenParry?.Kill();
+		Modulate = Colors.White;
+	}
+
+	// ── EVENTO: FRAME CHANGED ──────────────────────────────────────────────────
+	private void OnFrameChanged()
+	{
+		if (_anim == null) return;
+		string anim = _anim.Animation.ToString();
+
+		if (anim == "ataque" && _anim.Frame == 1)
+		{
+			if (_objetivo != null && IsInstanceValid(_objetivo))
+			{
+				int danioFinal = _esContraataque ? 300 : puntosAtaque;
+				_objetivo.Call("RecibirDaño", danioFinal);
+			}
+		}
+
+		if (anim == "pre defensa" && _anim.Frame == _anim.SpriteFrames.GetFrameCount("pre defensa") - 1)
+		{
+			if (_enParry) _anim.Frame = 0;
+		}
+	}
+
+	// ── EVENTO: FIN DE ANIMACIÓN ───────────────────────────────────────────────
+	private void OnAnimationFinished()
+	{
+		if (_anim == null) return;
+		string anim = _anim.Animation.ToString();
+
+		if (anim == "ataque" || anim == "daño" || anim == "defensa")
+		{
+			_esContraataque = false;
+			if (!_estaMuerto) _anim.Play("idle");
+		}
+	}
+
+	// ── TICK: EXPIRAR PARADA EN 2 TURNOS ───────────────────────────────────────
 	public override void TickHabilidad()
 	{
 		if (!_enParry) return;
 		_parryTicksRestantes--;
 		if (_parryTicksRestantes <= 0)
 		{
-			_enParry = false;
-			Modulate = Colors.White;
+			LimpiarEstadoParry();
 			if (!_estaMuerto) _anim.Play("idle");
 		}
 	}
 
-	// ── HELPERS ────────────────────────────────────────────────────────────────
+	// ── HELPERS DE BÚSQUEDA EN CARRIL ──────────────────────────────────────────
 	private Node2D BuscarAtacanteEnCarril()
 	{
 		if (!HasMeta("carril")) return null;
@@ -113,7 +162,7 @@ public partial class SoldadoRealPrime : TropaBase
 			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 			if (c != miCarril) continue;
 			var animSprite = e.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-			if (animSprite != null && ((string)animSprite.Animation).Contains("ataque")) return e;
+			if (animSprite != null && animSprite.Animation.ToString().Contains("ataque")) return e;
 		}
 		return null;
 	}
@@ -123,15 +172,13 @@ public partial class SoldadoRealPrime : TropaBase
 		if (!HasMeta("carril")) return null;
 		string grupo    = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
 		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-		Node2D mejor = null; int min = int.MaxValue;
+		
 		foreach (Node n in GetTree().GetNodesInGroup(grupo))
 		{
 			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
 			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-			if (c != miCarril) continue;
-			int v = 0; try { v = (int)e.Get("vidaActual"); } catch { }
-			if (v > 0 && v < min) { min = v; mejor = e; }
+			if (c == miCarril) return e;
 		}
-		return mejor;
+		return null;
 	}
 }

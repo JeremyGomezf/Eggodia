@@ -30,7 +30,7 @@ public partial class KaBarCartoonPrime : TropaBase
 		{
 			vidaActual   = vidaMaxima   = 250;
 			escudoActual = escudoMaximo = 360;
-			puntosAtaque = 10;
+			puntosAtaque = 100;
 		}
 		base._Ready();
 
