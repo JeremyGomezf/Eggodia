@@ -205,9 +205,9 @@ public partial class PeonPrime : TropaBase
 		// (mismo método que InvocacionRival — fuente de verdad única)
 		if (esRivalTropa)
 		{
-			Node campo = ObtenerEscenaCampoActual();
-			if (campo != null && campo.HasMethod("AsegurarOrientacionRival"))
-				campo.Call("AsegurarOrientacionRival", nuevaTropa);
+			Node campoOrient = ObtenerEscenaCampoActual();
+			if (campoOrient != null && campoOrient.HasMethod("AsegurarOrientacionRival"))
+				campoOrient.Call("AsegurarOrientacionRival", nuevaTropa);
 		}
 		
 		// 3. Transferir TODOS los metadatos de la casilla (carril, zona, etc.)
