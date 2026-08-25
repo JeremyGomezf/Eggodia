@@ -62,9 +62,12 @@ public partial class KaBarCartoonPrime : TropaBase
 		}
 	}
 
-	// ── AUTOGESTION DE DAÑO ───────────────────────────────────────────────────
-	// Ahora gestiona su propio daño de ataque en el Frame 4 cuando está vivo.
+	// ── CAPACIDADES ──────────────────────────────────────────────────────────
+	// Daño de ataque propio en frame 4 (vivo) y frame 1 (fantasma).
 	public override bool AutogestionaDañoAtaque() => true;
+	// Sin habilidad activa propia: ocultar botón habilidad completamente
+	public override bool TieneHabilidadEspecial() => false;
+	public override bool MostrarBotonHabilidad()  => false;
 
 	// ── ACCIONES ESTÁNDAR ──────────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)

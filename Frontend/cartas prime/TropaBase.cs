@@ -46,6 +46,15 @@ public abstract partial class TropaBase : Area2D
 	/// <summary>Si false, Campo1 oculta/deshabilita el botón de defensa para esta tropa.</summary>
 	public virtual bool TienePosturaDefensiva() => true;
 
+	/// <summary>Si false, Campo1 oculta completamente el botón de habilidad (no sólo lo deshabilita).</summary>
+	public virtual bool MostrarBotonHabilidad() => true;
+
+	/// <summary>Si false, Campo1 oculta completamente el botón de defensa y la barra de escudo.</summary>
+	public virtual bool MostrarBotonDefensa() => true;
+
+	/// <summary>Si true, el botón de habilidad se muestra en gris/bloqueado aunque no esté usada.</summary>
+	public virtual bool HabilidadBloqueada() => false;
+
 	/// <summary>Polimorfismo: cada carta reacciona al clic o toque igual, pero puede extenderse.</summary>
 	public override void _InputEvent(Viewport viewport, InputEvent @event, int shapeIdx)
 	{
@@ -80,7 +89,7 @@ public abstract partial class TropaBase : Area2D
 			if (escudoActual > 0)
 			{
 				if (cantidad <= escudoActual) { escudoActual -= cantidad; cantidad = 0; }
-				else { cantidad -= escudoActual; escudoActual = 0; }
+				else { cantidad = 0; escudoActual = 0; }  // anti-overkill: el exceso se absorbe
 			}
 		}
 

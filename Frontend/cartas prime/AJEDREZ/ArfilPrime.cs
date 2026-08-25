@@ -49,6 +49,9 @@ public partial class ArfilPrime : TropaBase
 	// ── MÉTODOS DE CONSULTA PARA LA UI (CAMPO1 Y CAMPOPRUEBA) ────────────────
 	public new bool TieneHabilidadEspecial() => true;
 
+	// Campo1 llama HabilidadBloqueada() para deshabilitar el botón en carril 2
+	public override bool HabilidadBloqueada() => !PuedeUsarHabilidad();
+
 	public bool PuedeUsarHabilidad()
 	{
 		if (habilidadUsada || _estaMuerto) return false;

@@ -61,9 +61,11 @@ public partial class TanqueCartoonPrime : TropaBase
 	private string AnimNombre(string animBase) =>
 		vidaActual <= UMBRAL_DAÑADO ? $"{animBase} - dañado" : animBase;
 
-	// ── AUTOGESTION DE DAÑO ───────────────────────────────────────────────────
+	// ── CAPACIDADES ──────────────────────────────────────────────────────────
 	// El daño al objetivo lo aplica el script (vía LanzarMisil), no Campo1.
 	public override bool AutogestionaDañoAtaque() => true;
+	// Sin postura defensiva ni escudo: ocultar botón defensa
+	public override bool MostrarBotonDefensa() => false;
 
 	// ── ACCIONES ──────────────────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)

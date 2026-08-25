@@ -1,17 +1,46 @@
 using Godot;
 using System.Collections.Generic;
 
-/// <summary>Calamar Gigante — habilidad: bloquea las 2 tropas enemigas más cercanas por 1 turno.</summary>
+/// <summary>Calamar Gigante — daño de ataque en frame 1. Habilidad: bloquea 2 enemigos cercanos.</summary>
 public partial class CalamarGPrime : TropaBase
 {
 	public override string Tipo => Tipos.SOMBRA;
+
+	private Node2D _objetivo;
 
 	public override void _Ready()
 	{
 		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 400; escudoActual = escudoMaximo = 380; puntosAtaque = 370; }
 		base._Ready();
+		_anim.FrameChanged += OnFrameChanged;
 	}
 
+	// ── CAPACIDADES ────────────────────────────────────────────────────────────
+	public override bool AutogestionaDañoAtaque() => true;
+
+	// ── ATAQUE: daño en frame 1 ────────────────────────────────────────────────
+	public override void EjecutarAccion(string accion)
+	{
+		if (accion == "atacar")
+		{
+			_yaActuo = true;
+			_objetivo = BuscarObjetivoEnCarril();
+			ReproducirAtaque();
+			return;
+		}
+		base.EjecutarAccion(accion);
+	}
+
+	private void OnFrameChanged()
+	{
+		if ((string)_anim.Animation == "ataque" && _anim.Frame == 1)
+		{
+			if (_objetivo != null && IsInstanceValid(_objetivo))
+				_objetivo.Call("RecibirDaño", puntosAtaque);
+		}
+	}
+
+	// ── HABILIDAD: bloquear los 2 enemigos más cercanos ───────────────────────
 	protected override void UsarHabilidadPropia()
 	{
 		if (habilidadUsada) return;
@@ -49,5 +78,23 @@ public partial class CalamarGPrime : TropaBase
 		self.TweenProperty(this, "scale", Scale,        0.2f);
 
 		habilidadUsada = true;
+	}
+
+	// ── HELPER ─────────────────────────────────────────────────────────────────
+	private Node2D BuscarObjetivoEnCarril()
+	{
+		if (!HasMeta("carril")) return null;
+		string grupo    = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
+		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+		Node2D mejor = null; int min = int.MaxValue;
+		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+		{
+			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
+			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+			if (c != miCarril) continue;
+			int v = 0; try { v = (int)e.Get("vidaActual"); } catch { }
+			if (v > 0 && v < min) { min = v; mejor = e; }
+		}
+		return mejor;
 	}
 }

@@ -83,28 +83,49 @@ public partial class Campo1 : Node2D
 		Button btnA = menuAcciones?.GetNodeOrNull<Button>("HBoxContainer/BtnAtaque");
 		if (btnA != null) { btnA.Visible = true; btnA.Disabled = false; btnA.Modulate = Colors.White; }
 
-		// Botón Defensa: visible siempre; deshabilitado si sin escudo o la tropa no tiene postura
+		// Botón Defensa: puede ocultarse completamente si la tropa no lo soporta
 		Button btnD = menuAcciones?.GetNodeOrNull<Button>("HBoxContainer/BtnDefensa");
 		if (btnD != null)
 		{
-			bool sinEscudo    = Gi(tropa, "escudoActual") <= 0;
-			bool tieneDefensa = true;
-			try { tieneDefensa = (bool)tropa.Call("TienePosturaDefensiva"); } catch { }
-			bool bloquear = sinEscudo || !tieneDefensa;
-			btnD.Visible  = true;
-			btnD.Disabled = bloquear;
-			btnD.Modulate = bloquear ? new Color(1, 1, 1, 0.4f) : Colors.White;
+			bool mostrarD = true;
+			try { mostrarD = (bool)tropa.Call("MostrarBotonDefensa"); } catch { }
+			if (!mostrarD)
+			{
+				btnD.Visible = false;
+			}
+			else
+			{
+				bool sinEscudo    = Gi(tropa, "escudoActual") <= 0;
+				bool tieneDefensa = true;
+				try { tieneDefensa = (bool)tropa.Call("TienePosturaDefensiva"); } catch { }
+				bool bloquear = sinEscudo || !tieneDefensa;
+				btnD.Visible  = true;
+				btnD.Disabled = bloquear;
+				btnD.Modulate = bloquear ? new Color(1, 1, 1, 0.4f) : Colors.White;
+			}
 		}
 
-		// Botón Habilidad: siempre visible, deshabilitado si no tiene o ya usó
+		// Botón Habilidad: puede ocultarse completamente, bloquearse por carril, o deshabilitarse si ya usó
 		if (btnHabilidad != null)
 		{
-			bool tieneH = false;
-			try { tieneH = (bool)tropa.Call("TieneHabilidadEspecial"); } catch { }
-			bool usada  = HabilidadUsada(tropa);
-			btnHabilidad.Visible  = true;
-			btnHabilidad.Disabled = !tieneH || usada;
-			btnHabilidad.Modulate = (!tieneH || usada) ? new Color(1, 1, 1, 0.4f) : Colors.White;
+			bool mostrarH = true;
+			try { mostrarH = (bool)tropa.Call("MostrarBotonHabilidad"); } catch { }
+			if (!mostrarH)
+			{
+				btnHabilidad.Visible = false;
+			}
+			else
+			{
+				bool tieneH = false;
+				try { tieneH = (bool)tropa.Call("TieneHabilidadEspecial"); } catch { }
+				bool usada    = HabilidadUsada(tropa);
+				bool bloqueada = false;
+				try { bloqueada = (bool)tropa.Call("HabilidadBloqueada"); } catch { }
+				bool deshabilitar = !tieneH || usada || bloqueada;
+				btnHabilidad.Visible  = true;
+				btnHabilidad.Disabled = deshabilitar;
+				btnHabilidad.Modulate = deshabilitar ? new Color(1, 1, 1, 0.4f) : Colors.White;
+			}
 		}
 		menuAcciones.GlobalPosition = tropa.GetGlobalTransformWithCanvas().Origin + new Vector2(-50, -110);
 		menuAcciones.Visible = true;

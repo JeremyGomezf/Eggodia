@@ -1,15 +1,45 @@
 using Godot;
 
+/// <summary>Maguín — daño de ataque en frame 2. Habilidad: 100 daño de hielo + bloqueo 1 turno al carril.</summary>
 public partial class MaguinPrime : TropaBase
 {
 	public override string Tipo => Tipos.AGUA;
+
+	private Node2D _objetivo;
 
 	public override void _Ready()
 	{
 		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 200; escudoActual = escudoMaximo = 220; puntosAtaque = 250; }
 		base._Ready();
+		_anim.FrameChanged += OnFrameChanged;
 	}
 
+	// ── CAPACIDADES ────────────────────────────────────────────────────────────
+	public override bool AutogestionaDañoAtaque() => true;
+
+	// ── ATAQUE: daño en frame 2 ────────────────────────────────────────────────
+	public override void EjecutarAccion(string accion)
+	{
+		if (accion == "atacar")
+		{
+			_yaActuo = true;
+			_objetivo = BuscarObjetivoEnCarril();
+			ReproducirAtaque();
+			return;
+		}
+		base.EjecutarAccion(accion);
+	}
+
+	private void OnFrameChanged()
+	{
+		if ((string)_anim.Animation == "ataque" && _anim.Frame == 2)
+		{
+			if (_objetivo != null && IsInstanceValid(_objetivo))
+				_objetivo.Call("RecibirDaño", puntosAtaque);
+		}
+	}
+
+	// ── HABILIDAD: ventisca al carril ──────────────────────────────────────────
 	protected override void UsarHabilidadPropia()
 	{
 		if (habilidadUsada) return;
@@ -18,13 +48,13 @@ public partial class MaguinPrime : TropaBase
 		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
 		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 
-		Node2D objetivo = null;
+		Node2D obj = null;
 		foreach (Node n in GetTree().GetNodesInGroup(grupoEnemigo))
 		{
 			if (n is Node2D e && IsInstanceValid(e) && e.HasMeta("carril"))
 			{
 				string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-				if (c == miCarril) { objetivo = e; break; }
+				if (c == miCarril) { obj = e; break; }
 			}
 		}
 
@@ -32,20 +62,38 @@ public partial class MaguinPrime : TropaBase
 		tw.TweenProperty(this, "modulate", new Color(0.5f, 0.8f, 2f), 0.2f);
 		tw.TweenProperty(this, "modulate", Colors.White, 0.4f);
 
-		if (objetivo != null)
+		if (obj != null)
 		{
-			objetivo.Call("RecibirDaño", 100);
-			objetivo.SetMeta("bloqueado", true);
-			objetivo.SetMeta("turnosBloqueo", 1);
-			Tween te = objetivo.CreateTween();
-			te.TweenProperty(objetivo, "modulate", new Color(0.4f, 0.7f, 1.5f), 0.2f);
-			Vector2 orig = objetivo.Position;
-			Tween sh = objetivo.CreateTween();
-			sh.TweenProperty(objetivo, "position", orig + new Vector2(5, 0), 0.04f);
-			sh.TweenProperty(objetivo, "position", orig - new Vector2(5, 0), 0.04f);
-			sh.TweenProperty(objetivo, "position", orig, 0.04f);
+			obj.Call("RecibirDaño", 100);
+			obj.SetMeta("bloqueado", true);
+			obj.SetMeta("turnosBloqueo", 1);
+			Tween te = obj.CreateTween();
+			te.TweenProperty(obj, "modulate", new Color(0.4f, 0.7f, 1.5f), 0.2f);
+			Vector2 orig = obj.Position;
+			Tween sh = obj.CreateTween();
+			sh.TweenProperty(obj, "position", orig + new Vector2(5, 0), 0.04f);
+			sh.TweenProperty(obj, "position", orig - new Vector2(5, 0), 0.04f);
+			sh.TweenProperty(obj, "position", orig, 0.04f);
 		}
 
 		habilidadUsada = true;
+	}
+
+	// ── HELPER ─────────────────────────────────────────────────────────────────
+	private Node2D BuscarObjetivoEnCarril()
+	{
+		if (!HasMeta("carril")) return null;
+		string grupo    = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
+		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+		Node2D mejor = null; int min = int.MaxValue;
+		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+		{
+			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
+			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+			if (c != miCarril) continue;
+			int v = 0; try { v = (int)e.Get("vidaActual"); } catch { }
+			if (v > 0 && v < min) { min = v; mejor = e; }
+		}
+		return mejor;
 	}
 }

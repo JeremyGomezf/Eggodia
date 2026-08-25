@@ -32,8 +32,10 @@ public partial class TRexPrime : TropaBase
 		}
 	}
 
-	// 🚨 APAGA EL DAÑO AUTOMÁTICO DE TROPA BASE
+	// ── CAPACIDADES ────────────────────────────────────────────────────────────
 	public override bool AutogestionaDañoAtaque() => true;
+	// Sin escudo ni defensa: ocultar botón defensa completamente
+	public override bool MostrarBotonDefensa() => false;
 
 	// ── CONTROL DE ACCIONES Y ATAQUE ──────────────────────────────────────────
 	public override void EjecutarAccion(string accion)
@@ -114,44 +116,6 @@ public partial class TRexPrime : TropaBase
 			if (c == miCarril) return e;
 		}
 		return null;
-	}
-
-	// ── MENÚ CONTEXTUAL DE UI ────────────────────────────────────────────────
-	public override void _Input(InputEvent @event)
-	{
-		base._Input(@event);
-
-		if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed && mouseBtn.ButtonIndex == MouseButton.Left)
-		{
-			GetTree().CreateTimer(0.05f).Timeout += FiltrarBotonesMenu;
-		}
-	}
-
-	private void FiltrarBotonesMenu()
-	{
-		Control menuAcciones = GetTree().Root.FindChild("MenuAcciones", true, false) as Control;
-		if (menuAcciones == null || !menuAcciones.Visible) return;
-
-		foreach (Node nodo in menuAcciones.GetChildren())
-		{
-			if (nodo is Button btn)
-			{
-				btn.Visible = false;
-			}
-			else if (nodo is HBoxContainer container)
-			{
-				foreach (Node subNodo in container.GetChildren())
-				{
-					if (subNodo is Button subBtn) subBtn.Visible = false;
-				}
-			}
-		}
-
-		Button btnAtacar = menuAcciones.FindChild("Atacar", true, false) as Button;
-		Button btnHabilidad = menuAcciones.FindChild("HABILIDAD", true, false) as Button;
-
-		if (btnAtacar != null) btnAtacar.Visible = true;
-		if (btnHabilidad != null) btnHabilidad.Visible = true;
 	}
 
 	// ── HABILIDAD RUGIDO ─────────────────────────────────────────────────────
