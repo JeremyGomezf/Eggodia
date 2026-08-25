@@ -12,15 +12,16 @@ public partial class KaBarCartoonPrime : TropaBase
 	public override string Tipo => Tipos.NEUTRO;
 
 	// ── ESTADO ────────────────────────────────────────────────────────────────
-	private bool   _enDefensa       = false;  // true solo mientras anima "defensa"
-	private bool   _modoFantasma    = false;
-	private bool   _fantasmaActivo  = false;
-	private bool   _eraJugador      = true;
-	private string _carrilNum       = "";
-	private float  _timerAtaque     = 5.0f;
-	private float  _timerVida       = 25.0f;
+	private bool   _enDefensa        = false;  // true solo mientras está esperando/bloqueando
+	private bool   _modoFantasma     = false;
+	private bool   _fantasmaActivo   = false;
+	private bool   _eraJugador       = true;
+	private string _carrilNum        = "";
+	private float  _timerAtaque      = 5.0f;
+	private float  _timerVida        = 25.0f;
 	private bool   _atacandoFantasma = false;
-	private bool   _finalizando     = false;
+	private bool   _finalizando      = false;
+	private Node2D _objetivoAtaque   = null;
 
 	// ══════════════════════════════════════════════════════════════════════════
 	public override void _Ready()
@@ -33,8 +34,12 @@ public partial class KaBarCartoonPrime : TropaBase
 		}
 		base._Ready();
 
-		_anim.FrameChanged      += OnFrameChanged;
-		_anim.AnimationFinished += OnAnimationFinished;
+		if (_anim != null)
+		{
+			_anim.Connect(AnimatedSprite2D.SignalName.FrameChanged, Callable.From(OnFrameChanged));
+			_anim.Connect(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(OnAnimationFinished));
+		}
+
 		SetProcess(false);
 	}
 
@@ -58,9 +63,8 @@ public partial class KaBarCartoonPrime : TropaBase
 	}
 
 	// ── AUTOGESTION DE DAÑO ───────────────────────────────────────────────────
-	// Campo1 aplica puntosAtaque (10) en ataques normales.
-	// El fantasma gestiona sus 30 dmg directamente en OnFrameChanged.
-	public override bool AutogestionaDañoAtaque() => false;
+	// Ahora gestiona su propio daño de ataque en el Frame 4 cuando está vivo.
+	public override bool AutogestionaDañoAtaque() => true;
 
 	// ── ACCIONES ESTÁNDAR ──────────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)
@@ -73,19 +77,24 @@ public partial class KaBarCartoonPrime : TropaBase
 			case "atacar":
 				_enDefensa = false;
 				_yaActuo   = true;
+				_objetivoAtaque = BuscarObjetivoEnCarril();
 				_anim.Play("ataque");
 				break;
 			case "preparar_defensa":
-				_yaActuo = true;
+			case "defender":
+				_yaActuo   = true;
+				_enDefensa = true; // Activa la guardia desde que inicia el bucle de espera
 				_anim.Play("pre defensa ");   // espacio final: nombre exacto del sprite sheet
 				break;
-			case "defender":
-				_enDefensa = true;
-				_anim.Play("defensa");
-				break;
 			case "recibir_daño":
-				_enDefensa = false;
-				_anim.Play("daño");
+				if (_enDefensa)
+				{
+					_anim.Play("defensa"); // Si le pegan estando en guardia, hace la animación de impacto con escudo
+				}
+				else
+				{
+					_anim.Play("daño"); // Daño normal fuera de postura defensiva
+				}
 				break;
 		}
 	}
@@ -140,7 +149,6 @@ public partial class KaBarCartoonPrime : TropaBase
 	{
 		_estaMuerto = true;
 		_anim.Play("derrota");
-		// Campo1 gestiona QueueFree vía EjecutarMuerteTropaSacrificada.
 	}
 
 	// ── MUERTE EN COMBATE ─────────────────────────────────────────────────────
@@ -165,14 +173,12 @@ public partial class KaBarCartoonPrime : TropaBase
 
 	private void LiberarSpotOcupado()
 	{
-		// Usar el meta "carril" para encontrar el spot directamente (fiable)
 		if (HasMeta("carril"))
 		{
 			string carril = (string)GetMeta("carril");
 			var spot = GetTree().Root.FindChild(carril, true, false);
 			if (spot != null) { spot.GetNodeOrNull("Ocupado")?.Free(); return; }
 		}
-		// Fallback: buscar en jerarquía de padres
 		var padre = GetParent();
 		if (padre == null) return;
 		var ocupado = padre.GetNodeOrNull<Node>("Ocupado");
@@ -188,24 +194,19 @@ public partial class KaBarCartoonPrime : TropaBase
 
 		_modoFantasma = true;
 
-		// Deshabilitar colisiones: el fantasma es completamente intangible
 		var col = GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
 		if (col != null) col.Disabled = true;
 		Monitorable = false;
 		Monitoring  = false;
 
-		// Destruir barras de stats: el fantasma no tiene UI de combate
 		var stats = GetNodeOrNull<Control>("StatsTropa");
 		if (stats != null) stats.QueueFree();
 
-		// Reposicionar en la zona rival del mismo carril
 		Vector2 posRival = EncontrarPosicionRival();
 		float offsetX    = _eraJugador ? -80f : 80f;
 		GlobalPosition   = posRival + new Vector2(offsetX, 0f);
 		ZIndex = 60;
 
-		// Fijar frame 0 de respawn_fantasma ANTES del fade-in para evitar
-		// que se vean fotogramas de la animación "derrota"
 		_anim.Stop();
 		_anim.Animation = "respawn_fantasma";
 		_anim.Frame     = 0;
@@ -232,7 +233,6 @@ public partial class KaBarCartoonPrime : TropaBase
 			if (c == _carrilNum) return e.GlobalPosition;
 		}
 
-		// Fallback: spot por nombre en el árbol de escena
 		string spotName = _eraJugador ? $"ModRival{_carrilNum}" : $"Mod{_carrilNum}";
 		var spot = GetTree().Root.FindChild(spotName, true, false);
 		if (spot is Node2D s2d) return s2d.GlobalPosition;
@@ -240,7 +240,7 @@ public partial class KaBarCartoonPrime : TropaBase
 		return GlobalPosition + new Vector2(_eraJugador ? 250f : -250f, 0f);
 	}
 
-	// ── OBJETIVO FANTASMA ─────────────────────────────────────────────────────
+	// ── OBJETIVO FANTASMA / CARRIL ────────────────────────────────────────────
 	private Node2D BuscarObjetivoFantasma()
 	{
 		string grupoRival = _eraJugador ? "tropas_rival" : "tropas_jugador";
@@ -251,6 +251,22 @@ public partial class KaBarCartoonPrime : TropaBase
 			string c = ((string)e.GetMeta("carril"))
 				.ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 			if (c == _carrilNum) return e;
+		}
+		return null;
+	}
+
+	private Node2D BuscarObjetivoEnCarril()
+	{
+		if (!HasMeta("carril")) return null;
+		string grupo    = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
+		string miCarril = ((string)GetMeta("carril"))
+			.ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+
+		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+		{
+			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
+			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","").Trim();
+			if (c == miCarril) return e;
 		}
 		return null;
 	}
@@ -275,8 +291,28 @@ public partial class KaBarCartoonPrime : TropaBase
 	// ── SEÑAL: CAMBIO DE FRAME ────────────────────────────────────────────────
 	private void OnFrameChanged()
 	{
-		string anim  = (string)_anim.Animation;
-		int    frame = _anim.Frame;
+		if (_anim == null) return;
+		string anim = _anim.Animation.ToString();
+		int   frame = _anim.Frame;
+
+		// Frame 4 del ataque en vivo → infligir el daño exacto
+		if (anim == "ataque" && frame == 4)
+		{
+			Node2D obj = _objetivoAtaque ?? BuscarObjetivoEnCarril();
+			if (obj != null && IsInstanceValid(obj))
+			{
+				obj.Call("RecibirDaño", puntosAtaque);
+			}
+		}
+
+		// Frame 19/20 de pre defensa → bucle de espera en postura defensiva
+		if (anim == "pre defensa ")
+		{
+			if (frame == 20)
+			{
+				_anim.Frame = 19; // Vuelve al frame 19 haciendo el bucle 19 <-> 20
+			}
+		}
 
 		// Frame 1 del ataque fantasma → infligir 30 dmg al objetivo
 		if (anim == "ataque_fantasma" && frame == 1)
@@ -290,7 +326,8 @@ public partial class KaBarCartoonPrime : TropaBase
 	// ── SEÑAL: FIN DE ANIMACIÓN ───────────────────────────────────────────────
 	private void OnAnimationFinished()
 	{
-		string anim = (string)_anim.Animation;
+		if (_anim == null) return;
+		string anim = _anim.Animation.ToString();
 
 		switch (anim)
 		{
@@ -299,19 +336,17 @@ public partial class KaBarCartoonPrime : TropaBase
 				if (!_estaMuerto) _anim.Play("idle");
 				break;
 
+			case "defensa":
 			case "daño":
+				// Al terminar la animación de reacción de golpe, vuelve a su posición de reposo
 				_enDefensa = false;
 				if (!_estaMuerto) _anim.Play("idle");
 				break;
 
-			case "pre defensa ":
-				if (!_estaMuerto) { _enDefensa = true; _anim.Play("defensa"); }
-				break;
-
 			case "respawn_fantasma":
-				_fantasmaActivo  = true;
-				_timerAtaque     = 5.0f;
-				_timerVida       = 25.0f;
+				_fantasmaActivo = true;
+				_timerAtaque    = 5.0f;
+				_timerVida      = 25.0f;
 				SetProcess(true);
 				_anim.Play("idle_fantasma");
 				break;

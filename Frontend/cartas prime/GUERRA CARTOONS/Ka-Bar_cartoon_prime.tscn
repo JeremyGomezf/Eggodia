@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c3yc5rchjv02r"]
 
-[ext_resource type="Script" path="res://cartas prime/GUERRA CARTOONS/KaBarCartoonPrime.cs" id="1_2i7kk"]
+[ext_resource type="Script" uid="uid://cbt2pqci3t6ks" path="res://cartas prime/GUERRA CARTOONS/KaBarCartoonPrime.cs" id="1_2i7kk"]
 [ext_resource type="Texture2D" uid="uid://brrkm07kjycou" path="res://imagenes/sprites/Guerra Cartoons/soldado fantasma_.png" id="2_2i7kk"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]
@@ -41,10 +41,6 @@ region = Rect2(3036, 0, 1012, 921)
 [sub_resource type="AtlasTexture" id="AtlasTexture_0evgy"]
 atlas = ExtResource("2_2i7kk")
 region = Rect2(5060, 0, 1012, 921)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_da1hv"]
-atlas = ExtResource("2_2i7kk")
-region = Rect2(4048, 5526, 1012, 921)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2sxvl"]
 atlas = ExtResource("2_2i7kk")
@@ -279,7 +275,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_yqph2")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 10.0
 }, {
@@ -296,14 +292,11 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_0evgy")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque_fantasma",
 "speed": 9.0
 }, {
 "frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_da1hv")
-}, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2sxvl")
 }, {
@@ -316,7 +309,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_xob3f")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 11.0
 }, {
@@ -333,7 +326,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_k77kd")
 }],
-"loop": false,
+"loop": 0,
 "name": &"defensa",
 "speed": 10.0
 }, {
@@ -401,7 +394,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_8fgxl")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
 "speed": 11.0
 }, {
@@ -469,7 +462,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_sf6xc")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota_fantasma",
 "speed": 8.0
 }, {
@@ -486,7 +479,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_f05b7")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 6.0
 }, {
@@ -545,7 +538,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_112l2")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle_fantasma",
 "speed": 9.0
 }, {
@@ -613,7 +606,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ir1w8")
 }],
-"loop": false,
+"loop": 0,
 "name": &"pre defensa ",
 "speed": 10.0
 }, {
@@ -678,7 +671,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_aok3p")
 }],
-"loop": false,
+"loop": 0,
 "name": &"respawn_fantasma",
 "speed": 10.0
 }, {
@@ -746,7 +739,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_u3t2m")
 }],
-"loop": false,
+"loop": 0,
 "name": &"victoria_fantasma",
 "speed": 8.0
 }]
@@ -768,7 +761,7 @@ shape = SubResource("RectangleShape2D_opij5")
 position = Vector2(6, -37)
 scale = Vector2(0.2, 0.2)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"idle"
+animation = &"daño"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3

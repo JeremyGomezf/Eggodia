@@ -22,7 +22,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_k8im2")
 }],
-"loop": true,
+"loop": 1,
 "name": &"movimiento_misil",
 "speed": 13.0
 }]
@@ -35,6 +35,7 @@ shape = SubResource("RectangleShape2D_xr762")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
 position = Vector2(-24.124992, 3.3749962)
+rotation = 0.009641768
 scale = Vector2(0.55640674, 0.33695647)
 sprite_frames = SubResource("SpriteFrames_shcb7")
 animation = &"movimiento_misil"

@@ -1360,6 +1360,15 @@ sprite_frames = SubResource("SpriteFrames_4s16o")
 animation = &"derrota 1"
 frame = 3
 
+[node name="SpotGranada" type="Marker2D" parent="." unique_id=2679467]
+position = Vector2(-9, -78)
+
+[node name="SpotTroll" type="Marker2D" parent="." unique_id=146437649]
+position = Vector2(18, -76)
+
+[node name="SpotMortero" type="Marker2D" parent="." unique_id=1371220085]
+position = Vector2(-82, -144)
+
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3
 anchors_preset = 0

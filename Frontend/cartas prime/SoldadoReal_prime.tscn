@@ -115,7 +115,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_hv3q5")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 7.0
 }, {
@@ -135,7 +135,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_hsym3")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 5.0
 }, {
@@ -173,7 +173,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qp245")
 }],
-"loop": false,
+"loop": 0,
 "name": &"defensa",
 "speed": 6.0
 }, {
@@ -241,7 +241,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_d35bo")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
 "speed": 5.0
 }, {
@@ -342,7 +342,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_62rd8")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 7.0
 }, {
@@ -455,7 +455,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2voc2")
 }],
-"loop": false,
+"loop": 0,
 "name": &"pre defensa",
 "speed": 5.0
 }]

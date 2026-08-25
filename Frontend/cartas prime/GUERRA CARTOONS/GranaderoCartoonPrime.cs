@@ -23,8 +23,10 @@ public partial class GranaderoCartoonPrime : TropaBase
 	private bool   _mortalDisparado = false;
 	private Node2D _objetivo;
 
-	// ── RECURSOS ──────────────────────────────────────────────────────────────
-	private Marker2D    _spotDisparo;
+	// ── RECURSOS / SPOTS ──────────────────────────────────────────────────────
+	private Marker2D    _spotGranada;
+	private Marker2D    _spotTroll;
+	private Marker2D    _spotMortero;
 	private PackedScene _escenaGranada;
 	private PackedScene _escenaMisil;
 	private PackedScene _escenaExpGran;
@@ -41,18 +43,25 @@ public partial class GranaderoCartoonPrime : TropaBase
 		}
 		base._Ready();
 
-		_spotDisparo = GetNodeOrNull<Marker2D>("SpotDisparo");
+		// Asignación de cada uno de los Marker2D exactos de tu escena
+		_spotGranada = GetNodeOrNull<Marker2D>("SpotGranada");
+		_spotTroll   = GetNodeOrNull<Marker2D>("SpotTroll");
+		_spotMortero = GetNodeOrNull<Marker2D>("SpotMortero");
 
 		if (ResourceLoader.Exists(RUTA_GRANADA))  _escenaGranada = GD.Load<PackedScene>(RUTA_GRANADA);
 		if (ResourceLoader.Exists(RUTA_MISIL))    _escenaMisil   = GD.Load<PackedScene>(RUTA_MISIL);
 		if (ResourceLoader.Exists(RUTA_EXP_GRAN)) _escenaExpGran = GD.Load<PackedScene>(RUTA_EXP_GRAN);
 		if (ResourceLoader.Exists(RUTA_EXP_CENT)) _escenaExpCent = GD.Load<PackedScene>(RUTA_EXP_CENT);
 
-		_anim.FrameChanged      += OnFrameChanged;
-		_anim.AnimationFinished += OnAnimationFinished;
+		// Conexiones de señales seguras para C# en Godot 4
+		if (_anim != null)
+		{
+			_anim.Connect(AnimatedSprite2D.SignalName.FrameChanged, Callable.From(OnFrameChanged));
+			_anim.Connect(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(OnAnimationFinished));
+		}
 
 		_faceta = 1;
-		_anim.Play("idle 1");
+		_anim?.Play("idle 1");
 	}
 
 	// ── CAPACIDADES ───────────────────────────────────────────────────────────
@@ -69,7 +78,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		switch (accion)
 		{
 			case "atacar":
-				_yaActuo  = true;
+				_yaActuo = true;
 				_objetivo = BuscarObjetivo();
 				_anim.Play(AF("ataque"));
 				break;
@@ -139,14 +148,11 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			vidaActual  = 0;
 			_estaMuerto = true;
-			// EjecutarMuerteTropaSacrificada llamará ReproducirDerrota;
-			// el último aliento se dispara en frame 3 de esa animación.
-			var campo = GetTree().Root.FindChild("Campo1", true, false);
-			if (campo != null) campo.Call("EjecutarMuerteTropaSacrificada", this);
+			ReproducirDerrota();
 		}
 	}
 
-	// ── DERROTA (llamada por EjecutarMuerteTropaSacrificada en Campo1) ────────
+	// ── DERROTA (llamada al morir o por EjecutarMuerteTropaSacrificada) ───────
 	public new void ReproducirDerrota()
 	{
 		_estaMuerto = true;
@@ -168,12 +174,13 @@ public partial class GranaderoCartoonPrime : TropaBase
 	}
 
 	// ── LANZAR GRANADA PARABÓLICA ─────────────────────────────────────────────
-	private void LanzarGranada(Node2D objetivo, int danio)
+	private void LanzarGranada(Node2D objetivo, int danio, Marker2D spotOrigen)
 	{
 		if (objetivo == null || !IsInstanceValid(objetivo) || _escenaGranada == null) return;
 
-		Vector2 origen  = _spotDisparo != null ? _spotDisparo.GlobalPosition
-		                                       : GlobalPosition + new Vector2(30f, -40f);
+		// Utiliza el Marker2D que corresponda (SpotGranada o SpotTroll)
+		Vector2 origen  = spotOrigen != null ? spotOrigen.GlobalPosition
+											 : GlobalPosition + new Vector2(30f, -40f);
 		Vector2 destino = objetivo.GlobalPosition + new Vector2(0f, 35f);  // base del sprite
 		Vector2 mid     = (origen + destino) * 0.5f + new Vector2(0f, -110f);
 
@@ -216,32 +223,34 @@ public partial class GranaderoCartoonPrime : TropaBase
 	{
 		if (objetivo == null || !IsInstanceValid(objetivo) || _escenaMisil == null) return;
 
-		Vector2 origenLocal = _spotDisparo != null ? _spotDisparo.GlobalPosition
-		                                           : GlobalPosition + new Vector2(0f, -80f);
+		// Utiliza la posición exacta de SpotMortero
+		Vector2 origenLocal = _spotMortero != null ? _spotMortero.GlobalPosition
+												   : GlobalPosition + new Vector2(0f, -80f);
 		Vector2 cima = new Vector2(origenLocal.X, -220f);
 
 		Node2D misil = (Node2D)_escenaMisil.Instantiate();
 		GetTree().Root.AddChild(misil);
 		misil.GlobalPosition = origenLocal;
+		misil.RotationDegrees = -90f; // Punta orientada directo hacia arriba al despegar
 		misil.ZIndex = 50;
 
 		Node2D mRef = misil, oRef = objetivo;
 
-		// Fase 1: subida recta
+		// Fase 1: subida recta hacia el cielo
 		Tween twSube = misil.CreateTween();
 		twSube.TweenProperty(misil, "global_position", cima, 0.3f)
-		      .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
+			  .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
 		twSube.Finished += () =>
 		{
 			if (!IsInstanceValid(mRef)) return;
 
-			// Reposicionar sobre el objetivo, voltear 180° para la caída
+			// Reposicionar sobre la cabeza del objetivo y voltear la punta hacia abajo (+90°)
 			Vector2 arribaObj = new Vector2(
 				oRef != null && IsInstanceValid(oRef) ? oRef.GlobalPosition.X : mRef.GlobalPosition.X,
 				-220f
 			);
 			mRef.GlobalPosition  = arribaObj;
-			mRef.RotationDegrees = 180f;
+			mRef.RotationDegrees = 90f; // Punta apuntando directamente a la cabeza del rival
 
 			float pausa = GD.Randf() * 0.15f + 0.5f;
 			GetTree().CreateTimer(pausa).Timeout += () =>
@@ -253,7 +262,8 @@ public partial class GranaderoCartoonPrime : TropaBase
 
 				Tween twCae = mRef.CreateTween();
 				twCae.TweenProperty(mRef, "global_position", destino, 0.28f)
-				     .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);				twCae.Finished += () =>
+					 .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
+				twCae.Finished += () =>
 				{
 					if (IsInstanceValid(mRef)) mRef.QueueFree();
 					CrearExplosion(destino, esGranada: false);
@@ -313,32 +323,41 @@ public partial class GranaderoCartoonPrime : TropaBase
 	// ── SEÑAL: CAMBIO DE FRAME ────────────────────────────────────────────────
 	private void OnFrameChanged()
 	{
-		string anim  = (string)_anim.Animation;
-		int    frame = _anim.Frame;
+		if (_anim == null) return;
+		string anim = _anim.Animation.ToString();
+		int   frame = _anim.Frame;
 
-		// Frame 2 de cualquier ataque → granada parabólica
+		// Frame 2 de cualquier ataque → granada parabólica desde SpotGranada
 		if ((anim == "ataque 1" || anim == "ataque 2" || anim == "ataque 3") && frame == 2)
-			LanzarGranada(_objetivo, puntosAtaque);
+			LanzarGranada(_objetivo, puntosAtaque, _spotGranada);
 
-		// Frame 12 de cualquier habilidad → mortero
+		// Frame 12 de cualquier habilidad → mortero desde SpotMortero
 		if ((anim == "habilidad 1" || anim == "habilidad 2" || anim == "habilidad 3") && frame == 12)
 			LanzarMortero(_objetivo);
 
-		// Frame 3 de derrota → último aliento (una sola vez)
-		if ((anim == "derrota 1" || anim == "derrota 2" || anim == "derrota 3") && frame == 3
-		    && !_mortalDisparado)
+		// Frame 3 de derrota → último aliento desde SpotTroll (una sola vez)
+		if ((anim == "derrota 1" || anim == "derrota 2" || anim == "derrota 3") && frame == 3 && !_mortalDisparado)
 		{
 			_mortalDisparado = true;
 			Node2D ultimoObj = BuscarObjetivo();
-			if (ultimoObj != null) LanzarGranada(ultimoObj, puntosAtaque);
+			if (ultimoObj != null) LanzarGranada(ultimoObj, puntosAtaque, _spotTroll);
 		}
 	}
 
 	// ── SEÑAL: FIN DE ANIMACIÓN ───────────────────────────────────────────────
 	private void OnAnimationFinished()
 	{
-		if (_estaMuerto) return;  // derrota la gestiona EjecutarMuerteTropaSacrificada
-		string anim = (string)_anim.Animation;
+		if (_anim == null) return;
+		string anim = _anim.Animation.ToString();
+
+		// Al terminar la animación de derrota (después de disparar la granada troll), notifica al tablero
+		if (anim.StartsWith("derrota"))
+		{
+			var campo = GetTree().Root.FindChild("Campo1", true, false);
+			if (campo != null) campo.Call("EjecutarMuerteTropaSacrificada", this);
+			else QueueFree();
+			return;
+		}
 
 		switch (anim)
 		{
