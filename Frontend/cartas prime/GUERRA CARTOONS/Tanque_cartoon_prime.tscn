@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://02tlprjro2mi"]
 
-[ext_resource type="Script" path="res://cartas prime/GUERRA CARTOONS/TanqueCartoonPrime.cs" id="1_fegrd"]
+[ext_resource type="Script" uid="uid://byowr52py3ef6" path="res://cartas prime/GUERRA CARTOONS/TanqueCartoonPrime.cs" id="1_fegrd"]
 [ext_resource type="Texture2D" uid="uid://dkeucho1smkmb" path="res://imagenes/sprites/Guerra Cartoons/tanque cartoon.png" id="2_dllqx"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]
@@ -197,7 +197,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ejp6f")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 13.0
 }, {
@@ -226,7 +226,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_rcd26")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque - dañado",
 "speed": 13.0
 }, {
@@ -246,7 +246,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qfp7y")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 12.0
 }, {
@@ -266,7 +266,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ohbpw")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño - dañado",
 "speed": 10.0
 }, {
@@ -334,7 +334,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wd0lr")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota - dañado",
 "speed": 9.0
 }, {
@@ -354,7 +354,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_1kibn")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 15.0
 }, {
@@ -374,7 +374,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_f37gg")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle - dañado",
 "speed": 9.0
 }]
@@ -396,10 +396,10 @@ shape = SubResource("RectangleShape2D_opij5")
 position = Vector2(78, -53.000004)
 scale = Vector2(0.27, 0.27)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"idle"
+animation = &"ataque"
 
 [node name="SpotCañon" type="Marker2D" parent="." unique_id=987654321]
-position = Vector2(-58, -130)
+position = Vector2(142, -86)
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3

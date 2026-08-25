@@ -124,23 +124,23 @@ public partial class Campo1 : Node2D
 		"res://imagenes/CartasPng/DragonCart.png",   "res://imagenes/CartasPng/GolemCart.png",
 		"res://imagenes/CartasPng/MaguinCart.png",   "res://imagenes/CartasPng/SoldRealCart.png",
 		"res://imagenes/CartasPng/PaperReXCart.png",     "res://imagenes/CartasPng/TiburonCart.png",
-		"res://imagenes/CartasPng/PeonCart.png",     
+		"res://imagenes/CartasPng/PeonCart.png",     "res://imagenes/CartasPng/TanqueCart.png",
 		"res://imagenes/CartasPng/CalamarGCart.png", "res://imagenes/CartasPng/CaballoCart.png",
 		"res://imagenes/CartasPng/DamaCart.png",     "res://imagenes/CartasPng/TorreCart.png",
 		"res://imagenes/CartasPng/SoldCartoonCart.png", "res://imagenes/CartasPng/CamperoCart.png",
-		"res://imagenes/CartasPng/ArfilCart.png"
+		"res://imagenes/CartasPng/ArfilCart.png" , "res://imagenes/CartasPng/FantasmaCart.png"
 	};
 
 	private string[] escenasTropas = {
 		"res://cartas prime/Dragon_prime.tscn",   "res://cartas prime/Golem_prime.tscn",
 		"res://cartas prime/Maguin_prime.tscn",   "res://cartas prime/SoldadoReal_prime.tscn",
 		"res://cartas prime/PAPEL/Paper_Rex.tscn",      "res://cartas prime/Tiburon_prime.tscn",
-		"res://cartas prime/AJEDREZ/Peon_prime.tscn",    
+		"res://cartas prime/AJEDREZ/Peon_prime.tscn",  "res://cartas prime/GUERRA CARTOONS/Tanque_cartoon_prime.tscn",  
 		"res://cartas prime/CalamarG_prime.tscn", "res://cartas prime/AJEDREZ/Caballo_prime.tscn",
 		"res://cartas prime/AJEDREZ/Dama_prime.tscn",      "res://cartas prime/AJEDREZ/Torre_prime.tscn",
 		"res://cartas prime/GUERRA CARTOONS/Soldado_cartoon_prime.tscn",
 		"res://cartas prime/GUERRA CARTOONS/Campero_cartoon_prime.tscn",
-		"res://cartas prime/AJEDREZ/Arfil_prime.tscn"
+		"res://cartas prime/AJEDREZ/Arfil_prime.tscn", "res://cartas prime/GUERRA CARTOONS/Ka-Bar_cartoon_prime.tscn"
 	};
 
 	[Export] private PackedScene escenaTronoRef     = GD.Load<PackedScene>("res://escenas/gameplay/tronocampo.tscn");
