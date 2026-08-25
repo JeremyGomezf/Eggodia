@@ -68,22 +68,6 @@ corner_radius_bottom_left = 10
 shadow_color = Color(0.13333333, 0.82745098, 0.93333333, 0.4)
 shadow_size = 6
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
-bg_color = Color(0.15, 0.22, 0.32, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.13333333, 0.82745098, 0.93333333, 0.4)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-expand_margin_left = 8.0
-expand_margin_top = 3.0
-expand_margin_right = 8.0
-expand_margin_bottom = 3.0
-
 [node name="MazoPanel" type="PanelContainer" unique_id=2094166136 node_paths=PackedStringArray("_gridMazo", "_btnRemover")]
 offset_right = 430.0
 offset_bottom = 580.0
@@ -117,17 +101,6 @@ text = "TU MAZO"
 [node name="SpacerMazo" type="Control" parent="MarginContainer/VBoxContainer/HeaderMazo"]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="PillElixir" type="PanelContainer" parent="MarginContainer/VBoxContainer/HeaderMazo"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
-
-[node name="LblElixir" type="Label" parent="MarginContainer/VBoxContainer/HeaderMazo/PillElixir"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.13333333, 0.82745098, 0.93333333, 1)
-theme_override_font_sizes/font_size = 11
-text = "COSTE MEDIO: 3.5 💧"
-
 
 
 [node name="GridMazo" type="GridContainer" parent="MarginContainer/VBoxContainer" unique_id=252546364]
