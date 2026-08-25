@@ -8,7 +8,7 @@ using Godot;
 /// </summary>
 public partial class KaBarCartoonPrime : TropaBase
 {
-	public override string Tipo => Tipos.SOLDIER;
+	public override string Tipo => Tipos.NEUTRO;
 
 	// ── ESTADO FANTASMA ───────────────────────────────────────────────────────
 	private bool   _modoFantasma     = false;
