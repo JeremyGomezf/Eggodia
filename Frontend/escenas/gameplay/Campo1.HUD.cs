@@ -148,8 +148,8 @@ public partial class Campo1 : Node2D
 
 	private void CrearPanelHechizos()
 	{
-		// Barajar pool [0..3] y sacar 2 para la mano inicial
-		_poolHechizos = new System.Collections.Generic.List<int> { 0, 1, 2, 3 };
+		// Barajar pool [0..4] y sacar 2 para la mano inicial
+		_poolHechizos = new System.Collections.Generic.List<int> { 0, 1, 2, 3, 4 };
 		for (int i = 0; i < _poolHechizos.Count; i++)
 		{
 			int r = random.Next(i, _poolHechizos.Count);
@@ -325,10 +325,11 @@ public partial class Campo1 : Node2D
 		int pi = _hechizosMano[slotIdx];
 		switch (pi)
 		{
-			case 0: UsarCuracion();    AutoReemplazarHechizo(slotIdx); break;
-			case 1: UsarRobo();        AutoReemplazarHechizo(slotIdx); break;
-			case 2: IniciarSeleccion("veneno",  slotIdx); break;
-			case 3: IniciarSeleccion("bloqueo", slotIdx); break;
+			case 0: UsarCuracion();              AutoReemplazarHechizo(slotIdx); break;
+			case 1: UsarRobo();                  AutoReemplazarHechizo(slotIdx); break;
+			case 2: IniciarSeleccion("veneno",   slotIdx); break;
+			case 3: IniciarSeleccion("bloqueo",  slotIdx); break;
+			case 4: UsarEncebollado();            AutoReemplazarHechizo(slotIdx); break;
 		}
 		if (pi != 2 && pi != 3) ActualizarVisualesHechizos();
 	}
@@ -339,7 +340,7 @@ public partial class Campo1 : Node2D
 		return _hechizosMano[slotIdx] switch
 		{
 			0 => usadoCuracion, 1 => usadoRobo,
-			2 => usadoVeneno,   3 => usadoBloqueo,  _ => false
+			2 => usadoVeneno,   3 => usadoBloqueo,  4 => usadoEncebollado,  _ => false
 		};
 	}
 

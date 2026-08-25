@@ -63,6 +63,7 @@ public partial class Campo1 : Node2D
 	[Export] private Control     contenedorMano;
 
 	// ── HECHIZOS ──────────────────────────────────────────────────────────
+	private bool usadoEncebollado = false;
 	private bool usadoCuracion    = false;
 	private bool usadoRobo        = false;
 	private bool usadoVeneno      = false;
@@ -72,16 +73,18 @@ public partial class Campo1 : Node2D
 	private Label  _lblInstruccion;
 
 	// Pool visual de hechizos — mano de 3 cartas aleatorias de 5 posibles
-	private static readonly string[] POOL_HECHIZO_NOMBRE = { "Curación", "Robar Carta", "Veneno", "Bloqueo" };
+	private static readonly string[] POOL_HECHIZO_NOMBRE = { "Curación", "Robar Carta", "Veneno", "Bloqueo", "Encebollado" };
 	private static readonly string[] POOL_HECHIZO_RUTA = {
 		"res://imagenes/HechizosPng/Cura_hechizo.png",
 		"res://imagenes/HechizosPng/Robo_hechizo.png",
 		"res://imagenes/HechizosPng/Veneno_hechizo.png",
-		"res://imagenes/HechizosPng/Bloqueo_hechizo.png"
+		"res://imagenes/HechizosPng/Bloqueo_hechizo.png",
+		"res://imagenes/HechizosPng/Encebo_hechizo.png"
 	};
 	private static readonly Color[] POOL_HECHIZO_COLOR = {
 		new Color(0.25f,0.80f,0.35f),
-		new Color(0.30f,0.65f,1f), new Color(0.60f,0.30f,0.75f), new Color(0.25f,0.55f,0.90f)
+		new Color(0.30f,0.65f,1f), new Color(0.60f,0.30f,0.75f), new Color(0.25f,0.55f,0.90f),
+		new Color(1f,0.65f,0.15f)
 	};
 	private int[]   _hechizosMano     = new int[2];
 	private Panel[] _tarjetasHechizo  = new Panel[2];

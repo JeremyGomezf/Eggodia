@@ -18,6 +18,7 @@ public partial class CampoPruebas1 : Node2D
 		"res://cartas prime/TRex_prime.tscn",
 		"res://cartas prime/Tiburon_prime.tscn",
 		"res://cartas prime/Peon_prime.tscn",
+		"res://cartas prime/Encebollado_prime.tscn",
 		"res://cartas prime/CalamarG_prime.tscn",
 		"res://cartas prime/Caballo_prime.tscn",
 		"res://cartas prime/Dama_prime.tscn",
@@ -32,7 +33,7 @@ public partial class CampoPruebas1 : Node2D
 	private static readonly string[] NombresTropas =
 	{
 		"Dragón", "Golem", "Maguín", "Soldado",
-		"T-Rex",  "Tiburón", "Peón",
+		"T-Rex",  "Tiburón", "Peón",  "Encebollado",
 		"Calamar", "Caballo", "Dama", "Torre",
 		"Soldado Cartoon", "Campero Cartoon", "Granadero Cartoon",
 		"Ka-Bar Cartoon", "Tanque Cartoon"

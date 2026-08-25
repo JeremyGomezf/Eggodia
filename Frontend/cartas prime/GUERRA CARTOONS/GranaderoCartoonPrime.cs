@@ -1,28 +1,32 @@
 using Godot;
 
 /// <summary>
-/// GranaderoCartoonPrime — Soldado atrincherado. 50 HP / 600 ESC / 235 ATQ.
-/// Sin postura defensiva. Tres facetas visuales según el escudo restante.
-/// Ataque: granada parabólica en frame 2. Habilidad: mortero vertical (350 dmg).
+/// GranaderoCartoonPrime — Soldado atrincherado. 50 HP / 600 ESC / 230 ATQ.
+/// Anti-overkill: el exceso de daño nunca traspasa el escudo a la vida.
+/// 3 facetas visuales (600-301, 300-1, 0). Sin postura defensiva.
+/// Ataque: granada parabólica (frame 2). Habilidad: mortero vertical (350 dmg, frame 12).
+/// Último aliento: en frame 3 de la derrota lanza una granada final antes de morir.
 /// </summary>
 public partial class GranaderoCartoonPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
 
 	// ── CONSTANTES ────────────────────────────────────────────────────────────
-	private const int  ATQ_MORTERO     = 350;
-	private const string RUTA_GRANADA   = "res://efectos/granada_cartoon.tscn";
-	private const string RUTA_EXP_GRAN  = "res://efectos/explosion_granada_cartoon.tscn";
-	private const string RUTA_EXP_CENT  = "res://efectos/explosion_centro_cartoon.tscn";
+	private const int    ATQ_MORTERO   = 350;
+	private const string RUTA_GRANADA  = "res://efectos/granada_cartoon.tscn";
+	private const string RUTA_MISIL    = "res://efectos/misil_cartoon.tscn";
+	private const string RUTA_EXP_GRAN = "res://efectos/explosion_granada_cartoon.tscn";
+	private const string RUTA_EXP_CENT = "res://efectos/explosion_centro_cartoon.tscn";
 
 	// ── ESTADO ────────────────────────────────────────────────────────────────
-	private int    _faceta          = 1;   // 1=600-301, 2=300-1, 3=0
-	private bool   _derrotaIniciada = false;
+	private int    _faceta          = 1;   // 1=600-301 | 2=300-1 | 3=escudo=0
+	private bool   _mortalDisparado = false;
 	private Node2D _objetivo;
 
 	// ── RECURSOS ──────────────────────────────────────────────────────────────
-	private Marker2D    _spotMano;
+	private Marker2D    _spotDisparo;
 	private PackedScene _escenaGranada;
+	private PackedScene _escenaMisil;
 	private PackedScene _escenaExpGran;
 	private PackedScene _escenaExpCent;
 
@@ -33,13 +37,14 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			vidaActual   = vidaMaxima   = 50;
 			escudoActual = escudoMaximo = 600;
-			puntosAtaque = 235;
+			puntosAtaque = 230;
 		}
 		base._Ready();
 
-		_spotMano = GetNodeOrNull<Marker2D>("SpotMano");
+		_spotDisparo = GetNodeOrNull<Marker2D>("SpotDisparo");
 
 		if (ResourceLoader.Exists(RUTA_GRANADA))  _escenaGranada = GD.Load<PackedScene>(RUTA_GRANADA);
+		if (ResourceLoader.Exists(RUTA_MISIL))    _escenaMisil   = GD.Load<PackedScene>(RUTA_MISIL);
 		if (ResourceLoader.Exists(RUTA_EXP_GRAN)) _escenaExpGran = GD.Load<PackedScene>(RUTA_EXP_GRAN);
 		if (ResourceLoader.Exists(RUTA_EXP_CENT)) _escenaExpCent = GD.Load<PackedScene>(RUTA_EXP_CENT);
 
@@ -51,12 +56,11 @@ public partial class GranaderoCartoonPrime : TropaBase
 	}
 
 	// ── CAPACIDADES ───────────────────────────────────────────────────────────
-	public override bool AutogestionaDañoAtaque()   => true;
-	public override bool TieneHabilidadEspecial()   => true;
-	public override bool TienePosturaDefensiva()    => false;  // sin postura de defensa
+	public override bool AutogestionaDañoAtaque() => true;
+	public override bool TieneHabilidadEspecial() => true;
+	public override bool TienePosturaDefensiva()  => false;
 
-	// ── HELPER: NOMBRE DE ANIMACIÓN SEGÚN FACETA ─────────────────────────────
-	private string AF(string base_) => $"{base_} {_faceta}";
+	private string AF(string b) => $"{b} {_faceta}";
 
 	// ── ACCIONES ──────────────────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)
@@ -72,13 +76,9 @@ public partial class GranaderoCartoonPrime : TropaBase
 
 			case "preparar_defensa":
 			case "defender":
-				// Atrincherado: no adopta postura defensiva; consume el turno en idle
+				// Atrincherado: sin postura de defensa, consume el turno en idle
 				_yaActuo = true;
 				_anim.Play(AF("idle"));
-				break;
-
-			case "recibir_daño":
-				// Gestionado internamente en RecibirDaño (depende del estado del escudo)
 				break;
 
 			case "usar_habilidad":
@@ -87,8 +87,8 @@ public partial class GranaderoCartoonPrime : TropaBase
 		}
 	}
 
-	// ── RECIBIR DAÑO ─────────────────────────────────────────────────────────
-	// El escudo actúa como parapeto. Las facetas cambian según cuánto queda.
+	// ── RECIBIR DAÑO: ANTI-OVERKILL ───────────────────────────────────────────
+	// Mientras haya escudo, el exceso de daño NUNCA traspasa a la vida (50 HP).
 	public override void RecibirDaño(int cantidad)
 	{
 		if (_estaMuerto) return;
@@ -96,56 +96,57 @@ public partial class GranaderoCartoonPrime : TropaBase
 
 		int escudoAntes = escudoActual;
 
-		// Absorber con escudo primero
 		if (escudoActual > 0)
 		{
-			int abs = Mathf.Min(escudoActual, cantidad);
-			escudoActual -= abs;
-			cantidad     -= abs;
+			// Absorción total: el exceso desaparece — anti-overkill estricto
+			escudoActual = Mathf.Max(0, escudoActual - cantidad);
+
+			// Actualizar barra de escudo
+			var barraEsc = GetNodeOrNull<ProgressBar>("StatsTropa/BarraEscudo");
+			if (barraEsc != null) { barraEsc.MaxValue = escudoMaximo; barraEsc.Value = escudoActual; }
+
+			// ── TRANSICIONES DE FACETA ────────────────────────────────────────
+			if (escudoAntes > 300 && escudoActual is > 0 and <= 300)
+			{
+				// Transición 1→2: única vez que se reproduce daño 2
+				_faceta = 2;
+				_anim.Play("daño 2");
+			}
+			else if (escudoAntes > 0 && escudoActual == 0)
+			{
+				// Escudo destruido completamente
+				_faceta = 3;
+				bool impactoMasivo = escudoAntes == escudoMaximo;
+				_anim.Play(impactoMasivo ? "daño 4" : "daño 3");
+			}
+			else if (_faceta == 1)
+			{
+				// Daño normal dentro de Faceta 1 (sin cruzar umbral)
+				_anim.Play("daño 1");
+			}
+			// En Faceta 2: golpes sin romper escudo no reproducen animación de daño,
+			// solo baja la barra visualmente (ya actualizada arriba)
+			return;  // HP nunca recibe daño mientras hubo escudo
 		}
 
-		// Actualizar barra de escudo
-		var barraEsc = GetNodeOrNull<ProgressBar>("StatsTropa/BarraEscudo");
-		if (barraEsc != null) { barraEsc.MaxValue = escudoMaximo; barraEsc.Value = escudoActual; }
+		// ── DAÑO A LA VIDA (escudo ya en 0 desde el turno anterior) ──────────
+		vidaActual -= cantidad;
+		var barraVid = GetNodeOrNull<ProgressBar>("StatsTropa/BarraVida");
+		if (barraVid != null) { barraVid.MaxValue = vidaMaxima; barraVid.Value = Mathf.Max(0, vidaActual); }
+		// En Faceta 3 los golpes a la vida no reproducen animación de daño
 
-		// ── DETERMINAR ANIMACIÓN DE DAÑO Y TRANSICIÓN DE FACETA ──────────────
-		if (escudoAntes > 300 && escudoActual is > 0 and <= 300)
-		{
-			// Transición 1→2: escudo cae de zona alta a zona baja
-			_faceta = 2;
-			_anim.Play("daño 2");
-		}
-		else if (escudoAntes > 0 && escudoActual == 0)
-		{
-			_faceta = 3;
-			// Impacto masivo: destruyó los 600 puntos de una sola vez (desde máximo)
-			bool impactoMasivo = escudoAntes == escudoMaximo;
-			_anim.Play(impactoMasivo ? "daño 4" : "daño 3");
-		}
-		else
-		{
-			// Daño normal dentro de la faceta actual
-			_anim.Play(AF("daño"));
-		}
-
-		// Aplicar daño restante a la vida (si el escudo no absorbió todo)
-		if (cantidad > 0)
-		{
-			vidaActual -= cantidad;
-			var barraVid = GetNodeOrNull<ProgressBar>("StatsTropa/BarraVida");
-			if (barraVid != null) { barraVid.MaxValue = vidaMaxima; barraVid.Value = Mathf.Max(0, vidaActual); }
-		}
-
-		if (vidaActual <= 0 && escudoActual <= 0)
+		if (vidaActual <= 0)
 		{
 			vidaActual  = 0;
 			_estaMuerto = true;
+			// EjecutarMuerteTropaSacrificada llamará ReproducirDerrota;
+			// el último aliento se dispara en frame 3 de esa animación.
 			var campo = GetTree().Root.FindChild("Campo1", true, false);
 			if (campo != null) campo.Call("EjecutarMuerteTropaSacrificada", this);
 		}
 	}
 
-	// ── DERROTA POR SACRIFICIO ────────────────────────────────────────────────
+	// ── DERROTA (llamada por EjecutarMuerteTropaSacrificada en Campo1) ────────
 	public new void ReproducirDerrota()
 	{
 		_estaMuerto = true;
@@ -161,21 +162,20 @@ public partial class GranaderoCartoonPrime : TropaBase
 
 		habilidadUsada = true;
 		_yaActuo       = true;
+		_objetivo      = obj;
 		_anim.Play(AF("habilidad"));
-
-		// Lanzar proyectil con un pequeño retardo para sincronizar con la animación
-		GetTree().CreateTimer(0.35f).Timeout += () => LanzarMortero(obj);
+		// El misil se instancia en OnFrameChanged al frame 12
 	}
 
-	// ── ATAQUE: GRANADA PARABÓLICA ────────────────────────────────────────────
-	private void LanzarGranada(Node2D objetivo)
+	// ── LANZAR GRANADA PARABÓLICA ─────────────────────────────────────────────
+	private void LanzarGranada(Node2D objetivo, int danio)
 	{
 		if (objetivo == null || !IsInstanceValid(objetivo) || _escenaGranada == null) return;
 
-		Vector2 origen  = _spotMano != null ? _spotMano.GlobalPosition : GlobalPosition + new Vector2(30f, -40f);
-		Vector2 destino = objetivo.GlobalPosition + new Vector2(0f, -30f);
-		// Cima de la parábola: punto medio desplazado hacia arriba
-		Vector2 mid     = (origen + destino) * 0.5f + new Vector2(0f, -100f);
+		Vector2 origen  = _spotDisparo != null ? _spotDisparo.GlobalPosition
+		                                       : GlobalPosition + new Vector2(30f, -40f);
+		Vector2 destino = objetivo.GlobalPosition + new Vector2(0f, 35f);  // base del sprite
+		Vector2 mid     = (origen + destino) * 0.5f + new Vector2(0f, -110f);
 
 		Node2D granada = (Node2D)_escenaGranada.Instantiate();
 		GetTree().Root.AddChild(granada);
@@ -188,8 +188,9 @@ public partial class GranaderoCartoonPrime : TropaBase
 		// Capturar referencias para el closure
 		Node2D gRef = granada, oRef = objetivo;
 		Vector2 o = origen, m = mid, d = destino;
+		int dmg = danio;
 
-		// Trayectoria Bézier cuadrática mediante TweenMethod (t va de 0 a 1)
+		// Trayectoria Bézier cuadrática via TweenMethod
 		Tween tw = CreateTween();
 		tw.TweenMethod(
 			Callable.From<float>(t =>
@@ -205,49 +206,54 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			if (IsInstanceValid(gRef)) gRef.QueueFree();
 			CrearExplosion(d, esGranada: true);
-			if (IsInstanceValid(oRef)) oRef.Call("RecibirDaño", puntosAtaque);
+			if (IsInstanceValid(oRef)) oRef.Call("RecibirDaño", dmg);
 		};
 	}
 
-	// ── HABILIDAD: MORTERO ────────────────────────────────────────────────────
-	// Sube verticalmente hasta salir de pantalla, pausa, cae en picado sobre el objetivo.
+	// ── LANZAR MORTERO ────────────────────────────────────────────────────────
+	// Sube recto, se reposiciona sobre el objetivo fuera de pantalla, cae en picado.
 	private void LanzarMortero(Node2D objetivo)
 	{
-		if (objetivo == null || !IsInstanceValid(objetivo) || _escenaGranada == null) return;
+		if (objetivo == null || !IsInstanceValid(objetivo) || _escenaMisil == null) return;
 
-		Vector2 origen = GlobalPosition + new Vector2(0f, -80f);
-		Vector2 cima   = origen + new Vector2(0f, -350f);  // fuera del margen superior
+		Vector2 origenLocal = _spotDisparo != null ? _spotDisparo.GlobalPosition
+		                                           : GlobalPosition + new Vector2(0f, -80f);
+		Vector2 cima = new Vector2(origenLocal.X, -220f);
 
-		Node2D misil = (Node2D)_escenaGranada.Instantiate();
+		Node2D misil = (Node2D)_escenaMisil.Instantiate();
 		GetTree().Root.AddChild(misil);
-		misil.GlobalPosition = origen;
+		misil.GlobalPosition = origenLocal;
 		misil.ZIndex = 50;
 
 		Node2D mRef = misil, oRef = objetivo;
 
-		// Fase 1: subida vertical rápida
+		// Fase 1: subida recta
 		Tween twSube = misil.CreateTween();
-		twSube.TweenProperty(misil, "global_position", cima, 0.35f)
-			  .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
-
+		twSube.TweenProperty(misil, "global_position", cima, 0.3f)
+		      .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
 		twSube.Finished += () =>
 		{
 			if (!IsInstanceValid(mRef)) return;
 
-			// Pausa de 0.5–0.8 s antes de la caída
-			float pausa = GD.Randf() * 0.3f + 0.5f;
+			// Reposicionar sobre el objetivo, voltear 180° para la caída
+			Vector2 arribaObj = new Vector2(
+				oRef != null && IsInstanceValid(oRef) ? oRef.GlobalPosition.X : mRef.GlobalPosition.X,
+				-220f
+			);
+			mRef.GlobalPosition  = arribaObj;
+			mRef.RotationDegrees = 180f;
+
+			float pausa = GD.Randf() * 0.15f + 0.5f;
 			GetTree().CreateTimer(pausa).Timeout += () =>
 			{
 				if (!IsInstanceValid(mRef)) return;
 				Vector2 destino = oRef != null && IsInstanceValid(oRef)
-					? oRef.GlobalPosition + new Vector2(0f, -30f)
-					: mRef.GlobalPosition;  // fallback: cae donde está
+					? oRef.GlobalPosition + new Vector2(0f, 35f)
+					: mRef.GlobalPosition;
 
-				// Fase 2: caída vertical en picado
 				Tween twCae = mRef.CreateTween();
-				twCae.TweenProperty(mRef, "global_position", destino, 0.3f)
-					 .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
-				twCae.Finished += () =>
+				twCae.TweenProperty(mRef, "global_position", destino, 0.28f)
+				     .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);				twCae.Finished += () =>
 				{
 					if (IsInstanceValid(mRef)) mRef.QueueFree();
 					CrearExplosion(destino, esGranada: false);
@@ -266,7 +272,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		Node2D exp = (Node2D)escena.Instantiate();
 		GetTree().Root.AddChild(exp);
 		exp.GlobalPosition = pos;
-		exp.ZIndex = 55;
+		exp.ZIndex = esGranada ? 55 : 60;
 
 		var animExp = exp.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 		if (animExp != null)
@@ -281,7 +287,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		}
 	}
 
-	// ── BUSCAR OBJETIVO ───────────────────────────────────────────────────────
+	// ── BUSCAR OBJETIVO EN CARRIL ─────────────────────────────────────────────
 	private Node2D BuscarObjetivo()
 	{
 		if (!HasMeta("carril")) return null;
@@ -310,31 +316,36 @@ public partial class GranaderoCartoonPrime : TropaBase
 		string anim  = (string)_anim.Animation;
 		int    frame = _anim.Frame;
 
-		// Frame 2 de cualquier variante de ataque → lanzar granada
+		// Frame 2 de cualquier ataque → granada parabólica
 		if ((anim == "ataque 1" || anim == "ataque 2" || anim == "ataque 3") && frame == 2)
-			LanzarGranada(_objetivo);
+			LanzarGranada(_objetivo, puntosAtaque);
+
+		// Frame 12 de cualquier habilidad → mortero
+		if ((anim == "habilidad 1" || anim == "habilidad 2" || anim == "habilidad 3") && frame == 12)
+			LanzarMortero(_objetivo);
+
+		// Frame 3 de derrota → último aliento (una sola vez)
+		if ((anim == "derrota 1" || anim == "derrota 2" || anim == "derrota 3") && frame == 3
+		    && !_mortalDisparado)
+		{
+			_mortalDisparado = true;
+			Node2D ultimoObj = BuscarObjetivo();
+			if (ultimoObj != null) LanzarGranada(ultimoObj, puntosAtaque);
+		}
 	}
 
 	// ── SEÑAL: FIN DE ANIMACIÓN ───────────────────────────────────────────────
 	private void OnAnimationFinished()
 	{
-		if (_estaMuerto) return;
+		if (_estaMuerto) return;  // derrota la gestiona EjecutarMuerteTropaSacrificada
 		string anim = (string)_anim.Animation;
 
 		switch (anim)
 		{
-			case "ataque 1": case "ataque 2": case "ataque 3":
-			case "daño 1":   case "daño 2":   case "daño 3": case "daño 4":
+			case "ataque 1":    case "ataque 2":    case "ataque 3":
 			case "habilidad 1": case "habilidad 2": case "habilidad 3":
+			case "daño 1":      case "daño 2":      case "daño 3":      case "daño 4":
 				_anim.Play(AF("idle"));
-				break;
-
-			case "derrota 1": case "derrota 2": case "derrota 3":
-				if (_derrotaIniciada) break;
-				_derrotaIniciada = true;
-				Tween tw = CreateTween();
-				tw.TweenProperty(this, "modulate:a", 0f, 0.5f);
-				tw.Finished += () => { if (IsInstanceValid(this)) QueueFree(); };
 				break;
 		}
 	}

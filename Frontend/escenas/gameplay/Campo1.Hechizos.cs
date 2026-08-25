@@ -5,6 +5,29 @@ using System.Collections.Generic;
 public partial class Campo1 : Node2D
 {
 	// ── HECHIZOS ──────────────────────────────────────────────────────────
+	private void UsarEncebollado()
+	{
+		if (!ValidarHechizo() || usadoEncebollado) return;
+		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada) || !tropaSeleccionada.IsInGroup("tropas_jugador"))
+		{ GD.Print("Selecciona una tropa tuya primero"); return; }
+
+		int ata = 0, esc = 0, escMax = 0;
+		try { ata    = (int)tropaSeleccionada.Get("puntosAtaque"); } catch { }
+		try { esc    = (int)tropaSeleccionada.Get("escudoActual"); } catch { }
+		try { escMax = (int)tropaSeleccionada.Get("escudoMaximo"); } catch { }
+		try { tropaSeleccionada.Set("puntosAtaque", ata + 100); }                 catch { }
+		try { tropaSeleccionada.Set("escudoActual", esc + 100); }                 catch { }
+		try { tropaSeleccionada.Set("escudoMaximo", Mathf.Max(escMax, esc + 100)); } catch { }
+
+		MostrarDañoFlotante(tropaSeleccionada.GlobalPosition, 100, true);
+		Tween tw = tropaSeleccionada.CreateTween();
+		tw.TweenProperty(tropaSeleccionada, "modulate", new Color(1.6f, 1.3f, 0.2f), 0.2f);
+		tw.TweenProperty(tropaSeleccionada, "modulate", Colors.White, 0.5f);
+
+		usadoEncebollado = true;
+		RegistrarGastoMovimiento();
+	}
+
 	private void UsarCuracion()
 	{
 		if (!ValidarHechizo() || usadoCuracion) return;

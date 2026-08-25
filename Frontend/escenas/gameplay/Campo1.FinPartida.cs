@@ -183,7 +183,7 @@ public partial class Campo1 : Node2D
 		{
 			if (e.Contains("TRex") || e.Contains("Tiburon") || e.Contains("CalamarG")) era1++;
 			else if (e.Contains("Torre") || e.Contains("Caballo") || e.Contains("Dama") ||
-					 e.Contains("SoldadoReal") || e.Contains("Peon")) era2++;
+					 e.Contains("SoldadoReal") || e.Contains("Peon") || e.Contains("Encebollado")) era2++;
 			else era3++;
 		}
 

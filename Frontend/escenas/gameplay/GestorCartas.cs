@@ -107,6 +107,7 @@ public partial class GestorCartas : Node
 			new() { Id=4,  Nombre="Soldado Real",     Era=2, VidaMaxima=250, EscudoMaximo=300, PuntosAtaque=150, RutaImagen="res://imagenes/CartasPng/SoldRealCart.png",  RutaEscena="res://cartas prime/SoldadoReal_prime.tscn" },
 			new() { Id=5,  Nombre="Torre",            Era=2, VidaMaxima=500, EscudoMaximo=450, PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/TorreCart.png",     RutaEscena="res://cartas prime/Torre_prime.tscn" },
 			new() { Id=6,  Nombre="Peón",             Era=2, VidaMaxima=150, EscudoMaximo=150, PuntosAtaque=100, RutaImagen="res://imagenes/CartasPng/PeonCart.png",      RutaEscena="res://cartas prime/Peon_prime.tscn" },
+			new() { Id=7,  Nombre="Encebollado",      Era=2, VidaMaxima=500, EscudoMaximo=550, PuntosAtaque=450, RutaImagen="res://imagenes/CartasPng/EncebolladoCart.png",RutaEscena="res://cartas prime/Encebollado_prime.tscn" },
 			new() { Id=8,  Nombre="Caballo",          Era=2, VidaMaxima=230, EscudoMaximo=250, PuntosAtaque=200, RutaImagen="res://imagenes/CartasPng/CaballoCart.png",   RutaEscena="res://cartas prime/Caballo_prime.tscn" },
 			new() { Id=9,  Nombre="Dama",             Era=2, VidaMaxima=350, EscudoMaximo=300, PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/DamaCart.png",      RutaEscena="res://cartas prime/Dama_prime.tscn" },
 			new() { Id=10, Nombre="T-Rex",            Era=1, VidaMaxima=400, EscudoMaximo=350, PuntosAtaque=400, RutaImagen="res://imagenes/CartasPng/TReXCart.png",      RutaEscena="res://cartas prime/TRex_prime.tscn" },
