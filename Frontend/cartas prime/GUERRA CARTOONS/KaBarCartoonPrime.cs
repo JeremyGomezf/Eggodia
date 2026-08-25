@@ -165,16 +165,20 @@ public partial class KaBarCartoonPrime : TropaBase
 
 	private void LiberarSpotOcupado()
 	{
+		// Usar el meta "carril" para encontrar el spot directamente (fiable)
+		if (HasMeta("carril"))
+		{
+			string carril = (string)GetMeta("carril");
+			var spot = GetTree().Root.FindChild(carril, true, false);
+			if (spot != null) { spot.GetNodeOrNull("Ocupado")?.Free(); return; }
+		}
+		// Fallback: buscar en jerarquía de padres
 		var padre = GetParent();
 		if (padre == null) return;
-
 		var ocupado = padre.GetNodeOrNull<Node>("Ocupado");
 		if (ocupado != null) { ocupado.QueueFree(); return; }
-
 		var abuelo = padre.GetParent();
-		if (abuelo == null) return;
-		ocupado = abuelo.GetNodeOrNull<Node>("Ocupado");
-		if (ocupado != null) ocupado.QueueFree();
+		abuelo?.GetNodeOrNull<Node>("Ocupado")?.QueueFree();
 	}
 
 	// ── APARICIÓN COMO FANTASMA ───────────────────────────────────────────────
@@ -187,26 +191,33 @@ public partial class KaBarCartoonPrime : TropaBase
 		// Deshabilitar colisiones: el fantasma es completamente intangible
 		var col = GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
 		if (col != null) col.Disabled = true;
-		// Como Area2D: deshabilitar monitoreo para que la IA no lo detecte
 		Monitorable = false;
 		Monitoring  = false;
 
-		// Ocultar barras de stats: el fantasma no tiene UI de combate
+		// Destruir barras de stats: el fantasma no tiene UI de combate
 		var stats = GetNodeOrNull<Control>("StatsTropa");
-		if (stats != null) stats.Visible = false;
+		if (stats != null) stats.QueueFree();
 
 		// Reposicionar en la zona rival del mismo carril
-		// Offset simétrico: hacia el frente del objetivo según perspectiva
 		Vector2 posRival = EncontrarPosicionRival();
-		float offsetX    = _eraJugador ? -80f : 80f;   // jugador avanza a derecha → offset negativo; rival avanza a izquierda → offset positivo
+		float offsetX    = _eraJugador ? -80f : 80f;
 		GlobalPosition   = posRival + new Vector2(offsetX, 0f);
 		ZIndex = 60;
 
-		// Opacidad completa — el sprite ya tiene el look fantasma por diseño
+		// Fijar frame 0 de respawn_fantasma ANTES del fade-in para evitar
+		// que se vean fotogramas de la animación "derrota"
+		_anim.Stop();
+		_anim.Animation = "respawn_fantasma";
+		_anim.Frame     = 0;
+
 		Modulate = new Color(1f, 1f, 1f, 0f);
 		Tween tw = CreateTween();
-		tw.TweenProperty(this, "modulate:a", 1.0f, 0.5f);
-		tw.Finished += () => _anim.Play("respawn_fantasma");
+		tw.TweenProperty(this, "modulate:a", 1.0f, 0.4f);
+		tw.Finished += () =>
+		{
+			_anim.Frame = 0;
+			_anim.Play("respawn_fantasma");
+		};
 	}
 
 	private Vector2 EncontrarPosicionRival()

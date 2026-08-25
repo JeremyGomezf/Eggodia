@@ -201,33 +201,13 @@ public partial class PeonPrime : TropaBase
 		}
 		catch { }
 
-		// 1. Conservar orientación si la tropa original estaba invertida por Scale.X
-		if (Scale.X < 0)
+		// Orientación: usar siempre AsegurarOrientacionRival para tropas rivales
+		// (mismo método que InvocacionRival — fuente de verdad única)
+		if (esRivalTropa)
 		{
-			Vector2 s = nuevaTropa.Scale;
-			s.X = -Mathf.Abs(s.X);
-			nuevaTropa.Scale = s;
-		}
-
-		// 2. Transferir el estado del Sprite/AnimatedSprite si estaba mirando a la derecha
-		var spriteViejoAnim = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-		var spriteViejo2D   = GetNodeOrNull<Sprite2D>("Sprite2D");
-		bool estaVolteado   = (spriteViejoAnim != null && spriteViejoAnim.FlipH) || (spriteViejo2D != null && spriteViejo2D.FlipH);
-
-		if (estaVolteado || esRivalTropa)
-		{
-			var spriteNuevoAnim = nuevaTropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-			var spriteNuevo2D   = nuevaTropa.GetNodeOrNull<Sprite2D>("Sprite2D");
-
-			if (spriteNuevoAnim != null) spriteNuevoAnim.FlipH = true;
-			if (spriteNuevo2D != null)   spriteNuevo2D.FlipH = true;
-
-			if (Scale.X > 0 && esRivalTropa)
-			{
-				Vector2 s = nuevaTropa.Scale;
-				s.X = -Mathf.Abs(s.X);
-				nuevaTropa.Scale = s;
-			}
+			Node campo = ObtenerEscenaCampoActual();
+			if (campo != null && campo.HasMethod("AsegurarOrientacionRival"))
+				campo.Call("AsegurarOrientacionRival", nuevaTropa);
 		}
 		
 		// 3. Transferir TODOS los metadatos de la casilla (carril, zona, etc.)
