@@ -78,7 +78,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qxrhk")
 }],
-"loop": true,
+"loop": 0,
 "name": &"explosion_granada_c",
 "speed": 17.0
 }]

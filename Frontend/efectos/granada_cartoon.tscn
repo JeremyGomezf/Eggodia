@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://dp6436404dli2"]
+
+[ext_resource type="Texture2D" uid="uid://bv7d5o7l10u7b" path="res://imagenes/sprites/Guerra Cartoons/SE-granada.png" id="1_f413x"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(19, 26)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u8vt1"]
+atlas = ExtResource("1_f413x")
+region = Rect2(0, 0, 860, 932)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u8vt1")
+}],
+"loop": 1,
+"name": &"movimiento_granada",
+"speed": 13.0
+}]
+
+[node name="granada Cartoon" type="Area2D" unique_id=1934137725]
+position = Vector2(-3, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(3.5, -1)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(4.000001, -1.3725)
+scale = Vector2(0.034244187, 0.035134114)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"movimiento_granada"

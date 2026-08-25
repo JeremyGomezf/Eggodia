@@ -190,6 +190,7 @@ public partial class PeonPrime : TropaBase
 		nuevaTropa.GlobalPosition = GlobalPosition;
 
 		// 🔄 PRESERVAR LA ORIENTACIÓN Y SENTIDO (Rival vs Jugador)
+		// Evaluamos el bando una sola vez para no duplicar variables
 		bool esRivalTropa = IsInGroup("tropas_rival");
 		try
 		{
@@ -201,13 +202,22 @@ public partial class PeonPrime : TropaBase
 		}
 		catch { }
 
-		// Orientación: usar siempre AsegurarOrientacionRival para tropas rivales
-		// (mismo método que InvocacionRival — fuente de verdad única)
+		// 1. Orientación: usar AsegurarOrientacionRival o forzar volteo horizontal
+		Node campo = ObtenerEscenaCampoActual();
 		if (esRivalTropa)
 		{
-			Node campoOrient = ObtenerEscenaCampoActual();
-			if (campoOrient != null && campoOrient.HasMethod("AsegurarOrientacionRival"))
-				campoOrient.Call("AsegurarOrientacionRival", nuevaTropa);
+			if (campo != null && campo.HasMethod("AsegurarOrientacionRival"))
+			{
+				campo.Call("AsegurarOrientacionRival", nuevaTropa);
+			}
+			else
+			{
+				// Volteo de respaldo si el campo no responde
+				var animSprite = nuevaTropa.FindChild("*Sprite*", true, false);
+				if (animSprite is AnimatedSprite2D aSprite) aSprite.FlipH = true;
+				else if (animSprite is Sprite2D sSprite) sSprite.FlipH = true;
+				else nuevaTropa.Scale = new Vector2(-Mathf.Abs(nuevaTropa.Scale.X), nuevaTropa.Scale.Y);
+			}
 		}
 		
 		// 3. Transferir TODOS los metadatos de la casilla (carril, zona, etc.)
@@ -266,7 +276,6 @@ public partial class PeonPrime : TropaBase
 			ReemplazarReferenciaEnCampo(padre, this, nuevaTropa);
 		}
 
-		Node campo = ObtenerEscenaCampoActual();
 		if (campo != null)
 		{
 			ReemplazarReferenciaEnCampo(campo, this, nuevaTropa);

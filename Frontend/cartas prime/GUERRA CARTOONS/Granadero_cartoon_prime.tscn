@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://brf7mjfqlnh1s"]
 
-[ext_resource type="Script" uid="uid://dkgrsfn4rs1ty" path="res://cartas prime/SoldadoRealPrime.cs" id="1_8siqb"]
+[ext_resource type="Script" uid="uid://daw4h7wuohwps" path="res://cartas prime/GUERRA CARTOONS/GranaderoCartoonPrime.cs" id="1_8siqb"]
 [ext_resource type="Texture2D" uid="uid://yok2ggvm5g5k" path="res://imagenes/sprites/Guerra Cartoons/soldado explosivo 1.png" id="2_eqcln"]
 [ext_resource type="Texture2D" uid="uid://bm752dc1dukw0" path="res://imagenes/sprites/Guerra Cartoons/soldado explosivo 2.png" id="3_a3amn"]
 [ext_resource type="Texture2D" uid="uid://djmjqa33qgyl0" path="res://imagenes/sprites/Guerra Cartoons/Soldado explosivo 3.png" id="4_41iuf"]
@@ -639,7 +639,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_y0guf")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque 1",
 "speed": 10.0
 }, {
@@ -671,7 +671,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_w568n")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque 2",
 "speed": 10.0
 }, {
@@ -703,7 +703,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_r6obd")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque 3",
 "speed": 10.0
 }, {
@@ -717,7 +717,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_rgnsd")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño 1",
 "speed": 10.0
 }, {
@@ -737,7 +737,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_w5ixk")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño 2",
 "speed": 10.0
 }, {
@@ -757,7 +757,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_jccen")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño 3",
 "speed": 10.0
 }, {
@@ -777,7 +777,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_a065i")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño 4",
 "speed": 10.0
 }, {
@@ -845,7 +845,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_0xkci")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota 1",
 "speed": 10.0
 }, {
@@ -913,7 +913,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_7pe1t")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota 2",
 "speed": 10.0
 }, {
@@ -981,7 +981,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_njbst")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota 3",
 "speed": 10.0
 }, {
@@ -1082,7 +1082,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_l8bh5")
 }],
-"loop": false,
+"loop": 0,
 "name": &"habilidad 1",
 "speed": 10.0
 }, {
@@ -1183,7 +1183,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_3yt5f")
 }],
-"loop": false,
+"loop": 0,
 "name": &"habilidad 2",
 "speed": 10.0
 }, {
@@ -1284,7 +1284,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2hr04")
 }],
-"loop": false,
+"loop": 0,
 "name": &"habilidad 3",
 "speed": 10.0
 }, {
@@ -1301,7 +1301,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_fipft")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle 1",
 "speed": 10.0
 }, {
@@ -1318,7 +1318,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_2wrxl")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle 2",
 "speed": 10.0
 }, {
@@ -1335,7 +1335,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_bb6ws")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle 3",
 "speed": 10.0
 }]
@@ -1357,7 +1357,8 @@ shape = SubResource("RectangleShape2D_opij5")
 position = Vector2(-2, -57.000004)
 scale = Vector2(0.167, 0.167)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"daño 4"
+animation = &"derrota 1"
+frame = 3
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3

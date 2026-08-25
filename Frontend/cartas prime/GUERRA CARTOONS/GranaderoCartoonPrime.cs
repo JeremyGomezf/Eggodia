@@ -228,7 +228,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		// Fase 1: subida vertical rápida
 		Tween twSube = misil.CreateTween();
 		twSube.TweenProperty(misil, "global_position", cima, 0.35f)
-		      .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
+			  .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
 
 		twSube.Finished += () =>
 		{
@@ -246,7 +246,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 				// Fase 2: caída vertical en picado
 				Tween twCae = mRef.CreateTween();
 				twCae.TweenProperty(mRef, "global_position", destino, 0.3f)
-				     .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
+					 .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.In);
 				twCae.Finished += () =>
 				{
 					if (IsInstanceValid(mRef)) mRef.QueueFree();
