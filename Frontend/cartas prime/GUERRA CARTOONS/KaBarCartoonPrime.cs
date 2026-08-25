@@ -3,22 +3,24 @@ using Godot;
 /// <summary>
 /// KaBarCartoonPrime — Soldado fantasma que resucita como espíritu combatiente.
 /// 250 HP / 360 ESC / 10 ATQ.
-/// Al morir en combate: 4 s después aparece como fantasma en zona rival,
-/// invulnerable, ataca cada 5 s (30 dmg), dura 25 s máx o hasta eliminar al rival.
+/// El escudo absorbe daño SOLO en postura defensiva explícita.
+/// Al morir en combate: 4 s después aparece como fantasma invulnerable en zona rival,
+/// ataca cada 5 s (30 dmg), dura 25 s máx o hasta eliminar al rival.
 /// </summary>
 public partial class KaBarCartoonPrime : TropaBase
 {
 	public override string Tipo => Tipos.NEUTRO;
 
-	// ── ESTADO FANTASMA ───────────────────────────────────────────────────────
-	private bool   _modoFantasma     = false;
-	private bool   _fantasmaActivo   = false;
-	private bool   _eraJugador       = true;
-	private string _carrilNum        = "";
-	private float  _timerAtaque      = 5.0f;
-	private float  _timerVida        = 25.0f;
+	// ── ESTADO ────────────────────────────────────────────────────────────────
+	private bool   _enDefensa       = false;  // true solo mientras anima "defensa"
+	private bool   _modoFantasma    = false;
+	private bool   _fantasmaActivo  = false;
+	private bool   _eraJugador      = true;
+	private string _carrilNum       = "";
+	private float  _timerAtaque     = 5.0f;
+	private float  _timerVida       = 25.0f;
 	private bool   _atacandoFantasma = false;
-	private bool   _finalizando      = false;
+	private bool   _finalizando     = false;
 
 	// ══════════════════════════════════════════════════════════════════════════
 	public override void _Ready()
@@ -69,7 +71,8 @@ public partial class KaBarCartoonPrime : TropaBase
 		switch (accion)
 		{
 			case "atacar":
-				_yaActuo = true;
+				_enDefensa = false;
+				_yaActuo   = true;
 				_anim.Play("ataque");
 				break;
 			case "preparar_defensa":
@@ -77,9 +80,11 @@ public partial class KaBarCartoonPrime : TropaBase
 				_anim.Play("pre defensa ");   // espacio final: nombre exacto del sprite sheet
 				break;
 			case "defender":
+				_enDefensa = true;
 				_anim.Play("defensa");
 				break;
 			case "recibir_daño":
+				_enDefensa = false;
 				_anim.Play("daño");
 				break;
 		}
@@ -92,13 +97,14 @@ public partial class KaBarCartoonPrime : TropaBase
 	}
 
 	// ── RECIBIR DAÑO ──────────────────────────────────────────────────────────
+	// El escudo solo absorbe daño si la tropa está en postura defensiva explícita.
 	public override void RecibirDaño(int cantidad)
 	{
-		if (_modoFantasma) return;  // el fantasma es invulnerable
+		if (_modoFantasma) return;  // el fantasma es completamente invulnerable
 		if (_estaMuerto)   return;
 
-		// Absorber con escudo primero
-		if (escudoActual > 0)
+		// Absorción de escudo SOLO en postura defensiva
+		if (_enDefensa && escudoActual > 0)
 		{
 			int abs = Mathf.Min(escudoActual, cantidad);
 			escudoActual -= abs;
@@ -159,14 +165,12 @@ public partial class KaBarCartoonPrime : TropaBase
 
 	private void LiberarSpotOcupado()
 	{
-		// Liberar el nodo "Ocupado" del spot padre (marca el carril como libre)
 		var padre = GetParent();
 		if (padre == null) return;
 
 		var ocupado = padre.GetNodeOrNull<Node>("Ocupado");
 		if (ocupado != null) { ocupado.QueueFree(); return; }
 
-		// Fallback: buscar en el abuelo
 		var abuelo = padre.GetParent();
 		if (abuelo == null) return;
 		ocupado = abuelo.GetNodeOrNull<Node>("Ocupado");
@@ -180,15 +184,28 @@ public partial class KaBarCartoonPrime : TropaBase
 
 		_modoFantasma = true;
 
-		// Reposicionar en la zona rival del mismo carril con offset -80 X
+		// Deshabilitar colisiones: el fantasma es completamente intangible
+		var col = GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
+		if (col != null) col.Disabled = true;
+		// Como Area2D: deshabilitar monitoreo para que la IA no lo detecte
+		Monitorable = false;
+		Monitoring  = false;
+
+		// Ocultar barras de stats: el fantasma no tiene UI de combate
+		var stats = GetNodeOrNull<Control>("StatsTropa");
+		if (stats != null) stats.Visible = false;
+
+		// Reposicionar en la zona rival del mismo carril
+		// Offset simétrico: hacia el frente del objetivo según perspectiva
 		Vector2 posRival = EncontrarPosicionRival();
-		GlobalPosition   = posRival + new Vector2(-80f, 0f);
+		float offsetX    = _eraJugador ? -80f : 80f;   // jugador avanza a derecha → offset negativo; rival avanza a izquierda → offset positivo
+		GlobalPosition   = posRival + new Vector2(offsetX, 0f);
 		ZIndex = 60;
 
-		// Fade-in translúcido (70 % opacidad = efecto fantasma)
+		// Opacidad completa — el sprite ya tiene el look fantasma por diseño
 		Modulate = new Color(1f, 1f, 1f, 0f);
 		Tween tw = CreateTween();
-		tw.TweenProperty(this, "modulate:a", 0.7f, 0.5f);
+		tw.TweenProperty(this, "modulate:a", 1.0f, 0.5f);
 		tw.Finished += () => _anim.Play("respawn_fantasma");
 	}
 
@@ -196,7 +213,6 @@ public partial class KaBarCartoonPrime : TropaBase
 	{
 		string grupoRival = _eraJugador ? "tropas_rival" : "tropas_jugador";
 
-		// Primero: tropa rival viva en el mismo carril
 		foreach (Node n in GetTree().GetNodesInGroup(grupoRival))
 		{
 			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
@@ -205,12 +221,11 @@ public partial class KaBarCartoonPrime : TropaBase
 			if (c == _carrilNum) return e.GlobalPosition;
 		}
 
-		// Fallback: nodo spot por nombre en el árbol de escena
+		// Fallback: spot por nombre en el árbol de escena
 		string spotName = _eraJugador ? $"ModRival{_carrilNum}" : $"Mod{_carrilNum}";
 		var spot = GetTree().Root.FindChild(spotName, true, false);
 		if (spot is Node2D s2d) return s2d.GlobalPosition;
 
-		// Último fallback: desplazamiento desde posición actual
 		return GlobalPosition + new Vector2(_eraJugador ? 250f : -250f, 0f);
 	}
 
@@ -252,7 +267,7 @@ public partial class KaBarCartoonPrime : TropaBase
 		string anim  = (string)_anim.Animation;
 		int    frame = _anim.Frame;
 
-		// Frame 1 del ataque fantasma → infligir 30 dmg al objetivo del carril
+		// Frame 1 del ataque fantasma → infligir 30 dmg al objetivo
 		if (anim == "ataque_fantasma" && frame == 1)
 		{
 			Node2D obj = BuscarObjetivoFantasma();
@@ -269,15 +284,17 @@ public partial class KaBarCartoonPrime : TropaBase
 		switch (anim)
 		{
 			case "ataque":
+				_enDefensa = false;
 				if (!_estaMuerto) _anim.Play("idle");
 				break;
 
 			case "daño":
+				_enDefensa = false;
 				if (!_estaMuerto) _anim.Play("idle");
 				break;
 
 			case "pre defensa ":
-				if (!_estaMuerto) _anim.Play("defensa");
+				if (!_estaMuerto) { _enDefensa = true; _anim.Play("defensa"); }
 				break;
 
 			case "respawn_fantasma":

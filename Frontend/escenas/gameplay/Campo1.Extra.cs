@@ -160,7 +160,7 @@ public partial class Campo1 : Node2D
 	}
 
 	// ── SCREEN SHAKE ──────────────────────────────────────────────────────
-	private void ScreenShake(float intensidad = 6f)
+	public void ScreenShake(float intensidad = 6f)
 	{
 		if (!PanelSettings.ScreenShakeEnabled) return;
 		Vector2 orig = Position;

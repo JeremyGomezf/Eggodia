@@ -87,10 +87,11 @@ public partial class Campo1 : Node2D
 		{
 			bool tieneH = false;
 			try { tieneH = (bool)tropa.Call("TieneHabilidadEspecial"); } catch { }
-			bool usada = HabilidadUsada(tropa);
-			btnHabilidad.Visible = tieneH;
-			btnHabilidad.Disabled = usada;
-			btnHabilidad.Modulate = usada ? new Color(1, 1, 1, 0.4f) : Colors.White;
+			bool usada  = HabilidadUsada(tropa);
+			// Siempre visible; deshabilitado si la tropa no tiene habilidad o ya la usó
+			btnHabilidad.Visible  = true;
+			btnHabilidad.Disabled = !tieneH || usada;
+			btnHabilidad.Modulate = (!tieneH || usada) ? new Color(1, 1, 1, 0.4f) : Colors.White;
 		}
 		menuAcciones.GlobalPosition = tropa.GetGlobalTransformWithCanvas().Origin + new Vector2(-50, -110);
 		menuAcciones.Visible = true;
@@ -185,7 +186,7 @@ public partial class Campo1 : Node2D
 		Node2D t = (Node2D)escenaTropa.Instantiate();
 		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
-		t.ZIndex = (string)puntoMod.Name switch { "Mod2" => 3, "Mod3" => 2, _ => 1 };
+		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 3, "Mod2" => 2, _ => 1 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
 
 		// Activar inmediatamente para que se pueda usar en el mismo turno
@@ -213,7 +214,7 @@ public partial class Campo1 : Node2D
 		t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_rival");
 		t.SetMeta("carril", puntoMod.Name);
-		t.ZIndex = (string)puntoMod.Name switch { "ModRival2" => 3, "ModRival3" => 2, _ => 1 };
+		t.ZIndex = (string)puntoMod.Name switch { "ModRival3" => 3, "ModRival2" => 2, _ => 1 };
 
 		// Corregir orientación sin romper escala ni rotaciones
 		AsegurarOrientacionRival(t);

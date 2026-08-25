@@ -155,9 +155,9 @@ public partial class TanqueCartoonPrime : TropaBase
 		// Orientar el misil hacia el destino (útil si tiene sprite direccional)
 		misil.Rotation = origen.AngleToPoint(destino);
 
-		// Tween de desplazamiento — velocidad proporcional a distancia (máx 0.5 s)
+		// Proyectil ultrarrápido: ráfaga directa desde el cañón
 		float distancia = origen.DistanceTo(destino);
-		float duracion  = Mathf.Clamp(distancia / 900f, 0.12f, 0.5f);
+		float duracion  = Mathf.Clamp(distancia / 4500f, 0.04f, 0.09f);
 
 		Tween tw = misil.CreateTween();
 		tw.TweenProperty(misil, "global_position", destino, duracion);
@@ -166,6 +166,10 @@ public partial class TanqueCartoonPrime : TropaBase
 			if (IsInstanceValid(misil)) misil.QueueFree();
 			CrearExplosion(destino);
 			if (IsInstanceValid(objetivo)) objetivo.Call("RecibirDaño", puntosAtaque);
+			// Vibración de cámara al impacto
+			var campo = GetTree().Root.FindChild("Campo1", true, false);
+			if (campo != null && campo.HasMethod("ScreenShake"))
+				campo.Call("ScreenShake", 7f);
 		};
 	}
 
