@@ -22,6 +22,7 @@ public partial class DamaPrime : TropaBase
 	private Vector2 _posicionOriginal;
 	private Node2D  _objetivoAtaque;
 	private bool    _volando         = false;
+	private int     _zIndexOriginal;
 	private const int FRAME_DESPEGUE = 2; // Frame donde despega (solo en habilidad)
 	private const int FRAME_IMPACTO  = 5; // Frame del golpe/daño
 
@@ -175,6 +176,7 @@ public partial class DamaPrime : TropaBase
 	{
 		_posicionOriginal = GlobalPosition;
 		_volando          = false;
+		_zIndexOriginal   = ZIndex;
 		_anim.Play("ataque");
 	}
 
@@ -191,6 +193,8 @@ public partial class DamaPrime : TropaBase
 			_volando = true;
 
 			if (_objetivoAtaque == null || !IsInstanceValid(_objetivoAtaque)) return;
+
+			ZIndex = 100; // Se muestra por encima de la tropa objetivo durante el vuelo
 
 			float offset = IsInGroup("tropas_jugador") ? -110.0f : 110.0f;
 			Vector2 posDestino = new Vector2(_objetivoAtaque.GlobalPosition.X + offset, _objetivoAtaque.GlobalPosition.Y);
@@ -259,6 +263,7 @@ public partial class DamaPrime : TropaBase
 	{
 		_volando           = false;
 		_esAtaqueHabilidad = false;
+		ZIndex              = _zIndexOriginal;
 		DetenerEfectoAviso();
 		ReproducirIdle();
 	}
@@ -329,10 +334,19 @@ public partial class DamaPrime : TropaBase
 	private Node2D BuscarObjetivoEnCarril()
 	{
 		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
+		string grupoMuro    = IsInGroup("tropas_jugador") ? "muros_rival"  : "muros_jugador";
 
 		if (HasMeta("carril"))
 		{
 			string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+
+			foreach (Node n in GetTree().GetNodesInGroup(grupoMuro))
+			{
+				if (!(n is Node2D m) || !IsInstanceValid(m) || !m.HasMeta("carril")) continue;
+				string cm = ((string)m.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+				if (cm == miCarril) return m;
+			}
+
 			Node2D mejorEnCarril = null;
 			int minVida = int.MaxValue;
 

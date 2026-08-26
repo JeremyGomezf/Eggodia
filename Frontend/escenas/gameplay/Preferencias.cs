@@ -33,7 +33,7 @@ public static class Preferencias
 		"res://imagenes/PersonajesPng/CapitanHuevo.png",
 		"res://imagenes/PersonajesPng/DinoHuevo.png",
 		"res://imagenes/PersonajesPng/MajestadHuevo.png",
-		"res://imagenes/PersonajesPng/DinoHuevo.png",
+		"res://imagenes/PersonajesPng/PaperDinoHuevoIcon.tres",
 	};
 
 	public static int SkinActivaIdx

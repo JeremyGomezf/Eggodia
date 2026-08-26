@@ -258,22 +258,6 @@ public partial class KaBarCartoonPrime : TropaBase
 		return null;
 	}
 
-	private Node2D BuscarObjetivoEnCarril()
-	{
-		if (!HasMeta("carril")) return null;
-		string grupo    = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
-		string miCarril = ((string)GetMeta("carril"))
-			.ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-
-		foreach (Node n in GetTree().GetNodesInGroup(grupo))
-		{
-			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
-			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","").Trim();
-			if (c == miCarril) return e;
-		}
-		return null;
-	}
-
 	// ── FINAL DEL FANTASMA ────────────────────────────────────────────────────
 	private void IniciarFinalFantasma(bool victoria)
 	{

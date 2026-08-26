@@ -186,6 +186,41 @@ public abstract partial class TropaBase : Area2D
 	/// </summary>
 	public virtual void TickHabilidad() { }
 
+	/// <summary>
+	/// Busca el objetivo enemigo en el mismo carril. Si un muro del Gólem ocupa ese carril,
+	/// se devuelve el muro en su lugar salvo que <paramref name="ignorarMuro"/> sea true
+	/// (ataques que pasan por encima del muro: granadas, saltos de ajedrez, fantasma de Kabar).
+	/// </summary>
+	protected Node2D BuscarObjetivoEnCarril(bool ignorarMuro = false)
+	{
+		if (!HasMeta("carril")) return null;
+		bool esJugador      = IsInGroup("tropas_jugador");
+		string grupoTropas  = esJugador ? "tropas_rival" : "tropas_jugador";
+		string grupoMuros   = esJugador ? "muros_rival"  : "muros_jugador";
+		string miCarril     = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+
+		if (!ignorarMuro)
+		{
+			foreach (Node n in GetTree().GetNodesInGroup(grupoMuros))
+			{
+				if (!(n is Node2D m) || !IsInstanceValid(m) || !m.HasMeta("carril")) continue;
+				string cm = ((string)m.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+				if (cm == miCarril) return m;
+			}
+		}
+
+		Node2D mejor = null; int min = int.MaxValue;
+		foreach (Node n in GetTree().GetNodesInGroup(grupoTropas))
+		{
+			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
+			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+			if (c != miCarril) continue;
+			int v = 0; try { v = (int)e.Get("vidaActual"); } catch { }
+			if (v > 0 && v < min) { min = v; mejor = e; }
+		}
+		return mejor;
+	}
+
 	// ── ANIMACIONES (encapsuladas — las subclases no las duplican) ────────
 
 	public void ReproducirIdle() { if (!_estaMuerto) _anim.Play("idle"); }

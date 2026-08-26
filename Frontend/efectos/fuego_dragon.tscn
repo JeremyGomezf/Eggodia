@@ -58,4 +58,6 @@ position = Vector2(2.4428692, -12.501824)
 rotation = 0.009641768
 scale = Vector2(0.305, 0.237)
 sprite_frames = SubResource("SpriteFrames_shcb7")
-animation = &"movimiento_fuego"
+animation = &"impacto_fuego"
+frame = 1
+frame_progress = 1.0

@@ -227,6 +227,15 @@ public partial class CamperoCartoonPrime : TropaBase
 	private Node2D BuscarObjetivoEnCarril(string carrilTarget)
 	{
 		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
+		string grupoMuro    = IsInGroup("tropas_jugador") ? "muros_rival"  : "muros_jugador";
+
+		foreach (Node n in GetTree().GetNodesInGroup(grupoMuro))
+		{
+			if (!(n is Node2D m) || !IsInstanceValid(m) || !m.HasMeta("carril")) continue;
+			string cm = ((string)m.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+			if (cm == carrilTarget) return m;
+		}
+
 		Node2D mejor = null;
 		int min = int.MaxValue;
 

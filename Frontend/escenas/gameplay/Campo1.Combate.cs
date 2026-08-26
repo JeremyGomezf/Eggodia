@@ -5,11 +5,11 @@ using System.Collections.Generic;
 public partial class Campo1 : Node2D
 {
 	// ── COMBATE CON NÚMEROS FLOTANTES ─────────────────────────────────────
-	private void ProcesarCombateFrontal(Node2D atacante, string grupoEnemigo)
+	private void ProcesarCombateFrontal(Node2D atacante, string grupoEnemigo, bool ignorarMuro = false)
 	{
 		if (!IsInstanceValid(atacante) || EstaBlockeada(atacante)) return;
 		int    daño = Gi(atacante, "puntosAtaque");
-		Node2D obj  = BuscarObjetivoEnCarril(atacante, grupoEnemigo);
+		Node2D obj  = BuscarObjetivoEnCarril(atacante, grupoEnemigo, ignorarMuro);
 		bool   autogestionado = false;
 		try { autogestionado = (bool)atacante.Call("AutogestionaDañoAtaque"); } catch { }
 
@@ -81,9 +81,20 @@ public partial class Campo1 : Node2D
 		}
 	}
 
-	private Node2D BuscarObjetivoEnCarril(Node2D atacante, string grupo)
+	private Node2D BuscarObjetivoEnCarril(Node2D atacante, string grupo, bool ignorarMuro = false)
 	{
 		string carril = ((string)atacante.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","");
+
+		if (!ignorarMuro)
+		{
+			string grupoMuro = grupo == "tropas_rival" ? "muros_rival" : "muros_jugador";
+			foreach (Node n in GetTree().GetNodesInGroup(grupoMuro))
+			{
+				if (!(n is Node2D m) || !IsInstanceValid(m) || !m.HasMeta("carril")) continue;
+				if (((string)m.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","") == carril) return m;
+			}
+		}
+
 		Node2D mejor  = null; int min = int.MaxValue;
 		foreach (Node n in GetTree().GetNodesInGroup(grupo))
 		{

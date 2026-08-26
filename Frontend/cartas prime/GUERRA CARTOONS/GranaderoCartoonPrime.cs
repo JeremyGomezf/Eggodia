@@ -85,7 +85,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			case "atacar":
 				_yaActuo = true;
-				_objetivo = BuscarObjetivo();
+				_objetivo = BuscarObjetivoEnCarril(true);
 				_anim.Play(AF("ataque"));
 				break;
 
@@ -154,6 +154,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			vidaActual  = 0;
 			_estaMuerto = true;
+			GetNodeOrNull<CollisionShape2D>("CollisionShape2D")?.SetDeferred("disabled", true);
 			ReproducirDerrota();
 		}
 	}
@@ -169,7 +170,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 	protected override void UsarHabilidadPropia()
 	{
 		if (habilidadUsada) return;
-		Node2D obj = BuscarObjetivo();
+		Node2D obj = BuscarObjetivoEnCarril(true);
 		if (obj == null) return;
 
 		habilidadUsada = true;
@@ -303,29 +304,6 @@ public partial class GranaderoCartoonPrime : TropaBase
 		}
 	}
 
-	// ── BUSCAR OBJETIVO EN CARRIL ─────────────────────────────────────────────
-	private Node2D BuscarObjetivo()
-	{
-		if (!HasMeta("carril")) return null;
-		string grupo    = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
-		string miCarril = ((string)GetMeta("carril"))
-			.ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-
-		Node2D mejor = null;
-		int    min   = int.MaxValue;
-
-		foreach (Node n in GetTree().GetNodesInGroup(grupo))
-		{
-			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
-			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","").Trim();
-			if (c != miCarril) continue;
-			int v = 0;
-			try { v = (int)e.Get("vidaActual"); } catch { }
-			if (v > 0 && v < min) { min = v; mejor = e; }
-		}
-		return mejor;
-	}
-
 	// ── SEÑAL: CAMBIO DE FRAME ────────────────────────────────────────────────
 	private void OnFrameChanged()
 	{
@@ -345,7 +323,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		if ((anim == "derrota 1" || anim == "derrota 2" || anim == "derrota 3") && frame == 3 && !_mortalDisparado)
 		{
 			_mortalDisparado = true;
-			Node2D ultimoObj = BuscarObjetivo();
+			Node2D ultimoObj = BuscarObjetivoEnCarril(true);
 			if (ultimoObj != null) LanzarGranada(ultimoObj, puntosAtaque, _spotTroll);
 		}
 	}

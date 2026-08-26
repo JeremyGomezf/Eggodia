@@ -78,22 +78,4 @@ public partial class MaguinPrime : TropaBase
 
 		habilidadUsada = true;
 	}
-
-	// ── HELPER ─────────────────────────────────────────────────────────────────
-	private Node2D BuscarObjetivoEnCarril()
-	{
-		if (!HasMeta("carril")) return null;
-		string grupo    = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
-		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-		Node2D mejor = null; int min = int.MaxValue;
-		foreach (Node n in GetTree().GetNodesInGroup(grupo))
-		{
-			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
-			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-			if (c != miCarril) continue;
-			int v = 0; try { v = (int)e.Get("vidaActual"); } catch { }
-			if (v > 0 && v < min) { min = v; mejor = e; }
-		}
-		return mejor;
-	}
 }

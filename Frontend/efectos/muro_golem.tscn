@@ -1,9 +1,13 @@
 [gd_scene format=3 uid="uid://bwka6sql8nu0s"]
 
 [ext_resource type="Texture2D" uid="uid://b285l7eluotn7" path="res://imagenes/sprites/Efectos_OG.png" id="1_ssx7a"]
+[ext_resource type="Script" path="res://cartas prime/MuroGolemPrime.cs" id="2_muro01"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
 size = Vector2(86, 105)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_muro01"]
+bg_color = Color(0.87058824, 0.5019608, 0.10980392, 1)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_njmqw"]
 atlas = ExtResource("1_ssx7a")
@@ -146,6 +150,7 @@ animations = [{
 }]
 
 [node name="muro de golem" type="Area2D" unique_id=1934137725]
+script = ExtResource("2_muro01")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
 position = Vector2(6.8740234, -11.899834)
@@ -156,4 +161,21 @@ shape = SubResource("RectangleShape2D_xr762")
 position = Vector2(2.8740234, -49.399834)
 scale = Vector2(0.48408484, 0.47045815)
 sprite_frames = SubResource("SpriteFrames_shcb7")
-animation = &"destrozado_muro"
+animation = &"muro_solido"
+
+[node name="StatsMuro" type="Control" parent="." unique_id=1934137726]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -55.0
+offset_top = -75.0
+offset_right = 55.0
+offset_bottom = -55.0
+
+[node name="BarraDurabilidad" type="ProgressBar" parent="StatsMuro" unique_id=1934137727]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 110.0
+offset_bottom = 14.0
+value = 100.0
+theme_override_styles/background = SubResource("StyleBoxFlat_muro01")

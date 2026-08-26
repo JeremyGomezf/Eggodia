@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://0j6m4h2hutte" path="res://imagenes/sprites/t-rex_sprite.png" id="2_pwsok"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wjcmm"]
-size = Vector2(386, 220)
+size = Vector2(294, 211)
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_56jbl"]
 load_path = "res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.ctex"
@@ -335,7 +335,7 @@ position = Vector2(1, -41)
 script = ExtResource("1_56jbl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=704329438]
-position = Vector2(32, -29)
+position = Vector2(38, -24.5)
 shape = SubResource("RectangleShape2D_wjcmm")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1032052819]

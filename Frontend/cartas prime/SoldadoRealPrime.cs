@@ -70,7 +70,8 @@ public partial class SoldadoRealPrime : TropaBase
 			LimpiarEstadoParry();
 			_esContraataque = true;
 
-			_objetivo = BuscarAtacanteEnCarril() ?? BuscarObjetivoEnCarril();
+			Node2D atacanteOCarril = BuscarAtacanteEnCarril() ?? BuscarObjetivoEnCarril();
+			_objetivo = BuscarMuroEnCarrilDe(atacanteOCarril) ?? atacanteOCarril;
 			_anim.Play("ataque");
 			return;
 		}
@@ -167,17 +168,18 @@ public partial class SoldadoRealPrime : TropaBase
 		return null;
 	}
 
-	private Node2D BuscarObjetivoEnCarril()
+	/// <summary>Si el carril de <paramref name="refNode"/> tiene un muro enemigo, lo devuelve
+	/// para que el contraataque de Parry golpee el muro en vez de saltárselo.</summary>
+	private Node2D BuscarMuroEnCarrilDe(Node2D refNode)
 	{
-		if (!HasMeta("carril")) return null;
-		string grupo    = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
-		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-		
-		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+		if (refNode == null || !IsInstanceValid(refNode) || !refNode.HasMeta("carril")) return null;
+		string grupoMuro = IsInGroup("tropas_jugador") ? "muros_rival" : "muros_jugador";
+		string carril = ((string)refNode.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+		foreach (Node n in GetTree().GetNodesInGroup(grupoMuro))
 		{
-			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
-			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-			if (c == miCarril) return e;
+			if (!(n is Node2D m) || !IsInstanceValid(m) || !m.HasMeta("carril")) continue;
+			string c = ((string)m.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+			if (c == carril) return m;
 		}
 		return null;
 	}

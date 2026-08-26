@@ -1,24 +1,30 @@
 using Godot;
-using System.Collections.Generic;
 
 /// <summary>
 /// Gólem — daño dividido en dos oleadas: frame 2 (50%) + frame 4 (50%).
 /// Si el frame 2 agota el escudo del rival, el frame 4 golpea directo a la vida.
-/// Habilidad: +200 escudo a los 2 aliados más débiles.
+/// Habilidad: invoca muros de piedra frente a los aliados de los otros dos carriles.
 /// </summary>
 public partial class GolemPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
 
+	private const string RUTA_MURO = "res://efectos/muro_golem.tscn";
+	private const float  OFFSET_MURO = 90f;
+
 	private Node2D _objetivo;
 	private bool   _golpeF2Disparado = false;
 	private bool   _golpeF4Disparado = false;
+
+	private PackedScene _escenaMuro;
 
 	public override void _Ready()
 	{
 		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 450; escudoActual = escudoMaximo = 500; puntosAtaque = 350; }
 		base._Ready();
 		_anim.FrameChanged += OnFrameChanged;
+
+		if (ResourceLoader.Exists(RUTA_MURO)) _escenaMuro = GD.Load<PackedScene>(RUTA_MURO);
 	}
 
 	// ── CAPACIDADES ────────────────────────────────────────────────────────────
@@ -61,23 +67,12 @@ public partial class GolemPrime : TropaBase
 		}
 	}
 
-	// ── HABILIDAD: +200 escudo a los 2 aliados más débiles ────────────────────
+	// ── HABILIDAD: INVOCAR MUROS FRENTE A LOS ALIADOS DE LOS OTROS CARRILES ──
 	protected override void UsarHabilidadPropia()
 	{
-		if (habilidadUsada) return;
-
-		string grupoAliado = IsInGroup("tropas_jugador") ? "tropas_jugador" : "tropas_rival";
-		var aliados = new List<(Node2D n, float pct)>();
-
-		foreach (Node n in GetTree().GetNodesInGroup(grupoAliado))
-		{
-			if (!(n is Node2D a) || !IsInstanceValid(a) || a == this) continue;
-			int esc = 0, escMax = 1;
-			try { esc    = (int)a.Get("escudoActual"); } catch { }
-			try { escMax = (int)a.Get("escudoMaximo"); if (escMax <= 0) escMax = 1; } catch { }
-			aliados.Add((a, (float)esc / escMax));
-		}
-		aliados.Sort((a, b) => a.pct.CompareTo(b.pct));
+		if (habilidadUsada || !HasMeta("carril")) return;
+		habilidadUsada = true;
+		_yaActuo        = true;
 
 		Tween tw = CreateTween();
 		tw.TweenProperty(this, "modulate", new Color(0.7f, 0.7f, 0.9f), 0.15f);
@@ -86,48 +81,54 @@ public partial class GolemPrime : TropaBase
 		sc.TweenProperty(this, "scale", Scale * new Vector2(1.2f, 0.8f), 0.15f);
 		sc.TweenProperty(this, "scale", Scale, 0.25f);
 
-		int rocas = 0;
-		foreach (var (a, _) in aliados)
-		{
-			if (rocas >= 2) break;
-			int escActual = 0, escMax = 0;
-			try { escActual = (int)a.Get("escudoActual"); } catch { }
-			try { escMax    = (int)a.Get("escudoMaximo"); } catch { }
-			int nuevo    = escActual + 200;
-			int nuevoMax = Mathf.Max(escMax, nuevo);
-			try { a.Set("escudoActual", nuevo);    } catch { }
-			try { a.Set("escudoMaximo", nuevoMax); } catch { }
+		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 
-			var stats = a.GetNodeOrNull<Control>("StatsTropa");
-			if (stats != null)
+		GetTree().CreateTimer(3.0).Timeout += () =>
+		{
+			if (!IsInstanceValid(this)) return;
+			foreach (string otroCarril in new[] { "1", "2", "3" })
 			{
-				stats.Visible = true;
-				var be = stats.GetNodeOrNull<ProgressBar>("BarraEscudo");
-				if (be != null && nuevoMax > 0) be.Value = (float)nuevo / nuevoMax * 100;
+				if (otroCarril == miCarril) continue;
+				InvocarMuroParaCarril(otroCarril);
 			}
-			Tween ta = a.CreateTween();
-			ta.TweenProperty(a, "modulate", new Color(1.2f, 1f, 0.4f), 0.2f);
-			ta.TweenProperty(a, "modulate", Colors.White, 0.4f);
-			rocas++;
-		}
-		habilidadUsada = true;
+		};
 	}
 
-	// ── HELPER ─────────────────────────────────────────────────────────────────
-	private Node2D BuscarObjetivoEnCarril()
+	private void InvocarMuroParaCarril(string carrilNormalizado)
 	{
-		if (!HasMeta("carril")) return null;
-		string grupo    = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
-		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-		Node2D mejor = null; int min = int.MaxValue;
-		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+		if (_escenaMuro == null) return;
+
+		bool esJugador      = IsInGroup("tropas_jugador");
+		string grupoAliado  = esJugador ? "tropas_jugador" : "tropas_rival";
+		string grupoMuro    = esJugador ? "muros_jugador"  : "muros_rival";
+
+		// Ya hay un muro en ese carril: no duplicar.
+		foreach (Node n in GetTree().GetNodesInGroup(grupoMuro))
 		{
-			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
-			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-			if (c != miCarril) continue;
-			int v = 0; try { v = (int)e.Get("vidaActual"); } catch { }
-			if (v > 0 && v < min) { min = v; mejor = e; }
+			if (!(n is Node2D m) || !IsInstanceValid(m) || !m.HasMeta("carril")) continue;
+			string cm = ((string)m.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+			if (cm == carrilNormalizado) return;
 		}
-		return mejor;
+
+		Node2D aliado = null;
+		foreach (Node n in GetTree().GetNodesInGroup(grupoAliado))
+		{
+			if (!(n is Node2D a) || !IsInstanceValid(a) || a == this || !a.HasMeta("carril")) continue;
+			string c = ((string)a.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+			if (c != carrilNormalizado) continue;
+			int v = 0; try { v = (int)a.Get("vidaActual"); } catch { }
+			if (v > 0) { aliado = a; break; }
+		}
+		if (aliado == null) return;
+
+		Vector2 dirHaciaEnemigo = new Vector2(esJugador ? 1f : -1f, 0f);
+		Vector2 posMuro = aliado.GlobalPosition + dirHaciaEnemigo * OFFSET_MURO;
+
+		Node2D muro = (Node2D)_escenaMuro.Instantiate();
+		GetTree().Root.AddChild(muro);
+		muro.GlobalPosition = posMuro;
+		muro.ZIndex = 100;
+		muro.SetMeta("carril", aliado.GetMeta("carril"));
+		muro.AddToGroup(grupoMuro);
 	}
 }

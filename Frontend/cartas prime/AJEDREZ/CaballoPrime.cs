@@ -20,6 +20,7 @@ public partial class CaballoPrime : TropaBase
 	private Vector2 _posicionOriginal;
 	private Node2D  _objetivoAtaque;
 	private bool    _volando         = false;
+	private int     _zIndexOriginal;
 	private const int FRAME_DESPEGUE = 3; // Elevarse y volar en Frame 1 (Solo en habilidad)
 	private const int FRAME_IMPACTO  = 5; // Frame del golpe/daño
 
@@ -168,6 +169,7 @@ public partial class CaballoPrime : TropaBase
 	{
 		_posicionOriginal = GlobalPosition;
 		_volando          = false;
+		_zIndexOriginal   = ZIndex;
 		_anim.Play("ataque");
 	}
 
@@ -184,6 +186,8 @@ public partial class CaballoPrime : TropaBase
 			_volando = true;
 
 			if (_objetivoAtaque == null || !IsInstanceValid(_objetivoAtaque)) return;
+
+			ZIndex = 100; // Se muestra por encima de la tropa objetivo durante el salto
 
 			float offset = IsInGroup("tropas_jugador") ? -110.0f : 110.0f;
 			Vector2 posDestino = new Vector2(_objetivoAtaque.GlobalPosition.X + offset, _objetivoAtaque.GlobalPosition.Y);
@@ -253,6 +257,7 @@ public partial class CaballoPrime : TropaBase
 	{
 		_volando           = false;
 		_esAtaqueHabilidad = false;
+		ZIndex              = _zIndexOriginal;
 		DetenerEfectoAviso();
 		ReproducirIdle();
 	}
@@ -313,29 +318,6 @@ public partial class CaballoPrime : TropaBase
 			if (c == carrilTarget) return e;
 		}
 		return null;
-	}
-
-	private Node2D BuscarObjetivoEnCarril()
-	{
-		if (!HasMeta("carril")) return null;
-
-		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
-		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-
-		Node2D mejor = null;
-		int min = int.MaxValue;
-
-		foreach (Node n in GetTree().GetNodesInGroup(grupoEnemigo))
-		{
-			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
-			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-			if (c != miCarril) continue;
-
-			int v = 0;
-			try { v = (int)e.Get("vidaActual"); } catch { }
-			if (v < min) { min = v; mejor = e; }
-		}
-		return mejor;
 	}
 
 	private void AplicarDañoDirecto(Node2D objetivo, int cantidad)
