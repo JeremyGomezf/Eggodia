@@ -21,8 +21,8 @@ public partial class PantallaVictoria : CanvasLayer
 
 		var btnJugar = GetNodeOrNull<Button>("Overlay/VBox/BtnJugarDeNuevo");
 		var btnMenu  = GetNodeOrNull<Button>("Overlay/VBox/BtnMenu");
-		if (btnJugar != null) btnJugar.Pressed += () => GetTree().ReloadCurrentScene();
-		if (btnMenu  != null) btnMenu.Pressed  += () => GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
+		if (btnJugar != null) btnJugar.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ReloadCurrentScene(); };
+		if (btnMenu  != null) btnMenu.Pressed  += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn"); };
 
 		MostrarRecompensa();
 		AnimarEntrada();

@@ -15,6 +15,7 @@ public partial class PantallaDerrota : CanvasLayer
 		if (btnReintentar != null)
 			btnReintentar.Pressed += () =>
 			{
+				LimpiezaEfectos.LimpiarEfectosDeCampo();
 				GetTree().Paused = false;
 				GetTree().ChangeSceneToFile("res://DatosCartas/MenuConstructor.tscn");
 			};
@@ -22,6 +23,7 @@ public partial class PantallaDerrota : CanvasLayer
 		if (btnMenu != null)
 			btnMenu.Pressed += () =>
 			{
+				LimpiezaEfectos.LimpiarEfectosDeCampo();
 				GetTree().Paused = false;
 				GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
 			};

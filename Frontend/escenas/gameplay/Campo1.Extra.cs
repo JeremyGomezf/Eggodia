@@ -260,8 +260,19 @@ public partial class Campo1 : Node2D
 	{
 		var mano = GetNodeOrNull<Control>("ManoManual");
 		if (mano == null) return;
-		mano.OffsetTop    += 180;
-		mano.OffsetBottom += 180;
+
+		float nuevoBottom = mano.OffsetBottom + 180f; // fallback si no hay cámara
+		var cam = GetNodeOrNull<Camera2D>("Camera2D");
+		if (cam != null)
+		{
+			float mitadAlturaMundo  = (GetViewport().GetVisibleRect().Size.Y / 2f) / cam.Zoom.Y;
+			float bordeInferiorMundo = cam.Position.Y + mitadAlturaMundo;
+			nuevoBottom = bordeInferiorMundo - 5f; // pequeño margen para no recortar
+		}
+
+		float delta = nuevoBottom - mano.OffsetBottom;
+		mano.OffsetTop    += delta;
+		mano.OffsetBottom += delta;
 	}
 
 	// ── ESTILO GLOBAL PARA LABELS DEL HUD ────────────────────────────────

@@ -139,15 +139,22 @@ public partial class Campo1 : Node2D
 		}
 	}
 
-	// ── PANEL DE HECHIZOS — 2 tarjetas en HUD, posición X=657 Y=123 (screen)
-	private const float HECHIZO_X = 657f;
-	private const float HECHIZO_Y = 123f;
+	// ── PANEL DE HECHIZOS — 2 tarjetas en HUD, ancladas a la esquina inferior derecha
 	private const float HECHIZO_W = 100f;
 	private const float HECHIZO_H = 140f;
 	private const float HECHIZO_GAP = 112f;
+	private const float HECHIZO_MARGEN = 20f;
+	private float HECHIZO_X;
+	private float HECHIZO_Y;
 
 	private void CrearPanelHechizos()
 	{
+		Vector2 vp = GetViewport().GetVisibleRect().Size;
+		float anchoBloque = HECHIZO_W * 2 + HECHIZO_GAP;
+		float altoBloque  = HECHIZO_H + 6f + 40f + 44f; // cartas + instrucción + botón CAMBIAR
+		HECHIZO_X = vp.X - anchoBloque - HECHIZO_MARGEN;
+		HECHIZO_Y = vp.Y - altoBloque - HECHIZO_MARGEN;
+
 		// Barajar pool [0..4] y sacar 2 para la mano inicial
 		_poolHechizos = new System.Collections.Generic.List<int> { 0, 1, 2, 3, 4 };
 		for (int i = 0; i < _poolHechizos.Count; i++)
@@ -325,13 +332,13 @@ public partial class Campo1 : Node2D
 		int pi = _hechizosMano[slotIdx];
 		switch (pi)
 		{
-			case 0: UsarCuracion();              AutoReemplazarHechizo(slotIdx); break;
-			case 1: UsarRobo();                  AutoReemplazarHechizo(slotIdx); break;
-			case 2: IniciarSeleccion("veneno",   slotIdx); break;
-			case 3: IniciarSeleccion("bloqueo",  slotIdx); break;
-			case 4: UsarEncebollado();            AutoReemplazarHechizo(slotIdx); break;
+			case 0: IniciarSeleccion("curacion",    slotIdx); break;
+			case 1: UsarRobo(); AutoReemplazarHechizo(slotIdx); break;
+			case 2: IniciarSeleccion("veneno",      slotIdx); break;
+			case 3: IniciarSeleccion("bloqueo",     slotIdx); break;
+			case 4: IniciarSeleccion("encebollado", slotIdx); break;
 		}
-		if (pi != 2 && pi != 3) ActualizarVisualesHechizos();
+		if (pi == 1) ActualizarVisualesHechizos();
 	}
 
 	public bool EsHechizoUsado(int slotIdx)
@@ -480,6 +487,9 @@ public partial class Campo1 : Node2D
 			ico.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.2f));
 			ico.AddThemeFontSizeOverride("font_size", 20);
 			contenedor.AddChild(ico);
+
+			// El ícono es solo un aviso visual pasajero; el veneno en sí sigue activo el resto de sus turnos.
+			GetTree().CreateTimer(3.0).Timeout += () => { if (IsInstanceValid(ico)) ico.QueueFree(); };
 		}
 		if (bloqueado)
 		{

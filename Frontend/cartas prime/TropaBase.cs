@@ -255,9 +255,20 @@ public abstract partial class TropaBase : Area2D
 
 	// ── UI (encapsulada) ──────────────────────────────────────────────────
 
+	private int _tokenBarras = 0;
+
 	protected void MostrarBarras(bool mostrar)
 	{
 		if (_contenedorStats != null) { _contenedorStats.Visible = mostrar; ActualizarBarrasUI(); }
+		if (!mostrar) return;
+
+		// Auto-ocultado a los 3s de inactividad (mismo comportamiento para jugador y rival).
+		int miToken = ++_tokenBarras;
+		GetTree().CreateTimer(3.0).Timeout += () =>
+		{
+			if (!IsInstanceValid(this) || miToken != _tokenBarras) return;
+			if (_contenedorStats != null) _contenedorStats.Visible = false;
+		};
 	}
 
 	protected void ActualizarBarrasUI()

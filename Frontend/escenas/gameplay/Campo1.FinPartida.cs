@@ -119,14 +119,14 @@ public partial class Campo1 : Node2D
 		btnReinicio.Text              = "Jugar de nuevo";
 		btnReinicio.Position          = new Vector2(50, 300);
 		btnReinicio.CustomMinimumSize = new Vector2(190, 48);
-		btnReinicio.Pressed += () => GetTree().ReloadCurrentScene();
+		btnReinicio.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ReloadCurrentScene(); };
 		pantalla.AddChild(btnReinicio);
 
 		var btnMenu = new Button();
 		btnMenu.Text              = "Menú Principal";
 		btnMenu.Position          = new Vector2(255, 300);
 		btnMenu.CustomMinimumSize = new Vector2(190, 48);
-		btnMenu.Pressed += () => GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
+		btnMenu.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn"); };
 		pantalla.AddChild(btnMenu);
 
 		if (SesionJuego.Instance?.EstaLogueado == true)

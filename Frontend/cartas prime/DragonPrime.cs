@@ -94,6 +94,7 @@ public partial class DragonPrime : TropaBase
 		GetTree().Root.AddChild(bola);
 		bola.GlobalPosition = origen;
 		bola.ZIndex = 100;
+		bola.AddToGroup("efectos_dragon_root");
 
 		var animBola = bola.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 		animBola?.Play("movimiento_fuego");
@@ -113,22 +114,25 @@ public partial class DragonPrime : TropaBase
 			? ((string)objetivo.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim()
 			: null;
 
+		if (IsInstanceValid(objetivo)) objetivo.Call("RecibirDaño", DAÑO_BOLA_FUEGO);
+
 		if (animBola != null)
 		{
+			// Mini-explosión: agranda ligeramente la bola durante el impacto.
+			bola.Scale *= 1.3f;
 			animBola.Play("impacto_fuego");
 			animBola.AnimationFinished += () =>
 			{
 				if (IsInstanceValid(bola)) bola.QueueFree();
+				// La quemadura continua solo arranca cuando termina la animación de impacto.
+				if (carril != null) IniciarQuemadura(grupoEnemigo, carril, posicionImpacto);
 			};
 		}
-		else if (IsInstanceValid(bola))
+		else
 		{
-			bola.QueueFree();
+			if (IsInstanceValid(bola)) bola.QueueFree();
+			if (carril != null) IniciarQuemadura(grupoEnemigo, carril, posicionImpacto);
 		}
-
-		if (IsInstanceValid(objetivo)) objetivo.Call("RecibirDaño", DAÑO_BOLA_FUEGO);
-
-		if (carril != null) IniciarQuemadura(grupoEnemigo, carril, posicionImpacto);
 	}
 
 	// ── QUEMADURA (DoT que persiste en el carril/módulo, independiente de si el Dragón sigue vivo) ──
@@ -141,6 +145,7 @@ public partial class DragonPrime : TropaBase
 		tree.Root.AddChild(efecto);
 		efecto.GlobalPosition = posicionSuelo;
 		efecto.ZIndex = 100;
+		efecto.AddToGroup("efectos_dragon_root");
 		efecto.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D")?.Play("animate_fuego");
 
 		TickQuemadura(tree, grupoEnemigo, carrilNormalizado, efecto, TICKS_QUEMADURA);

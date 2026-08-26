@@ -47,6 +47,7 @@ animations = [{
 }]
 
 [node name="fuego dragon" type="Area2D" unique_id=1934137725]
+scale = Vector2(1.165, 1.165)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
 position = Vector2(-8, -1.1920929e-07)
@@ -59,5 +60,3 @@ rotation = 0.009641768
 scale = Vector2(0.305, 0.237)
 sprite_frames = SubResource("SpriteFrames_shcb7")
 animation = &"impacto_fuego"
-frame = 1
-frame_progress = 1.0

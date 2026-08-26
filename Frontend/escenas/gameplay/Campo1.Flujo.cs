@@ -306,7 +306,13 @@ public partial class Campo1 : Node2D
 	public void EjecutarMuerteTropaSacrificada(Node2D tropa)
 	{
 		if (!IsInstanceValid(tropa)) return;
-		tropa.Call("ReproducirDerrota");
+
+		// Algunas tropas (p. ej. Granadero) ya reproducen su propia animación de derrota
+		// antes de notificar aquí — no reiniciarla si ya está en curso.
+		var animSprite = tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+		bool yaEnDerrota = animSprite != null && ((string)animSprite.Animation).Contains("derrota");
+		if (!yaEnDerrota) tropa.Call("ReproducirDerrota");
+
 		int castigo = Gi(tropa, "vidaMaxima");
 
 		if (tropa.IsInGroup("tropas_rival"))

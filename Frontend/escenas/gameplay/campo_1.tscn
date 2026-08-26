@@ -109,19 +109,19 @@ scale = Vector2(0.6, 0.6)
 texture = ExtResource("4_mano")
 
 [node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
-position = Vector2(-113, -139)
+position = Vector2(-170, -139)
 rotation = -0.436
 
 [node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
-position = Vector2(-41, -181)
+position = Vector2(-62, -181)
 rotation = -0.14
 
 [node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
-position = Vector2(43, -193)
+position = Vector2(65, -193)
 rotation = 0.14
 
 [node name="Spot4" type="Marker2D" parent="ManoManual" unique_id=184729106]
-position = Vector2(115, -163)
+position = Vector2(173, -163)
 rotation = 0.436
 
 [node name="Mod1" type="Marker2D" parent="." unique_id=698830398 groups=["zonas_invocacion"]]

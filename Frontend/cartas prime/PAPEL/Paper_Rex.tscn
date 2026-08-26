@@ -331,7 +331,7 @@ bg_color = Color(0, 0.72156864, 0.101960786, 1)
 bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
 
 [node name="t-rex" type="Area2D" unique_id=327969899]
-position = Vector2(1, -41)
+position = Vector2(-10, -54)
 script = ExtResource("1_56jbl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=704329438]
@@ -349,10 +349,10 @@ frame_progress = 0.16435337
 [node name="StatsTropa" type="Control" parent="." unique_id=1023355261]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 248.0
-offset_top = -25.0
-offset_right = 288.0
-offset_bottom = 15.0
+offset_left = -150.00005
+offset_top = -78.0
+offset_right = -110.000046
+offset_bottom = -38.0
 scale = Vector2(0.91999876, 0.7599994)
 metadata/_edit_use_anchors_ = true
 

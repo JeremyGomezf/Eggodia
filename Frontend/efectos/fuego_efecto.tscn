@@ -28,6 +28,7 @@ animations = [{
 }]
 
 [node name="fuego quemadura" type="Area2D" unique_id=1934137725]
+scale = Vector2(1.185, 1.185)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
 position = Vector2(5.8750076, -1.000001)

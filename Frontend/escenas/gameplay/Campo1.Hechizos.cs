@@ -5,53 +5,33 @@ using System.Collections.Generic;
 public partial class Campo1 : Node2D
 {
 	// ── HECHIZOS ──────────────────────────────────────────────────────────
-	private void UsarEncebollado()
+	private void AplicarEncebollado(Node2D objetivo)
 	{
-		if (!ValidarHechizo() || usadoEncebollado) return;
-		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada) || !tropaSeleccionada.IsInGroup("tropas_jugador"))
-		{ GD.Print("Selecciona una tropa tuya primero"); return; }
-
 		int ata = 0, esc = 0, escMax = 0;
-		try { ata    = (int)tropaSeleccionada.Get("puntosAtaque"); } catch { }
-		try { esc    = (int)tropaSeleccionada.Get("escudoActual"); } catch { }
-		try { escMax = (int)tropaSeleccionada.Get("escudoMaximo"); } catch { }
-		try { tropaSeleccionada.Set("puntosAtaque", ata + 100); }                 catch { }
-		try { tropaSeleccionada.Set("escudoActual", esc + 100); }                 catch { }
-		try { tropaSeleccionada.Set("escudoMaximo", Mathf.Max(escMax, esc + 100)); } catch { }
+		try { ata    = (int)objetivo.Get("puntosAtaque"); } catch { }
+		try { esc    = (int)objetivo.Get("escudoActual"); } catch { }
+		try { escMax = (int)objetivo.Get("escudoMaximo"); } catch { }
+		try { objetivo.Set("puntosAtaque", ata + 100); }                 catch { }
+		try { objetivo.Set("escudoActual", esc + 100); }                 catch { }
+		try { objetivo.Set("escudoMaximo", Mathf.Max(escMax, esc + 100)); } catch { }
 
-		MostrarDañoFlotante(tropaSeleccionada.GlobalPosition, 100, true);
-		Tween tw = tropaSeleccionada.CreateTween();
-		tw.TweenProperty(tropaSeleccionada, "modulate", new Color(1.6f, 1.3f, 0.2f), 0.2f);
-		tw.TweenProperty(tropaSeleccionada, "modulate", Colors.White, 0.5f);
-
-		usadoEncebollado = true;
-		RegistrarGastoMovimiento();
+		MostrarDañoFlotante(objetivo.GlobalPosition, 100, true);
+		Tween tw = objetivo.CreateTween();
+		tw.TweenProperty(objetivo, "modulate", new Color(1.6f, 1.3f, 0.2f), 0.2f);
+		tw.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
 	}
 
-	private void UsarCuracion()
+	private void AplicarCuracion(Node2D objetivo)
 	{
-		if (!ValidarHechizo() || usadoCuracion) return;
-		if (tropaSeleccionada != null && IsInstanceValid(tropaSeleccionada) && tropaSeleccionada.IsInGroup("tropas_jugador"))
-		{
-			int vida = 0, vidaMax = 0;
-			try { vida    = (int)tropaSeleccionada.Get("vidaActual"); } catch { }
-			try { vidaMax = (int)tropaSeleccionada.Get("vidaMaxima"); } catch { }
-			int curado = Mathf.Min(200, vidaMax - vida);
-			try { tropaSeleccionada.Set("vidaActual", vida + curado); } catch { }
-			MostrarDañoFlotante(tropaSeleccionada.GlobalPosition, curado, true);
-			Tween tw = tropaSeleccionada.CreateTween();
-			tw.TweenProperty(tropaSeleccionada,"modulate", new Color(0.3f,1.6f,0.5f), 0.2f);
-			tw.TweenProperty(tropaSeleccionada,"modulate", Colors.White, 0.5f);
-		}
-		else
-		{
-			int curado = Mathf.Min(200, vidaMaxJugador - vidaJugador);
-			vidaJugador += curado;
-			MostrarDañoFlotante(new Vector2(200, 300), curado, true);
-		}
-		usadoCuracion = true;
-		RegistrarGastoMovimiento();
-		ActualizarInterfaz();
+		int vida = 0, vidaMax = 0;
+		try { vida    = (int)objetivo.Get("vidaActual"); } catch { }
+		try { vidaMax = (int)objetivo.Get("vidaMaxima"); } catch { }
+		int curado = Mathf.Min(200, vidaMax - vida);
+		try { objetivo.Set("vidaActual", vida + curado); } catch { }
+		MostrarDañoFlotante(objetivo.GlobalPosition, curado, true);
+		Tween tw = objetivo.CreateTween();
+		tw.TweenProperty(objetivo, "modulate", new Color(0.3f,1.6f,0.5f), 0.2f);
+		tw.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
 	}
 
 	private void UsarRobo()
@@ -68,36 +48,57 @@ public partial class Campo1 : Node2D
 		RegistrarGastoMovimiento();
 	}
 
+	private static bool HechizoApuntaAliados(string hechizo) => hechizo == "curacion" || hechizo == "encebollado";
+
 	private void IniciarSeleccion(string hechizo, int slotIdx = -1)
 	{
 		if (!ValidarHechizo()) return;
-		if (hechizo == "veneno"  && usadoVeneno)  return;
-		if (hechizo == "bloqueo" && usadoBloqueo) return;
+		if (hechizo == "veneno"      && usadoVeneno)      return;
+		if (hechizo == "bloqueo"     && usadoBloqueo)     return;
+		if (hechizo == "curacion"    && usadoCuracion)    return;
+		if (hechizo == "encebollado" && usadoEncebollado) return;
 		_modoSeleccionObjetivo = true;
 		_hechizoPendiente      = hechizo;
 		_slotPendiente         = slotIdx;
-		if (_lblInstruccion != null) _lblInstruccion.Visible = true;
+		if (_lblInstruccion != null)
+		{
+			_lblInstruccion.Text = HechizoApuntaAliados(hechizo) ? "Toca una tropa\naliada" : "Toca una tropa\nenemiga";
+			_lblInstruccion.Visible = true;
+		}
 	}
 
 	private void AplicarHechizoEnObjetivo(Node2D objetivo)
 	{
-		if (!IsInstanceValid(objetivo) || !objetivo.IsInGroup("tropas_rival")) return;
-		if (_hechizoPendiente == "veneno")
+		string grupoEsperado = HechizoApuntaAliados(_hechizoPendiente) ? "tropas_jugador" : "tropas_rival";
+		if (!IsInstanceValid(objetivo) || !objetivo.IsInGroup(grupoEsperado)) return;
+
+		switch (_hechizoPendiente)
 		{
-			objetivo.SetMeta("envenenado",   true);
-			objetivo.SetMeta("dañoVeneno",   50);
-			objetivo.SetMeta("turnosVeneno", 3);
-			objetivo.Modulate = new Color(0.6f,1f,0.4f);
-			usadoVeneno = true;
+			case "veneno":
+				objetivo.SetMeta("envenenado",   true);
+				objetivo.SetMeta("dañoVeneno",   50);
+				objetivo.SetMeta("turnosVeneno", 3);
+				objetivo.Modulate = new Color(0.6f,1f,0.4f);
+				usadoVeneno = true;
+				ActualizarIconosEstado(objetivo);
+				break;
+			case "bloqueo":
+				objetivo.SetMeta("bloqueado",     true);
+				objetivo.SetMeta("turnosBloqueo", 2);
+				objetivo.Modulate = new Color(0.4f,0.6f,1.4f);
+				usadoBloqueo = true;
+				ActualizarIconosEstado(objetivo);
+				break;
+			case "curacion":
+				AplicarCuracion(objetivo);
+				usadoCuracion = true;
+				break;
+			case "encebollado":
+				AplicarEncebollado(objetivo);
+				usadoEncebollado = true;
+				break;
 		}
-		else if (_hechizoPendiente == "bloqueo")
-		{
-			objetivo.SetMeta("bloqueado",     true);
-			objetivo.SetMeta("turnosBloqueo", 2);
-			objetivo.Modulate = new Color(0.4f,0.6f,1.4f);
-			usadoBloqueo = true;
-		}
-		ActualizarIconosEstado(objetivo);
+
 		_modoSeleccionObjetivo = false;
 		_hechizoPendiente      = "";
 		if (_lblInstruccion != null) _lblInstruccion.Visible = false;
@@ -118,7 +119,8 @@ public partial class Campo1 : Node2D
 		if (_modoSeleccionObjetivo && @event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
 		{
 			Vector2 mouse = GetGlobalMousePosition();
-			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+			string grupo = HechizoApuntaAliados(_hechizoPendiente) ? "tropas_jugador" : "tropas_rival";
+			foreach (Node n in GetTree().GetNodesInGroup(grupo))
 				if (n is Node2D t && IsInstanceValid(t) && t.GlobalPosition.DistanceTo(mouse) < 90f)
 				{ AplicarHechizoEnObjetivo(t); return; }
 		}

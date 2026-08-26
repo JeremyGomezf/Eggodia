@@ -102,6 +102,7 @@ public partial class MenuPausa : CanvasLayer
 		}
 		else
 		{
+			LimpiezaEfectos.LimpiarEfectosDeCampo();
 			GetTree().Paused = false;
 			GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
 		}

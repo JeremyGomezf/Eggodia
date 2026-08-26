@@ -74,6 +74,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 	public override bool AutogestionaDañoAtaque() => true;
 	public override bool TieneHabilidadEspecial() => true;
 	public override bool TienePosturaDefensiva()  => false;
+	public override bool MostrarBotonDefensa()    => false;
 
 	private string AF(string b) => $"{b} {_faceta}";
 

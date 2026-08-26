@@ -420,6 +420,7 @@ public partial class CampoPruebas : Node2D
 
 	private void VolverAlMenu()
 	{
+		LimpiezaEfectos.LimpiarEfectosDeCampo();
 		GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
 	}
 
