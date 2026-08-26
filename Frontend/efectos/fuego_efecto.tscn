@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://wdk1igu8bscn"]
+
+[ext_resource type="Texture2D" uid="uid://b285l7eluotn7" path="res://imagenes/sprites/Efectos_OG.png" id="1_6luk2"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(96, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6luk2"]
+atlas = ExtResource("1_6luk2")
+region = Rect2(609, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jt2ne"]
+atlas = ExtResource("1_6luk2")
+region = Rect2(1218, 503, 609, 503)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6luk2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jt2ne")
+}],
+"loop": 1,
+"name": &"animate_fuego",
+"speed": 10.0
+}]
+
+[node name="fuego quemadura" type="Area2D" unique_id=1934137725]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(5.8750076, -1.000001)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(6, -23)
+rotation = 0.009641768
+scale = Vector2(0.38441432, 0.33695647)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"animate_fuego"
+frame_progress = 0.35389236

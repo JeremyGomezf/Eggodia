@@ -331,6 +331,7 @@ bg_color = Color(0, 0.72156864, 0.101960786, 1)
 bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
 
 [node name="t-rex" type="Area2D" unique_id=327969899]
+position = Vector2(1, -41)
 script = ExtResource("1_56jbl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=704329438]
@@ -353,6 +354,7 @@ offset_top = -25.0
 offset_right = 288.0
 offset_bottom = 15.0
 scale = Vector2(0.91999876, 0.7599994)
+metadata/_edit_use_anchors_ = true
 
 [node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=1907648177]
 layout_mode = 0
@@ -362,6 +364,7 @@ offset_right = 55.0
 offset_bottom = 51.0
 scale = Vector2(1, 0.8000012)
 theme_override_styles/background = SubResource("StyleBoxFlat_wjcmm")
+metadata/_edit_use_anchors_ = true
 
 [node name="BarraEscudo" type="ProgressBar" parent="StatsTropa" unique_id=522076209]
 layout_mode = 0
@@ -371,3 +374,4 @@ offset_right = 55.0
 offset_bottom = 23.0
 scale = Vector2(1, 0.71999943)
 theme_override_styles/background = SubResource("StyleBoxFlat_y2d0i")
+metadata/_edit_use_anchors_ = true

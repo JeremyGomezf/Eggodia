@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://d14u72nvov6mr"]
+
+[ext_resource type="Texture2D" uid="uid://b285l7eluotn7" path="res://imagenes/sprites/Efectos_OG.png" id="1_v7fb7"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(262.29507, 210.97047)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jt2ne"]
+atlas = ExtResource("1_v7fb7")
+region = Rect2(1827, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5p15v"]
+atlas = ExtResource("1_v7fb7")
+region = Rect2(3654, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y0w0h"]
+atlas = ExtResource("1_v7fb7")
+region = Rect2(2436, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1gnqq"]
+atlas = ExtResource("1_v7fb7")
+region = Rect2(3045, 503, 609, 503)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jt2ne")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5p15v")
+}],
+"loop": 0,
+"name": &"impacto_fuego",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y0w0h")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1gnqq")
+}],
+"loop": 1,
+"name": &"movimiento_fuego",
+"speed": 10.0
+}]
+
+[node name="fuego dragon" type="Area2D" unique_id=1934137725]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(-8, -1.1920929e-07)
+scale = Vector2(0.305, 0.237)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(2.4428692, -12.501824)
+rotation = 0.009641768
+scale = Vector2(0.305, 0.237)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"movimiento_fuego"

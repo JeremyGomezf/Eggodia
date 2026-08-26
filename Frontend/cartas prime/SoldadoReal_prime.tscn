@@ -477,7 +477,7 @@ shape = SubResource("RectangleShape2D_opij5")
 position = Vector2(-3, -20)
 scale = Vector2(0.27, 0.27)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"pre defensa"
+animation = &"derrota"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3

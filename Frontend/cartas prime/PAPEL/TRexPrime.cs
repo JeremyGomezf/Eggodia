@@ -1,10 +1,3 @@
-Aquí tienes el script **`TRexPrime.cs`** limpio y optimizado. Se eliminaron por completo las referencias y comportamientos de defensa/escudo:
-
-1. **Sin UI de Defensa/Escudo:** Desactiva y remueve de la UI el botón de defensa y la barra de escudo durante el `_Ready()`.
-2. **Reacción a Ordenes de Defensa:** Si la IA o el sistema intenta enviarle una orden de `"preparar_defensa"` o `"defender"`, el T-Rex la omite e ignora la pose defensiva, manteniéndose directamente en `"idle"`.
-3. **Mantenimiento Estricto:** Se conserva el daño en **Frame 2**, estadísticas (850 HP / 370 ATK) y la habilidad de Rugido debilitador.
-
-```csharp
 using Godot;
 using System;
 using System.Collections.Generic;

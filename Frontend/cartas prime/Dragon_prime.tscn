@@ -166,7 +166,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_nli4e")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 7.0
 }, {
@@ -198,7 +198,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_vnwfn")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 6.0
 }, {
@@ -236,7 +236,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_xl4gh")
 }],
-"loop": false,
+"loop": 0,
 "name": &"defensa",
 "speed": 5.0
 }, {
@@ -304,7 +304,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_824tv")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
 "speed": 5.0
 }, {
@@ -366,7 +366,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_m8gy5")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 5.0
 }, {
@@ -461,7 +461,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_y2u56")
 }],
-"loop": false,
+"loop": 0,
 "name": &"pre defensa",
 "speed": 7.0
 }]
@@ -483,7 +483,12 @@ shape = SubResource("RectangleShape2D_sk8r6")
 position = Vector2(-12.000001, -1)
 scale = Vector2(0.465, 0.465)
 sprite_frames = SubResource("SpriteFrames_pm8sp")
-animation = &"defensa"
+animation = &"idle"
+frame = 14
+frame_progress = 0.036257673
+
+[node name="SpotFuego" type="Marker2D" parent="." unique_id=885034068]
+position = Vector2(88, 27)
 
 [node name="StatsTropa" type="Control" parent="." unique_id=1623861200]
 layout_mode = 3

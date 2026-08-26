@@ -1,0 +1,159 @@
+[gd_scene format=3 uid="uid://bwka6sql8nu0s"]
+
+[ext_resource type="Texture2D" uid="uid://b285l7eluotn7" path="res://imagenes/sprites/Efectos_OG.png" id="1_ssx7a"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(86, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_njmqw"]
+atlas = ExtResource("1_ssx7a")
+region = Rect2(0, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bv3bh"]
+atlas = ExtResource("1_ssx7a")
+region = Rect2(3654, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kk402"]
+atlas = ExtResource("1_ssx7a")
+region = Rect2(3045, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7q7dy"]
+atlas = ExtResource("1_ssx7a")
+region = Rect2(0, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_buhvu"]
+atlas = ExtResource("1_ssx7a")
+region = Rect2(2436, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kfdfh"]
+atlas = ExtResource("1_ssx7a")
+region = Rect2(0, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xvh3f"]
+atlas = ExtResource("1_ssx7a")
+region = Rect2(609, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ao4yx"]
+atlas = ExtResource("1_ssx7a")
+region = Rect2(1218, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7gcck"]
+atlas = ExtResource("1_ssx7a")
+region = Rect2(1827, 0, 609, 503)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_njmqw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bv3bh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kk402")
+}],
+"loop": 0,
+"name": &"destrozado_muro",
+"speed": 7.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7q7dy")
+}],
+"loop": 1,
+"name": &"muro_dañado",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_buhvu")
+}],
+"loop": 1,
+"name": &"muro_solido",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kfdfh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xvh3f")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ao4yx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7gcck")
+}],
+"loop": 0,
+"name": &"respawn_muro",
+"speed": 7.0
+}]
+
+[node name="muro de golem" type="Area2D" unique_id=1934137725]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(6.8740234, -11.899834)
+scale = Vector2(1.2400004, 1.2000002)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(2.8740234, -49.399834)
+scale = Vector2(0.48408484, 0.47045815)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"destrozado_muro"

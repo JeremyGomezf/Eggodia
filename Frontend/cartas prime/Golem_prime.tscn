@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://5xd70uhsdohk" path="res://cartas prime/GolemPrime.cs" id="1_yfqxk"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lssw2"]
-size = Vector2(288, 212)
+size = Vector2(237, 212)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wqovg"]
 atlas = ExtResource("1_lssw2")
@@ -128,7 +128,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_l4o2v")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 7.0
 }, {
@@ -148,7 +148,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_28y8f")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 7.0
 }, {
@@ -183,7 +183,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_nmn2a")
 }],
-"loop": false,
+"loop": 0,
 "name": &"defensa",
 "speed": 8.0
 }, {
@@ -251,7 +251,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_m6fqj")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
 "speed": 7.0
 }, {
@@ -295,7 +295,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_08x5f")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 7.0
 }, {
@@ -423,7 +423,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_1774v")
 }],
-"loop": false,
+"loop": 0,
 "name": &"pre defensa",
 "speed": 5.0
 }]
@@ -438,14 +438,14 @@ bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
 script = ExtResource("1_yfqxk")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=116152973]
-position = Vector2(15, -6)
+position = Vector2(-10.5, -6)
 shape = SubResource("RectangleShape2D_lssw2")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=96543460]
 position = Vector2(20, -21)
 scale = Vector2(0.48, 0.48)
 sprite_frames = SubResource("SpriteFrames_bk7g7")
-animation = &"pre defensa"
+animation = &"idle"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=1904395672]
 layout_mode = 3
