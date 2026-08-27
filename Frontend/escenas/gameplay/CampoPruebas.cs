@@ -230,6 +230,7 @@ public partial class CampoPruebas : Node2D
 		tropa.GlobalPosition = _slotsA[slot].GlobalPosition;
 		tropa.AddToGroup("tropas_jugador");
 		tropa.SetMeta("carril", NombresAliados[slot]);
+		tropa.ZIndex = NombresAliados[slot] switch { "Mod3" => 10, "Mod2" => 5, _ => 1 };
 
 		var marcador = new Node(); marcador.Name = "Ocupado";
 		_slotsA[slot].AddChild(marcador);
@@ -256,6 +257,7 @@ public partial class CampoPruebas : Node2D
 		tropa.Scale          = new Vector2(-1, 1);
 		tropa.AddToGroup("tropas_rival");
 		tropa.SetMeta("carril", NombresEnemigos[slot]);
+		tropa.ZIndex = NombresEnemigos[slot] switch { "ModRival3" => 10, "ModRival2" => 5, _ => 1 };
 
 		var marcador = new Node(); marcador.Name = "Ocupado";
 		_slotsE[slot].AddChild(marcador);
@@ -288,13 +290,31 @@ public partial class CampoPruebas : Node2D
 
 		if (atacante == null || !IsInstanceValid(atacante)) { Log("❌ Sin tropa atacante en ese slot"); return; }
 		if (objetivo == null || !IsInstanceValid(objetivo)) { Log("❌ Sin tropa objetivo en ese slot"); return; }
+		if (atacante == objetivo) { Log("❌ Una tropa no puede atacarse a sí misma"); return; }
 
 		int daño = 0; try { daño = (int)atacante.Get("puntosAtaque"); } catch { }
 		bool autogestionado = false;
 		try { autogestionado = (bool)atacante.Call("AutogestionaDañoAtaque"); } catch { }
 
+		// Las tropas con daño autogestionado (Dragón, Tanque, Granadero, Gólem, etc.) resuelven
+		// su propio objetivo internamente por carril (BuscarObjetivoEnCarril), ignorando el
+		// desplegable "Objetivo" de este panel — este campo de pruebas es libre, sin restricción
+		// de carril, así que alineamos temporalmente el carril del objetivo elegido con el del
+		// atacante para que esa búsqueda interna encuentre exactamente la tropa seleccionada aquí
+		// (nunca a sí misma, ya que solo busca en el grupo contrario al suyo).
+		Variant carrilOriginalObjetivo = default;
+		bool restaurarCarril = false;
+		if (autogestionado && atacante.HasMeta("carril") && objetivo.HasMeta("carril"))
+		{
+			carrilOriginalObjetivo = objetivo.GetMeta("carril");
+			objetivo.SetMeta("carril", atacante.GetMeta("carril"));
+			restaurarCarril = true;
+		}
+
 		atacante.Call("SetActivo", true);
 		atacante.EjecutarAccion("atacar");
+
+		if (restaurarCarril) objetivo.SetMeta("carril", carrilOriginalObjetivo);
 
 		// Tropas con ráfaga (p. ej. SoldadoCartoonPrime) aplican su propio daño por
 		// fotograma dentro de EjecutarAccion("atacar"); aplicarlo aquí lo duplicaría.
@@ -323,10 +343,21 @@ public partial class CampoPruebas : Node2D
 	{
 		var tropa = esEnemigo ? _enemigas[slot] : _aliadas[slot];
 		if (tropa == null || !IsInstanceValid(tropa)) { Log("❌ Slot vacío"); return; }
+
+		bool usadaAntes = false; try { usadaAntes = (bool)tropa.Get("habilidadUsada"); } catch { }
+
 		tropa.Call("SetActivo", true);
 		tropa.EjecutarAccion("usar_habilidad");
 		ManejarMuerte();
-		Log($"⚡ Habilidad: {TipoNombre(tropa)} ({(esEnemigo ? "Enemigo" : "Aliado")} {slot + 1})");
+
+		// Muchas habilidades (Dragón, Gólem, Calamar, etc.) buscan su objetivo por carril y no
+		// hacen nada si no hay ninguna tropa del bando contrario justo en el carril equivalente
+		// — sin esta comprobación, ese caso queda silencioso y parece que el botón no responde.
+		bool usadaDespues = false; try { usadaDespues = (bool)tropa.Get("habilidadUsada"); } catch { }
+		if (!usadaAntes && !usadaDespues)
+			Log($"⚠ {TipoNombre(tropa)}: la habilidad no se activó — coloca una tropa del bando contrario en el carril equivalente (Slot {slot + 1})");
+		else
+			Log($"⚡ Habilidad: {TipoNombre(tropa)} ({(esEnemigo ? "Enemigo" : "Aliado")} {slot + 1})");
 	}
 
 	private void ResetearHabilidades()

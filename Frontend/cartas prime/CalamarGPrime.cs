@@ -73,9 +73,7 @@ public partial class CalamarGPrime : TropaBase
 			count++;
 		}
 
-		Tween self = CreateTween();
-		self.TweenProperty(this, "scale", Scale * 1.2f, 0.2f);
-		self.TweenProperty(this, "scale", Scale,        0.2f);
+		DestelloHabilidad();
 
 		habilidadUsada = true;
 	}

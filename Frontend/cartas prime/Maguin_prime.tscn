@@ -136,7 +136,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_wp1bm")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 5.0
 }, {
@@ -189,7 +189,7 @@ animations = [{
 "duration": 0.5,
 "texture": SubResource("AtlasTexture_2gr8j")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 6.0
 }, {
@@ -218,7 +218,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_tuccf")
 }],
-"loop": false,
+"loop": 0,
 "name": &"defensa",
 "speed": 7.0
 }, {
@@ -301,7 +301,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_q7oka")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
 "speed": 7.0
 }, {
@@ -396,7 +396,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_c5wtt")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 5.0
 }, {
@@ -494,7 +494,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_f5xsa")
 }],
-"loop": false,
+"loop": 0,
 "name": &"pre defensa",
 "speed": 5.0
 }]
@@ -511,6 +511,9 @@ script = ExtResource("1_sfeue")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1155561739]
 position = Vector2(-9, -16)
 shape = SubResource("RectangleShape2D_sfeue")
+
+[node name="SpotInvocacion" type="Marker2D" parent="." unique_id=1835913434]
+position = Vector2(87, -5)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=906191571]
 position = Vector2(-2, -25)

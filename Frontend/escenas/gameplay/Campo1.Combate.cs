@@ -98,7 +98,9 @@ public partial class Campo1 : Node2D
 		Node2D mejor  = null; int min = int.MaxValue;
 		foreach (Node n in GetTree().GetNodesInGroup(grupo))
 		{
-			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
+			// "e == atacante" es una segunda barrera: bajo ninguna circunstancia el atacante
+			// puede terminar siendo su propio objetivo, sin importar el grupo al que pertenezca.
+			if (!(n is Node2D e) || !IsInstanceValid(e) || e == atacante || !e.HasMeta("carril")) continue;
 			if (((string)e.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","") != carril) continue;
 			int v = Gi(e,"vidaActual"); if (v < min) { min = v; mejor = e; }
 		}

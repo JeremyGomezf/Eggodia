@@ -472,11 +472,14 @@ script = ExtResource("1_5ma2x")
 position = Vector2(5.5, -23)
 shape = SubResource("RectangleShape2D_jmqmn")
 
+[node name="SpotInvocacion" type="Marker2D" parent="." unique_id=717963153]
+position = Vector2(126, -23)
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1116586149]
 position = Vector2(8, -20)
 scale = Vector2(0.315, 0.315)
 sprite_frames = SubResource("SpriteFrames_8ftdi")
-animation = &"ataque"
+animation = &"idle"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=427531950]
 layout_mode = 3

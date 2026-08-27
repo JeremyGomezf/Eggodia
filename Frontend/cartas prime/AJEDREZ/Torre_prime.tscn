@@ -164,7 +164,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_0d70m")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 10.0
 }, {
@@ -184,7 +184,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_srrt4")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 10.0
 }, {
@@ -198,7 +198,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_mjbha")
 }],
-"loop": false,
+"loop": 0,
 "name": &"defensa",
 "speed": 10.0
 }, {
@@ -242,7 +242,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_mio45")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
 "speed": 10.0
 }, {
@@ -259,7 +259,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_iemwa")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 9.0
 }, {
@@ -270,7 +270,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_dkxia")
 }],
-"loop": false,
+"loop": 0,
 "name": &"pre defensa",
 "speed": 7.0
 }]
@@ -288,11 +288,14 @@ script = ExtResource("1_v5o3q")
 position = Vector2(2.5, -27)
 shape = SubResource("RectangleShape2D_nkj7l")
 
+[node name="SpotInvocacion" type="Marker2D" parent="." unique_id=1100555128]
+position = Vector2(105, -5)
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=262768543]
 position = Vector2(29, -37)
 scale = Vector2(0.195, 0.195)
 sprite_frames = SubResource("SpriteFrames_ow3ik")
-animation = &"pre defensa"
+animation = &"idle"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=638377521]
 layout_mode = 3

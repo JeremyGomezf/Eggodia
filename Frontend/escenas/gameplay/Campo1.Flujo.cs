@@ -220,7 +220,7 @@ public partial class Campo1 : Node2D
 		Node2D t = (Node2D)escenaTropa.Instantiate();
 		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
-		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 3, "Mod2" => 2, _ => 1 };
+		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 10, "Mod2" => 5, _ => 1 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
 
 		// Activar inmediatamente para que se pueda usar en el mismo turno
@@ -248,7 +248,7 @@ public partial class Campo1 : Node2D
 		t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_rival");
 		t.SetMeta("carril", puntoMod.Name);
-		t.ZIndex = (string)puntoMod.Name switch { "ModRival3" => 3, "ModRival2" => 2, _ => 1 };
+		t.ZIndex = (string)puntoMod.Name switch { "ModRival3" => 10, "ModRival2" => 5, _ => 1 };
 
 		// Corregir orientación sin romper escala ni rotaciones
 		AsegurarOrientacionRival(t);

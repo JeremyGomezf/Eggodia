@@ -425,6 +425,9 @@ script = ExtResource("1_fefla")
 position = Vector2(-5, -14)
 shape = SubResource("RectangleShape2D_opij5")
 
+[node name="SpotInvocacion" type="Marker2D" parent="." unique_id=1805546900]
+position = Vector2(110, -3)
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=163992348]
 position = Vector2(47, -19)
 scale = Vector2(0.16, 0.16)

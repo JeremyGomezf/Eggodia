@@ -331,20 +331,23 @@ bg_color = Color(0, 0.72156864, 0.101960786, 1)
 bg_color = Color(0.19607843, 0.39607844, 0.78039217, 1)
 
 [node name="t-rex" type="Area2D" unique_id=327969899]
-position = Vector2(-10, -54)
+position = Vector2(-7, -50)
 script = ExtResource("1_56jbl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=704329438]
 position = Vector2(38, -24.5)
 shape = SubResource("RectangleShape2D_wjcmm")
 
+[node name="SpotInvocacion" type="Marker2D" parent="." unique_id=1912517846]
+position = Vector2(134, 45)
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1032052819]
 position = Vector2(5, -22)
 scale = Vector2(0.15, 0.15)
 sprite_frames = SubResource("SpriteFrames_ebqfj")
-animation = &"idle"
+animation = &"ataque"
 frame = 4
-frame_progress = 0.16435337
+frame_progress = 1.0
 
 [node name="StatsTropa" type="Control" parent="." unique_id=1023355261]
 layout_mode = 3

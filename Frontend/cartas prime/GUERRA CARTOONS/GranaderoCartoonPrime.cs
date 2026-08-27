@@ -186,8 +186,8 @@ public partial class GranaderoCartoonPrime : TropaBase
 	{
 		if (objetivo == null || !IsInstanceValid(objetivo) || _escenaGranada == null) return;
 
-		// Utiliza el Marker2D que corresponda (SpotGranada o SpotTroll)
-		Vector2 origen  = spotOrigen != null ? spotOrigen.GlobalPosition
+		// Utiliza el Marker2D que corresponda (SpotGranada o SpotTroll), orientado al lado del rival si aplica
+		Vector2 origen  = spotOrigen != null ? ObtenerSpotOrientado(spotOrigen)
 											 : GlobalPosition + new Vector2(30f, -40f);
 		Vector2 destino = objetivo.GlobalPosition + new Vector2(0f, 35f);  // base del sprite
 		Vector2 mid     = (origen + destino) * 0.5f + new Vector2(0f, -110f);
@@ -195,7 +195,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		Node2D granada = (Node2D)_escenaGranada.Instantiate();
 		GetTree().Root.AddChild(granada);
 		granada.GlobalPosition = origen;
-		granada.ZIndex = 50;
+		granada.ZIndex = ZIndex + 1;
 
 		float dist     = origen.DistanceTo(destino);
 		float duracion = Mathf.Clamp(dist / 650f, 0.35f, 0.75f);
@@ -231,8 +231,8 @@ public partial class GranaderoCartoonPrime : TropaBase
 	{
 		if (objetivo == null || !IsInstanceValid(objetivo) || _escenaMisil == null) return;
 
-		// Utiliza la posición exacta de SpotMortero
-		Vector2 origenLocal = _spotMortero != null ? _spotMortero.GlobalPosition
+		// Utiliza la posición exacta de SpotMortero, orientado al lado del rival si aplica
+		Vector2 origenLocal = _spotMortero != null ? ObtenerSpotOrientado(_spotMortero)
 												   : GlobalPosition + new Vector2(0f, -80f);
 		Vector2 cima = new Vector2(origenLocal.X, -220f);
 
@@ -240,7 +240,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		GetTree().Root.AddChild(misil);
 		misil.GlobalPosition = origenLocal;
 		misil.RotationDegrees = -90f; // Punta orientada directo hacia arriba al despegar
-		misil.ZIndex = 50;
+		misil.ZIndex = ZIndex + 1;
 
 		Node2D mRef = misil, oRef = objetivo;
 
@@ -290,7 +290,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		Node2D exp = (Node2D)escena.Instantiate();
 		GetTree().Root.AddChild(exp);
 		exp.GlobalPosition = pos;
-		exp.ZIndex = esGranada ? 55 : 60;
+		exp.ZIndex = ZIndex + 1;
 
 		var animExp = exp.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 		if (animExp != null)

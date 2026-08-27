@@ -10,7 +10,6 @@ public partial class GolemPrime : TropaBase
 	public override string Tipo => Tipos.METAL;
 
 	private const string RUTA_MURO = "res://efectos/muro_golem.tscn";
-	private const float  SEPARACION_EXTRA_MURO = 6f;
 
 	private Node2D _objetivo;
 	private bool   _golpeF2Disparado = false;
@@ -74,12 +73,7 @@ public partial class GolemPrime : TropaBase
 		habilidadUsada = true;
 		_yaActuo        = true;
 
-		Tween tw = CreateTween();
-		tw.TweenProperty(this, "modulate", new Color(0.7f, 0.7f, 0.9f), 0.15f);
-		tw.TweenProperty(this, "modulate", Colors.White, 0.3f);
-		Tween sc = CreateTween();
-		sc.TweenProperty(this, "scale", Scale * new Vector2(1.2f, 0.8f), 0.15f);
-		sc.TweenProperty(this, "scale", Scale, 0.25f);
+		DestelloHabilidad();
 
 		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 
@@ -124,13 +118,15 @@ public partial class GolemPrime : TropaBase
 		Node2D muro = (Node2D)_escenaMuro.Instantiate();
 		GetTree().Root.AddChild(muro);
 
-		// Separación basada en las cajas de colisión reales, no en un offset fijo.
-		float separacion = ObtenerMitadAncho(aliado) + ObtenerMitadAncho(muro) + SEPARACION_EXTRA_MURO;
-		Vector2 dirHaciaEnemigo = new Vector2(esJugador ? 1f : -1f, 0f);
-		muro.GlobalPosition = aliado.GlobalPosition + dirHaciaEnemigo * separacion;
+		// Posición fija por tropa (SpotInvocacion), no calculada por caja de colisión.
+		var aliadoTB   = aliado as TropaBase;
+		var spotAliado = aliado.GetNodeOrNull<Marker2D>("SpotInvocacion");
+		muro.GlobalPosition = (aliadoTB != null && spotAliado != null)
+			? aliadoTB.ObtenerSpotOrientado(spotAliado)
+			: aliado.GlobalPosition + new Vector2(esJugador ? 80f : -80f, 0f); // fallback si faltara el marker
 
 		// Z-Index por módulo, igual que las tropas (Mod1 < Mod2 < Mod3).
-		muro.ZIndex = carrilNormalizado switch { "3" => 3, "2" => 2, _ => 1 };
+		muro.ZIndex = carrilNormalizado switch { "3" => 10, "2" => 5, _ => 1 };
 		muro.SetMeta("carril", aliado.GetMeta("carril"));
 		muro.AddToGroup(grupoMuro);
 
@@ -147,19 +143,5 @@ public partial class GolemPrime : TropaBase
 				if (animMuro != null) animMuro.FlipH = true;
 			}
 		}
-	}
-
-	/// <summary>Mitad del ancho de la caja de colisión de un nodo (para separar el muro sin solaparse).</summary>
-	private static float ObtenerMitadAncho(Node2D nodo, float fallback = 45f)
-	{
-		var col = nodo.GetNodeOrNull<CollisionShape2D>("CollisionShape2D");
-		if (col == null) return fallback;
-		float escala = col.Scale.X * nodo.Scale.X;
-		return col.Shape switch
-		{
-			RectangleShape2D r => r.Size.X * escala / 2f,
-			CircleShape2D c    => c.Radius * escala,
-			_ => fallback
-		};
 	}
 }

@@ -261,18 +261,26 @@ public partial class Campo1 : Node2D
 		var mano = GetNodeOrNull<Control>("ManoManual");
 		if (mano == null) return;
 
-		float nuevoBottom = mano.OffsetBottom + 180f; // fallback si no hay cámara
+		float nuevoBottom = mano.OffsetBottom + 220f; // fallback si no hay cámara
 		var cam = GetNodeOrNull<Camera2D>("Camera2D");
 		if (cam != null)
 		{
 			float mitadAlturaMundo  = (GetViewport().GetVisibleRect().Size.Y / 2f) / cam.Zoom.Y;
 			float bordeInferiorMundo = cam.Position.Y + mitadAlturaMundo;
-			nuevoBottom = bordeInferiorMundo - 5f; // pequeño margen para no recortar
+			// Un poco más abajo que el borde visible: despeja la vista central del campo
+			// sin solaparse con los botones de acción.
+			nuevoBottom = bordeInferiorMundo + 30f;
 		}
 
 		float delta = nuevoBottom - mano.OffsetBottom;
 		mano.OffsetTop    += delta;
 		mano.OffsetBottom += delta;
+
+		// La mano y los botones de mazo nunca deben quedar tapados por el campo de batalla
+		// (no están en un CanvasLayer, así que se aseguran con un Z-Index muy por encima de él).
+		mano.ZIndex = 150;
+		if (btnBarajar    != null) btnBarajar.ZIndex    = 150;
+		if (btnSacrificio != null) btnSacrificio.ZIndex = 150;
 	}
 
 	// ── ESTILO GLOBAL PARA LABELS DEL HUD ────────────────────────────────

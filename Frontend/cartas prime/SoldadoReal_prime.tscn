@@ -473,6 +473,9 @@ script = ExtResource("1_0kohr")
 position = Vector2(-3, -16)
 shape = SubResource("RectangleShape2D_opij5")
 
+[node name="SpotInvocacion" type="Marker2D" parent="." unique_id=2139959001]
+position = Vector2(94, -1)
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=163992348]
 position = Vector2(-3, -20)
 scale = Vector2(0.27, 0.27)

@@ -448,6 +448,9 @@ script = ExtResource("1_wjcmm")
 position = Vector2(32, -29)
 shape = SubResource("RectangleShape2D_wjcmm")
 
+[node name="SpotInvocacion" type="Marker2D" parent="."]
+position = Vector2(240, -29)
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1032052819]
 position = Vector2(27, -12)
 scale = Vector2(0.735, 0.735)

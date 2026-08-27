@@ -186,6 +186,31 @@ public abstract partial class TropaBase : Area2D
 	/// </summary>
 	public virtual void TickHabilidad() { }
 
+	/// <summary>Posición global de un Marker2D "spot" de lanzamiento (SpotFuego, SpotCañon,
+	/// SpotInvocacion, etc.), reflejando su offset X si esta tropa es del rival. Los spots se
+	/// definen en la escena asumiendo la orientación del jugador; el volteo rival normal (FlipH)
+	/// solo cambia la textura, no la posición de los Marker2D hijos, así que hay que reflejarlo
+	/// a mano. Si esta tropa ya usa Scale.X negativo para orientarse (convención de
+	/// campo_de_pruebas), el propio transform del nodo ya refleja a sus hijos — en ese caso se
+	/// usa GlobalPosition tal cual.</summary>
+	public Vector2 ObtenerSpotOrientado(Marker2D spot)
+	{
+		if (spot == null) return GlobalPosition;
+		if (Scale.X < 0) return spot.GlobalPosition;
+		bool esJugador = IsInGroup("tropas_jugador");
+		float offsetX = esJugador ? spot.Position.X : -spot.Position.X;
+		return GlobalPosition + new Vector2(offsetX, spot.Position.Y);
+	}
+
+	/// <summary>Destello amarillo momentáneo al activar una habilidad (no ataque): sube y vuelve
+	/// a blanco en ~1s. Pensado para reemplazar tweens de "rebote" de escala.</summary>
+	protected void DestelloHabilidad()
+	{
+		Tween tw = CreateTween();
+		tw.TweenProperty(this, "modulate", new Color(1.6f, 1.5f, 0.4f), 0.35f);
+		tw.TweenProperty(this, "modulate", Colors.White, 0.65f);
+	}
+
 	/// <summary>
 	/// Busca el objetivo enemigo en el mismo carril. Si un muro del Gólem ocupa ese carril,
 	/// se devuelve el muro en su lugar salvo que <paramref name="ignorarMuro"/> sea true
@@ -199,11 +224,20 @@ public abstract partial class TropaBase : Area2D
 		string grupoMuros   = esJugador ? "muros_rival"  : "muros_jugador";
 		string miCarril     = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 
+		// Diagnóstico: el grupo (tropas_jugador/tropas_rival) y el prefijo del carril propio
+		// (Mod.../ModRival...) deben coincidir siempre. Si no coinciden, algo en la invocación
+		// de esta tropa la etiquetó mal — se avisa aquí para poder rastrear el origen.
+		bool carrilDiceRival = ((string)GetMeta("carril")).ToLower().Contains("modrival");
+		if (esJugador == carrilDiceRival)
+			GD.PrintErr($"[TropaBase] {Name} ({GetType().Name}): el grupo dice bando=" +
+				$"{(esJugador ? "jugador" : "rival")} pero su carril ('{GetMeta("carril")}') es de bando " +
+				$"{(carrilDiceRival ? "rival" : "jugador")}. Revisa dónde se invocó esta tropa.");
+
 		if (!ignorarMuro)
 		{
 			foreach (Node n in GetTree().GetNodesInGroup(grupoMuros))
 			{
-				if (!(n is Node2D m) || !IsInstanceValid(m) || !m.HasMeta("carril")) continue;
+				if (!(n is Node2D m) || !IsInstanceValid(m) || m == this || !m.HasMeta("carril")) continue;
 				string cm = ((string)m.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 				if (cm == miCarril) return m;
 			}
@@ -212,12 +246,16 @@ public abstract partial class TropaBase : Area2D
 		Node2D mejor = null; int min = int.MaxValue;
 		foreach (Node n in GetTree().GetNodesInGroup(grupoTropas))
 		{
-			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
+			// "e == this" es una segunda barrera además del filtro por grupo: si por cualquier
+			// motivo esta tropa terminara perteneciendo también al grupo contrario, jamás debe
+			// poder encontrarse a sí misma como objetivo.
+			if (!(n is Node2D e) || !IsInstanceValid(e) || e == this || !e.HasMeta("carril")) continue;
 			string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 			if (c != miCarril) continue;
 			int v = 0; try { v = (int)e.Get("vidaActual"); } catch { }
 			if (v > 0 && v < min) { min = v; mejor = e; }
 		}
+
 		return mejor;
 	}
 

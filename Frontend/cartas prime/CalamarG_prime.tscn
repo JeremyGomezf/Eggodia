@@ -136,7 +136,7 @@ animations = [{
 "duration": 0.5,
 "texture": SubResource("AtlasTexture_psh8i")
 }],
-"loop": false,
+"loop": 0,
 "name": &"ataque",
 "speed": 7.0
 }, {
@@ -156,7 +156,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_5anet")
 }],
-"loop": false,
+"loop": 0,
 "name": &"daño",
 "speed": 7.0
 }, {
@@ -179,7 +179,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_1wktf")
 }],
-"loop": false,
+"loop": 0,
 "name": &"defensa",
 "speed": 7.0
 }, {
@@ -247,7 +247,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_al6jj")
 }],
-"loop": false,
+"loop": 0,
 "name": &"derrota",
 "speed": 6.0
 }, {
@@ -282,7 +282,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_mqp2t")
 }],
-"loop": true,
+"loop": 1,
 "name": &"idle",
 "speed": 6.0
 }, {
@@ -377,7 +377,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_8t5nc")
 }],
-"loop": false,
+"loop": 0,
 "name": &"pre defensa",
 "speed": 6.0
 }]
@@ -395,6 +395,9 @@ script = ExtResource("1_rcra0")
 position = Vector2(6, -76)
 shape = SubResource("RectangleShape2D_jmqmn")
 
+[node name="SpotInvocacion" type="Marker2D" parent="." unique_id=450147968]
+position = Vector2(147, -25)
+
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1116586149]
 position = Vector2(8, -58)
 scale = Vector2(0.45, 0.45)
@@ -405,10 +408,10 @@ frame_progress = 0.9719873
 [node name="StatsTropa" type="Control" parent="." unique_id=427531950]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 180.0
-offset_top = -37.0
-offset_right = 220.0
-offset_bottom = 3.0
+offset_left = 121.000015
+offset_top = -122.0
+offset_right = 161.00002
+offset_bottom = -82.0
 scale = Vector2(0.91999876, 0.7599994)
 
 [node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=37117962]

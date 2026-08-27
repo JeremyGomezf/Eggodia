@@ -1,27 +1,24 @@
 using Godot;
 using System;
-using System.Collections.Generic;
 
 /// <summary>
 /// T-Rex Prime — Tropa pesada de naturaleza (850 HP / 370 ATK / Sin Escudo).
 /// Ataque: Muerde e inflige daño en el Frame 2 de la animación.
 /// UI: Sin botón de defensa ni barra de escudo. Ignora poses defensivas.
-/// Habilidad "Rugido": Reduce el ataque de todos los enemigos al 70% durante 2 turnos.
+/// Habilidad: Muestra destello amarillo por 1s, ejecuta animación de ataque y en Frame 2 
+/// inflige 400 de daño verdadero a la tropa enemiga de su carril (respeta muro).
 /// </summary>
 public partial class TRexPrime : TropaBase
 {
 	public override string Tipo => Tipos.NATURALEZA;
 
 	// ── CONSTANTES Y CONFIGURACIÓN ───────────────────────────────────────────
-	private const int FRAME_GOLPE = 2; // Frame exacto de la animación de mordisco
+	private const int FRAME_GOLPE      = 2;   // Frame exacto de la animación de mordisco
+	private const int DAÑO_VERDADERO   = 400; // Daño de la habilidad: ignora defensa/escudo
 
-	// ── ESTADO HABILIDAD (RUGIDO) ─────────────────────────────────────────────
-	private bool _rugidoActivo;
-	private int  _turnosRugido;
-	private List<(Node2D tropa, int ataqueOrig)> _afectados = new();
-
-	// ── CONTROL DE OBJETIVO ──────────────────────────────────────────────────
+	// ── CONTROL DE OBJETIVO Y ESTADO DE HABILIDAD ────────────────────────────
 	private Node2D _objetivoPendiente;
+	private bool   _esAtaqueHabilidad = false;
 
 	public override void _Ready()
 	{
@@ -64,6 +61,7 @@ public partial class TRexPrime : TropaBase
 		{
 			case "atacar":
 				_yaActuo = true;
+				_esAtaqueHabilidad = false;
 				_objetivoPendiente = BuscarObjetivoEnCarril();
 				IniciarAnimacionAtaque();
 				break;
@@ -92,7 +90,7 @@ public partial class TRexPrime : TropaBase
 		_anim.Play(nombreAnim);
 	}
 
-	// ── EVENTO: FRAME CHANGED (DAÑO EN FRAME 2) ──────────────────────────────
+	// ── EVENTO: FRAME CHANGED (IMPACTO EN FRAME 2) ───────────────────────────
 	private void OnFrameChanged()
 	{
 		if (_anim == null) return;
@@ -103,7 +101,14 @@ public partial class TRexPrime : TropaBase
 		// Inflige daño únicamente al llegar al Frame 2 de impacto
 		if (_anim.Frame == FRAME_GOLPE)
 		{
-			AplicarDañoAObjetivo();
+			if (_esAtaqueHabilidad)
+			{
+				AplicarDañoVerdaderoHabilidad();
+			}
+			else
+			{
+				AplicarDañoAObjetivo();
+			}
 		}
 	}
 
@@ -120,7 +125,47 @@ public partial class TRexPrime : TropaBase
 			_objetivoPendiente.Call("RecibirDaño", puntosAtaque);
 		}
 
-		_objetivoPendiente = null; // Evita daño duplicado en la misma secuencia
+		_objetivoPendiente = null;
+	}
+
+	private void AplicarDañoVerdaderoHabilidad()
+	{
+		if (_objetivoPendiente == null || !IsInstanceValid(_objetivoPendiente) || _objetivoPendiente == this) 
+		{
+			_esAtaqueHabilidad = false;
+			return;
+		}
+
+		bool esMuro = _objetivoPendiente.IsInGroup("muros_jugador") || _objetivoPendiente.IsInGroup("muros_rival");
+		if (esMuro)
+		{
+			// El muro recibe daño a su durabilidad
+			_objetivoPendiente.Call("RecibirDaño", DAÑO_VERDADERO);
+		}
+		else
+		{
+			// Daño verdadero directo a la vida
+			int vidaAntes = 0; try { vidaAntes = (int)_objetivoPendiente.Get("vidaActual"); } catch { }
+			int vidaNueva = Mathf.Max(0, vidaAntes - DAÑO_VERDADERO);
+			try { _objetivoPendiente.Set("vidaActual", vidaNueva); } catch { }
+
+			if (vidaNueva <= 0)
+			{
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("EjecutarMuerteTropaSacrificada", _objetivoPendiente);
+			}
+			else if (_objetivoPendiente.HasMethod("EjecutarAccion"))
+			{
+				_objetivoPendiente.Call("EjecutarAccion", "recibir_daño");
+			}
+
+			Tween te = _objetivoPendiente.CreateTween();
+			te.TweenProperty(_objetivoPendiente, "modulate", new Color(1f, 0.5f, 0.5f), 0.2f);
+			te.TweenProperty(_objetivoPendiente, "modulate", Colors.White, 0.4f);
+		}
+
+		_objetivoPendiente = null;
+		_esAtaqueHabilidad = false;
 	}
 
 	// ── EVENTO: FIN DE ANIMACIÓN ───────────────────────────────────────────────
@@ -131,57 +176,28 @@ public partial class TRexPrime : TropaBase
 		string animActual = _anim.Animation.ToString();
 		if (animActual == "ataque" || animActual == "atacar" || animActual == "daño")
 		{
+			_esAtaqueHabilidad = false;
 			if (!_estaMuerto) ReproducirIdle();
 		}
 	}
 
-	// ── HABILIDAD: RUGIDO DEBILITADOR ─────────────────────────────────────────
+	// ── HABILIDAD: MORDISCO DEVASTADOR (CON DESTELLO AMARILLO Y ATAQUE SINCRO) ──
 	protected override void UsarHabilidadPropia()
 	{
 		if (habilidadUsada || _estaMuerto) return;
 
+		Node2D objetivo = BuscarObjetivoEnCarril(); // respeta muro
+		if (objetivo == null || objetivo == this) return;
+
 		_yaActuo = true;
 		habilidadUsada = true;
-		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
+		_esAtaqueHabilidad = true;
+		_objetivoPendiente = objetivo;
 
-		// Animación visual de rugido (escalado elástico sutil)
-		Tween tw = CreateTween();
-		tw.TweenProperty(this, "scale", Scale * 1.25f, 0.15f).SetTrans(Tween.TransitionType.Back);
-		tw.TweenProperty(this, "scale", Scale, 0.2f);
+		// Muestra el destello/aura amarilla durante 1 segundo
+		DestelloHabilidad();
 
-		_afectados.Clear();
-		foreach (Node n in GetTree().GetNodesInGroup(grupoEnemigo))
-		{
-			if (!(n is Node2D e) || !IsInstanceValid(e)) continue;
-			int atk = 0;
-			try { atk = (int)e.Get("puntosAtaque"); } catch { continue; }
-			
-			_afectados.Add((e, atk));
-			try { e.Set("puntosAtaque", (int)(atk * 0.7f)); } catch { }
-
-			Tween te = e.CreateTween();
-			te.TweenProperty(e, "modulate", new Color(1f, 0.5f, 0.5f), 0.2f);
-		}
-
-		_rugidoActivo = true;
-		_turnosRugido = 2;
-	}
-
-	public override void TickHabilidad()
-	{
-		if (!_rugidoActivo) return;
-
-		_turnosRugido--;
-		if (_turnosRugido > 0) return;
-
-		foreach (var (tropa, ataqueOrig) in _afectados)
-		{
-			if (!IsInstanceValid(tropa)) continue;
-			try { tropa.Set("puntosAtaque", ataqueOrig); } catch { }
-			tropa.Modulate = Colors.White;
-		}
-
-		_afectados.Clear();
-		_rugidoActivo = false;
+		// Inicia animación de ataque (el golpe de 400 se asesta en OnFrameChanged cuando Frame == 2)
+		IniciarAnimacionAtaque();
 	}
 }

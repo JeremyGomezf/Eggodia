@@ -44,7 +44,9 @@ public partial class DragonPrime : TropaBase
 		{
 			_yaActuo           = true;
 			_esAtaqueHabilidad = false;
-			_objetivo          = BuscarObjetivoEnCarril();
+			Node2D objetivo    = BuscarObjetivoEnCarril(); // fuerza el grupo opuesto al propio; respeta muro
+			// Filtro de seguridad: bajo ninguna circunstancia el objetivo puede ser el propio Dragón.
+			_objetivo = (objetivo == null || objetivo == this) ? null : objetivo;
 			ReproducirAtaque();
 			return;
 		}
@@ -57,7 +59,7 @@ public partial class DragonPrime : TropaBase
 
 		if (!_esAtaqueHabilidad && _anim.Frame == 3)
 		{
-			if (_objetivo != null && IsInstanceValid(_objetivo))
+			if (_objetivo != null && IsInstanceValid(_objetivo) && _objetivo != this)
 				_objetivo.Call("RecibirDaño", puntosAtaque);
 		}
 
@@ -72,32 +74,62 @@ public partial class DragonPrime : TropaBase
 	{
 		if (habilidadUsada) return;
 
-		Node2D objetivo = BuscarObjetivoEnCarril(); // respeta muro
-		if (objetivo == null) return;
+		// Grupo contrario según el bando del Dragón (jugador ataca a tropas_rival, rival ataca a
+		// tropas_jugador) — BuscarObjetivoEnCarril() ya aplica esto internamente; se recalcula
+		// aquí solo para el diagnóstico de abajo, sin cambiar el resultado de la búsqueda real.
+		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
+
+		Node2D objetivo = BuscarObjetivoEnCarril(); // fuerza el grupo opuesto al propio; respeta muro
+		if (objetivo == null || objetivo == this || !EsObjetivoValido(objetivo))
+		{
+			string miCarril = HasMeta("carril") ? (string)GetMeta("carril") : "(sin carril)";
+			GD.Print($"[DragonPrime] Habilidad sin objetivo: bando={(IsInGroup("tropas_jugador") ? "jugador" : "rival")}, " +
+				$"carril propio={miCarril}, buscando en grupo='{grupoEnemigo}' con el mismo carril normalizado. " +
+				$"Verifica que exista una tropa de ese grupo en el carril equivalente (mismo número de slot).");
+			return;
+		}
 
 		habilidadUsada     = true;
 		_yaActuo            = true;
 		_esAtaqueHabilidad = true;
 		_objetivo           = objetivo;
 
+		DestelloHabilidad();
 		ReproducirAtaque(); // reutiliza la animación "ataque"; frame 4 lanza la bola de fuego
+	}
+
+	/// <summary>Validación estricta: descarta el objetivo si es este mismo Dragón o pertenece a
+	/// nuestro propio bando — nunca debe atacarse a sí mismo ni a un aliado. Acepta tanto una
+	/// tropa enemiga como un muro enemigo (el muro sí puede bloquear el ataque del Dragón).</summary>
+	private bool EsObjetivoValido(Node2D objetivo)
+	{
+		if (objetivo == null || !IsInstanceValid(objetivo) || objetivo == this) return false;
+
+		bool esJugador = IsInGroup("tropas_jugador");
+		string grupoEnemigoEsperado = esJugador ? "tropas_rival" : "tropas_jugador";
+		string grupoMuroEsperado    = esJugador ? "muros_rival"  : "muros_jugador";
+		return objetivo.IsInGroup(grupoEnemigoEsperado) || objetivo.IsInGroup(grupoMuroEsperado);
 	}
 
 	private void LanzarBolaDeFuego(Node2D objetivo)
 	{
-		if (objetivo == null || !IsInstanceValid(objetivo) || _escenaFuegoDragon == null) return;
+		if (!EsObjetivoValido(objetivo) || _escenaFuegoDragon == null) return;
 
-		Vector2 origen  = _spotFuego != null ? _spotFuego.GlobalPosition : GlobalPosition;
+		Vector2 origen  = ObtenerSpotOrientado(_spotFuego);
 		Vector2 destino = objetivo.GlobalPosition;
 
 		Node2D bola = (Node2D)_escenaFuegoDragon.Instantiate();
 		GetTree().Root.AddChild(bola);
 		bola.GlobalPosition = origen;
-		bola.ZIndex = 100;
+		bola.ZIndex = objetivo.ZIndex + 1;
 		bola.AddToGroup("efectos_dragon_root");
 
 		var animBola = bola.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 		animBola?.Play("movimiento_fuego");
+		// La llama se dibuja pensada para viajar hacia la derecha (lado jugador); si el Dragón es
+		// rival, viaja hacia la izquierda, así que hay que voltear el sprite para que apunte en
+		// su misma dirección de vuelo (igual que se hace con la textura del propio Dragón).
+		if (animBola != null && !IsInGroup("tropas_jugador")) animBola.FlipH = true;
 
 		Tween tw = bola.CreateTween();
 		tw.TweenProperty(bola, "global_position", destino, 0.35f)
@@ -113,6 +145,7 @@ public partial class DragonPrime : TropaBase
 		string carril = objetivo.HasMeta("carril")
 			? ((string)objetivo.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim()
 			: null;
+		int zIndexQuemadura = objetivo.ZIndex + 1;
 
 		if (IsInstanceValid(objetivo)) objetivo.Call("RecibirDaño", DAÑO_BOLA_FUEGO);
 
@@ -125,18 +158,18 @@ public partial class DragonPrime : TropaBase
 			{
 				if (IsInstanceValid(bola)) bola.QueueFree();
 				// La quemadura continua solo arranca cuando termina la animación de impacto.
-				if (carril != null) IniciarQuemadura(grupoEnemigo, carril, posicionImpacto);
+				if (carril != null) IniciarQuemadura(grupoEnemigo, carril, posicionImpacto, zIndexQuemadura);
 			};
 		}
 		else
 		{
 			if (IsInstanceValid(bola)) bola.QueueFree();
-			if (carril != null) IniciarQuemadura(grupoEnemigo, carril, posicionImpacto);
+			if (carril != null) IniciarQuemadura(grupoEnemigo, carril, posicionImpacto, zIndexQuemadura);
 		}
 	}
 
 	// ── QUEMADURA (DoT que persiste en el carril/módulo, independiente de si el Dragón sigue vivo) ──
-	private void IniciarQuemadura(string grupoEnemigo, string carrilNormalizado, Vector2 posicionSuelo)
+	private void IniciarQuemadura(string grupoEnemigo, string carrilNormalizado, Vector2 posicionSuelo, int zIndex)
 	{
 		if (_escenaFuegoEfecto == null) return;
 
@@ -144,7 +177,7 @@ public partial class DragonPrime : TropaBase
 		Node2D efecto = (Node2D)_escenaFuegoEfecto.Instantiate();
 		tree.Root.AddChild(efecto);
 		efecto.GlobalPosition = posicionSuelo;
-		efecto.ZIndex = 100;
+		efecto.ZIndex = zIndex;
 		efecto.AddToGroup("efectos_dragon_root");
 		efecto.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D")?.Play("animate_fuego");
 
@@ -160,6 +193,16 @@ public partial class DragonPrime : TropaBase
 			if (ocupante != null && IsInstanceValid(ocupante))
 			{
 				ocupante.Call("RecibirDaño", DAÑO_QUEMADURA);
+
+				int vidaTrasGolpe = 0;
+				try { vidaTrasGolpe = (int)ocupante.Get("vidaActual"); } catch { }
+				if (vidaTrasGolpe <= 0)
+				{
+					// La quemadura mató a la tropa: el fuego no debe quedar flotando en su posición.
+					if (IsInstanceValid(efecto)) efecto.QueueFree();
+					return;
+				}
+
 				ocupante.Modulate = new Color(1f, 0.3f, 0.3f);
 			}
 

@@ -99,9 +99,9 @@ offset_bottom = 20.0
 layout_mode = 3
 anchors_preset = 0
 offset_left = 732.0
-offset_top = 545.0
+offset_top = 700.0
 offset_right = 772.0
-offset_bottom = 585.0
+offset_bottom = 740.0
 
 [node name="ManoVisual" type="Sprite2D" parent="ManoManual" unique_id=38472910]
 visible = false
