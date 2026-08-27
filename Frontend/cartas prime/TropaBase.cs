@@ -20,6 +20,14 @@ public abstract partial class TropaBase : Area2D
 	protected bool _yaActuo      = false;
 	private  Tween _tweenGolpe;
 
+	/// <summary>Turno propio de esta tropa (1 al entrar al tablero). Solo lo incrementa
+	/// Campo1, al inicio del turno de su propio dueño, vía AvanzarTurnoTropa().</summary>
+	public int turnoActualCarta = 1;
+
+	/// <summary>Bloqueo anti-spam: mientras es true, esta tropa ignora clics por completo
+	/// (usado durante animaciones críticas como el Enroque de la Torre).</summary>
+	public bool estaProcesandoHabilidad = false;
+
 	// ── REFERENCIAS ───────────────────────────────────────────────────────
 	protected AnimatedSprite2D _anim;
 	protected Control          _contenedorStats;
@@ -52,12 +60,24 @@ public abstract partial class TropaBase : Area2D
 	/// <summary>Si false, Campo1 oculta completamente el botón de defensa y la barra de escudo.</summary>
 	public virtual bool MostrarBotonDefensa() => true;
 
-	/// <summary>Si true, el botón de habilidad se muestra en gris/bloqueado aunque no esté usada.</summary>
-	public virtual bool HabilidadBloqueada() => false;
+	/// <summary>Turno propio mínimo (turnoActualCarta) para poder usar la habilidad. 1 = disponible
+	/// desde que entra al tablero (comportamiento por defecto). Las subclases con habilidad
+	/// diferida sobreescriben este valor.</summary>
+	protected virtual int TurnoDesbloqueoHabilidad => 1;
+
+	/// <summary>Si true, el botón de habilidad se muestra en gris/bloqueado aunque no esté usada.
+	/// Por defecto, bloqueada mientras la tropa no llegue a su turno propio de desbloqueo.</summary>
+	public virtual bool HabilidadBloqueada() => turnoActualCarta < TurnoDesbloqueoHabilidad;
+
+	/// <summary>Invocado exclusivamente por Campo1 al inicio del turno del dueño de esta tropa
+	/// (tras sobrevivir la fase contraria). Nunca se llama más de una vez por turno propio.</summary>
+	public void AvanzarTurnoTropa() => turnoActualCarta++;
 
 	/// <summary>Polimorfismo: cada carta reacciona al clic o toque igual, pero puede extenderse.</summary>
 	public override void _InputEvent(Viewport viewport, InputEvent @event, int shapeIdx)
 	{
+		if (estaProcesandoHabilidad) return;
+
 		bool presionado = (@event is InputEventMouseButton mb  && mb.Pressed  && mb.ButtonIndex == MouseButton.Left)
 		               || (@event is InputEventScreenTouch st && st.Pressed);
 		if (!presionado) return;
@@ -185,6 +205,76 @@ public abstract partial class TropaBase : Area2D
 	/// TorrePrime lo sobreescribe para desactivar su forma gigante.
 	/// </summary>
 	public virtual void TickHabilidad() { }
+
+	/// <summary>Punto de aterrizaje para un salto/vuelo de ataque (Caballo/Arfil/Dama): el
+	/// SpotInvocacion del objetivo — ya orientado hacia el lado de quien ataca, derivado de su
+	/// propia caja de colisión — en vez de un offset fijo en píxeles. Si el objetivo no tiene
+	/// SpotInvocacion (p. ej. un muro), cae en su GlobalPosition tal cual.</summary>
+	protected static Vector2 ObtenerDestinoAtaque(Node2D objetivo)
+	{
+		if (objetivo is TropaBase objTB)
+		{
+			var spot = objTB.GetNodeOrNull<Marker2D>("SpotInvocacion");
+			if (spot != null) return objTB.ObtenerSpotOrientado(spot);
+		}
+		return objetivo.GlobalPosition;
+	}
+
+	/// <summary>Posición canónica del carril propio (GlobalPosition del Marker2D de la zona),
+	/// para que el regreso de un salto/vuelo aterrice siempre exacto en su slot, sin depender de
+	/// una posición cacheada que pudiera arrastrar desvíos. <paramref name="posDeRespaldo"/> se
+	/// usa solo si esta tropa no tiene carril asignado o la zona no existe.</summary>
+	protected Vector2 ObtenerPosicionCarrilPropio(Vector2 posDeRespaldo)
+	{
+		if (!HasMeta("carril")) return posDeRespaldo;
+		string carril = (string)GetMeta("carril");
+		Node2D zona = GetTree().Root.FindChild(carril, true, false) as Node2D;
+		return zona != null ? zona.GlobalPosition : posDeRespaldo;
+	}
+
+	/// <summary>Fuerza a esta tropa a coincidir exactamente con el Marker2D de un slot/carril,
+	/// usando siempre GlobalPosition (nunca Position, que es relativa al padre y no sirve si la
+	/// tropa y el slot no comparten el mismo Node2D padre). Es el punto único de "recalce" que
+	/// puede llamar Campo1 tras cualquier invocación, promoción o Enroque para garantizar que el
+	/// root de la tropa quede exactamente sobre el círculo rojo del slot. No corrige por sí solo
+	/// un desfase visual causado por el offset propio del AnimatedSprite2D dentro de la escena de
+	/// la tropa (eso requiere ajustar la posición del sprite hijo en su .tscn); solo garantiza que
+	/// el ORIGEN (0,0) de la tropa esté exactamente donde está el slot.</summary>
+	public void RealinearConCarril(Marker2D slotTarget)
+	{
+		if (slotTarget == null || !IsInstanceValid(slotTarget)) return;
+		GlobalPosition = slotTarget.GlobalPosition;
+	}
+
+	/// <summary>Desvanece un nodo (Modulate:a de 1 a 0 en <paramref name="duracion"/> segundos) y
+	/// lo libera al terminar — para que efectos como explosiones no desaparezcan de golpe.</summary>
+	protected static void DesvanecerYLiberar(Node2D nodo, float duracion = 0.2f)
+	{
+		if (!IsInstanceValid(nodo)) return;
+		Tween tw = nodo.CreateTween();
+		tw.TweenProperty(nodo, "modulate:a", 0.0f, duracion);
+		tw.Finished += () => { if (IsInstanceValid(nodo)) nodo.QueueFree(); };
+	}
+
+	/// <summary>Igual que DesvanecerYLiberar, pero dispara el desvanecimiento apenas la animación
+	/// de <paramref name="anim"/> alcanza su antepenúltimo frame (~80% de progreso) en vez de
+	/// esperar a que termine — el sprite sigue animando mientras se desvanece, sin congelarse en
+	/// el último fotograma antes de desaparecer.</summary>
+	protected static void DesvanecerAlAntepenultimoFrame(Node2D nodo, AnimatedSprite2D anim, float duracion = 0.18f)
+	{
+		if (anim == null) { DesvanecerYLiberar(nodo, duracion); return; }
+		bool disparado = false;
+		anim.FrameChanged += () =>
+		{
+			if (disparado || !IsInstanceValid(nodo)) return;
+			int total = anim.SpriteFrames != null ? anim.SpriteFrames.GetFrameCount(anim.Animation) : 0;
+			if (total >= 3 && anim.Frame >= total - 3)
+			{
+				disparado = true;
+				DesvanecerYLiberar(nodo, duracion);
+			}
+		};
+	}
 
 	/// <summary>Posición global de un Marker2D "spot" de lanzamiento (SpotFuego, SpotCañon,
 	/// SpotInvocacion, etc.), reflejando su offset X si esta tropa es del rival. Los spots se

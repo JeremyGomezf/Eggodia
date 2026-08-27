@@ -9,6 +9,7 @@ using System.Collections.Generic;
 public partial class DamaPrime : TropaBase
 {
 	public override string Tipo => Tipos.SOMBRA;
+	protected override int TurnoDesbloqueoHabilidad => 3;
 
 	// ── ESTADOS Y SELECCIÓN POR CLIC ──────────────────────────────────────────
 	private bool   _esperandoSeleccion = false;
@@ -196,8 +197,7 @@ public partial class DamaPrime : TropaBase
 
 			ZIndex = 100; // Se muestra por encima de la tropa objetivo durante el vuelo
 
-			float offset = IsInGroup("tropas_jugador") ? -110.0f : 110.0f;
-			Vector2 posDestino = new Vector2(_objetivoAtaque.GlobalPosition.X + offset, _objetivoAtaque.GlobalPosition.Y);
+			Vector2 posDestino = ObtenerDestinoAtaque(_objetivoAtaque);
 
 			_anim.Pause();
 
@@ -241,7 +241,7 @@ public partial class DamaPrime : TropaBase
 			if (_esAtaqueHabilidad && _volando)
 			{
 				Tween tweenRegreso = CreateTween();
-				tweenRegreso.TweenProperty(this, "global_position", _posicionOriginal, 0.38f)
+				tweenRegreso.TweenProperty(this, "global_position", ObtenerPosicionCarrilPropio(_posicionOriginal), 0.38f)
 							.SetTrans(Tween.TransitionType.Sine)
 							.SetEase(Tween.EaseType.InOut);
 
@@ -390,6 +390,8 @@ public partial class DamaPrime : TropaBase
 				objetivo.Call("RecibirDañoDe", cantidad, this);
 			else
 				objetivo.Call("RecibirDaño", cantidad);
+			var campo = GetTree().Root.FindChild("Campo1", true, false);
+			if (campo != null) campo.Call("RegistrarDañoTropa", this, cantidad);
 		}
 	}
 }

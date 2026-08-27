@@ -186,7 +186,7 @@ public partial class Campo1 : Node2D
 
 		// Botón CAMBIAR
 		_btnCambiarHechizo = new Button();
-		_btnCambiarHechizo.Text = "↺ CAMBIAR (1)";
+		_btnCambiarHechizo.Text = $"↺ CAMBIAR ({MAX_CAMBIO_HECHIZO})";
 		_btnCambiarHechizo.Position = new Vector2(HECHIZO_X, HECHIZO_Y + HECHIZO_H + 50);
 		_btnCambiarHechizo.Size     = new Vector2(HECHIZO_W * 2 + HECHIZO_GAP, 40);
 		_btnCambiarHechizo.AddThemeFontSizeOverride("font_size", 12);
@@ -329,6 +329,8 @@ public partial class Campo1 : Node2D
 	{
 		if (_modoCambioHechizo) { EjecutarCambioHechizo(slotIdx); return; }
 		if (!ValidarHechizo() || EsHechizoUsado(slotIdx)) return;
+		if (_hechizoUsadoEsteTurno) { MostrarAvisoHechizoLimite(); return; }
+		_hechizoUsadoEsteTurno = true; // se compromete al usar este hechizo, aunque falte elegir objetivo
 		int pi = _hechizosMano[slotIdx];
 		switch (pi)
 		{
@@ -369,9 +371,9 @@ public partial class Campo1 : Node2D
 
 	private void ActivarModoCambio()
 	{
-		if (_usadoCambioHechizo) return;
+		if (_usosCambioHechizo >= MAX_CAMBIO_HECHIZO) return;
 		_modoCambioHechizo = !_modoCambioHechizo;
-		_btnCambiarHechizo.Text = _modoCambioHechizo ? "Elige un hechizo..." : "↺  CAMBIAR (1)";
+		_btnCambiarHechizo.Text = _modoCambioHechizo ? "Elige un hechizo..." : $"↺  CAMBIAR ({MAX_CAMBIO_HECHIZO - _usosCambioHechizo})";
 		for (int i = 0; i < 2; i++)
 			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
 				_tarjetasHechizo[i].Modulate = _modoCambioHechizo && !EsHechizoUsado(i)
@@ -381,16 +383,36 @@ public partial class Campo1 : Node2D
 	private void EjecutarCambioHechizo(int slotIdx)
 	{
 		if (slotIdx < 0 || slotIdx >= 2) { _modoCambioHechizo = false; return; }
-		_usadoCambioHechizo = true;
-		_modoCambioHechizo  = false;
+		_usosCambioHechizo++;
+		_modoCambioHechizo = false;
 		AutoReemplazarHechizo(slotIdx);
 
-		_btnCambiarHechizo.Text     = "↺  CAMBIAR (usado)";
-		_btnCambiarHechizo.Disabled = true;
-		_btnCambiarHechizo.Modulate = new Color(0.55f, 0.55f, 0.55f);
+		bool agotado = _usosCambioHechizo >= MAX_CAMBIO_HECHIZO;
+		_btnCambiarHechizo.Text     = agotado ? "↺  CAMBIAR (usado)" : $"↺  CAMBIAR ({MAX_CAMBIO_HECHIZO - _usosCambioHechizo})";
+		_btnCambiarHechizo.Disabled = agotado;
+		_btnCambiarHechizo.Modulate = agotado ? new Color(0.55f, 0.55f, 0.55f) : Colors.White;
 		for (int i = 0; i < 2; i++)
 			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
 				_tarjetasHechizo[i].Modulate = Colors.White;
+	}
+
+	/// <summary>Texto flotante sobre el panel de hechizos: solo se permite 1 por turno.</summary>
+	private void MostrarAvisoHechizoLimite()
+	{
+		var lbl = new Label();
+		lbl.Text = "Solo 1 Hechizo\npor turno";
+		lbl.AddThemeColorOverride("font_color", new Color(1f, 0.4f, 0.35f));
+		lbl.AddThemeFontSizeOverride("font_size", 13);
+		lbl.HorizontalAlignment = HorizontalAlignment.Center;
+		lbl.Position = new Vector2(HECHIZO_X, HECHIZO_Y - 34);
+		lbl.Size     = new Vector2(HECHIZO_W * 2 + HECHIZO_GAP, 30);
+		lbl.ZIndex   = 200;
+		CapaHUD().AddChild(lbl);
+
+		Tween tw = CreateTween().SetParallel(true);
+		tw.TweenProperty(lbl, "position:y", lbl.Position.Y - 25f, 1.0f);
+		tw.TweenProperty(lbl, "modulate:a", 0f, 1.0f);
+		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
 	}
 
 	private void CrearBotonPausa()

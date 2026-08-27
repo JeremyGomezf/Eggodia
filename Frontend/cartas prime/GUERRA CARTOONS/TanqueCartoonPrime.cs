@@ -9,6 +9,7 @@ using Godot;
 public partial class TanqueCartoonPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
+	protected override int TurnoDesbloqueoHabilidad => 4;
 
 	// ── CONSTANTES ────────────────────────────────────────────────────────────
 	private const int    UMBRAL_DAÑADO  = 400;                                        // vida en que cambian las animaciones
@@ -168,9 +169,13 @@ public partial class TanqueCartoonPrime : TropaBase
 		{
 			if (IsInstanceValid(misil)) misil.QueueFree();
 			CrearExplosion(destino);
-			if (IsInstanceValid(objetivo)) objetivo.Call("RecibirDaño", puntosAtaque);
-			// Vibración de cámara al impacto
 			var campo = GetTree().Root.FindChild("Campo1", true, false);
+			if (IsInstanceValid(objetivo))
+			{
+				objetivo.Call("RecibirDaño", puntosAtaque);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, puntosAtaque);
+			}
+			// Vibración de cámara al impacto
 			if (campo != null && campo.HasMethod("ScreenShake"))
 				campo.Call("ScreenShake", 7f);
 		};
@@ -191,18 +196,12 @@ public partial class TanqueCartoonPrime : TropaBase
 		if (animExp != null)
 		{
 			animExp.Play("explosion_centro_c");
-			animExp.AnimationFinished += () =>
-			{
-				if (IsInstanceValid(explosion)) explosion.QueueFree();
-			};
+			DesvanecerAlAntepenultimoFrame(explosion, animExp);
 		}
 		else
 		{
 			// Fallback: liberar tras el tiempo estimado de 9 frames a ~12 fps
-			GetTree().CreateTimer(0.75f).Timeout += () =>
-			{
-				if (IsInstanceValid(explosion)) explosion.QueueFree();
-			};
+			GetTree().CreateTimer(0.75f).Timeout += () => DesvanecerYLiberar(explosion);
 		}
 	}
 

@@ -164,6 +164,7 @@ public partial class Campo1 : Node2D
 	}
 
 	private bool HabilidadUsada(Node2D t) { try { return (bool)t.Get("habilidadUsada"); } catch { return false; } }
+	private bool HabilidadBloqueadaTurno(Node2D t) { try { return (bool)t.Call("HabilidadBloqueada"); } catch { return false; } }
 
 	// ── BARAJAR / SACRIFICIO ──────────────────────────────────────────────
 	public void _on_barajar_pressed()
@@ -223,6 +224,10 @@ public partial class Campo1 : Node2D
 		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 10, "Mod2" => 5, _ => 1 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
 
+		// Turno 0 (fase de invocación): el contador de habilidad no arranca todavía —
+		// llega a 1 recién con el primer AvanzarTurnoTropa() de la primera ronda activa.
+		if (_faseApertura) try { t.Set("turnoActualCarta", 0); } catch { }
+
 		// Activar inmediatamente para que se pueda usar en el mismo turno
 		if (t.HasMethod("SetActivo")) t.Call("SetActivo", true);
 
@@ -249,6 +254,10 @@ public partial class Campo1 : Node2D
 		t.AddToGroup("tropas_rival");
 		t.SetMeta("carril", puntoMod.Name);
 		t.ZIndex = (string)puntoMod.Name switch { "ModRival3" => 10, "ModRival2" => 5, _ => 1 };
+
+		// Turno 0 (fase de invocación): el contador de habilidad no arranca todavía —
+		// llega a 1 recién con el primer AvanzarTurnoTropa() de la primera ronda activa.
+		if (_faseApertura) try { t.Set("turnoActualCarta", 0); } catch { }
 
 		// Corregir orientación sin romper escala ni rotaciones
 		AsegurarOrientacionRival(t);
@@ -284,8 +293,12 @@ public partial class Campo1 : Node2D
 		else
 		{
 			nuevaTropa.AddToGroup("tropas_jugador");
-			if (nuevaTropa.HasMethod("SetActivo")) nuevaTropa.Call("SetActivo", true);
 		}
+
+		// La pieza promovida queda habilitada para actuar (atacar/defender/habilidad) en el
+		// mismo turno, sin perder su acción — simétrico para jugador y rival.
+		if (nuevaTropa.HasMethod("SetActivo")) nuevaTropa.Call("SetActivo", true);
+		if (nuevaTropa is TropaBase tbNueva) tbNueva.turnoActualCarta = 999; // habilidad disponible de inmediato
 
 		if (!string.IsNullOrEmpty(carril))
 		{
@@ -313,7 +326,15 @@ public partial class Campo1 : Node2D
 		bool yaEnDerrota = animSprite != null && ((string)animSprite.Animation).Contains("derrota");
 		if (!yaEnDerrota) tropa.Call("ReproducirDerrota");
 
-		int castigo = Gi(tropa, "vidaMaxima");
+		// Colosos/especiales: castigo de daño masivo fijo al eliminarlos, en vez del
+		// castigo genérico por vidaMaxima.
+		int castigo = tropa switch
+		{
+			TRexPrime            => 550,
+			TanqueCartoonPrime   => 500,
+			GranaderoCartoonPrime => 370,
+			_                     => Gi(tropa, "vidaMaxima"),
+		};
 
 		if (tropa.IsInGroup("tropas_rival"))
 		{
@@ -395,13 +416,24 @@ public partial class Campo1 : Node2D
 	{
 		Marker2D m1 = GetNodeOrNull<Marker2D>("SpawnTrono1"), m2 = GetNodeOrNull<Marker2D>("SpawnTrono2");
 		if (m1 == null || m2 == null || escenaTronoRef == null) return;
+
 		tronoJugador = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoJugador);
 		tronoJugador.GlobalPosition = m1.GlobalPosition;
 		string skinPath = Preferencias.RutaSkinActiva;
-		var skinScene = ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : escenaReyHuevoRef;
-		tronoJugador.CargarHuevo(skinScene ?? escenaReyHuevoRef, false);
+		var skinJugador = ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : escenaReyHuevoRef;
+		tronoJugador.CargarHuevo(skinJugador ?? escenaReyHuevoRef, false);
+
 		tronoRival = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoRival);
-		tronoRival.GlobalPosition = m2.GlobalPosition; tronoRival.CargarHuevo(escenaDinoHuevoRef, true);
+		tronoRival.GlobalPosition = m2.GlobalPosition;
+		tronoRival.CargarHuevo(SkinAleatoria() ?? escenaDinoHuevoRef, true);
+	}
+
+	/// <summary>Skin de Huevo aleatoria entre todas las disponibles en la tienda — solo para el
+	/// rival/IA; el jugador usa la skin que tiene seleccionada en el menú (Preferencias.RutaSkinActiva).</summary>
+	private PackedScene SkinAleatoria()
+	{
+		string skinPath = Preferencias.SKIN_ESCENAS[random.Next(Preferencias.SKIN_ESCENAS.Length)];
+		return ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : null;
 	}
 
 	private void ColocarTropasIniciales()
@@ -449,7 +481,7 @@ public partial class Campo1 : Node2D
 			string dif     = _dificultadCPU == 0 ? "Fácil" : _dificultadCPU == 1 ? "Normal" : "Difícil";
 			bool urgente   = esTurnoJugador && tiempoTurnoActual <= 8;
 			string timer   = urgente ? $"{tiempoTurnoActual}s!" : $"{tiempoTurnoActual}s";
-			int maxEnergy  = Mathf.Min(5, 3 + (_turnosJugados / 2) / 3);
+			int maxEnergy  = ENERGIA_MAXIMA;
 			int turnoNum   = _turnosJugados / 2 + 1;
 			l.Text = $"Turno {turnoNum}  ·  {dif}\nEnergía {movimientosRestantes}/{maxEnergy}\n{(esTurnoJugador ? "TU TURNO" : "TURNO CPU")}  {timer}";
 			l.Modulate = Colors.White;

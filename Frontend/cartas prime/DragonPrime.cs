@@ -8,6 +8,7 @@ using Godot;
 public partial class DragonPrime : TropaBase
 {
 	public override string Tipo => Tipos.FUEGO;
+	protected override int TurnoDesbloqueoHabilidad => 3;
 
 	private const string RUTA_FUEGO_DRAGON = "res://efectos/fuego_dragon.tscn";
 	private const string RUTA_FUEGO_EFECTO = "res://efectos/fuego_efecto.tscn";
@@ -60,7 +61,11 @@ public partial class DragonPrime : TropaBase
 		if (!_esAtaqueHabilidad && _anim.Frame == 3)
 		{
 			if (_objetivo != null && IsInstanceValid(_objetivo) && _objetivo != this)
+			{
 				_objetivo.Call("RecibirDaño", puntosAtaque);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, puntosAtaque);
+			}
 		}
 
 		if (_esAtaqueHabilidad && _anim.Frame == 4)
@@ -147,7 +152,12 @@ public partial class DragonPrime : TropaBase
 			: null;
 		int zIndexQuemadura = objetivo.ZIndex + 1;
 
-		if (IsInstanceValid(objetivo)) objetivo.Call("RecibirDaño", DAÑO_BOLA_FUEGO);
+		if (IsInstanceValid(objetivo))
+		{
+			objetivo.Call("RecibirDaño", DAÑO_BOLA_FUEGO);
+			var campo = GetTree().Root.FindChild("Campo1", true, false);
+			if (campo != null) campo.Call("RegistrarDañoTropa", this, DAÑO_BOLA_FUEGO);
+		}
 
 		if (animBola != null)
 		{
@@ -158,18 +168,18 @@ public partial class DragonPrime : TropaBase
 			{
 				if (IsInstanceValid(bola)) bola.QueueFree();
 				// La quemadura continua solo arranca cuando termina la animación de impacto.
-				if (carril != null) IniciarQuemadura(grupoEnemigo, carril, posicionImpacto, zIndexQuemadura);
+				if (carril != null) IniciarQuemadura(this, grupoEnemigo, carril, posicionImpacto, zIndexQuemadura);
 			};
 		}
 		else
 		{
 			if (IsInstanceValid(bola)) bola.QueueFree();
-			if (carril != null) IniciarQuemadura(grupoEnemigo, carril, posicionImpacto, zIndexQuemadura);
+			if (carril != null) IniciarQuemadura(this, grupoEnemigo, carril, posicionImpacto, zIndexQuemadura);
 		}
 	}
 
 	// ── QUEMADURA (DoT que persiste en el carril/módulo, independiente de si el Dragón sigue vivo) ──
-	private void IniciarQuemadura(string grupoEnemigo, string carrilNormalizado, Vector2 posicionSuelo, int zIndex)
+	private void IniciarQuemadura(Node2D atacante, string grupoEnemigo, string carrilNormalizado, Vector2 posicionSuelo, int zIndex)
 	{
 		if (_escenaFuegoEfecto == null) return;
 
@@ -181,11 +191,13 @@ public partial class DragonPrime : TropaBase
 		efecto.AddToGroup("efectos_dragon_root");
 		efecto.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D")?.Play("animate_fuego");
 
-		TickQuemadura(tree, grupoEnemigo, carrilNormalizado, efecto, TICKS_QUEMADURA);
+		TickQuemadura(tree, atacante, grupoEnemigo, carrilNormalizado, efecto, TICKS_QUEMADURA);
 	}
 
 	// Estático + SceneTree explícito: la quemadura no depende de que "this" (el Dragón) siga vivo.
-	private static void TickQuemadura(SceneTree tree, string grupoEnemigo, string carrilNormalizado, Node2D efecto, int ticksRestantes)
+	// "atacante" solo sirve para atribuir el daño de cada tick al Dragón que la originó (MVT);
+	// si ya murió, RegistrarDañoTropa lo ignora sin interrumpir el DoT.
+	private static void TickQuemadura(SceneTree tree, Node2D atacante, string grupoEnemigo, string carrilNormalizado, Node2D efecto, int ticksRestantes)
 	{
 		tree.CreateTimer(2.0).Timeout += () =>
 		{
@@ -193,6 +205,11 @@ public partial class DragonPrime : TropaBase
 			if (ocupante != null && IsInstanceValid(ocupante))
 			{
 				ocupante.Call("RecibirDaño", DAÑO_QUEMADURA);
+				if (atacante != null && IsInstanceValid(atacante))
+				{
+					var campo = tree.Root.FindChild("Campo1", true, false);
+					if (campo != null) campo.Call("RegistrarDañoTropa", atacante, DAÑO_QUEMADURA);
+				}
 
 				int vidaTrasGolpe = 0;
 				try { vidaTrasGolpe = (int)ocupante.Get("vidaActual"); } catch { }
@@ -214,7 +231,7 @@ public partial class DragonPrime : TropaBase
 			}
 			else
 			{
-				TickQuemadura(tree, grupoEnemigo, carrilNormalizado, efecto, restantes);
+				TickQuemadura(tree, atacante, grupoEnemigo, carrilNormalizado, efecto, restantes);
 			}
 		};
 	}

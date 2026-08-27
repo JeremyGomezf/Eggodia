@@ -116,6 +116,11 @@ public partial class Campo1 : Node2D
 
 		if (juegoTerminado || !esTurnoJugador) return;
 
+		if (_torreEnroque != null && @event is InputEventMouseButton mbE && mbE.Pressed && mbE.ButtonIndex == MouseButton.Left)
+		{
+			if (IntentarClicEnroque(GetGlobalMousePosition())) return;
+		}
+
 		if (_modoSeleccionObjetivo && @event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
 		{
 			Vector2 mouse = GetGlobalMousePosition();

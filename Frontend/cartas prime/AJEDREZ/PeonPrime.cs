@@ -8,6 +8,7 @@ using System.Reflection;
 public partial class PeonPrime : TropaBase
 {
 	public override string Tipo => Tipos.NATURALEZA;
+	protected override int TurnoDesbloqueoHabilidad => 3;
 
 	private const string RUTA_TORRE   = "res://cartas prime/AJEDREZ/Torre_prime.tscn";
 	private const string RUTA_DAMA    = "res://cartas prime/AJEDREZ/Dama_prime.tscn";
@@ -224,6 +225,17 @@ public partial class PeonPrime : TropaBase
 		foreach (string meta in GetMetaList())
 		{
 			nuevaTropa.SetMeta(meta, GetMeta(meta));
+		}
+
+		// 3b. Re-apuntar el marcador "Ocupado" de la zona a la pieza nueva. Sin este paso, la
+		// zona sigue referenciando al Peón (a punto de destruirse) y el carril puede aparecer
+		// vacío o bloqueado para acciones futuras (Enroque, invocación, castigo por carril vacío).
+		if (HasMeta("carril"))
+		{
+			string carrilActual = (string)GetMeta("carril");
+			Node2D zonaActual = GetTree().Root.FindChild(carrilActual, true, false) as Node2D;
+			Node ocupadoActual = zonaActual?.GetNodeOrNull("Ocupado");
+			if (ocupadoActual != null) ocupadoActual.SetMeta("tropa_instanciada", nuevaTropa);
 		}
 
 		Node padre = GetParent();

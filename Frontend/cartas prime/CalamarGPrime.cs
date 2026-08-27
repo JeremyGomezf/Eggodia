@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public partial class CalamarGPrime : TropaBase
 {
 	public override string Tipo => Tipos.SOMBRA;
+	protected override int TurnoDesbloqueoHabilidad => 3;
 
 	private Node2D _objetivo;
 
@@ -36,7 +37,11 @@ public partial class CalamarGPrime : TropaBase
 		if ((string)_anim.Animation == "ataque" && _anim.Frame == 1)
 		{
 			if (_objetivo != null && IsInstanceValid(_objetivo))
+			{
 				_objetivo.Call("RecibirDaño", puntosAtaque);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, puntosAtaque);
+			}
 		}
 	}
 

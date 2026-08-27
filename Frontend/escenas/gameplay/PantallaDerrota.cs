@@ -4,6 +4,12 @@ using System;
 public partial class PantallaDerrota : CanvasLayer
 {
 	public int MonedasGanadas { get; set; }
+	public int DañoInfligido  { get; set; }
+	public int BajasEnemigas  { get; set; }
+
+	public string    MvtNombre      { get; set; }
+	public int       MvtDaño        { get; set; }
+	public Texture2D MvtIlustracion { get; set; }
 
 	public override void _Ready()
 	{
@@ -11,6 +17,8 @@ public partial class PantallaDerrota : CanvasLayer
 		var btnMenu       = GetNodeOrNull<Button>("Overlay/VBox/BtnMenu");
 
 		MostrarRecompensa();
+		MostrarStats();
+		MostrarMVT();
 
 		if (btnReintentar != null)
 			btnReintentar.Pressed += () =>
@@ -33,6 +41,29 @@ public partial class PantallaDerrota : CanvasLayer
 		overlay.Modulate = new Color(1, 1, 1, 0);
 		Tween tw = CreateTween();
 		tw.TweenProperty(overlay, "modulate:a", 1.0f, 1.5f);
+	}
+
+	private void MostrarStats()
+	{
+		var lblD = GetNodeOrNull<Label>("Overlay/VBox/PanelStats/StatsGrid/LblDañoV");
+		var lblE = GetNodeOrNull<Label>("Overlay/VBox/PanelStats/StatsGrid/LblElimV");
+		if (lblD != null) lblD.Text = DañoInfligido.ToString();
+		if (lblE != null) lblE.Text = BajasEnemigas.ToString();
+	}
+
+	private void MostrarMVT()
+	{
+		if (string.IsNullOrEmpty(MvtNombre)) return;
+		var panel = GetNodeOrNull<Control>("Overlay/VBox/PanelMVT");
+		if (panel == null) return;
+		panel.Visible = true;
+
+		var lblNombre = GetNodeOrNull<Label>("Overlay/VBox/PanelMVT/MVTBox/MVTInfo/MVTNombre");
+		var lblStat   = GetNodeOrNull<Label>("Overlay/VBox/PanelMVT/MVTBox/MVTInfo/MVTStat");
+		var foto      = GetNodeOrNull<TextureRect>("Overlay/VBox/PanelMVT/MVTBox/MVTFoto");
+		if (lblNombre != null) lblNombre.Text = MvtNombre;
+		if (lblStat   != null) lblStat.Text   = $"{MvtDaño} de daño causado";
+		if (foto != null && MvtIlustracion != null) foto.Texture = MvtIlustracion;
 	}
 
 	private void MostrarRecompensa()

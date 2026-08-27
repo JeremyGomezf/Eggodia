@@ -4,6 +4,7 @@ using Godot;
 public partial class MaguinPrime : TropaBase
 {
 	public override string Tipo => Tipos.AGUA;
+	protected override int TurnoDesbloqueoHabilidad => 3;
 
 	private Node2D _objetivo;
 
@@ -35,7 +36,11 @@ public partial class MaguinPrime : TropaBase
 		if ((string)_anim.Animation == "ataque" && _anim.Frame == 2)
 		{
 			if (_objetivo != null && IsInstanceValid(_objetivo))
+			{
 				_objetivo.Call("RecibirDaño", puntosAtaque);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, puntosAtaque);
+			}
 		}
 	}
 
@@ -65,6 +70,8 @@ public partial class MaguinPrime : TropaBase
 		if (obj != null)
 		{
 			obj.Call("RecibirDaño", 100);
+			var campoHab = GetTree().Root.FindChild("Campo1", true, false);
+			if (campoHab != null) campoHab.Call("RegistrarDañoTropa", this, 100);
 			obj.SetMeta("bloqueado", true);
 			obj.SetMeta("turnosBloqueo", 1);
 			Tween te = obj.CreateTween();

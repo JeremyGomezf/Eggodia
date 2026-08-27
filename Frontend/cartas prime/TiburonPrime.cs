@@ -40,7 +40,11 @@ public partial class TiburonPrime : TropaBase
 		if ((string)_anim.Animation == "ataque" && _anim.Frame == 3)
 		{
 			if (_objetivo != null && IsInstanceValid(_objetivo))
+			{
 				_objetivo.Call("RecibirDaño", puntosAtaque);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, puntosAtaque);
+			}
 		}
 	}
 

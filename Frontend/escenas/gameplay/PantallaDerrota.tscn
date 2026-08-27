@@ -30,6 +30,22 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_statspanel"]
+bg_color = Color(0.08, 0.05, 0.06, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.25, 0.25, 0.6)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 22.0
+content_margin_top = 16.0
+content_margin_right = 22.0
+content_margin_bottom = 16.0
+
 [node name="PantallaDerrota" type="CanvasLayer"]
 process_mode = 3
 layer = 150
@@ -65,13 +81,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -150.0
-offset_right = 250.0
-offset_bottom = 150.0
+offset_left = -280.0
+offset_top = -260.0
+offset_right = 280.0
+offset_bottom = 260.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 40
+theme_override_constants/separation = 20
 
 [node name="Titulo" type="Label" parent="Overlay/VBox"]
 layout_mode = 2
@@ -89,6 +105,77 @@ theme_override_font_sizes/font_size = 20
 text = "Tu ejército ha caído.
 Modifica tu estrategia e inténtalo de nuevo."
 horizontal_alignment = 1
+
+[node name="PanelStats" type="PanelContainer" parent="Overlay/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_statspanel")
+
+[node name="StatsGrid" type="GridContainer" parent="Overlay/VBox/PanelStats"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 30
+theme_override_constants/v_separation = 8
+
+[node name="LblDañoK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.68, 0.68, 1)
+theme_override_font_sizes/font_size = 15
+text = "Daño Causado Total"
+
+[node name="LblDañoV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+
+[node name="LblElimK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.68, 0.68, 1)
+theme_override_font_sizes/font_size = 15
+text = "Bajas Enemigas"
+
+[node name="LblElimV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 16
+text = "0"
+
+[node name="PanelMVT" type="PanelContainer" parent="Overlay/VBox"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_statspanel")
+
+[node name="MVTBox" type="HBoxContainer" parent="Overlay/VBox/PanelMVT"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="MVTFoto" type="TextureRect" parent="Overlay/VBox/PanelMVT/MVTBox"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MVTInfo" type="VBoxContainer" parent="Overlay/VBox/PanelMVT/MVTBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MVTTitulo" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.4, 0.35, 1)
+theme_override_font_sizes/font_size = 13
+text = "TROPA DESTACADA RIVAL (MVT)"
+
+[node name="MVTNombre" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "-"
+
+[node name="MVTStat" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.75, 0.75, 1)
+theme_override_font_sizes/font_size = 13
+text = "-"
 
 [node name="BtnReintentar" type="Button" parent="Overlay/VBox"]
 custom_minimum_size = Vector2(0, 60)

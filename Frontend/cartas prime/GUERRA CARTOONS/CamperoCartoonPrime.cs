@@ -7,6 +7,7 @@ using Godot;
 public partial class CamperoCartoonPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
+	protected override int TurnoDesbloqueoHabilidad => 2;
 
 	// ── ESTADO HABILIDAD ──────────────────────────────────────────────────────
 	private bool   _habilidadActiva = false;
@@ -211,9 +212,11 @@ public partial class CamperoCartoonPrime : TropaBase
 	{
 		if (objetivo != null && IsInstanceValid(objetivo))
 		{
-			// SOLO llamamos a RecibirDaño. 
+			// SOLO llamamos a RecibirDaño.
 			// No forzamos "recibir_daño" para no romper la defensa de la víctima.
 			objetivo.Call("RecibirDaño", cantidad);
+			var campo = GetTree().Root.FindChild("Campo1", true, false);
+			if (campo != null) campo.Call("RegistrarDañoTropa", this, cantidad);
 		}
 	}
 

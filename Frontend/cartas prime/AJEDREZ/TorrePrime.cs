@@ -1,14 +1,10 @@
 using Godot;
 
-/// <summary>Torre — habilidad: Forma Gigante por 2 turnos (x2 ataque y escudo, x1.6 tamaño).</summary>
+/// <summary>Torre — habilidad: Enroque Táctico (intercambia carril con un aliado adyacente,
+/// o se mueve sola si el carril de destino está vacío). Disponible desde su turno 1.</summary>
 public partial class TorrePrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
-
-	private bool    _habilidadActiva = false;
-	private int     _turnosHabilidad = 0;
-	private int     _ataqueOrig, _escudoMaxOrig;
-	private Vector2 _escalaOrig;
 
 	public override void _Ready()
 	{
@@ -18,40 +14,11 @@ public partial class TorrePrime : TropaBase
 
 	protected override void UsarHabilidadPropia()
 	{
-		if (habilidadUsada) return;
-		_ataqueOrig    = puntosAtaque;
-		_escudoMaxOrig = escudoMaximo;
-		_escalaOrig    = Scale;
+		if (habilidadUsada || HabilidadBloqueada() || !HasMeta("carril")) return;
 
-		puntosAtaque = _ataqueOrig * 2;
-		escudoMaximo = _escudoMaxOrig * 2;
-		escudoActual = Mathf.Min(escudoActual * 2, escudoMaximo);
+		var campo = GetTree().Root.FindChild("Campo1", true, false);
+		if (campo == null || !campo.HasMethod("IniciarSeleccionEnroque")) return;
 
-		Tween tw = CreateTween().SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Back);
-		tw.TweenProperty(this, "scale", _escalaOrig * 1.6f, 0.45f);
-		Tween tw2 = CreateTween();
-		tw2.TweenProperty(this, "modulate", new Color(1.4f, 1.1f, 0.2f), 0.3f);
-		tw2.TweenProperty(this, "modulate", Colors.White, 0.5f);
-
-		habilidadUsada   = true;
-		_habilidadActiva = true;
-		_turnosHabilidad = 2;
-		ActualizarBarrasUI();
-	}
-
-	/// <summary>Llamado por Campo1.ProcesarStatusEfectos para desactivar la forma gigante.</summary>
-	public override void TickHabilidad()
-	{
-		if (!_habilidadActiva) return;
-		_turnosHabilidad--;
-		if (_turnosHabilidad <= 0)
-		{
-			puntosAtaque = _ataqueOrig;
-			escudoMaximo = _escudoMaxOrig;
-			if (escudoActual > escudoMaximo) escudoActual = escudoMaximo;
-			Tween tw = CreateTween().SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Back);
-			tw.TweenProperty(this, "scale", _escalaOrig, 0.4f);
-			_habilidadActiva = false;
-		}
+		campo.Call("IniciarSeleccionEnroque", this);
 	}
 }

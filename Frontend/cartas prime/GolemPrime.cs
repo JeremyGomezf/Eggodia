@@ -8,6 +8,7 @@ using Godot;
 public partial class GolemPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
+	protected override int TurnoDesbloqueoHabilidad => 4;
 
 	private const string RUTA_MURO = "res://efectos/muro_golem.tscn";
 
@@ -55,14 +56,22 @@ public partial class GolemPrime : TropaBase
 		{
 			_golpeF2Disparado = true;
 			if (_objetivo != null && IsInstanceValid(_objetivo))
+			{
 				_objetivo.Call("RecibirDaño", hit);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, hit);
+			}
 		}
 
 		if (_anim.Frame == 4 && !_golpeF4Disparado)
 		{
 			_golpeF4Disparado = true;
 			if (_objetivo != null && IsInstanceValid(_objetivo))
+			{
 				_objetivo.Call("RecibirDaño", hit);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, hit);
+			}
 		}
 	}
 

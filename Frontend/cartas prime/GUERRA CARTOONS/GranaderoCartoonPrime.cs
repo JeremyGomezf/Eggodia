@@ -11,6 +11,7 @@ using Godot;
 public partial class GranaderoCartoonPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
+	protected override int TurnoDesbloqueoHabilidad => 4;
 
 	// ── CONSTANTES ────────────────────────────────────────────────────────────
 	private const int    ATQ_MORTERO   = 350;
@@ -221,7 +222,12 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			if (IsInstanceValid(gRef)) gRef.QueueFree();
 			CrearExplosion(d, esGranada: true);
-			if (IsInstanceValid(oRef)) oRef.Call("RecibirDaño", dmg);
+			if (IsInstanceValid(oRef))
+			{
+				oRef.Call("RecibirDaño", dmg);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, dmg);
+			}
 		};
 	}
 
@@ -275,7 +281,12 @@ public partial class GranaderoCartoonPrime : TropaBase
 				{
 					if (IsInstanceValid(mRef)) mRef.QueueFree();
 					CrearExplosion(destino, esGranada: false);
-					if (IsInstanceValid(oRef)) oRef.Call("RecibirDaño", ATQ_MORTERO);
+					if (IsInstanceValid(oRef))
+					{
+						oRef.Call("RecibirDaño", ATQ_MORTERO);
+						var campo = GetTree().Root.FindChild("Campo1", true, false);
+						if (campo != null) campo.Call("RegistrarDañoTropa", this, ATQ_MORTERO);
+					}
 				};
 			};
 		};
@@ -297,11 +308,11 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			if (!esGranada) animExp.Play("explosion_centro_c");
 			else            animExp.Play();
-			animExp.AnimationFinished += () => { if (IsInstanceValid(exp)) exp.QueueFree(); };
+			DesvanecerAlAntepenultimoFrame(exp, animExp);
 		}
 		else
 		{
-			GetTree().CreateTimer(0.8f).Timeout += () => { if (IsInstanceValid(exp)) exp.QueueFree(); };
+			GetTree().CreateTimer(0.8f).Timeout += () => DesvanecerYLiberar(exp);
 		}
 	}
 

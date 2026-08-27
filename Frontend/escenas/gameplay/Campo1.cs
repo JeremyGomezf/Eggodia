@@ -17,8 +17,9 @@ public partial class Campo1 : Node2D
 	public  bool juegoTerminado       = false;
 
 	// ── TURNOS ────────────────────────────────────────────────────────────
+	public  const int ENERGIA_MAXIMA  = 3; // fija, sin escalado por turno
 	public  bool esTurnoJugador       = true;
-	public  int  movimientosRestantes = 3;
+	public  int  movimientosRestantes = ENERGIA_MAXIMA;
 	private int  tiempoTurnoActual    = 20;
 	private Timer timerReloj;
 
@@ -71,6 +72,7 @@ public partial class Campo1 : Node2D
 	private bool _modoSeleccionObjetivo = false;
 	private string _hechizoPendiente    = "";
 	private Label  _lblInstruccion;
+	private bool   _hechizoUsadoEsteTurno = false; // 1 hechizo/trampa por turno (jugador e IA)
 
 	// Pool visual de hechizos — mano de 3 cartas aleatorias de 5 posibles
 	private static readonly string[] POOL_HECHIZO_NOMBRE = { "Curación", "Robar Carta", "Veneno", "Bloqueo", "Encebollado" };
@@ -90,7 +92,8 @@ public partial class Campo1 : Node2D
 	private Panel[] _tarjetasHechizo  = new Panel[2];
 	private Panel[] _overlayHechizo   = new Panel[2];
 	private Label[] _lblEstadoHechizo = new Label[2];
-	private bool    _usadoCambioHechizo = false;
+	private const int MAX_CAMBIO_HECHIZO = 3; // hasta 3 cambios de hechizo por partida (jugador e IA)
+	private int     _usosCambioHechizo  = 0;
 	private bool    _modoCambioHechizo  = false;
 	private Button  _btnCambiarHechizo;
 	private System.Collections.Generic.List<int> _poolHechizos = new();

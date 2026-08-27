@@ -4,6 +4,79 @@ using System.Collections.Generic;
 
 public partial class Campo1 : Node2D
 {
+	// ── ESTADÍSTICAS POR TROPA (MVT: Most Valuable Troop) ──────────────────
+	private class RegistroTropa
+	{
+		public string Nombre;
+		public bool EsJugador;
+		public int Daño;
+		public Texture2D Ilustracion;
+	}
+	private readonly Dictionary<ulong, RegistroTropa> _statsPorTropa = new();
+	private Dictionary<string, Texture2D> _cacheIlustraciones;
+
+	/// <summary>Acumula el daño causado por una tropa individual, para el ranking de MVT al
+	/// terminar la partida. Debe llamarse en todo punto donde una tropa aplique daño, tanto
+	/// desde el combate central (Campo1.Combate.cs) como desde las tropas autogestionadas.</summary>
+	public void RegistrarDañoTropa(Node2D atacante, int daño)
+	{
+		if (!IsInstanceValid(atacante) || daño <= 0) return;
+		ulong id = atacante.GetInstanceId();
+		if (!_statsPorTropa.TryGetValue(id, out var reg))
+		{
+			reg = new RegistroTropa
+			{
+				Nombre      = NombreCorto(atacante),
+				EsJugador   = atacante.IsInGroup("tropas_jugador"),
+				Ilustracion = ObtenerIlustracionTropa(atacante),
+			};
+			_statsPorTropa[id] = reg;
+		}
+		reg.Daño += daño;
+	}
+
+	// Empareja la escena de batalla de la tropa (SceneFilePath) con la ilustración
+	// definida en su CartaData (res://DatosCartas/*.tres) para mostrarla en el MVT.
+	private Texture2D ObtenerIlustracionTropa(Node2D tropa)
+	{
+		string ruta = tropa.SceneFilePath;
+		if (string.IsNullOrEmpty(ruta)) return null;
+
+		if (_cacheIlustraciones == null)
+		{
+			_cacheIlustraciones = new Dictionary<string, Texture2D>();
+			using var dir = DirAccess.Open("res://DatosCartas");
+			if (dir != null)
+			{
+				dir.ListDirBegin();
+				string archivo = dir.GetNext();
+				while (archivo != "")
+				{
+					if (archivo.EndsWith(".tres"))
+					{
+						var datos = GD.Load<CartaData>($"res://DatosCartas/{archivo}");
+						if (datos != null && !string.IsNullOrEmpty(datos.RutaEscena) && datos.Imagen != null)
+							_cacheIlustraciones[datos.RutaEscena] = datos.Imagen;
+					}
+					archivo = dir.GetNext();
+				}
+			}
+		}
+		return _cacheIlustraciones.TryGetValue(ruta, out var tex) ? tex : null;
+	}
+
+	/// <summary>Tropa más valiosa del bando indicado (mayor daño total causado en la partida).</summary>
+	private (string nombre, int daño, Texture2D ilustracion) ObtenerMVT(bool ladoJugador)
+	{
+		RegistroTropa mejor = null;
+		foreach (var reg in _statsPorTropa.Values)
+		{
+			if (reg.EsJugador != ladoJugador) continue;
+			if (mejor == null || reg.Daño > mejor.Daño) mejor = reg;
+		}
+		return mejor != null ? (mejor.Nombre, mejor.Daño, mejor.Ilustracion) : (null, 0, null);
+	}
+
 	// ── FIN DE PARTIDA ────────────────────────────────────────────────────
 	private void DeterminarGanadorPorTiempo()
 	{
@@ -36,7 +109,16 @@ public partial class Campo1 : Node2D
 			if (escenaDerrota != null)
 			{
 				var pd = escenaDerrota.Instantiate();
-				if (pd is PantallaDerrota pdScript) pdScript.MonedasGanadas = monedasConsuelo;
+				if (pd is PantallaDerrota pdScript)
+				{
+					pdScript.MonedasGanadas   = monedasConsuelo;
+					pdScript.DañoInfligido    = _dañoTotalJugador;
+					pdScript.BajasEnemigas    = _tropasEliminadasRival;
+					var mvtRival = ObtenerMVT(false);
+					pdScript.MvtNombre      = mvtRival.nombre;
+					pdScript.MvtDaño        = mvtRival.daño;
+					pdScript.MvtIlustracion = mvtRival.ilustracion;
+				}
 				AddChild(pd);
 			}
 			return;
@@ -55,6 +137,10 @@ public partial class Campo1 : Node2D
 				pv.TurnosJugados    = _turnosJugados;
 				pv.Racha            = _rachaVictorias + 1;
 				pv.MonedasGanadas   = monedasGanadas;
+				var mvtJugador = ObtenerMVT(true);
+				pv.MvtNombre      = mvtJugador.nombre;
+				pv.MvtDaño        = mvtJugador.daño;
+				pv.MvtIlustracion = mvtJugador.ilustracion;
 				AddChild(pv);
 			}
 
@@ -208,6 +294,8 @@ public partial class Campo1 : Node2D
 	// ── CPU HECHIZOS ─────────────────────────────────────────────────────
 	private void CPUUsarHechizo()
 	{
+		if (_hechizoUsadoEsteTurno) return; // mismo límite de 1 hechizo/trampa por turno que el jugador
+
 		// Buscar tropa del jugador con más vida para envenenaría
 		Node2D objetivo = null;
 		int maxVida = 0;
@@ -218,6 +306,8 @@ public partial class Campo1 : Node2D
 			if (v > maxVida) { maxVida = v; objetivo = t; }
 		}
 		if (objetivo == null) return;
+
+		_hechizoUsadoEsteTurno = true;
 
 		// Alternar entre veneno y bloqueo
 		if (random.Next(2) == 0)

@@ -42,6 +42,11 @@ public partial class Campo1 : Node2D
 
 		AjustarDificultad();
 
+		// Turno propio de cada tropa rival: se adelanta antes de cualquier invocación/ataque
+		// de este turno, para que una tropa recién invocada hoy no se cuente a sí misma.
+		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+			if (n.HasMethod("AvanzarTurnoTropa")) n.Call("AvanzarTurnoTropa");
+
 		float delay = _dificultadCPU == 0 ? 1.8f : _dificultadCPU == 1 ? 1.2f : 0.85f;
 		await ToSignal(GetTree().CreateTimer(delay * 0.4f), "timeout");
 		if (juegoTerminado) return;
@@ -60,14 +65,23 @@ public partial class Campo1 : Node2D
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 				if (n is Node2D n2 && IsInstanceValid(n2)) bots.Add(n2);
 			if (_dificultadCPU == 2)
-				bots.Sort((a, b) => Gi(b, "puntosAtaque").CompareTo(Gi(a, "puntosAtaque")));
+				bots.Sort((a, b) =>
+				{
+					int p = PrioridadObjetivo(b).CompareTo(PrioridadObjetivo(a));
+					return p != 0 ? p : Gi(b, "puntosAtaque").CompareTo(Gi(a, "puntosAtaque"));
+				});
 
 			foreach (Node2D tropa in bots)
 			{
 				if (movimientosRestantes <= 0 || juegoTerminado || !IsInstanceValid(tropa)) break;
 				if (EstaBlockeada(tropa)) continue;
 				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
-				if (!HabilidadUsada(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0)
+				bool intentaHabilidad = !HabilidadUsada(tropa) && !HabilidadBloqueadaTurno(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0;
+				if (intentaHabilidad && tropa is TorrePrime torreIA)
+				{
+					if (!await IntentarEnroqueIA(torreIA)) ProcesarCombateFrontal(tropa, "tropas_jugador");
+				}
+				else if (intentaHabilidad)
 					tropa.Call("EjecutarAccion", "usar_habilidad");
 				else if (DebeDefender(tropa, objetivo))
 					tropa.Call("EjecutarAccion", "preparar_defensa");
@@ -113,14 +127,23 @@ public partial class Campo1 : Node2D
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 				if (n is Node2D n2 && IsInstanceValid(n2)) bots.Add(n2);
 			if (_dificultadCPU == 2)
-				bots.Sort((a, b) => Gi(b, "puntosAtaque").CompareTo(Gi(a, "puntosAtaque")));
+				bots.Sort((a, b) =>
+				{
+					int p = PrioridadObjetivo(b).CompareTo(PrioridadObjetivo(a));
+					return p != 0 ? p : Gi(b, "puntosAtaque").CompareTo(Gi(a, "puntosAtaque"));
+				});
 
 			foreach (Node2D tropa in bots)
 			{
 				if (movimientosRestantes <= 0 || juegoTerminado || !IsInstanceValid(tropa)) break;
 				if (EstaBlockeada(tropa)) continue;
 				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
-				if (!HabilidadUsada(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0)
+				bool intentaHabilidad = !HabilidadUsada(tropa) && !HabilidadBloqueadaTurno(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0;
+				if (intentaHabilidad && tropa is TorrePrime torreIA)
+				{
+					if (!await IntentarEnroqueIA(torreIA)) ProcesarCombateFrontal(tropa, "tropas_jugador");
+				}
+				else if (intentaHabilidad)
 					tropa.Call("EjecutarAccion", "usar_habilidad");
 				else if (DebeDefender(tropa, objetivo))
 					tropa.Call("EjecutarAccion", "preparar_defensa");
@@ -134,7 +157,28 @@ public partial class Campo1 : Node2D
 			}
 		}
 
+		// Prioridad 1: nunca terminar el turno con un carril propio vacío (invocación gratis,
+		// evita el castigo de -150 HP al Huevo rival).
+		foreach (string nombre in puntos)
+		{
+			if (juegoTerminado) break;
+			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+			if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
+			InvocacionRival(zona, ElegirTropaCPU());
+			ActualizarInterfaz();
+			await ToSignal(GetTree().CreateTimer(delay * 0.5f), "timeout");
+			if (juegoTerminado) return;
+		}
+
 		if (!esTurnoJugador && !juegoTerminado) CambiarTurno();
+	}
+
+	/// <summary>Prioridad 3 de la IA: prefiere atacar cuando su objetivo de carril es un
+	/// coloso enemigo (Paper-Rex/Tanque), para forzar su castigo masivo al Huevo si muere.</summary>
+	private int PrioridadObjetivo(Node2D tropa)
+	{
+		Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
+		return (objetivo is TRexPrime || objetivo is TanqueCartoonPrime) ? 1 : 0;
 	}
 
 	private PackedScene ElegirTropaCPU()

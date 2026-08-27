@@ -18,27 +18,22 @@ public partial class Campo1 : Node2D
 	private void CambiarTurno()
 	{
 		_turnosJugados++;
+
+		// Castigo por carril propio vacío al terminar el turno (antes de pasar al otro bando).
+		if (!_faseApertura) AplicarCastigoCarrilesVacios(esTurnoJugador);
+
 		esTurnoJugador    = !esTurnoJugador;
 		tiempoTurnoActual = 28;
 
-		// Energía escala progresivamente: 3 → 4 → 5 (cap), cada 3 turnos completos
-		int turnoGlobal      = _turnosJugados / 2;
-		movimientosRestantes = Mathf.Min(5, 3 + turnoGlobal / 3);
-
-		// Comeback: si tienes <30% HP ganas +1 energía ese turno
-		int hpActivo = esTurnoJugador ? vidaJugador : vidaRival;
-		if (hpActivo < (int)(vidaMaxJugador * 0.3f) && movimientosRestantes < 5)
-		{
-			movimientosRestantes++;
-			if (esTurnoJugador)
-				MostrarAviso("Desesperación: +1 Energía", Colors.OrangeRed);
-		}
+		// Energía fija: 3/3 en todos los turnos, sin escalado ni bonos.
+		movimientosRestantes = ENERGIA_MAXIMA;
 
 		usosBarajar    = 0;
 		usosSacrificio = 0;
 		// Cada turno del jugador empieza en fase de invocación
 		faseInvocacion = esTurnoJugador ? !TodosSpotsOcupados() : false;
 		_comboTurno    = 0;
+		_hechizoUsadoEsteTurno = false;
 		_modoSeleccionObjetivo = false;
 		_hechizoPendiente      = "";
 		if (_lblInstruccion != null) _lblInstruccion.Visible = false;
@@ -51,7 +46,10 @@ public partial class Campo1 : Node2D
 		{
 			CompletarManoAlInicio();
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
+			{
 				if (n.HasMethod("SetActivo")) n.Call("SetActivo", true);
+				if (n.HasMethod("AvanzarTurnoTropa")) n.Call("AvanzarTurnoTropa");
+			}
 		}
 		else EjecutarTurnoCPU();
 
@@ -103,6 +101,35 @@ public partial class Campo1 : Node2D
 		tw.Chain().TweenInterval(0.9f);
 		tw.Chain().TweenProperty(panel, "modulate:a", 0.0f, 0.35f);
 		tw.Finished += () => { if (IsInstanceValid(panel)) panel.QueueFree(); };
+	}
+
+	// ── CASTIGO POR CARRIL VACÍO ────────────────────────────────────────────
+	private const int CASTIGO_CARRIL_VACIO = 150;
+
+	private void AplicarCastigoCarrilesVacios(bool deJugador)
+	{
+		string[] carriles = deJugador
+			? new[] { "Mod1", "Mod2", "Mod3" }
+			: new[] { "ModRival1", "ModRival2", "ModRival3" };
+
+		bool hayCarrilVacio = false;
+		foreach (string nombre in carriles)
+		{
+			Node2D zona = GetTree().Root.FindChild(nombre, true, false) as Node2D;
+			if (zona == null || zona.GetNodeOrNull("Ocupado") == null) { hayCarrilVacio = true; break; }
+		}
+		if (!hayCarrilVacio) return;
+
+		if (deJugador)
+		{
+			vidaJugador -= CASTIGO_CARRIL_VACIO; if (vidaJugador < 0) vidaJugador = 0;
+			MostrarAviso($"Carril vacío: -{CASTIGO_CARRIL_VACIO} HP", Colors.OrangeRed);
+		}
+		else
+		{
+			vidaRival -= CASTIGO_CARRIL_VACIO; if (vidaRival < 0) vidaRival = 0;
+		}
+		CheckEstadoJuego();
 	}
 
 	// ── STATUS EFFECTS ────────────────────────────────────────────────────

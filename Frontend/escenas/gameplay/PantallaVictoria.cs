@@ -8,6 +8,10 @@ public partial class PantallaVictoria : CanvasLayer
 	public int Racha            { get; set; }
 	public int MonedasGanadas   { get; set; }
 
+	public string    MvtNombre      { get; set; }
+	public int       MvtDaño        { get; set; }
+	public Texture2D MvtIlustracion { get; set; }
+
 	public override void _Ready()
 	{
 		var lblD  = GetNodeOrNull<Label>("Overlay/VBox/PanelStats/StatsGrid/LblDañoV");
@@ -18,6 +22,8 @@ public partial class PantallaVictoria : CanvasLayer
 		if (lblE != null) lblE.Text = TropasEliminadas.ToString();
 		if (lblT != null) lblT.Text = TurnosJugados.ToString();
 		if (lblR != null) lblR.Text = Racha > 1 ? $"{Racha} victorias seguidas" : $"{Racha}";
+
+		MostrarMVT();
 
 		var btnJugar = GetNodeOrNull<Button>("Overlay/VBox/BtnJugarDeNuevo");
 		var btnMenu  = GetNodeOrNull<Button>("Overlay/VBox/BtnMenu");
@@ -55,6 +61,21 @@ public partial class PantallaVictoria : CanvasLayer
 		int idx = panelStats != null ? panelStats.GetIndex() + 1 : 1;
 		vbox.AddChild(chip);
 		vbox.MoveChild(chip, idx);
+	}
+
+	private void MostrarMVT()
+	{
+		if (string.IsNullOrEmpty(MvtNombre)) return;
+		var panel = GetNodeOrNull<Control>("Overlay/VBox/PanelMVT");
+		if (panel == null) return;
+		panel.Visible = true;
+
+		var lblNombre = GetNodeOrNull<Label>("Overlay/VBox/PanelMVT/MVTBox/MVTInfo/MVTNombre");
+		var lblStat   = GetNodeOrNull<Label>("Overlay/VBox/PanelMVT/MVTBox/MVTInfo/MVTStat");
+		var foto      = GetNodeOrNull<TextureRect>("Overlay/VBox/PanelMVT/MVTBox/MVTFoto");
+		if (lblNombre != null) lblNombre.Text = MvtNombre;
+		if (lblStat   != null) lblStat.Text   = $"{MvtDaño} de daño causado";
+		if (foto != null && MvtIlustracion != null) foto.Texture = MvtIlustracion;
 	}
 
 	private void AnimarEntrada()

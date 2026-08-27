@@ -11,6 +11,7 @@ using System;
 public partial class TRexPrime : TropaBase
 {
 	public override string Tipo => Tipos.NATURALEZA;
+	protected override int TurnoDesbloqueoHabilidad => 4;
 
 	// ── CONSTANTES Y CONFIGURACIÓN ───────────────────────────────────────────
 	private const int FRAME_GOLPE      = 2;   // Frame exacto de la animación de mordisco
@@ -124,6 +125,8 @@ public partial class TRexPrime : TropaBase
 		{
 			_objetivoPendiente.Call("RecibirDaño", puntosAtaque);
 		}
+		var campoAtaque = GetTree().Root.FindChild("Campo1", true, false);
+		if (campoAtaque != null) campoAtaque.Call("RegistrarDañoTropa", this, puntosAtaque);
 
 		_objetivoPendiente = null;
 	}
@@ -137,6 +140,9 @@ public partial class TRexPrime : TropaBase
 		}
 
 		bool esMuro = _objetivoPendiente.IsInGroup("muros_jugador") || _objetivoPendiente.IsInGroup("muros_rival");
+		var campoHabilidad = GetTree().Root.FindChild("Campo1", true, false);
+		if (campoHabilidad != null) campoHabilidad.Call("RegistrarDañoTropa", this, DAÑO_VERDADERO);
+
 		if (esMuro)
 		{
 			// El muro recibe daño a su durabilidad

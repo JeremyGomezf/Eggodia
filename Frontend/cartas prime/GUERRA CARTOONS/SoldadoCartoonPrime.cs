@@ -4,6 +4,7 @@ using Godot;
 public partial class SoldadoCartoonPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
+	protected override int TurnoDesbloqueoHabilidad => 2;
 
 	// ── ESTADO HABILIDAD ──────────────────────────────────────────────────────
 	private bool   _habilidadActiva = false;
@@ -151,6 +152,8 @@ public partial class SoldadoCartoonPrime : TropaBase
 			{
 				// CORREGIDO: Se llama solo a RecibirDaño para no romper la postura defensiva del objetivo
 				_objetivoAtaque.Call("RecibirDaño", 50);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, 50);
 			}
 		}
 
@@ -165,6 +168,8 @@ public partial class SoldadoCartoonPrime : TropaBase
 			{
 				// CORREGIDO: Se llama solo a RecibirDaño para no romper la postura defensiva del objetivo
 				_objetivoRafaga.Call("RecibirDaño", 50);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, 50);
 			}
 		}
 

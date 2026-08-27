@@ -289,6 +289,8 @@ public partial class KaBarCartoonPrime : TropaBase
 			if (obj != null && IsInstanceValid(obj))
 			{
 				obj.Call("RecibirDaño", puntosAtaque);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, puntosAtaque);
 			}
 		}
 
@@ -306,7 +308,11 @@ public partial class KaBarCartoonPrime : TropaBase
 		{
 			Node2D obj = BuscarObjetivoFantasma();
 			if (obj != null && IsInstanceValid(obj))
+			{
 				obj.Call("RecibirDaño", 30);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, 30);
+			}
 		}
 	}
 

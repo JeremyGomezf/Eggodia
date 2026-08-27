@@ -97,12 +97,12 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -280.0
-offset_top = -220.0
+offset_top = -260.0
 offset_right = 280.0
-offset_bottom = 220.0
+offset_bottom = 260.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 22
+theme_override_constants/separation = 18
 
 [node name="Titulo" type="Label" parent="Overlay/VBox"]
 layout_mode = 2
@@ -135,7 +135,7 @@ theme_override_constants/v_separation = 8
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
 theme_override_font_sizes/font_size = 15
-text = "Daño infligido"
+text = "Daño Causado Total"
 
 [node name="LblDañoV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
@@ -147,7 +147,7 @@ text = "0"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
 theme_override_font_sizes/font_size = 15
-text = "Tropas eliminadas"
+text = "Bajas Enemigas"
 
 [node name="LblElimV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
@@ -178,6 +178,43 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1.0, 0.75, 0.3, 1)
 theme_override_font_sizes/font_size = 16
 text = "0"
+
+[node name="PanelMVT" type="PanelContainer" parent="Overlay/VBox"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_statspanel")
+
+[node name="MVTBox" type="HBoxContainer" parent="Overlay/VBox/PanelMVT"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="MVTFoto" type="TextureRect" parent="Overlay/VBox/PanelMVT/MVTBox"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MVTInfo" type="VBoxContainer" parent="Overlay/VBox/PanelMVT/MVTBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MVTTitulo" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.78, 0.25, 1)
+theme_override_font_sizes/font_size = 13
+text = "TROPA DESTACADA (MVT)"
+
+[node name="MVTNombre" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "-"
+
+[node name="MVTStat" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 13
+text = "-"
 
 [node name="BtnJugarDeNuevo" type="Button" parent="Overlay/VBox"]
 custom_minimum_size = Vector2(0, 58)

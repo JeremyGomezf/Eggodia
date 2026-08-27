@@ -6,6 +6,7 @@ using Godot;
 public partial class SoldadoRealPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
+	protected override int TurnoDesbloqueoHabilidad => 2;
 
 	private bool   _enParry            = false;
 	private int    _parryTicksRestantes = 0;
@@ -116,6 +117,8 @@ public partial class SoldadoRealPrime : TropaBase
 			{
 				int danioFinal = _esContraataque ? 300 : puntosAtaque;
 				_objetivo.Call("RecibirDaño", danioFinal);
+				var campo = GetTree().Root.FindChild("Campo1", true, false);
+				if (campo != null) campo.Call("RegistrarDañoTropa", this, danioFinal);
 			}
 		}
 

@@ -47,6 +47,7 @@ public partial class Campo1 : Node2D
 
 				if (grupoEnemigo == "tropas_rival") _dañoTotalJugador += dañoReal;
 				else                                _dañoTotalRival   += dañoReal;
+				RegistrarDañoTropa(atacante, dañoReal);
 
 				if (dañoReal > 0)
 				{
@@ -60,23 +61,26 @@ public partial class Campo1 : Node2D
 		}
 		else
 		{
+			// Carril enemigo vacío (la tropa que lo ocupaba murió): impacto directo fijo al
+			// Huevo enemigo, sin modificadores de crítico/era/tipo.
+			const int DAÑO_CARRIL_VACIO = 100;
 			if (grupoEnemigo == "tropas_rival")
 			{
-				vidaRival -= daño; if (vidaRival < 0) vidaRival = 0;
-				if (critico) MostrarDañoFlotanteCritico(new Vector2(900, 200), daño);
-				else         MostrarDañoFlotante(new Vector2(900, 200), daño);
-				_dañoTotalJugador += daño;
-				RegistrarEvento($"{NombreCorto(atacante)} golpea la base rival: {daño}", new Color(0.5f, 1f, 0.6f));
+				vidaRival -= DAÑO_CARRIL_VACIO; if (vidaRival < 0) vidaRival = 0;
+				MostrarDañoFlotante(new Vector2(900, 200), DAÑO_CARRIL_VACIO);
+				_dañoTotalJugador += DAÑO_CARRIL_VACIO;
+				RegistrarDañoTropa(atacante, DAÑO_CARRIL_VACIO);
+				RegistrarEvento($"{NombreCorto(atacante)} golpea la base rival: {DAÑO_CARRIL_VACIO}", new Color(0.5f, 1f, 0.6f));
 			}
 			else
 			{
-				vidaJugador -= daño; if (vidaJugador < 0) vidaJugador = 0;
-				if (critico) MostrarDañoFlotanteCritico(new Vector2(200, 200), daño);
-				else         MostrarDañoFlotante(new Vector2(200, 200), daño);
-				_dañoTotalRival += daño;
-				RegistrarEvento($"{NombreCorto(atacante)} golpea tu base: {daño}", new Color(1f, 0.55f, 0.5f));
+				vidaJugador -= DAÑO_CARRIL_VACIO; if (vidaJugador < 0) vidaJugador = 0;
+				MostrarDañoFlotante(new Vector2(200, 200), DAÑO_CARRIL_VACIO);
+				_dañoTotalRival += DAÑO_CARRIL_VACIO;
+				RegistrarDañoTropa(atacante, DAÑO_CARRIL_VACIO);
+				RegistrarEvento($"{NombreCorto(atacante)} golpea tu base: {DAÑO_CARRIL_VACIO}", new Color(1f, 0.55f, 0.5f));
 			}
-			ScreenShake(critico ? 12f : 8f);
+			ScreenShake(6f);
 			CheckEstadoJuego();
 		}
 	}
