@@ -47,7 +47,10 @@ public partial class Campo1 : Node2D
 		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 			if (n.HasMethod("AvanzarTurnoTropa")) n.Call("AvanzarTurnoTropa");
 
-		float delay = _dificultadCPU == 0 ? 1.8f : _dificultadCPU == 1 ? 1.2f : 0.85f;
+		// Cadencia orgánica entre acciones de la IA (0.5s-1.0s): más lenta en fácil, más ágil
+		// en difícil, pero siempre dentro del rango legible para el jugador.
+		float delay = _dificultadCPU == 0 ? 1.0f : _dificultadCPU == 1 ? 0.75f : 0.5f;
+		await EsperarTableroLibre();
 		await ToSignal(GetTree().CreateTimer(delay * 0.4f), "timeout");
 		if (juegoTerminado) return;
 
@@ -75,6 +78,10 @@ public partial class Campo1 : Node2D
 			{
 				if (movimientosRestantes <= 0 || juegoTerminado || !IsInstanceValid(tropa)) break;
 				if (EstaBlockeada(tropa)) continue;
+				// Sincronización: no emitir la siguiente acción hasta que el tablero esté
+				// 100% libre de animaciones/efectos pendientes (muros, proyectiles, Enroque...).
+				await EsperarTableroLibre();
+				if (juegoTerminado || !IsInstanceValid(tropa)) return;
 				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
 				bool intentaHabilidad = !HabilidadUsada(tropa) && !HabilidadBloqueadaTurno(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0;
 				if (intentaHabilidad && tropa is TorrePrime torreIA)
@@ -137,6 +144,10 @@ public partial class Campo1 : Node2D
 			{
 				if (movimientosRestantes <= 0 || juegoTerminado || !IsInstanceValid(tropa)) break;
 				if (EstaBlockeada(tropa)) continue;
+				// Sincronización: no emitir la siguiente acción hasta que el tablero esté
+				// 100% libre de animaciones/efectos pendientes (muros, proyectiles, Enroque...).
+				await EsperarTableroLibre();
+				if (juegoTerminado || !IsInstanceValid(tropa)) return;
 				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
 				bool intentaHabilidad = !HabilidadUsada(tropa) && !HabilidadBloqueadaTurno(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0;
 				if (intentaHabilidad && tropa is TorrePrime torreIA)

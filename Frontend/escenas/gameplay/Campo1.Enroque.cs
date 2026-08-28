@@ -174,9 +174,11 @@ public partial class Campo1 : Node2D
 		Vector2 posOrigenTorre = torre.GlobalPosition;
 		Vector2 posDestino     = zonaDestino.GlobalPosition;
 
-		// 1) State Lock — anti-spam / anti-doble clic en ambas tropas involucradas.
+		// 1) State Lock — anti-spam / anti-doble clic en ambas tropas involucradas, más el
+		//    bloqueo global de tablero para que la IA no dispare otra acción mientras dura.
 		torre.estaProcesandoHabilidad = true;
 		if (aliado != null) aliado.estaProcesandoHabilidad = true;
+		IniciarBloqueoTablero();
 
 		// 2) Z-Index por profundidad real: cada tropa toma el tier de SU carril destino
 		//    (mayor Y = más frontal = ZIndex mayor). Ya queda correcto al terminar el
@@ -196,7 +198,7 @@ public partial class Campo1 : Node2D
 
 		await ToSignal(tw, Tween.SignalName.Finished);
 
-		if (!IsInstanceValid(torre)) return;
+		if (!IsInstanceValid(torre)) { FinalizarBloqueoTablero(); return; }
 
 		// 4) Reasignación lógica del "tablero" — solo tras terminar el Tween al 100%.
 		//    Se intercambia el carril y se reapuntan (nunca se destruyen) los
@@ -229,6 +231,7 @@ public partial class Campo1 : Node2D
 
 		torre.estaProcesandoHabilidad = false;
 		torre.habilidadUsada = true;
+		FinalizarBloqueoTablero();
 	}
 
 	// ── DECISIÓN Y EJECUCIÓN AUTOMÁTICA (IA) ─────────────────────────────────

@@ -189,6 +189,10 @@ public partial class PeonPrime : TropaBase
 		Node2D nuevaTropa = escenaNueva.Instantiate<Node2D>();
 
 		nuevaTropa.GlobalPosition = GlobalPosition;
+		// La pieza promovida hereda el Z-Index exacto del carril del Peón (profundidad visual
+		// por carril: Mod1/ModRival1=1, Mod2/ModRival2=5, Mod3/ModRival3=10), en vez de quedarse
+		// con el ZIndex por defecto de su propia escena.
+		nuevaTropa.ZIndex = ZIndex;
 
 		// 🔄 PRESERVAR LA ORIENTACIÓN Y SENTIDO (Rival vs Jugador)
 		// Evaluamos el bando una sola vez para no duplicar variables
@@ -277,10 +281,13 @@ public partial class PeonPrime : TropaBase
 		}
 		catch { }
 
-		// Efecto visual
+		// Efecto visual — bloquea el tablero mientras dura, para que la IA no dispare otra
+		// acción encima de la transformación todavía en curso.
+		campo?.Call("IniciarBloqueoTablero");
 		Tween twDestello = nuevaTropa.CreateTween();
 		twDestello.TweenProperty(nuevaTropa, "modulate", new Color(2.0f, 1.8f, 0.5f), 0.2f);
 		twDestello.TweenProperty(nuevaTropa, "modulate", Colors.White, 0.4f);
+		twDestello.Finished += () => campo?.Call("FinalizarBloqueoTablero");
 
 		// 🚨 REEVALUACIÓN AUTOMÁTICA DE VARIABLES EN EL SCRIPT DEL CAMPO Y DEL PADRE
 		if (padre != null)

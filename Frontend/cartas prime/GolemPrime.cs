@@ -86,14 +86,22 @@ public partial class GolemPrime : TropaBase
 
 		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 
+		// Bloquea el tablero durante los 3s de carga: la IA no debe emitir otra acción
+		// mientras los muros del Gólem todavía no han aparecido.
+		var campo = GetTree().Root.FindChild("Campo1", true, false);
+		campo?.Call("IniciarBloqueoTablero");
+
 		GetTree().CreateTimer(3.0).Timeout += () =>
 		{
-			if (!IsInstanceValid(this)) return;
-			foreach (string otroCarril in new[] { "1", "2", "3" })
+			if (IsInstanceValid(this))
 			{
-				if (otroCarril == miCarril) continue;
-				InvocarMuroParaCarril(otroCarril);
+				foreach (string otroCarril in new[] { "1", "2", "3" })
+				{
+					if (otroCarril == miCarril) continue;
+					InvocarMuroParaCarril(otroCarril);
+				}
 			}
+			campo?.Call("FinalizarBloqueoTablero");
 		};
 	}
 

@@ -51,8 +51,9 @@ public partial class ArfilPrime : TropaBase
 	// ── MÉTODOS DE CONSULTA PARA LA UI (CAMPO1 Y CAMPOPRUEBA) ────────────────
 	public new bool TieneHabilidadEspecial() => true;
 
-	// Campo1 llama HabilidadBloqueada() para deshabilitar el botón en carril 2
-	public override bool HabilidadBloqueada() => !PuedeUsarHabilidad();
+	// Campo1 llama HabilidadBloqueada() para deshabilitar el botón: bloqueado si todavía no
+	// cumple su turno propio (regla de TropaBase) O si está en el carril centro (regla propia).
+	public override bool HabilidadBloqueada() => base.HabilidadBloqueada() || !PuedeUsarHabilidad();
 
 	public bool PuedeUsarHabilidad()
 	{
@@ -60,7 +61,7 @@ public partial class ArfilPrime : TropaBase
 		if (!HasMeta("carril")) return false;
 
 		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-		
+
 		// ⛔ Si está en el Centro (Carril 2), el botón debe estar bloqueado
 		return miCarril == "1" || miCarril == "3";
 	}
@@ -103,6 +104,7 @@ public partial class ArfilPrime : TropaBase
 	protected override void UsarHabilidadPropia()
 	{
 		if (habilidadUsada || _estaMuerto) return;
+		if (base.HabilidadBloqueada()) return; // turno propio aún no cumplido
 		if (!HasMeta("carril")) { GD.PrintErr("ArfilPrime: Falta la meta 'carril'"); return; }
 
 		string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();

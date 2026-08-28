@@ -136,13 +136,16 @@ public partial class DragonPrime : TropaBase
 		// su misma dirección de vuelo (igual que se hace con la textura del propio Dragón).
 		if (animBola != null && !IsInGroup("tropas_jugador")) animBola.FlipH = true;
 
+		var campoBloqueo = GetTree().Root.FindChild("Campo1", true, false);
+		campoBloqueo?.Call("IniciarBloqueoTablero");
+
 		Tween tw = bola.CreateTween();
 		tw.TweenProperty(bola, "global_position", destino, 0.35f)
 		  .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.In);
-		tw.Finished += () => ImpactarBolaDeFuego(bola, animBola, objetivo, destino);
+		tw.Finished += () => ImpactarBolaDeFuego(bola, animBola, objetivo, destino, campoBloqueo);
 	}
 
-	private void ImpactarBolaDeFuego(Node2D bola, AnimatedSprite2D animBola, Node2D objetivo, Vector2 posicionImpacto)
+	private void ImpactarBolaDeFuego(Node2D bola, AnimatedSprite2D animBola, Node2D objetivo, Vector2 posicionImpacto, Node campoBloqueo)
 	{
 		// Captura de datos del carril ANTES de aplicar daño, para que la quemadura
 		// persista en el módulo aunque este golpe mate al objetivo.
@@ -169,12 +172,14 @@ public partial class DragonPrime : TropaBase
 				if (IsInstanceValid(bola)) bola.QueueFree();
 				// La quemadura continua solo arranca cuando termina la animación de impacto.
 				if (carril != null) IniciarQuemadura(this, grupoEnemigo, carril, posicionImpacto, zIndexQuemadura);
+				campoBloqueo?.Call("FinalizarBloqueoTablero");
 			};
 		}
 		else
 		{
 			if (IsInstanceValid(bola)) bola.QueueFree();
 			if (carril != null) IniciarQuemadura(this, grupoEnemigo, carril, posicionImpacto, zIndexQuemadura);
+			campoBloqueo?.Call("FinalizarBloqueoTablero");
 		}
 	}
 

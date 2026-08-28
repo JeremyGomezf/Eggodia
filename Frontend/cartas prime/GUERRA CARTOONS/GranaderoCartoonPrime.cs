@@ -206,6 +206,9 @@ public partial class GranaderoCartoonPrime : TropaBase
 		Vector2 o = origen, m = mid, d = destino;
 		int dmg = danio;
 
+		var campoBloqueo = GetTree().Root.FindChild("Campo1", true, false);
+		campoBloqueo?.Call("IniciarBloqueoTablero");
+
 		// Trayectoria Bézier cuadrática via TweenMethod
 		Tween tw = CreateTween();
 		tw.TweenMethod(
@@ -228,6 +231,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 				var campo = GetTree().Root.FindChild("Campo1", true, false);
 				if (campo != null) campo.Call("RegistrarDañoTropa", this, dmg);
 			}
+			campoBloqueo?.Call("FinalizarBloqueoTablero");
 		};
 	}
 
@@ -250,13 +254,16 @@ public partial class GranaderoCartoonPrime : TropaBase
 
 		Node2D mRef = misil, oRef = objetivo;
 
+		var campoBloqueoMortero = GetTree().Root.FindChild("Campo1", true, false);
+		campoBloqueoMortero?.Call("IniciarBloqueoTablero");
+
 		// Fase 1: subida recta hacia el cielo
 		Tween twSube = misil.CreateTween();
 		twSube.TweenProperty(misil, "global_position", cima, 0.3f)
 			  .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
 		twSube.Finished += () =>
 		{
-			if (!IsInstanceValid(mRef)) return;
+			if (!IsInstanceValid(mRef)) { campoBloqueoMortero?.Call("FinalizarBloqueoTablero"); return; }
 
 			// Reposicionar sobre la cabeza del objetivo y voltear la punta hacia abajo (+90°)
 			Vector2 arribaObj = new Vector2(
@@ -269,7 +276,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 			float pausa = GD.Randf() * 0.15f + 0.5f;
 			GetTree().CreateTimer(pausa).Timeout += () =>
 			{
-				if (!IsInstanceValid(mRef)) return;
+				if (!IsInstanceValid(mRef)) { campoBloqueoMortero?.Call("FinalizarBloqueoTablero"); return; }
 				Vector2 destino = oRef != null && IsInstanceValid(oRef)
 					? oRef.GlobalPosition + new Vector2(0f, 35f)
 					: mRef.GlobalPosition;
@@ -287,6 +294,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 						var campo = GetTree().Root.FindChild("Campo1", true, false);
 						if (campo != null) campo.Call("RegistrarDañoTropa", this, ATQ_MORTERO);
 					}
+					campoBloqueoMortero?.Call("FinalizarBloqueoTablero");
 				};
 			};
 		};

@@ -157,6 +157,9 @@ public partial class Campo1 : Node2D
 	{
 		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
 		if (HabilidadUsada(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
+		// Chequeo servidor-side independiente del estado visual del botón: ninguna tropa puede
+		// usar su habilidad antes de cumplir su turno propio de desbloqueo, sin excepciones.
+		if (HabilidadBloqueadaTurno(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
 		tropaSeleccionada.Call("EjecutarAccion", "usar_habilidad");
 		tropaSeleccionada.Call("SetActivo", false);
 		menuAcciones.Visible = false;
@@ -224,10 +227,6 @@ public partial class Campo1 : Node2D
 		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 10, "Mod2" => 5, _ => 1 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
 
-		// Turno 0 (fase de invocación): el contador de habilidad no arranca todavía —
-		// llega a 1 recién con el primer AvanzarTurnoTropa() de la primera ronda activa.
-		if (_faseApertura) try { t.Set("turnoActualCarta", 0); } catch { }
-
 		// Activar inmediatamente para que se pueda usar en el mismo turno
 		if (t.HasMethod("SetActivo")) t.Call("SetActivo", true);
 
@@ -255,10 +254,6 @@ public partial class Campo1 : Node2D
 		t.SetMeta("carril", puntoMod.Name);
 		t.ZIndex = (string)puntoMod.Name switch { "ModRival3" => 10, "ModRival2" => 5, _ => 1 };
 
-		// Turno 0 (fase de invocación): el contador de habilidad no arranca todavía —
-		// llega a 1 recién con el primer AvanzarTurnoTropa() de la primera ronda activa.
-		if (_faseApertura) try { t.Set("turnoActualCarta", 0); } catch { }
-
 		// Corregir orientación sin romper escala ni rotaciones
 		AsegurarOrientacionRival(t);
 
@@ -284,6 +279,10 @@ public partial class Campo1 : Node2D
 		Node2D nuevaTropa = (Node2D)nuevaEscena.Instantiate();
 		AddChild(nuevaTropa);
 		nuevaTropa.GlobalPosition = tropaOriginal.GlobalPosition;
+		// La nueva pieza hereda el Z-Index exacto del carril que ocupaba el Peón (profundidad
+		// visual por carril: Mod1/ModRival1=1, Mod2/ModRival2=5, Mod3/ModRival3=10), en vez de
+		// quedarse con el ZIndex por defecto de su propia escena.
+		nuevaTropa.ZIndex = tropaOriginal.ZIndex;
 
 		if (esRival)
 		{
@@ -295,10 +294,11 @@ public partial class Campo1 : Node2D
 			nuevaTropa.AddToGroup("tropas_jugador");
 		}
 
-		// La pieza promovida queda habilitada para actuar (atacar/defender/habilidad) en el
-		// mismo turno, sin perder su acción — simétrico para jugador y rival.
+		// La pieza promovida puede seguir actuando (atacar/defender) en el mismo turno, sin
+		// perder su acción — simétrico para jugador y rival. Su habilidad, en cambio, NO se
+		// habilita de inmediato: es una tropa nueva y debe cumplir su propio turno de
+		// desbloqueo desde 0, igual que cualquier otra invocación (sin excepciones).
 		if (nuevaTropa.HasMethod("SetActivo")) nuevaTropa.Call("SetActivo", true);
-		if (nuevaTropa is TropaBase tbNueva) tbNueva.turnoActualCarta = 999; // habilidad disponible de inmediato
 
 		if (!string.IsNullOrEmpty(carril))
 		{

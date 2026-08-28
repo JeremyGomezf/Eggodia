@@ -163,6 +163,9 @@ public partial class TanqueCartoonPrime : TropaBase
 		float distancia = origen.DistanceTo(destino);
 		float duracion  = Mathf.Clamp(distancia / 4500f, 0.04f, 0.09f);
 
+		var campoBloqueo = GetTree().Root.FindChild("Campo1", true, false);
+		campoBloqueo?.Call("IniciarBloqueoTablero");
+
 		Tween tw = misil.CreateTween();
 		tw.TweenProperty(misil, "global_position", destino, duracion);
 		tw.Finished += () =>
@@ -178,6 +181,7 @@ public partial class TanqueCartoonPrime : TropaBase
 			// Vibración de cámara al impacto
 			if (campo != null && campo.HasMethod("ScreenShake"))
 				campo.Call("ScreenShake", 7f);
+			campo?.Call("FinalizarBloqueoTablero");
 		};
 	}
 

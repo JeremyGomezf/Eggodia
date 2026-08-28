@@ -20,9 +20,12 @@ public abstract partial class TropaBase : Area2D
 	protected bool _yaActuo      = false;
 	private  Tween _tweenGolpe;
 
-	/// <summary>Turno propio de esta tropa (1 al entrar al tablero). Solo lo incrementa
-	/// Campo1, al inicio del turno de su propio dueño, vía AvanzarTurnoTropa().</summary>
-	public int turnoActualCarta = 1;
+	/// <summary>Turno propio de esta tropa: 0 al entrar al tablero (el turno de invocación
+	/// nunca cuenta como progreso de habilidad). Solo lo incrementa Campo1, al inicio del turno
+	/// activo de su propio dueño y únicamente tras haber sobrevivido el turno del rival, vía
+	/// AvanzarTurnoTropa(). Ninguna tropa puede usar su habilidad hasta llegar a su propio
+	/// TurnoDesbloqueoHabilidad, sin excepciones (ni siquiera las que desbloquean en el turno 1).</summary>
+	public int turnoActualCarta = 0;
 
 	/// <summary>Bloqueo anti-spam: mientras es true, esta tropa ignora clics por completo
 	/// (usado durante animaciones críticas como el Enroque de la Torre).</summary>
