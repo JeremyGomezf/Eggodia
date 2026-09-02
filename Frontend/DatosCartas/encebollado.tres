@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="CartaData" format=3 uid="uid://c1j3pny5vfwes"]
 
 [ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="1_k60ae"]
-[ext_resource type="Texture2D" uid="uid://lyq2w23h1h4a" path="res://imagenes/CartasPng/EncebolladoCart.png" id="1_l7eni"]
+[ext_resource type="Texture2D" uid="uid://b1j3hxvu738n7" path="res://imagenes/iconos/encebollado_icon.png" id="1_l7eni"]
 
 [resource]
 script = ExtResource("1_k60ae")

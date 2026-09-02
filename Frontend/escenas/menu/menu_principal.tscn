@@ -12,6 +12,16 @@
 [ext_resource type="Texture2D" uid="uid://fi0ijmmiv1nc" path="res://imagenes/MenuNuevo/BotonConf.png" id="10_btn_conf"]
 [ext_resource type="PackedScene" uid="uid://psettings123" path="res://escenas/menu/PanelSettings.tscn" id="11_sett"]
 [ext_resource type="Texture2D" uid="uid://dbq7l6a8lpkro" path="res://imagenes/MenuNuevo/ReyHuevoCrowned.png" id="12_rey_huevo"]
+[ext_resource type="Texture2D" uid="uid://dmhqo7r8643uf" path="res://imagenes/MenuNuevo/cuadro_nivel.png" id="13_cuadro_nivel"]
+[ext_resource type="Texture2D" uid="uid://wtm5o1b8pog" path="res://imagenes/MenuNuevo/cuadro_moneda.png" id="14_cuadro_moneda"]
+[ext_resource type="Texture2D" uid="uid://c3isse6qikajh" path="res://imagenes/MenuNuevo/Moneda_icon.png" id="15_moneda_icon"]
+[ext_resource type="Texture2D" uid="uid://ybkgcvcc4xxa" path="res://imagenes/MenuNuevo/cuadro_nombre.png" id="16_cuadro_nombre"]
+[ext_resource type="Texture2D" uid="uid://cpds0afalmvq6" path="res://imagenes/MenuNuevo/BotonONLINE1.png" id="17_btn_online1"]
+[ext_resource type="Texture2D" uid="uid://dy5v6oqwlxtb4" path="res://imagenes/MenuNuevo/BotonONLINE2.png" id="18_btn_online2"]
+[ext_resource type="Texture2D" uid="uid://cnplxiu02xy2a" path="res://imagenes/MenuNuevo/BotonVSBOT1.png" id="19_btn_vsbot1"]
+[ext_resource type="Texture2D" uid="uid://blf7mrqw63uf7" path="res://imagenes/MenuNuevo/BotonVSBOT2.png" id="20_btn_vsbot2"]
+[ext_resource type="Texture2D" uid="uid://fpvvmkvxcnkr" path="res://imagenes/MenuNuevo/BotonDev.png" id="21_btn_dev"]
+[ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="22_font_almendra"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_level"]
 bg_color = Color(0.0431373, 0.0705882, 0.12549, 0.95)
@@ -290,23 +300,27 @@ texture = ExtResource("12_rey_huevo")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CARTAS" type="TextureButton" parent="." unique_id=1172999173]
+[node name="CARTAS" type="TextureButton" parent="IslaContainer" unique_id=1172999173]
 layout_mode = 0
-offset_left = 120.0
+offset_left = 40.0
 offset_top = 400.0
-offset_right = 519.0
+offset_right = 439.0
 offset_bottom = 671.0
+scale = Vector2(0.513, 0.513)
+pivot_offset = Vector2(199.5, 135.5)
 texture_normal = ExtResource("6_btn_cartas")
 texture_pressed = ExtResource("7_btn_cartas_neg")
 texture_hover = ExtResource("7_btn_cartas_neg")
 stretch_mode = 3
 
-[node name="TIENDA" type="TextureButton" parent="." unique_id=311225293]
+[node name="TIENDA" type="TextureButton" parent="IslaContainer" unique_id=311225293]
 layout_mode = 0
-offset_left = 1400.0
-offset_top = 400.0
-offset_right = 1799.0
-offset_bottom = 671.0
+offset_left = 902.0
+offset_top = 396.99997
+offset_right = 1301.0
+offset_bottom = 668.0
+scale = Vector2(0.513, 0.513)
+pivot_offset = Vector2(199.5, 135.5)
 texture_normal = ExtResource("8_btn_tienda")
 texture_pressed = ExtResource("9_btn_tienda_neg")
 texture_hover = ExtResource("9_btn_tienda_neg")
@@ -314,79 +328,106 @@ stretch_mode = 3
 
 [node name="TopHUD" type="HBoxContainer" parent="." unique_id=972495174]
 layout_mode = 0
-offset_left = 25.0
+offset_left = 35.0
 offset_top = 25.0
-offset_right = 725.0
-offset_bottom = 75.0
-theme_override_constants/separation = 15
+offset_right = 1150.0
+offset_bottom = 125.0
+theme_override_constants/separation = 28
 
-[node name="LevelPanel" type="PanelContainer" parent="TopHUD" unique_id=1990317443]
-custom_minimum_size = Vector2(120, 50)
+[node name="LevelPanel" type="TextureRect" parent="TopHUD" unique_id=1990317443]
+custom_minimum_size = Vector2(230, 95)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_level")
+texture = ExtResource("13_cuadro_nivel")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="Label" type="Label" parent="TopHUD/LevelPanel" unique_id=1328965670]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.133333, 0.827451, 0.933333, 1)
-theme_override_font_sizes/font_size = 20
-text = "Lv 2."
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="CoinsPanel" type="PanelContainer" parent="TopHUD" unique_id=631957148]
-custom_minimum_size = Vector2(160, 50)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_coins")
-
-[node name="HBox" type="HBoxContainer" parent="TopHUD/CoinsPanel" unique_id=284793023]
-layout_mode = 2
-alignment = 1
-
-[node name="CoinIcon" type="Panel" parent="TopHUD/CoinsPanel/HBox" unique_id=1468562319]
-custom_minimum_size = Vector2(22, 22)
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_coin_icon")
-
-[node name="Label" type="Label" parent="TopHUD/CoinsPanel/HBox/CoinIcon" unique_id=868002567]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0.4, 0.28, 0.05, 1)
-theme_override_font_sizes/font_size = 14
-text = "$"
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_fonts/font = ExtResource("22_font_almendra")
+theme_override_font_sizes/font_size = 32
+text = "Nv. 2"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="CoinsPanel" type="TextureRect" parent="TopHUD" unique_id=631957148]
+custom_minimum_size = Vector2(310, 95)
+layout_mode = 2
+texture = ExtResource("14_cuadro_moneda")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="HBox" type="HBoxContainer" parent="TopHUD/CoinsPanel" unique_id=284793023]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 22.0
+offset_right = -22.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="CoinIcon" type="TextureRect" parent="TopHUD/CoinsPanel/HBox" unique_id=1468562319]
+custom_minimum_size = Vector2(62, 44)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("15_moneda_icon")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="LabelVal" type="Label" parent="TopHUD/CoinsPanel/HBox" unique_id=1858180210]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.952941, 0.780392, 0.25098, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 0.92, 0.45, 1)
+theme_override_fonts/font = ExtResource("22_font_almendra")
+theme_override_font_sizes/font_size = 34
 text = "2304"
 vertical_alignment = 1
 
-[node name="UserPanel" type="PanelContainer" parent="TopHUD" unique_id=1949122023]
-custom_minimum_size = Vector2(180, 50)
+[node name="UserPanel" type="TextureRect" parent="TopHUD" unique_id=1949122023]
+custom_minimum_size = Vector2(310, 95)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_user")
+texture = ExtResource("16_cuadro_nombre")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="Label" type="Label" parent="TopHUD/UserPanel" unique_id=1352896183]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.8, 1, 1)
-theme_override_font_sizes/font_size = 20
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
+theme_override_fonts/font = ExtResource("22_font_almendra")
+theme_override_font_sizes/font_size = 32
 text = "SrGonza"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="BtnDev" type="TextureButton" parent="." unique_id=987162534]
+layout_mode = 0
+offset_left = 1610.0
+offset_top = 22.0
+offset_right = 1745.0
+offset_bottom = 157.0
+tooltip_text = "Panel de Desarrollador / Pruebas"
+texture_normal = ExtResource("21_btn_dev")
+ignore_texture_size = true
+stretch_mode = 5
+
 [node name="BtnSettings" type="TextureButton" parent="." unique_id=1136148258]
 layout_mode = 0
-offset_left = 1775.0
-offset_top = 25.0
-offset_right = 1895.0
-offset_bottom = 145.0
+offset_left = 1765.0
+offset_top = 22.0
+offset_right = 1900.0
+offset_bottom = 157.0
 texture_normal = ExtResource("10_btn_conf")
 ignore_texture_size = true
 stretch_mode = 5
@@ -397,9 +438,9 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -260.0
-offset_top = 160.0
+offset_top = 175.0
 offset_right = -25.0
-offset_bottom = 400.0
+offset_bottom = 415.0
 grow_horizontal = 0
 theme_override_constants/separation = 15
 
@@ -434,74 +475,34 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -340.0
-offset_top = -140.0
-offset_right = 340.0
-offset_bottom = -50.0
+offset_left = -580.0
+offset_top = -260.0
+offset_right = 580.0
+offset_bottom = -25.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_constants/separation = 40
+theme_override_constants/separation = 25
 alignment = 1
 
-[node name="BtnOnline" type="Button" parent="BottomButtons" unique_id=320589428]
-custom_minimum_size = Vector2(300, 85)
+[node name="BtnOnline" type="TextureButton" parent="BottomButtons" unique_id=320589428]
+custom_minimum_size = Vector2(530, 215)
 layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_online_normal")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_online_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_online_hover")
+size_flags_vertical = 4
+texture_normal = ExtResource("17_btn_online1")
+texture_pressed = ExtResource("18_btn_online2")
+texture_hover = ExtResource("18_btn_online2")
+ignore_texture_size = true
+stretch_mode = 5
 
-[node name="VBox" type="VBoxContainer" parent="BottomButtons/BtnOnline" unique_id=521007182]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
-
-[node name="LblTitle" type="Label" parent="BottomButtons/BtnOnline/VBox" unique_id=2105177191]
+[node name="BtnVsBot" type="TextureButton" parent="BottomButtons" unique_id=1655798339]
+custom_minimum_size = Vector2(530, 215)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 26
-text = "ONLINE"
-horizontal_alignment = 1
-
-[node name="LblSub" type="Label" parent="BottomButtons/BtnOnline/VBox" unique_id=1171432230]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.55, 0.65, 1)
-theme_override_font_sizes/font_size = 13
-text = "MULTIJUGADOR"
-horizontal_alignment = 1
-
-[node name="BtnVsBot" type="Button" parent="BottomButtons" unique_id=1655798339]
-custom_minimum_size = Vector2(300, 85)
-layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_bot_normal")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_bot_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_bot_hover")
-
-[node name="VBox" type="VBoxContainer" parent="BottomButtons/BtnVsBot" unique_id=1307810635]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
-
-[node name="LblTitle" type="Label" parent="BottomButtons/BtnVsBot/VBox" unique_id=933358562]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 26
-text = "VS BOT"
-horizontal_alignment = 1
-
-[node name="LblSub" type="Label" parent="BottomButtons/BtnVsBot/VBox" unique_id=710466514]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 13
-text = "MODO CAMPAÑA / CPU"
-horizontal_alignment = 1
+size_flags_vertical = 4
+texture_normal = ExtResource("19_btn_vsbot1")
+texture_pressed = ExtResource("20_btn_vsbot2")
+texture_hover = ExtResource("20_btn_vsbot2")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="PanelSettings" parent="." unique_id=1345093295 instance=ExtResource("11_sett")]
 visible = false

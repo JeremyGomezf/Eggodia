@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Texture2D" path="res://imagenes/iconos/Arfil_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://DatosCartas/CartaData.cs" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+Nombre = "Arfil"
+Elemento = "Metal"
+Era = "Era Ajedrez"
+Costo = 3
+Ataque = 260
+Defensa = 160
+Vida = 220
+Velocidad = "MEDIA"
+Rango = "CORTO"
+FuerteContra = "Fuego"
+DebilContra = "Metal"
+Descripcion = "Ataque Diagonal: Disparo penetrante en ngulo a larga distancia"
+RutaEscena = "res://cartas prime/AJEDREZ/Arfil_prime.tscn"
+Imagen = ExtResource("1_icon")

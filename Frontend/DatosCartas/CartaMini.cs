@@ -1,65 +1,93 @@
 using Godot;
 using System;
 
-public partial class CartaMini : Control // (O el nodo que uses de raíz, como VBoxContainer)
+public partial class CartaMini : Control
 {
-	// 1. Las referencias a la parte visual de tu carta
 	[Export] private TextureRect _fotoCarta;
 	[Export] private Label _nombreTexto;
+	[Export] private TextureRect _fondoNota;
+	[Export] private TextureRect _pinIcon;
 
-	// 2. Los datos y el evento
 	public CartaData MisDatos { get; private set; }
 	public event Action<CartaMini> OnClickeada; 
 
-	// 3. ¡LA FUNCIÓN QUE FALTABA! Esta es la que recibe los datos y pinta la carta
 	public void CargarDatos(CartaData datos)
 	{
-		MisDatos = datos; // Guardamos los datos en la carta
-
-		// Actualizamos la imagen y el texto
+		MisDatos = datos;
 		if (_fotoCarta != null) _fotoCarta.Texture = datos.Imagen;
 		if (_nombreTexto != null) _nombreTexto.Text = datos.Nombre;
 	}
 
-	public void SetModoMazo(bool enMazo)
+	public void SetModoMazo(bool enMazo, bool esArdid = false)
 	{
-		if (_nombreTexto == null) return;
+		if (_nombreTexto != null) _nombreTexto.Visible = false;
+
 		if (enMazo)
 		{
-			// Mazo: Letras más grandes, permite hasta 2 líneas y luego recorta
-			_nombreTexto.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-			_nombreTexto.TextOverrunBehavior = TextServer.OverrunBehavior.TrimWordEllipsis;
-			_nombreTexto.ClipText = true;
-			_nombreTexto.MaxLinesVisible = 2;
-			_nombreTexto.AddThemeFontSizeOverride("font_size", 14); // Aumentado a 14
-			_nombreTexto.AddThemeColorOverride("font_color", new Color(0.96f, 0.97f, 1.0f, 1f));
-			
-			_nombreTexto.CustomMinimumSize = new Vector2(80, 42); // Un poco más de espacio vertical
-			this.CustomMinimumSize = new Vector2(85, 130);
+			if (esArdid)
+			{
+				// Ardid en el mazo: sin etiqueta de papel ni chincheta, encaja en el cuadro naranja como borde
+				if (_fondoNota != null) _fondoNota.Visible = false;
+				if (_pinIcon != null) _pinIcon.Visible = false;
+
+				this.CustomMinimumSize = new Vector2(175, 195);
+				if (_fotoCarta != null)
+				{
+					_fotoCarta.AnchorLeft = 0.04f;
+					_fotoCarta.AnchorRight = 0.96f;
+					_fotoCarta.AnchorTop = 0.04f;
+					_fotoCarta.AnchorBottom = 0.96f;
+					_fotoCarta.OffsetLeft = 0; _fotoCarta.OffsetRight = 0;
+					_fotoCarta.OffsetTop = 0; _fotoCarta.OffsetBottom = 0;
+				}
+			}
+			else
+			{
+				// Activar estilo con chincheta clavada y fondo transparente (sin nota de papel)
+				if (_fondoNota != null) _fondoNota.Visible = false;
+				if (_pinIcon != null) _pinIcon.Visible = true;
+
+				// Tropa en el mazo: ranura del cofre 2x4 (130x125)
+				this.CustomMinimumSize = new Vector2(130, 125);
+				if (_fotoCarta != null)
+				{
+					_fotoCarta.AnchorLeft = 0.06f;
+					_fotoCarta.AnchorRight = 0.94f;
+					_fotoCarta.AnchorTop = 0.12f;
+					_fotoCarta.AnchorBottom = 0.92f;
+					_fotoCarta.OffsetLeft = 0; _fotoCarta.OffsetRight = 0;
+					_fotoCarta.OffsetTop = 0; _fotoCarta.OffsetBottom = 0;
+				}
+				if (_pinIcon != null)
+				{
+					_pinIcon.OffsetLeft = -14; _pinIcon.OffsetRight = 14;
+					_pinIcon.OffsetTop = -14; _pinIcon.OffsetBottom = 20;
+				}
+			}
 		}
 		else
 		{
-			// Coleccion: Mostrar texto completamente sin recortes, espacio vertical expandido
-			_nombreTexto.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-			_nombreTexto.TextOverrunBehavior = TextServer.OverrunBehavior.TrimWordEllipsis;
-			_nombreTexto.ClipText = false;
-			_nombreTexto.MaxLinesVisible = -1; // Ilimitado
-			_nombreTexto.AddThemeFontSizeOverride("font_size", 14); // Aumentado a 14
-			_nombreTexto.AddThemeColorOverride("font_color", new Color(0.96f, 0.97f, 1.0f, 1f));
-			
-			_nombreTexto.CustomMinimumSize = new Vector2(90, 56);
-			this.CustomMinimumSize = new Vector2(100, 150);
+			// Colección normal en el selector: sin papel ni chincheta
+			if (_fondoNota != null) _fondoNota.Visible = false;
+			if (_pinIcon != null) _pinIcon.Visible = false;
+
+			this.CustomMinimumSize = new Vector2(104, 108);
+			if (_fotoCarta != null)
+			{
+				_fotoCarta.AnchorLeft = 0; _fotoCarta.AnchorRight = 1;
+				_fotoCarta.AnchorTop = 0; _fotoCarta.AnchorBottom = 1;
+				_fotoCarta.OffsetLeft = 0; _fotoCarta.OffsetRight = 0;
+				_fotoCarta.OffsetTop = 0; _fotoCarta.OffsetBottom = 0;
+			}
 		}
 	}
 
-	// 4. La función que detecta cuando le das clic con el mouse
 	public override void _GuiInput(InputEvent @event)
 	{
 		if (@event is InputEventMouseButton mouseEvent)
 		{
 			if (mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
 			{
-				// Efecto Pop de clic
 				PivotOffset = Size / 2;
 				var tween = CreateTween();
 				tween.TweenProperty(this, "scale", new Vector2(0.85f, 0.85f), 0.05f).SetTrans(Tween.TransitionType.Sine);
@@ -74,12 +102,11 @@ public partial class CartaMini : Control // (O el nodo que uses de raíz, como V
 	{
 		if (what == NotificationMouseEnter)
 		{
-			// Efecto Hover
 			PivotOffset = Size / 2;
-			ZIndex = 10; // Traer al frente
+			ZIndex = 10;
 			var tween = CreateTween();
 			tween.TweenProperty(this, "scale", new Vector2(1.08f, 1.08f), 0.1f).SetTrans(Tween.TransitionType.Sine);
-			Modulate = new Color(1.15f, 1.15f, 1.15f); // Brillo
+			Modulate = new Color(1.15f, 1.15f, 1.15f);
 		}
 		else if (what == NotificationMouseExit)
 		{

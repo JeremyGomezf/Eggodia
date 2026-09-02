@@ -73,28 +73,28 @@ public partial class MenuPrincipal : Control
 		}
 
 		// 3b. Vincular botones principales (Cartas, Tienda, VS Bot, Online)
-		var btnCartas = GetNodeOrNull<TextureButton>("CARTAS");
+		var btnCartas = GetNodeOrNull<TextureButton>("IslaContainer/CARTAS") ?? GetNodeOrNull<TextureButton>("CARTAS");
 		if (btnCartas != null)
 		{
 			btnCartas.Pressed += () => GetTree().ChangeSceneToFile(RutaConstructorMazo);
 			AgregarAnimacionHover(btnCartas);
 		}
 
-		var btnTienda = GetNodeOrNull<TextureButton>("TIENDA");
+		var btnTienda = GetNodeOrNull<TextureButton>("IslaContainer/TIENDA") ?? GetNodeOrNull<TextureButton>("TIENDA");
 		if (btnTienda != null)
 		{
 			btnTienda.Pressed += () => GetTree().ChangeSceneToFile(RutaTienda);
 			AgregarAnimacionHover(btnTienda);
 		}
 
-		var btnOnline = GetNodeOrNull<Button>("BottomButtons/BtnOnline");
+		var btnOnline = GetNodeOrNull<BaseButton>("BottomButtons/BtnOnline");
 		if (btnOnline != null)
 		{
 			btnOnline.Pressed += () => MostrarPopup("MODO ONLINE", "El modo multijugador online estará disponible próximamente.");
 			AgregarAnimacionHover(btnOnline);
 		}
 
-		var btnVsBot = GetNodeOrNull<Button>("BottomButtons/BtnVsBot");
+		var btnVsBot = GetNodeOrNull<BaseButton>("BottomButtons/BtnVsBot");
 		if (btnVsBot != null)
 		{
 			btnVsBot.Pressed += () => GetTree().ChangeSceneToFile(RutaEscenaJuego);
@@ -121,6 +121,14 @@ public partial class MenuPrincipal : Control
 		{
 			btnPruebas.Pressed += () => GetTree().ChangeSceneToFile(RutaCampoPruebas);
 			AgregarAnimacionHover(btnPruebas);
+		}
+
+		// 4b. Vincular BotonDev (acceso directo para desarrolladores)
+		var btnDev = GetNodeOrNull<BaseButton>("BtnDev");
+		if (btnDev != null)
+		{
+			btnDev.Pressed += () => GetTree().ChangeSceneToFile(RutaCampoPruebas);
+			AgregarAnimacionHover(btnDev);
 		}
 
 		// 5. Vincular Ajustes y Cierre de Popups
@@ -211,20 +219,21 @@ public partial class MenuPrincipal : Control
 
 	private void AgregarAnimacionHover(Control btn)
 	{
+		Vector2 escalaBase = btn.Scale;
 		btn.PivotOffset = btn.Size / 2;
 		btn.Resized += () => btn.PivotOffset = btn.Size / 2;
 
 		btn.MouseEntered += () => 
 		{
 			var tween = btn.CreateTween();
-			tween.TweenProperty(btn, "scale", new Vector2(1.08f, 1.08f), 0.15f)
+			tween.TweenProperty(btn, "scale", escalaBase * 1.08f, 0.15f)
 				 .SetTrans(Tween.TransitionType.Back)
 				 .SetEase(Tween.EaseType.Out);
 		};
 		btn.MouseExited += () => 
 		{
 			var tween = btn.CreateTween();
-			tween.TweenProperty(btn, "scale", Vector2.One, 0.15f)
+			tween.TweenProperty(btn, "scale", escalaBase, 0.15f)
 				 .SetTrans(Tween.TransitionType.Sine)
 				 .SetEase(Tween.EaseType.Out);
 		};

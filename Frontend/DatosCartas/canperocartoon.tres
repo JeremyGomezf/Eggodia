@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Texture2D" path="res://imagenes/iconos/CanperoCA_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://DatosCartas/CartaData.cs" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+Nombre = "Campero"
+Elemento = "Militar"
+Era = "Era Cartoon"
+Costo = 4
+Ataque = 350
+Defensa = 110
+Vida = 160
+Velocidad = "MEDIA"
+Rango = "CORTO"
+FuerteContra = "Agua"
+DebilContra = "Sombra"
+Descripcion = "Camuflaje: Oculto en arbustos hasta que dispara su rifle de francotirador"
+RutaEscena = "res://cartas prime/GUERRA CARTOONS/Campero_cartoon_prime.tscn"
+Imagen = ExtResource("1_icon")

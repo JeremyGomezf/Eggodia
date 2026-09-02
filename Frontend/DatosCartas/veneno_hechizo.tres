@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Script" path="res://DatosCartas/CartaData.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://imagenes/HechizosPng/Veneno_hechizo.png" id="2_img"]
+
+[resource]
+script = ExtResource("1_script")
+Nombre = "Frasco de Veneno"
+Categoria = 1
+Elemento = "Sombra"
+Era = "Era Medieval"
+Costo = 2
+Ataque = 180
+Defensa = 0
+Vida = 0
+Velocidad = "RÁPIDA"
+Rango = "ZONA"
+FuerteContra = "Naturaleza"
+DebilContra = "Metal"
+Descripcion = "Envenena el rea enemiga infligiendo daño peridico a las unidades afectadas."
+RutaEscena = ""
+Imagen = ExtResource("2_img")

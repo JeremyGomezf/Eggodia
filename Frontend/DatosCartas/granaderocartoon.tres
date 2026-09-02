@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Texture2D" path="res://imagenes/iconos/GranaderoCA_icon.png" id="1_icon"]
+[ext_resource type="Script" path="res://DatosCartas/CartaData.cs" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+Nombre = "Granadero"
+Elemento = "Militar"
+Era = "Era Cartoon"
+Costo = 4
+Ataque = 300
+Defensa = 190
+Vida = 240
+Velocidad = "MEDIA"
+Rango = "CORTO"
+FuerteContra = "Tierra"
+DebilContra = "Agua"
+Descripcion = "Lanzamiento Explosivo: Lanza granadas que causan daño de rea"
+RutaEscena = "res://cartas prime/GUERRA CARTOONS/Granadero_cartoon_prime.tscn"
+Imagen = ExtResource("1_icon")

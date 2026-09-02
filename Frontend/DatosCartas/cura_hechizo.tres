@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Script" path="res://DatosCartas/CartaData.cs" id="1_script"]
+[ext_resource type="Texture2D" path="res://imagenes/HechizosPng/Cura_hechizo.png" id="2_img"]
+
+[resource]
+script = ExtResource("1_script")
+Nombre = "Poción Curativa"
+Categoria = 1
+Elemento = "Agua"
+Era = "Era Medieval"
+Costo = 2
+Ataque = 0
+Defensa = 0
+Vida = 250
+Velocidad = "RÁPIDA"
+Rango = "GLOBAL"
+FuerteContra = "Fuego"
+DebilContra = "Sombra"
+Descripcion = "Restaura 250 puntos de salud a una tropa aliada al instante."
+RutaEscena = ""
+Imagen = ExtResource("2_img")

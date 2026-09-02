@@ -1,30 +1,74 @@
 [gd_scene format=3 uid="uid://cc4dl7d6qlseb"]
 
 [ext_resource type="Script" uid="uid://dtr24np34q4xh" path="res://DatosCartas/CartaMini.cs" id="1_nacjw"]
+[ext_resource type="Texture2D" uid="uid://dlmao6afmhcsr" path="res://imagenes/MenuConstructor/nota_cuadriculada.png" id="2_papel"]
+[ext_resource type="Texture2D" uid="uid://bt561ophmgu8y" path="res://imagenes/MenuConstructor/chincheta.png" id="3_pin"]
 
 [sub_resource type="FontVariation" id="FontVariation_bold"]
 variation_embolden = 1.0
 
-[node name="CartaMini" type="VBoxContainer" unique_id=1050541027 node_paths=PackedStringArray("_fotoCarta", "_nombreTexto")]
-custom_minimum_size = Vector2(100, 130)
+[node name="CartaMini" type="Control" unique_id=1050541027 node_paths=PackedStringArray("_fotoCarta", "_nombreTexto", "_fondoNota", "_pinIcon")]
+custom_minimum_size = Vector2(100, 105)
 offset_right = 100.0
-offset_bottom = 130.0
+offset_bottom = 105.0
 mouse_filter = 0
 script = ExtResource("1_nacjw")
 _fotoCarta = NodePath("FotoMini")
 _nombreTexto = NodePath("NombreMini")
+_fondoNota = NodePath("FondoNota")
+_pinIcon = NodePath("PinIcon")
+
+[node name="FondoNota" type="TextureRect" parent="." unique_id=198273641]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_papel")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="FotoMini" type="TextureRect" parent="." unique_id=1454746085]
-custom_minimum_size = Vector2(80, 100)
-layout_mode = 2
+custom_minimum_size = Vector2(100, 105)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
+[node name="PinIcon" type="TextureRect" parent="." unique_id=736251419]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -14.0
+offset_top = -14.0
+offset_right = 14.0
+offset_bottom = 18.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("3_pin")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="NombreMini" type="Label" parent="." unique_id=888980218]
-custom_minimum_size = Vector2(90, 32)
-layout_mode = 2
-size_flags_vertical = 6
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -20.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
 theme_override_font_sizes/font_size = 11

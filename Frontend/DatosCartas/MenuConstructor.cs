@@ -3,225 +3,814 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// MenuConstructor — armador de mazo.
-/// Conecta ColeccionPanel + MazoPanel + CartaDetalles.
-/// Cuando el jugador presiona "CONTINUE" guarda el mazo
-/// en SesionJuego y cambia a la escena de batalla.
+/// MenuConstructor — Selector interactivo y animado de cartas / constructor de mazo.
+/// Incluye pestañas Tropas/Ardid, buscador, previsualización con sprites animados,
+/// cofre del mazo con 8 ranuras, ficha ornamental de detalles y ventana de ayuda.
 /// </summary>
 public partial class MenuConstructor : Control
 {
-	[Export] private ColeccionPanel _panelColeccion;
-	[Export] private MazoPanel      _panelMazo;
-	[Export] private CartaDetalles  _panelDetalles;
-	[Export] private Button         _btnBatallar;
-	[Export] private Button         _btnVolver;
-	[Export] private Label          _lblContadorMazo;
-	[Export] private ProgressBar    _progressBar;
-
+	[ExportGroup("Rutas de Escenas")]
 	[Export] public string RutaBatalla = "res://escenas/gameplay/campo_1.tscn";
 	[Export] public string RutaMenu    = "res://escenas/menu/menu_principal.tscn";
+	[Export] private PackedScene _escenaCartaMini;
+
+	[ExportGroup("Texturas y Assets")]
+	[Export] private Texture2D _texTropaSelector;
+	[Export] private Texture2D _texArdidSelector;
+	[Export] private Texture2D _texTropaMazo;
+	[Export] private Texture2D _texArdidMazo;
+
+	[ExportGroup("Referencias Selector")]
+	[Export] private TextureRect _rectSelectorBg;
+	[Export] private Button _btnTabTropas;
+	[Export] private Button _btnTabArdid;
+	[Export] private GridContainer _gridSelector;
+	[Export] private LineEdit _txtBuscador;
+
+	[ExportGroup("Referencias Showcase Central")]
+	[Export] private Label _lblShowcaseNombre;
+	[Export] private Control _containerSpriteCenter;
+	[Export] private TextureRect _fallbackTextureCenter;
+	[Export] private Label _lblTituloMazo;
+	[Export] private TextureRect _rectMazoBg;
+	[Export] private GridContainer _gridMazoSlots;
+	[Export] private Button _btnBatallar;
+	[Export] private Button _btnVolver;
+	[Export] private Label _lblContadorMazo;
+
+	[ExportGroup("Referencias Ficha Datos Derecha")]
+	[Export] private Label _lblDetalleTitulo;
+	[Export] private Label _lblDetalleHp;
+	[Export] private Label _lblDetalleAtk;
+	[Export] private Label _lblDetalleDef;
+	[Export] private Label _lblDetalleCosto;
+	[Export] private Label _lblDetalleElemento;
+	[Export] private Label _lblDetalleHabilidad;
+	[Export] private Label _lblDetalleExtra;
+
+	[ExportGroup("Ayuda / Modal")]
+	[Export] private BaseButton _btnDuda;
+	[Export] private Control _modalAyuda;
+	[Export] private Button _btnCerrarAyuda;
 
 	private const int MIN_CARTAS = 8;
 	private const int MAX_CARTAS = 8;
+	private const int MAX_ARDIDES = 6;
+
+	private readonly List<CartaData> _todasLasCartas = new();
+	private readonly List<CartaData> _cartasEnMazo = new();
+	private readonly List<CartaData> _cartasArdidEnMazo = new();
+	private string _pestanaActual = "TROPAS"; // "TROPAS" o "ARDID"
+	private CartaData _cartaSeleccionada = null;
+	private AnimatedSprite2D _spriteAnimadoActual = null;
+	private Tween _idleTween = null;
+	private bool _estaAtacando = false;
 
 	public override void _Ready()
 	{
-		// Configurar barra de progreso
-		if (_progressBar != null)
+		CargarTexturasPorDefecto();
+
+		if (_btnTabTropas != null) _btnTabTropas.Pressed += () => CambiarPestana("TROPAS");
+		if (_btnTabArdid != null) _btnTabArdid.Pressed += () => CambiarPestana("ARDID");
+
+		if (_txtBuscador != null)
 		{
-			_progressBar.MaxValue = MAX_CARTAS;
-			_progressBar.Value = 0;
+			_txtBuscador.TextChanged += (txt) => FiltrarCartas(txt);
 		}
 
-		// Conectar eventos entre paneles
-		if (_panelColeccion != null)
+		if (_btnBatallar != null) _btnBatallar.Pressed += IrABatalla;
+		if (_btnVolver != null) _btnVolver.Pressed += VolverAlMenu;
+
+		if (_btnDuda != null) _btnDuda.Pressed += AbrirAyuda;
+		if (_btnCerrarAyuda != null) _btnCerrarAyuda.Pressed += CerrarAyuda;
+
+		if (_containerSpriteCenter != null)
 		{
-			_panelColeccion.OnCartaElegidaParaMazo += _panelMazo.AgregarCartaAlMazo;
-			_panelColeccion.OnCartaElegidaParaMazo += (carta) =>
+			_containerSpriteCenter.GuiInput += (ev) =>
 			{
-				_panelDetalles?.MostrarDatos(carta);
-				ActualizarContador();
+				if (ev is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left && mb.Pressed)
+				{
+					EjecutarAnimacionAtaqueShowcase();
+				}
 			};
 		}
 
-		if (_panelMazo != null)
+		CargarCartasDesdeDisco();
+		CambiarPestana("TROPAS");
+
+		if (_todasLasCartas.Count > 0)
 		{
-			if (_panelDetalles != null) _panelMazo.OnCartaSeleccionadaEnMazo += _panelDetalles.MostrarDatos;
-			_panelMazo.OnMazoCambiado += ActualizarContador;
+			var primeraTropa = _todasLasCartas.Find(c => c.Categoria == CategoriaCarta.Unidad) ?? _todasLasCartas[0];
+			SeleccionarCarta(primeraTropa);
+		}
+	}
+
+	private void CargarTexturasPorDefecto()
+	{
+		_texTropaSelector ??= ResourceLoader.Load<Texture2D>("res://imagenes/MenuConstructor/Tropa_Selector.png");
+		_texArdidSelector ??= ResourceLoader.Load<Texture2D>("res://imagenes/MenuConstructor/Ardid_Selector.png");
+		_texTropaMazo ??= ResourceLoader.Load<Texture2D>("res://imagenes/MenuConstructor/Tropa_Mazo.png");
+		_texArdidMazo ??= ResourceLoader.Load<Texture2D>("res://imagenes/MenuConstructor/Ardid_Mazo.png");
+		_escenaCartaMini ??= ResourceLoader.Load<PackedScene>("res://DatosCartas/CartaMini.tscn");
+	}
+
+	private static readonly string[] OrdenTropas = new string[]
+	{
+		"Soldado Real", "Maguin", "Golem Pedregal",
+		"Dragon de Flama", "Tiburon", "Calamar Gigante",
+		"Peon", "Torre", "Caballo",
+		"Arfil", "Dama", "Paperex",
+		"Soldado Cartoon", "Campero", "Granadero",
+		"Tanque", "Kabar"
+	};
+
+	private static string NormalizarTexto(string texto)
+	{
+		if (string.IsNullOrEmpty(texto)) return "";
+		return texto.ToLowerInvariant()
+			.Replace("á", "a").Replace("é", "e").Replace("í", "i").Replace("ó", "o").Replace("ú", "u");
+	}
+
+	private static int ObtenerPrioridadTropa(string nombre)
+	{
+		string norm = NormalizarTexto(nombre);
+		for (int i = 0; i < OrdenTropas.Length; i++)
+		{
+			string clave = NormalizarTexto(OrdenTropas[i]);
+			if (norm.Contains(clave) || clave.Contains(norm))
+			{
+				return i;
+			}
+		}
+		return 999;
+	}
+
+	private void CargarCartasDesdeDisco()
+	{
+		_todasLasCartas.Clear();
+		string rutaCarpeta = "res://DatosCartas/";
+		using var dir = DirAccess.Open(rutaCarpeta);
+		if (dir != null)
+		{
+			dir.ListDirBegin();
+			string archivo = dir.GetNext();
+			while (!string.IsNullOrEmpty(archivo))
+			{
+				if (!dir.CurrentIsDir() && (archivo.EndsWith(".tres") || archivo.EndsWith(".tres.remap")))
+				{
+					string real = archivo.Replace(".remap", "");
+					var recurso = ResourceLoader.Load(rutaCarpeta + real) as CartaData;
+					if (recurso != null)
+					{
+						bool existe = false;
+						foreach (var c in _todasLasCartas)
+						{
+							if (c.Nombre.Equals(recurso.Nombre, StringComparison.OrdinalIgnoreCase))
+							{
+								existe = true;
+								break;
+							}
+						}
+						if (!existe) _todasLasCartas.Add(recurso);
+					}
+				}
+				archivo = dir.GetNext();
+			}
+		}
+
+		_todasLasCartas.Sort((a, b) =>
+		{
+			int prioA = ObtenerPrioridadTropa(a.Nombre);
+			int prioB = ObtenerPrioridadTropa(b.Nombre);
+			if (prioA != prioB) return prioA.CompareTo(prioB);
+			return string.Compare(a.Nombre, b.Nombre, StringComparison.OrdinalIgnoreCase);
+		});
+	}
+
+	public void CambiarPestana(string nuevaPestana)
+	{
+		_pestanaActual = nuevaPestana.ToUpper();
+
+		if (_lblTituloMazo != null) _lblTituloMazo.Visible = false;
+
+		var mazoContainer = _gridMazoSlots?.GetParent<Control>();
+
+		if (_pestanaActual == "TROPAS")
+		{
+			if (_rectSelectorBg != null && _texTropaSelector != null)
+				_rectSelectorBg.Texture = _texTropaSelector;
+
+			if (_rectMazoBg != null && _texTropaMazo != null)
+				_rectMazoBg.Texture = _texTropaMazo;
+
+			if (mazoContainer != null)
+			{
+				mazoContainer.Position = new Vector2(615, 460);
+				mazoContainer.Size = new Vector2(690, 425);
+			}
+
+			if (_gridMazoSlots != null)
+			{
+				_gridMazoSlots.Columns = 4;
+				_gridMazoSlots.AnchorLeft = 0.5f;
+				_gridMazoSlots.AnchorRight = 0.5f;
+				_gridMazoSlots.AnchorTop = 0.5f;
+				_gridMazoSlots.AnchorBottom = 0.5f;
+				_gridMazoSlots.OffsetLeft = -290.0f;
+				_gridMazoSlots.OffsetRight = 290.0f;
+				_gridMazoSlots.OffsetTop = -140.0f;
+				_gridMazoSlots.OffsetBottom = 140.0f;
+				_gridMazoSlots.AddThemeConstantOverride("h_separation", 18);
+				_gridMazoSlots.AddThemeConstantOverride("v_separation", 14);
+			}
+		}
+		else
+		{
+			if (_rectSelectorBg != null && _texArdidSelector != null)
+				_rectSelectorBg.Texture = _texArdidSelector;
+
+			if (_rectMazoBg != null && _texArdidMazo != null)
+				_rectMazoBg.Texture = _texArdidMazo;
+
+			if (mazoContainer != null)
+			{
+				mazoContainer.Position = new Vector2(615, 380);
+				mazoContainer.Size = new Vector2(690, 490);
+			}
+
+			if (_gridMazoSlots != null)
+			{
+				_gridMazoSlots.Columns = 3;
+				_gridMazoSlots.AnchorLeft = 0.5f;
+				_gridMazoSlots.AnchorRight = 0.5f;
+				_gridMazoSlots.AnchorTop = 0.5f;
+				_gridMazoSlots.AnchorBottom = 0.5f;
+				_gridMazoSlots.OffsetLeft = -290.0f;
+				_gridMazoSlots.OffsetRight = 290.0f;
+				_gridMazoSlots.OffsetTop = -210.0f;
+				_gridMazoSlots.OffsetBottom = 210.0f;
+				_gridMazoSlots.AddThemeConstantOverride("h_separation", 18);
+				_gridMazoSlots.AddThemeConstantOverride("v_separation", 16);
+			}
+		}
+
+		if (_rectSelectorBg != null)
+		{
+			var tw = _rectSelectorBg.CreateTween();
+			_rectSelectorBg.Scale = new Vector2(0.98f, 0.98f);
+			tw.TweenProperty(_rectSelectorBg, "scale", Vector2.One, 0.15f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		}
+
+		CrearRanurasMazo();
+		ActualizarMazoVisual();
+		PoblarSelector();
+
+		// Sincronizar selección con la pestaña activa
+		bool esTropaTab = (_pestanaActual == "TROPAS");
+		if (_cartaSeleccionada == null || 
+		    (esTropaTab && _cartaSeleccionada.Categoria != CategoriaCarta.Unidad) ||
+		    (!esTropaTab && _cartaSeleccionada.Categoria == CategoriaCarta.Unidad))
+		{
+			var primeraDePestana = _todasLasCartas.Find(c => esTropaTab 
+				? c.Categoria == CategoriaCarta.Unidad 
+				: c.Categoria != CategoriaCarta.Unidad);
+
+			if (primeraDePestana != null)
+			{
+				SeleccionarCarta(primeraDePestana);
+			}
+		}
+	}
+
+	private void PoblarSelector()
+	{
+		if (_gridSelector == null || _escenaCartaMini == null) return;
+
+		foreach (Node n in _gridSelector.GetChildren())
+		{
+			n.QueueFree();
+		}
+
+		string textoFiltro = _txtBuscador != null ? _txtBuscador.Text.Trim().ToLower() : "";
+		int indice = 0;
+
+		foreach (var datos in _todasLasCartas)
+		{
+			if (datos == null) continue;
+
+			bool esTropa = (datos.Categoria == CategoriaCarta.Unidad);
+			if (_pestanaActual == "TROPAS" && !esTropa) continue;
+			if (_pestanaActual == "ARDID" && esTropa) continue;
+
+			if (!string.IsNullOrEmpty(textoFiltro) && !datos.Nombre.ToLower().Contains(textoFiltro))
+				continue;
+
+			var mini = _escenaCartaMini.Instantiate<CartaMini>();
+			_gridSelector.AddChild(mini);
+			mini.CargarDatos(datos);
+			mini.SetModoMazo(false);
+
+			mini.Modulate = new Color(1, 1, 1, 0);
+			mini.Scale = new Vector2(0.7f, 0.7f);
+			mini.PivotOffset = new Vector2(55f, 72f);
+
+			var tw = mini.CreateTween();
+			float delay = indice * 0.025f;
+			tw.TweenInterval(delay);
+			tw.TweenProperty(mini, "modulate", Colors.White, 0.12f);
+			tw.Parallel().TweenProperty(mini, "scale", Vector2.One, 0.18f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+
+			mini.OnClickeada += (c) =>
+			{
+				SeleccionarCarta(c.MisDatos);
+				AgregarAlMazo(c.MisDatos);
+			};
+
+			indice++;
+		}
+	}
+
+	private void FiltrarCartas(string query)
+	{
+		query = query.ToLower();
+		foreach (Node node in _gridSelector.GetChildren())
+		{
+			if (node is CartaMini mini && mini.MisDatos != null)
+			{
+				bool coincide = mini.MisDatos.Nombre.ToLower().Contains(query);
+				mini.Visible = coincide;
+			}
+		}
+	}
+
+	private void SeleccionarCarta(CartaData datos)
+	{
+		if (datos == null) return;
+		_cartaSeleccionada = datos;
+
+		if (_lblShowcaseNombre != null)
+		{
+			_lblShowcaseNombre.Text = datos.Nombre.ToUpper();
+			_lblShowcaseNombre.PivotOffset = _lblShowcaseNombre.Size / 2f;
+			_lblShowcaseNombre.Scale = new Vector2(1.1f, 1.1f);
+			var tw = _lblShowcaseNombre.CreateTween();
+			tw.TweenProperty(_lblShowcaseNombre, "scale", Vector2.One, 0.18f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		}
+
+		ActualizarShowcaseAnimado(datos);
+		ActualizarFichaDetalles(datos);
+	}
+
+	private void ActualizarShowcaseAnimado(CartaData datos)
+	{
+		if (_containerSpriteCenter == null) return;
+
+		_idleTween?.Kill();
+		_estaAtacando = false;
+
+		if (_spriteAnimadoActual != null && IsInstanceValid(_spriteAnimadoActual))
+		{
+			_spriteAnimadoActual.QueueFree();
+			_spriteAnimadoActual = null;
+		}
+
+		bool tieneSpriteAnimado = false;
+
+		if (!string.IsNullOrEmpty(datos.RutaEscena) && ResourceLoader.Exists(datos.RutaEscena))
+		{
+			try
+			{
+				var packed = ResourceLoader.Load<PackedScene>(datos.RutaEscena);
+				if (packed != null)
+				{
+					var instancia = packed.Instantiate();
+					AnimatedSprite2D animEncontrado = null;
+
+					if (instancia is AnimatedSprite2D a) animEncontrado = a;
+					else animEncontrado = instancia.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D")
+										  ?? BuscarNodoRecursivo<AnimatedSprite2D>(instancia);
+
+					if (animEncontrado != null && animEncontrado.SpriteFrames != null)
+					{
+						_spriteAnimadoActual = new AnimatedSprite2D();
+						_spriteAnimadoActual.SpriteFrames = animEncontrado.SpriteFrames;
+						_spriteAnimadoActual.Position = new Vector2(0, 0);
+						_spriteAnimadoActual.Scale = new Vector2(0.55f, 0.55f);
+
+						_containerSpriteCenter.AddChild(_spriteAnimadoActual);
+
+						// Buscar la mejor animación de reposo disponible
+						string[] posiblesIdles = { "idle", "idle 1", "idle_fantasma", "idle1", "reposo", "quieto" };
+						string animIdleElegida = null;
+						foreach (var nombreIdle in posiblesIdles)
+						{
+							if (_spriteAnimadoActual.SpriteFrames.HasAnimation(nombreIdle))
+							{
+								animIdleElegida = nombreIdle;
+								break;
+							}
+						}
+
+						if (animIdleElegida != null)
+						{
+							_spriteAnimadoActual.Play(animIdleElegida);
+						}
+						else if (_spriteAnimadoActual.SpriteFrames.GetAnimationNames().Length > 0)
+						{
+							_spriteAnimadoActual.Play(_spriteAnimadoActual.SpriteFrames.GetAnimationNames()[0]);
+						}
+
+						tieneSpriteAnimado = true;
+					}
+					instancia.QueueFree();
+				}
+			}
+			catch (Exception ex)
+			{
+				GD.PrintErr($"[MenuConstructor] Error al cargar sprite animado de {datos.Nombre}: {ex.Message}");
+			}
+		}
+
+		if (_fallbackTextureCenter != null)
+		{
+			_fallbackTextureCenter.Visible = !tieneSpriteAnimado;
+			if (!tieneSpriteAnimado)
+			{
+				_fallbackTextureCenter.Texture = datos.Imagen;
+			}
+		}
+
+		if (_spriteAnimadoActual != null && IsInstanceValid(_spriteAnimadoActual))
+		{
+			Vector2 posBase = _spriteAnimadoActual.Position;
+			_idleTween = CreateTween().SetLoops();
+			_idleTween.TweenProperty(_spriteAnimadoActual, "position:y", posBase.Y - 8f, 1.2f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+			_idleTween.TweenProperty(_spriteAnimadoActual, "position:y", posBase.Y, 1.2f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		}
+		else if (_fallbackTextureCenter != null && _fallbackTextureCenter.Visible)
+		{
+			_fallbackTextureCenter.AnchorLeft = 0.5f;
+			_fallbackTextureCenter.AnchorRight = 0.5f;
+			_fallbackTextureCenter.AnchorTop = 0.5f;
+			_fallbackTextureCenter.AnchorBottom = 0.5f;
+			_fallbackTextureCenter.OffsetLeft = -90.0f;
+			_fallbackTextureCenter.OffsetRight = 90.0f;
+			_fallbackTextureCenter.OffsetTop = -60.0f;
+			_fallbackTextureCenter.OffsetBottom = 160.0f;
+
+			Vector2 posBase = _fallbackTextureCenter.Position;
+			_idleTween = CreateTween().SetLoops();
+			_idleTween.TweenProperty(_fallbackTextureCenter, "position:y", posBase.Y - 6f, 1.2f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+			_idleTween.TweenProperty(_fallbackTextureCenter, "position:y", posBase.Y, 1.2f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		}
+	}
+
+	public void EjecutarAnimacionAtaqueShowcase()
+	{
+		if (_estaAtacando) return;
+
+		if (_spriteAnimadoActual != null && IsInstanceValid(_spriteAnimadoActual))
+		{
+			string[] posiblesAtaques = { "ataque", "ataque 1", "ataque_fantasma", "habilidad", "habilidad 1", "daño", "daño 1", "defensa" };
+			string animAtaque = null;
+			foreach (var nombreAtk in posiblesAtaques)
+			{
+				if (_spriteAnimadoActual.SpriteFrames.HasAnimation(nombreAtk))
+				{
+					animAtaque = nombreAtk;
+					break;
+				}
+			}
+
+			if (animAtaque != null)
+			{
+				_estaAtacando = true;
+				_spriteAnimadoActual.Play(animAtaque);
+
+				GlobalAudioManager.Instance?.PlayClickSound();
+
+				var tw = CreateTween();
+				tw.TweenProperty(_spriteAnimadoActual, "scale", new Vector2(0.65f, 0.65f), 0.1f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+				tw.TweenProperty(_spriteAnimadoActual, "scale", new Vector2(0.55f, 0.55f), 0.15f);
+
+				_spriteAnimadoActual.AnimationFinished += VolverAIdle;
+			}
+		}
+		else if (_fallbackTextureCenter != null && _fallbackTextureCenter.Visible)
+		{
+			_estaAtacando = true;
+			var tw = CreateTween();
+			tw.TweenProperty(_fallbackTextureCenter, "scale", new Vector2(1.12f, 1.12f), 0.1f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+			tw.TweenProperty(_fallbackTextureCenter, "scale", Vector2.One, 0.15f);
+			tw.TweenCallback(Callable.From(() => _estaAtacando = false));
+		}
+	}
+
+	private void VolverAIdle()
+	{
+		if (_spriteAnimadoActual != null && IsInstanceValid(_spriteAnimadoActual))
+		{
+			_spriteAnimadoActual.AnimationFinished -= VolverAIdle;
+			string[] posiblesIdles = { "idle", "idle 1", "idle_fantasma", "idle1", "reposo" };
+			foreach (var nombreIdle in posiblesIdles)
+			{
+				if (_spriteAnimadoActual.SpriteFrames.HasAnimation(nombreIdle))
+				{
+					_spriteAnimadoActual.Play(nombreIdle);
+					break;
+				}
+			}
+			_estaAtacando = false;
+		}
+	}
+
+	private void ActualizarFichaDetalles(CartaData datos)
+	{
+		if (_lblDetalleTitulo != null) _lblDetalleTitulo.Text = "Datos";
+		if (_lblDetalleHp != null) _lblDetalleHp.Text = $"HP: {datos.Vida}";
+		if (_lblDetalleAtk != null) _lblDetalleAtk.Text = $"ATK: {datos.Ataque}";
+		if (_lblDetalleDef != null) _lblDetalleDef.Text = $"DEF: {datos.Defensa}";
+		if (_lblDetalleCosto != null) _lblDetalleCosto.Text = $"Costo: {datos.Costo}";
+		if (_lblDetalleElemento != null) _lblDetalleElemento.Text = $"Elemento: {datos.Elemento}";
+
+		if (_lblDetalleHabilidad != null)
+		{
+			string desc = !string.IsNullOrEmpty(datos.Descripcion) ? datos.Descripcion : "Habilidad estándar de combate.";
+			_lblDetalleHabilidad.Text = desc;
+		}
+
+		if (_lblDetalleExtra != null)
+		{
+			string extra = "";
+			if (!string.IsNullOrEmpty(datos.FuerteContra))
+				extra += $"Ventaja: {datos.FuerteContra}";
+			if (!string.IsNullOrEmpty(datos.DebilContra))
+			{
+				if (!string.IsNullOrEmpty(extra)) extra += "  |  ";
+				extra += $"Desventaja: {datos.DebilContra}";
+			}
+
+			_lblDetalleExtra.Text = extra;
+			_lblDetalleExtra.Visible = !string.IsNullOrEmpty(extra);
+		}
+	}
+
+	#region Gestión del Mazo (Cofre)
+
+	private void CrearRanurasMazo()
+	{
+		if (_gridMazoSlots == null) return;
+
+		foreach (Node n in _gridMazoSlots.GetChildren())
+		{
+			_gridMazoSlots.RemoveChild(n);
+			n.QueueFree();
+		}
+
+		if (_pestanaActual == "TROPAS")
+		{
+			for (int i = 0; i < MAX_CARTAS; i++)
+			{
+				var slot = new PanelContainer();
+				slot.Name = $"Slot_Tropa_{i}";
+				slot.CustomMinimumSize = new Vector2(130, 125);
+
+				var style = new StyleBoxEmpty();
+				slot.AddThemeStyleboxOverride("panel", style);
+
+				_gridMazoSlots.AddChild(slot);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < MAX_ARDIDES; i++)
+			{
+				var slot = new PanelContainer();
+				slot.Name = $"Slot_Ardid_{i}";
+				slot.CustomMinimumSize = new Vector2(175, 195);
+
+				var style = new StyleBoxEmpty();
+				slot.AddThemeStyleboxOverride("panel", style);
+
+				_gridMazoSlots.AddChild(slot);
+			}
+		}
+	}
+
+	public void AgregarAlMazo(CartaData datos)
+	{
+		if (datos == null) return;
+
+		bool esTropa = (datos.Categoria == CategoriaCarta.Unidad);
+
+		if (esTropa)
+		{
+			foreach (var c in _cartasEnMazo)
+			{
+				if (c.Nombre.Equals(datos.Nombre, StringComparison.OrdinalIgnoreCase))
+				{
+					MostrarMensajeAviso($"¡{datos.Nombre} ya está en tu mazo de tropas!");
+					return;
+				}
+			}
+
+			if (_cartasEnMazo.Count >= MAX_CARTAS)
+			{
+				MostrarMensajeAviso($"El mazo de tropas está lleno ({MAX_CARTAS}/{MAX_CARTAS}). Quita una carta primero.");
+				return;
+			}
+
+			_cartasEnMazo.Add(datos);
+		}
+		else
+		{
+			foreach (var c in _cartasArdidEnMazo)
+			{
+				if (c.Nombre.Equals(datos.Nombre, StringComparison.OrdinalIgnoreCase))
+				{
+					MostrarMensajeAviso($"¡{datos.Nombre} ya está en tus ardides!");
+					return;
+				}
+			}
+
+			if (_cartasArdidEnMazo.Count >= MAX_ARDIDES)
+			{
+				MostrarMensajeAviso($"Los espacios de ardid están llenos ({MAX_ARDIDES}/{MAX_ARDIDES}). Quita un hechizo primero.");
+				return;
+			}
+
+			_cartasArdidEnMazo.Add(datos);
+		}
+
+		ActualizarMazoVisual();
+		GlobalAudioManager.Instance?.PlayClickSound();
+	}
+
+	public void RemoverDelMazo(CartaData datos)
+	{
+		if (datos == null) return;
+
+		if (datos.Categoria == CategoriaCarta.Unidad)
+			_cartasEnMazo.Remove(datos);
+		else
+			_cartasArdidEnMazo.Remove(datos);
+
+		ActualizarMazoVisual();
+		GlobalAudioManager.Instance?.PlayClickSound();
+	}
+
+	private void ActualizarMazoVisual()
+	{
+		if (_gridMazoSlots == null || _escenaCartaMini == null) return;
+
+		bool esTropaTab = (_pestanaActual == "TROPAS");
+		var listaActiva = esTropaTab ? _cartasEnMazo : _cartasArdidEnMazo;
+		int maxActivo = esTropaTab ? MAX_CARTAS : MAX_ARDIDES;
+
+		var slots = _gridMazoSlots.GetChildren();
+		for (int i = 0; i < slots.Count; i++)
+		{
+			var slot = slots[i] as Control;
+			if (slot == null) continue;
+
+			foreach (Node h in slot.GetChildren())
+			{
+				slot.RemoveChild(h);
+				h.QueueFree();
+			}
+
+			if (i < listaActiva.Count)
+			{
+				var datos = listaActiva[i];
+				var mini = _escenaCartaMini.Instantiate<CartaMini>();
+				slot.AddChild(mini);
+				mini.CargarDatos(datos);
+				mini.SetModoMazo(true, !esTropaTab);
+
+				mini.PivotOffset = mini.Size / 2f;
+				mini.Scale = new Vector2(0.4f, 0.4f);
+				var tw = mini.CreateTween();
+				tw.TweenProperty(mini, "scale", Vector2.One, 0.18f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+
+				mini.OnClickeada += (c) =>
+				{
+					SeleccionarCarta(c.MisDatos);
+					RemoverDelMazo(c.MisDatos);
+				};
+			}
+		}
+
+		int count = listaActiva.Count;
+		if (_lblContadorMazo != null)
+		{
+			_lblContadorMazo.Text = $" {count}/{maxActivo} ";
+			_lblContadorMazo.Modulate = count == maxActivo ? new Color(0.2f, 1f, 0.4f) : new Color(0.9f, 0.7f, 0.2f);
 		}
 
 		if (_btnBatallar != null)
 		{
-			_btnBatallar.Pressed += IrABatalla;
-			_btnBatallar.Visible = false;
+			bool listo = (_cartasEnMazo.Count == MAX_CARTAS);
+			_btnBatallar.Disabled = !listo;
+			_btnBatallar.Modulate = listo ? Colors.White : new Color(0.75f, 0.75f, 0.75f, 0.8f);
 		}
-		if (_btnVolver != null)
-			_btnVolver.Pressed += () => {
-				string ruta = !string.IsNullOrEmpty(RutaMenu) ? RutaMenu : "res://escenas/menu/menu_principal.tscn";
-				GD.Print("[Constructor] Volviendo a: " + ruta);
-				GetTree().ChangeSceneToFile(ruta);
-			};
-
-		ActualizarContador();
 	}
+
+	#endregion
+
+	#region Acciones de Botones y Navegación
 
 	private void IrABatalla()
 	{
-		int cantidadEnMazo = ContarCartasEnMazo();
-		if (cantidadEnMazo < MIN_CARTAS)
+		if (_cartasEnMazo.Count < MIN_CARTAS)
 		{
-			MostrarAviso($"Necesitas al menos {MIN_CARTAS} cartas para continuar.");
+			MostrarMensajeAviso($"Necesitas {MIN_CARTAS} cartas para batallar.");
 			return;
 		}
 
-		if (cantidadEnMazo > MAX_CARTAS)
-		{
-			MostrarAviso($"El mazo no puede superar {MAX_CARTAS} cartas.");
-			return;
-		}
-
-		string rutaBatalla = !string.IsNullOrEmpty(RutaBatalla) ? RutaBatalla : "res://escenas/gameplay/campo_1.tscn";
-		if (!ResourceLoader.Exists(rutaBatalla))
-		{
-			GD.PrintErr("[MenuConstructor] RutaBatalla inválida: " + rutaBatalla);
-			MostrarAviso("No se encontró la escena de batalla.");
-			return;
-		}
-		// Recolectar cartas del mazo
-		var escenas  = new List<string>();
+		var escenas = new List<string>();
 		var imagenes = new List<string>();
-		if (_panelMazo == null)
-		{
-			MostrarAviso("No se encontró el panel del mazo.");
-			return;
-		}
 
-		// Leer cartas del grid del mazo
-		var grid = _panelMazo.GetNodeOrNull<GridContainer>("MarginContainer/VBoxContainer/GridMazo");
-
-		if (grid != null)
+		foreach (var c in _cartasEnMazo)
 		{
-			foreach (Node slot in grid.GetChildren())
+			if (!string.IsNullOrEmpty(c.RutaEscena))
 			{
-				var cartaMini = slot.GetNodeOrNull<CartaMini>("CartaMini") ?? slot.GetChildOrNull<CartaMini>(slot.GetChildCount() - 1);
-				if (cartaMini == null || cartaMini.MisDatos == null) continue;
-
-				// Obtener la escena y la imagen directamente desde el archivo .tres
-				if (!string.IsNullOrEmpty(cartaMini.MisDatos.RutaEscena))
-				{
-					escenas.Add(cartaMini.MisDatos.RutaEscena);
-					if (cartaMini.MisDatos.Imagen != null)
-					{
-						imagenes.Add(cartaMini.MisDatos.Imagen.ResourcePath);
-					}
-					else
-					{
-						imagenes.Add("");
-					}
-				}
-				else
-				{
-					GD.PrintErr($"La carta {cartaMini.MisDatos.Nombre} no tiene RutaEscena configurada en su archivo .tres");
-				}
+				escenas.Add(c.RutaEscena);
+				imagenes.Add(c.Imagen != null ? c.Imagen.ResourcePath : "");
 			}
 		}
 
-		// Debe haber cartas válidas y mapeadas para iniciar batalla
-		if (escenas.Count == 0)
-		{
-			MostrarAviso("No se pudo construir un mazo válido para batalla.");
-			return;
-		}
 		if (escenas.Count < MIN_CARTAS)
 		{
-			MostrarAviso($"Tu mazo válido debe tener al menos {MIN_CARTAS} cartas.");
+			MostrarMensajeAviso($"El mazo contiene cartas sin escena de combate.");
 			return;
 		}
 
-		// Guardar en sesión y batallar
 		if (SesionJuego.Instance != null)
+		{
 			SesionJuego.Instance.GuardarMazo(escenas, imagenes);
-		else
-			GD.PrintErr("[MenuConstructor] SesionJuego.Instance es null. Se iniciará batalla sin persistir mazo.");
+		}
 
-		GD.Print($"[MenuConstructor] Mazo de {escenas.Count} cartas → ¡A batallar!");
-		GetTree().ChangeSceneToFile(rutaBatalla);
-	}
-
-	private void IniciarBatallaDirecta()
-	{
+		GD.Print($"[MenuConstructor] Mazo de {_cartasEnMazo.Count} cartas guardado → ¡A Batallar!");
 		GetTree().ChangeSceneToFile(RutaBatalla);
 	}
 
-	private void ActualizarContador()
+	private void VolverAlMenu()
 	{
-		if (_panelMazo == null) return;
+		GlobalAudioManager.Instance?.PlayClickSound();
+		GetTree().ChangeSceneToFile(RutaMenu);
+	}
 
-		int count = ContarCartasEnMazo();
-		
-		// Actualizar label del contador (oculto pero funcional)
-		if (_lblContadorMazo != null)
+	private void AbrirAyuda()
+	{
+		GlobalAudioManager.Instance?.PlayClickSound();
+		if (_modalAyuda != null)
 		{
-			_lblContadorMazo.Text = $"Cartas: {count}/{MAX_CARTAS}";
-			_lblContadorMazo.Modulate = count >= MIN_CARTAS ? Colors.LightGreen : Colors.OrangeRed;
-		}
-
-		// Actualizar barra de progreso con animación (fluida)
-		if (_progressBar != null)
-		{
-			var tween = CreateTween();
-			tween.TweenProperty(_progressBar, "value", count, 0.35f).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
-			
-			// Cambiar color según progreso
-			var fillStyle = _progressBar.GetThemeStylebox("fill") as StyleBoxFlat;
-			if (fillStyle != null)
-			{
-				var newStyle = (StyleBoxFlat)fillStyle.Duplicate();
-				if (count >= MAX_CARTAS)
-					newStyle.BgColor = new Color(0.20f, 0.72f, 0.40f, 1f); // Verde completo
-				else if (count >= MIN_CARTAS)
-					newStyle.BgColor = new Color(0.30f, 0.65f, 0.85f, 1f); // Azul — suficiente
-				else
-					newStyle.BgColor = new Color(0.90f, 0.60f, 0.15f, 1f); // Naranja — insuficiente
-				_progressBar.AddThemeStyleboxOverride("fill", newStyle);
-			}
-		}
-
-		if (_btnBatallar != null)
-		{
-			bool puedeBatallar = count >= MIN_CARTAS;
-			_btnBatallar.Disabled = !puedeBatallar;
-			_btnBatallar.Modulate = puedeBatallar
-				? Colors.White
-				: new Color(0.7f, 0.7f, 0.7f, 1f);
+			_modalAyuda.Visible = true;
+			_modalAyuda.Modulate = new Color(1, 1, 1, 0);
+			var tw = _modalAyuda.CreateTween();
+			tw.TweenProperty(_modalAyuda, "modulate", Colors.White, 0.2f);
 		}
 	}
 
-	private int ContarCartasEnMazo()
+	private void CerrarAyuda()
 	{
-		if (_panelMazo == null) return 0;
-		var grid = _panelMazo.GetNodeOrNull<GridContainer>("MarginContainer/VBoxContainer/GridMazo");
-		if (grid == null) return 0;
-
-		int count = 0;
-		foreach (Node slot in grid.GetChildren())
+		GlobalAudioManager.Instance?.PlayClickSound();
+		if (_modalAyuda != null)
 		{
-			var carta = slot.GetNodeOrNull<CartaMini>("CartaMini") ?? slot.GetChildOrNull<CartaMini>(slot.GetChildCount() - 1);
-			if (carta != null) count++;
+			var tw = _modalAyuda.CreateTween();
+			tw.TweenProperty(_modalAyuda, "modulate", new Color(1, 1, 1, 0), 0.15f);
+			tw.TweenCallback(Callable.From(() => _modalAyuda.Visible = false));
 		}
-		return count;
 	}
 
-	private void MostrarAviso(string msg)
+	private void MostrarMensajeAviso(string mensaje)
 	{
-		// Crear label temporal de aviso
 		var lbl = new Label();
-		lbl.Text = msg;
-		lbl.AddThemeColorOverride("font_color", Colors.OrangeRed);
-		lbl.AddThemeFontSizeOverride("font_size", 18);
-		lbl.Position = new Vector2(400, 20);
-		lbl.ZIndex   = 100;
+		lbl.Text = mensaje;
+		lbl.AddThemeFontSizeOverride("font_size", 20);
+		lbl.AddThemeColorOverride("font_color", new Color(1f, 0.9f, 0.2f));
+		lbl.Position = new Vector2(700, 30);
+		lbl.ZIndex = 200;
 		AddChild(lbl);
-		GetTree().CreateTimer(2.5f).Timeout += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
+
+		var tw = lbl.CreateTween();
+		lbl.Modulate = new Color(1, 1, 1, 0);
+		tw.TweenProperty(lbl, "modulate", Colors.White, 0.2f);
+		tw.TweenInterval(1.8f);
+		tw.TweenProperty(lbl, "modulate", new Color(1, 1, 1, 0), 0.3f);
+		tw.TweenCallback(Callable.From(() => lbl.QueueFree()));
 	}
+
+	private static T BuscarNodoRecursivo<T>(Node padre) where T : Node
+	{
+		foreach (Node hijo in padre.GetChildren())
+		{
+			if (hijo is T res) return res;
+			var sub = BuscarNodoRecursivo<T>(hijo);
+			if (sub != null) return sub;
+		}
+		return null;
+	}
+
+	#endregion
 }
