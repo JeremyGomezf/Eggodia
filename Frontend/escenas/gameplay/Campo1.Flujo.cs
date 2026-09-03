@@ -220,6 +220,7 @@ public partial class Campo1 : Node2D
 		Node2D t = (Node2D)escenaTropa.Instantiate();
 		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
+		t.Visible = true; t.Modulate = Colors.White; // seguro anti-invisible
 		if (idxMazo >= 0) t.SetMeta("idx_mazo", idxMazo); // para el sistema de reaparición
 		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 10, "Mod2" => 5, _ => 1 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
