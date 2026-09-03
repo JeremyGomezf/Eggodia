@@ -91,14 +91,14 @@ public partial class Carta : Control
 	{
 		var zonas = GetTree().GetNodesInGroup("zonas_invocacion");
 		bool exito = false;
+		Vector2 centroCarta = GlobalPosition + Size / 2;
 		foreach (Node2D puntoMod in zonas)
 		{
-			if (GlobalPosition.DistanceTo(puntoMod.GlobalPosition) < 180)
+			if (centroCarta.DistanceTo(puntoMod.GlobalPosition) < 180)
 			{
 				if (puntoMod.GetNodeOrNull("Ocupado") == null)
 				{
-					exito = true;
-					ConfirmarInvocacion(puntoMod);
+					exito = ConfirmarInvocacion(puntoMod);
 					break;
 				}
 			}
@@ -106,12 +106,16 @@ public partial class Carta : Control
 		if (!exito) RegresarAMano();
 	}
 
-	private void ConfirmarInvocacion(Node2D puntoMod)
+	private bool ConfirmarInvocacion(Node2D puntoMod)
 	{
-		EstaEnMano = false;
 		var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
-		if (campo != null) campo.TropaInvocada(puntoMod, EscenaTropa);
-		QueueFree();
+		bool colocada = campo != null && campo.TropaInvocada(puntoMod, EscenaTropa);
+		if (colocada)
+		{
+			EstaEnMano = false;
+			QueueFree();
+		}
+		return colocada;
 	}
 
 	private void RegresarAMano()

@@ -217,10 +217,10 @@ public partial class Campo1 : Node2D
 	private void CancelarSacrificio() { modoSacrificioActivo = false; Input.SetCustomMouseCursor(null); }
 
 	// ── INVOCACIÓN Y TRANSFORMACIÓN ───────────────────────────────────────
-	public void TropaInvocada(Node2D puntoMod, PackedScene escenaTropa)
+	public bool TropaInvocada(Node2D puntoMod, PackedScene escenaTropa)
 	{
-		if (juegoTerminado || !esTurnoJugador || !puntoMod.IsInGroup("zonas_invocacion")) return;
-		if (puntoMod.GetNodeOrNull("Ocupado") != null || escenaTropa == null) return;
+		if (juegoTerminado || !esTurnoJugador || !puntoMod.IsInGroup("zonas_invocacion")) return false;
+		if (puntoMod.GetNodeOrNull("Ocupado") != null || escenaTropa == null) return false;
 		Node2D t = (Node2D)escenaTropa.Instantiate();
 		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
@@ -238,10 +238,10 @@ public partial class Campo1 : Node2D
 		{
 			MostrarAviso("Tropas listas. La CPU prepara sus fuerzas...", Colors.LightGreen);
 			GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) CambiarTurno(); };
-			return;
+			return true;
 		}
 
-		// Las nuevas cartas solo aparecen al inicio del siguiente turno del jugador
+		return true;
 	}
 
 	public void InvocacionRival(Node2D puntoMod, PackedScene escenaTropa)
