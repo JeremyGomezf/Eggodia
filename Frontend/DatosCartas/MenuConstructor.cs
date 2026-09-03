@@ -57,6 +57,11 @@ public partial class MenuConstructor : Control
 	private const int MAX_CARTAS = 8;
 	private const int MAX_ARDIDES = 6;
 
+	// Composición obligatoria del mazo: 3 tácticos + 3 asesinos + 2 colosos = 8
+	private const int MAX_TACTICOS = 3;
+	private const int MAX_ASESINOS = 3;
+	private const int MAX_COLOSOS  = 2;
+
 	private readonly List<CartaData> _todasLasCartas = new();
 	private readonly List<CartaData> _cartasEnMazo = new();
 	private readonly List<CartaData> _cartasArdidEnMazo = new();
@@ -162,6 +167,12 @@ public partial class MenuConstructor : Control
 					var recurso = ResourceLoader.Load(rutaCarpeta + real) as CartaData;
 					if (recurso != null)
 					{
+						// Encebollado queda excluido del selector de mazo (petición del diseño)
+						if (NormalizarTexto(recurso.Nombre).Contains("encebollado"))
+						{
+							archivo = dir.GetNext();
+							continue;
+						}
 						bool existe = false;
 						foreach (var c in _todasLasCartas)
 						{
@@ -302,7 +313,7 @@ public partial class MenuConstructor : Control
 			if (_pestanaActual == "TROPAS" && !esTropa) continue;
 			if (_pestanaActual == "ARDID" && esTropa) continue;
 
-			if (!string.IsNullOrEmpty(textoFiltro) && !datos.Nombre.ToLower().Contains(textoFiltro))
+			if (!ClasificacionCartas.CoincideBusqueda(datos.RutaEscena, datos.Nombre, textoFiltro))
 				continue;
 
 			var mini = _escenaCartaMini.Instantiate<CartaMini>();
@@ -332,13 +343,11 @@ public partial class MenuConstructor : Control
 
 	private void FiltrarCartas(string query)
 	{
-		query = query.ToLower();
 		foreach (Node node in _gridSelector.GetChildren())
 		{
 			if (node is CartaMini mini && mini.MisDatos != null)
 			{
-				bool coincide = mini.MisDatos.Nombre.ToLower().Contains(query);
-				mini.Visible = coincide;
+				mini.Visible = ClasificacionCartas.CoincideBusqueda(mini.MisDatos.RutaEscena, mini.MisDatos.Nombre, query);
 			}
 		}
 	}
@@ -614,6 +623,16 @@ public partial class MenuConstructor : Control
 				}
 			}
 
+			// Límite por tipo: 3 tácticos, 3 asesinos, 2 colosos
+			TipoTropa tipo = ClasificacionCartas.TipoDe(datos.RutaEscena, datos.Nombre);
+			int enTipo  = ContarPorTipo(tipo);
+			int maxTipo = MaxPorTipo(tipo);
+			if (tipo != TipoTropa.Desconocido && enTipo >= maxTipo)
+			{
+				MostrarMensajeAviso($"Tipo {EtiquetaTipo(tipo)} ya lleno ({enTipo}/{maxTipo}). Prueba otro tipo.");
+				return;
+			}
+
 			if (_cartasEnMazo.Count >= MAX_CARTAS)
 			{
 				MostrarMensajeAviso($"El mazo de tropas está lleno ({MAX_CARTAS}/{MAX_CARTAS}). Quita una carta primero.");
@@ -645,6 +664,30 @@ public partial class MenuConstructor : Control
 		ActualizarMazoVisual();
 		GlobalAudioManager.Instance?.PlayClickSound();
 	}
+
+	private int ContarPorTipo(TipoTropa tipo)
+	{
+		int n = 0;
+		foreach (var c in _cartasEnMazo)
+			if (ClasificacionCartas.TipoDe(c.RutaEscena, c.Nombre) == tipo) n++;
+		return n;
+	}
+
+	private static int MaxPorTipo(TipoTropa tipo) => tipo switch
+	{
+		TipoTropa.Tactico => MAX_TACTICOS,
+		TipoTropa.Asesino => MAX_ASESINOS,
+		TipoTropa.Coloso  => MAX_COLOSOS,
+		_                 => MAX_CARTAS
+	};
+
+	private static string EtiquetaTipo(TipoTropa tipo) => tipo switch
+	{
+		TipoTropa.Tactico => "Tácticos",
+		TipoTropa.Asesino => "Asesinos",
+		TipoTropa.Coloso  => "Colosos",
+		_                 => "Tropa"
+	};
 
 	public void RemoverDelMazo(CartaData datos)
 	{
@@ -727,6 +770,16 @@ public partial class MenuConstructor : Control
 			return;
 		}
 
+		// Validar composición obligatoria: 3 tácticos, 3 asesinos, 2 colosos
+		int nTac = ContarPorTipo(TipoTropa.Tactico);
+		int nAse = ContarPorTipo(TipoTropa.Asesino);
+		int nCol = ContarPorTipo(TipoTropa.Coloso);
+		if (nTac != MAX_TACTICOS || nAse != MAX_ASESINOS || nCol != MAX_COLOSOS)
+		{
+			MostrarMensajeAviso($"Mazo inválido: necesitas {MAX_TACTICOS} tácticos, {MAX_ASESINOS} asesinos y {MAX_COLOSOS} colosos (tienes {nTac}/{nAse}/{nCol}).");
+			return;
+		}
+
 		var escenas = new List<string>();
 		var imagenes = new List<string>();
 
@@ -735,7 +788,10 @@ public partial class MenuConstructor : Control
 			if (!string.IsNullOrEmpty(c.RutaEscena))
 			{
 				escenas.Add(c.RutaEscena);
-				imagenes.Add(c.Imagen != null ? c.Imagen.ResourcePath : "");
+				// Imagen grande de batalla (CartasPng), no el icono del selector
+				string png = ClasificacionCartas.ImagenBatalla(c.RutaEscena, c.Nombre);
+				if (string.IsNullOrEmpty(png)) png = c.Imagen != null ? c.Imagen.ResourcePath : "";
+				imagenes.Add(png);
 			}
 		}
 

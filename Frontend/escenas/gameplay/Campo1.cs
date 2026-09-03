@@ -198,8 +198,17 @@ public partial class Campo1 : Node2D
 		// Mazo desde sesión del jugador
 		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
 		{
-			imagenesCartas = SesionJuego.Instance.ImagenesMazo.ToArray();
 			escenasTropas  = SesionJuego.Instance.MazoSeleccionado.ToArray();
+			// Imagen grande de batalla (CartasPng) derivada de la escena de cada tropa —
+			// nunca los iconos pequeños del selector de mazo.
+			var imgsSesion = SesionJuego.Instance.ImagenesMazo;
+			imagenesCartas = new string[escenasTropas.Length];
+			for (int i = 0; i < escenasTropas.Length; i++)
+			{
+				string png = ClasificacionCartas.ImagenBatalla(escenasTropas[i]);
+				if (string.IsNullOrEmpty(png) && i < imgsSesion.Count) png = imgsSesion[i];
+				imagenesCartas[i] = png ?? "";
+			}
 			GD.Print($"[Campo1] Mazo personalizado: {escenasTropas.Length} cartas");
 		}
 
