@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Naturaleza"
 DebilContra = "Fuego"
 Descripcion = "Carga rápida"
-RutaEscena = "res://cartas prime/Caballo_prime.tscn"
+RutaEscena = "res://cartas prime/AJEDREZ/Caballo_prime.tscn"
 Imagen = ExtResource("1_8gq41")

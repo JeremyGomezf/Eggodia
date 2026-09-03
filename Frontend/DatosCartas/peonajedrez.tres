@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Agua"
 DebilContra = "Metal"
 Descripcion = "Sacrificio heroico: cura al aliado más débil"
-RutaEscena = "res://cartas prime/Peon_prime.tscn"
+RutaEscena = "res://cartas prime/AJEDREZ/Peon_prime.tscn"
 Imagen = ExtResource("1_qoiut")

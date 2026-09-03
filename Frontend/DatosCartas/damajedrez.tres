@@ -17,5 +17,5 @@ Rango = "MEDIO"
 FuerteContra = "Metal"
 DebilContra = "Fuego"
 Descripcion = "Inspiración real: +100 ATK aliados 2 turnos"
-RutaEscena = "res://cartas prime/Dama_prime.tscn"
+RutaEscena = "res://cartas prime/AJEDREZ/Dama_prime.tscn"
 Imagen = ExtResource("1_86a8u")

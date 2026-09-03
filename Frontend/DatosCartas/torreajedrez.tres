@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Sombra"
 DebilContra = "Fuego"
 Descripcion = "Forma gigante: se agranda para tanquear"
-RutaEscena = "res://cartas prime/Torre_prime.tscn"
+RutaEscena = "res://cartas prime/AJEDREZ/Torre_prime.tscn"
 Imagen = ExtResource("1_p4pcv")

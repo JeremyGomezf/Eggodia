@@ -17,5 +17,5 @@ Rango = "MEDIO"
 FuerteContra = "Naturaleza"
 DebilContra = "Agua"
 Descripcion = "Furia de guiso: 150 AoE + veneno 2 turnos"
-RutaEscena = "res://cartas prime/Encebollado_prime.tscn"
+RutaEscena = ""
 Imagen = ExtResource("1_l7eni")
