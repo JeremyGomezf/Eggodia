@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://cq8loginpanel01"]
+[gd_scene format=3 uid="uid://chxcuh23rcsxs"]
 
 [ext_resource type="Script" uid="uid://cmw3sg1x14hqv" path="res://escenas/menu/PanelLogin.cs" id="1_login"]
 
