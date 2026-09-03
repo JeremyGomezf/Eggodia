@@ -154,7 +154,7 @@ theme_override_constants/separation = 20
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 17
-text = "Age of Cards es un juego de batallas por turnos donde invocas tropas, atacas y usas habilidades para reducir el HP del rival a cero. Cada turno tienes energía limitada — úsala con cabeza."
+text = "Eggodia es un juego de batallas por turnos donde invocas tropas, atacas y usas habilidades para reducir el HP del rival a cero. Cada turno tienes energía limitada — úsala con cabeza."
 autowrap_mode = 2
 
 [node name="Grid" type="GridContainer" parent="Root/Scroll/Margin/Contenido"]

@@ -411,7 +411,7 @@ public partial class Campo1 : Node2D
 		await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
 
 		string[] pasos = {
-			"Bienvenido a Age of Cards",
+			"Bienvenido a Eggodia",
 			"Arrastra una carta al campo para invocar tu tropa",
 			"Haz clic en tu tropa para atacar o defender",
 			"Usa hechizos para potenciar tus tropas o dañar al rival"
