@@ -371,7 +371,34 @@ public abstract partial class TropaBase : Area2D
 
 	// ── ANIMACIONES (encapsuladas — las subclases no las duplican) ────────
 
-	public void ReproducirIdle() { if (!_estaMuerto) _anim.Play("idle"); }
+	public void ReproducirIdle()
+	{
+		if (_estaMuerto || _anim == null) return;
+		string idle = NombreAnimacionIdle();
+		if (idle != null) _anim.Play(idle);
+	}
+
+	// Devuelve una animación de reposo válida para el SpriteFrames de esta tropa.
+	// Evita el crash "There is no animation with name 'idle'" cuando el sprite nombra
+	// su reposo distinto (p. ej. "idle 1", "reposo"). Si no hay ninguna reconocible,
+	// usa la primera animación disponible; null solo si no hay ninguna.
+	protected string NombreAnimacionIdle()
+	{
+		var frames = _anim?.SpriteFrames;
+		if (frames == null) return null;
+
+		foreach (string cand in new[] { "idle", "idle 1", "idle1", "idle_fantasma", "reposo", "quieto", "default" })
+			if (frames.HasAnimation(cand)) return cand;
+
+		foreach (string n in frames.GetAnimationNames())
+		{
+			string ln = n.ToLower();
+			if (ln.Contains("idle") || ln.Contains("repos")) return n;
+		}
+
+		var todas = frames.GetAnimationNames();
+		return todas.Length > 0 ? todas[0] : null;
+	}
 
 	public async void ReproducirAtaque()
 	{
