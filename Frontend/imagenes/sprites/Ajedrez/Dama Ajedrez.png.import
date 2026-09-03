@@ -3,20 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c7cdq3vvbi4ht"
-path.s3tc="res://.godot/imported/Dama Ajedrez.png-3d8fc9de4bc617bed48c45c972ed095c.s3tc.ctex"
+path="res://.godot/imported/Dama Ajedrez.png-3d8fc9de4bc617bed48c45c972ed095c.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Ajedrez/Dama Ajedrez.png"
-dest_files=["res://.godot/imported/Dama Ajedrez.png-3d8fc9de4bc617bed48c45c972ed095c.s3tc.ctex"]
+dest_files=["res://.godot/imported/Dama Ajedrez.png-3d8fc9de4bc617bed48c45c972ed095c.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
