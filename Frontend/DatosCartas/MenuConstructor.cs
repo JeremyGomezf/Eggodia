@@ -540,7 +540,10 @@ public partial class MenuConstructor : Control
 		if (_lblDetalleAtk != null) _lblDetalleAtk.Text = $"ATK: {datos.Ataque}";
 		if (_lblDetalleDef != null) _lblDetalleDef.Text = $"DEF: {datos.Defensa}";
 		if (_lblDetalleCosto != null) _lblDetalleCosto.Text = $"Costo: {datos.Costo}";
-		if (_lblDetalleElemento != null) _lblDetalleElemento.Text = $"Elemento: {datos.Elemento}";
+
+		var info = ClasificacionCartas.Clasificar(datos.RutaEscena, datos.Nombre);
+		// Antes mostraba "Elemento: X"; ahora muestra la Serie de la tropa.
+		if (_lblDetalleElemento != null) _lblDetalleElemento.Text = $"Serie: {EtiquetaSerie(info.Serie)}";
 
 		if (_lblDetalleHabilidad != null)
 		{
@@ -548,21 +551,32 @@ public partial class MenuConstructor : Control
 			_lblDetalleHabilidad.Text = desc;
 		}
 
+		// Línea extra: tipo de tropa (Táctico/Asesino/Coloso) en vez de ventajas por elemento.
 		if (_lblDetalleExtra != null)
 		{
-			string extra = "";
-			if (!string.IsNullOrEmpty(datos.FuerteContra))
-				extra += $"Ventaja: {datos.FuerteContra}";
-			if (!string.IsNullOrEmpty(datos.DebilContra))
-			{
-				if (!string.IsNullOrEmpty(extra)) extra += "  |  ";
-				extra += $"Desventaja: {datos.DebilContra}";
-			}
-
+			string extra = info.Tipo == TipoTropa.Desconocido ? "" : $"Tipo: {EtiquetaTipoSingular(info.Tipo)}";
 			_lblDetalleExtra.Text = extra;
 			_lblDetalleExtra.Visible = !string.IsNullOrEmpty(extra);
 		}
 	}
+
+	private static string EtiquetaSerie(SerieTropa s) => s switch
+	{
+		SerieTropa.Ajedrez  => "AJEDREZ",
+		SerieTropa.Toon     => "TOON",
+		SerieTropa.Medieval => "MEDIEVAL",
+		SerieTropa.Pacifico => "PACÍFICO",
+		SerieTropa.Papeleo  => "PAPELEO",
+		_                   => "—"
+	};
+
+	private static string EtiquetaTipoSingular(TipoTropa t) => t switch
+	{
+		TipoTropa.Tactico => "Táctico",
+		TipoTropa.Asesino => "Asesino",
+		TipoTropa.Coloso  => "Coloso",
+		_                 => "—"
+	};
 
 	#region Gestión del Mazo (Cofre)
 

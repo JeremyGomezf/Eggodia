@@ -16,7 +16,7 @@ public partial class Carta : Control
 	private Vector2 _offsetMouse;
 	private Tween   _tweenAnim;
 	
-	private Vector2 _escalaNormalMano  = new Vector2(0.85f, 0.85f); // COMPACTA en mano
+	private Vector2 _escalaNormalMano  = new Vector2(0.72f, 0.72f); // COMPACTA en mano
 	private Vector2 _escalaHover       = new Vector2(1.8f, 1.8f); // GRANDE al pasar dedo
 	private Vector2 _escalaAlArrastrar = new Vector2(1.1f, 1.1f); // MEDIANA al arrastrar
 

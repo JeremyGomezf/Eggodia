@@ -98,9 +98,9 @@ offset_bottom = 20.0
 [node name="ManoManual" type="Control" parent="." unique_id=145652396]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 732.0
+offset_left = 830.0
 offset_top = 700.0
-offset_right = 772.0
+offset_right = 870.0
 offset_bottom = 740.0
 
 [node name="ManoVisual" type="Sprite2D" parent="ManoManual" unique_id=38472910]
@@ -109,20 +109,16 @@ scale = Vector2(0.6, 0.6)
 texture = ExtResource("4_mano")
 
 [node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
-position = Vector2(-170, -139)
-rotation = -0.436
+position = Vector2(-105, -90)
+rotation = -0.26
 
 [node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
-position = Vector2(-62, -181)
-rotation = -0.14
+position = Vector2(10, -104)
+rotation = 0.0
 
 [node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
-position = Vector2(65, -193)
-rotation = 0.14
-
-[node name="Spot4" type="Marker2D" parent="ManoManual" unique_id=184729106]
-position = Vector2(173, -163)
-rotation = 0.436
+position = Vector2(125, -90)
+rotation = 0.26
 
 [node name="Mod1" type="Marker2D" parent="." unique_id=698830398 groups=["zonas_invocacion"]]
 position = Vector2(494, 333)

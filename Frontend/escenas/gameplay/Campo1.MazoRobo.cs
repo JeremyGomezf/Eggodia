@@ -185,10 +185,13 @@ public partial class Campo1 : Node2D
 	}
 
 	// ── RELLENO DE LA MANO ────────────────────────────────────────────────
+	// Nombres de los 3 spots visibles de la mano.
+	private static readonly string[] SPOTS_MANO = { "Spot1", "Spot2", "Spot3" };
+
 	private void RellenarManoObjetivo()
 	{
 		if (contenedorMano == null || _tipoIndice == null) return;
-		string[] spots = { "Spot1", "Spot2", "Spot3", "Spot4" };
+		string[] spots = SPOTS_MANO;
 
 		var vacios = new List<string>();
 		int ocupTac = 0, ocupAse = 0, ocupCol = 0;
@@ -210,11 +213,23 @@ public partial class Campo1 : Node2D
 		}
 		if (vacios.Count == 0) return;
 
+		// Mano de 3 cartas:
+		//  • Turno normal → 3 cartas tácticas/asesinas, mezcla flexible (2+1 ó 1+2).
+		//  • Turno de coloso (cada 3) → 1 coloso + 1 táctico + 1 asesino.
 		int turnoNum = _turnosJugados / 2 + 1;
 		bool colosoTurn = (turnoNum % 3 == 0) && _idxColoso.Count > 0;
-		int tgtTac = 2;
-		int tgtAse = colosoTurn ? 1 : 2;
-		int tgtCol = colosoTurn ? 1 : 0;
+		int tgtCol, tgtTac, tgtAse;
+		if (colosoTurn)
+		{
+			tgtCol = 1; tgtTac = 1; tgtAse = 1;
+		}
+		else
+		{
+			tgtCol = 0;
+			bool masTac = random.Next(2) == 0;
+			tgtTac = masTac ? 2 : 1;
+			tgtAse = masTac ? 1 : 2;
+		}
 
 		int needTac = Math.Max(0, tgtTac - ocupTac);
 		int needAse = Math.Max(0, tgtAse - ocupAse);
@@ -244,7 +259,7 @@ public partial class Campo1 : Node2D
 		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return;
 		Carta n = (Carta)escenaCartaBase.Instantiate(); n.NombreSpot = id; contenedorMano.AddChild(n);
 		n.Rotation = spot.Rotation;
-		Vector2 esc = new Vector2(1.05f, 1.05f); n.Scale = esc;
+		Vector2 esc = new Vector2(0.72f, 0.72f); n.Scale = esc;
 		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2);
 		n.GuardarEstadoOriginal();
 		n.AsignarDatos(imagenesCartas[idx], escenasTropas[idx], idx);
