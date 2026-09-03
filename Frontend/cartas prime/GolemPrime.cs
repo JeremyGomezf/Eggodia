@@ -142,8 +142,11 @@ public partial class GolemPrime : TropaBase
 			? aliadoTB.ObtenerSpotOrientado(spotAliado)
 			: aliado.GlobalPosition + new Vector2(esJugador ? 80f : -80f, 0f); // fallback si faltara el marker
 
-		// Z-Index por módulo, igual que las tropas (Mod1 < Mod2 < Mod3).
-		muro.ZIndex = carrilNormalizado switch { "3" => 10, "2" => 5, _ => 1 };
+		// Z-Index por módulo (mismo tier base que las tropas, Mod1 < Mod2 < Mod3) más el
+		// escalón de "Muro" — la capa más al frente del carril, por delante de tentáculos,
+		// fuegos y humos que pudieran coincidir sobre la tropa que protege.
+		int tierMuro = carrilNormalizado switch { "3" => 100, "2" => 50, _ => 10 };
+		muro.ZIndex = tierMuro + NivelZIndex.Muro;
 		muro.SetMeta("carril", aliado.GetMeta("carril"));
 		muro.AddToGroup(grupoMuro);
 

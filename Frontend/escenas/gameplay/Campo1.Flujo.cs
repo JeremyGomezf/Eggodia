@@ -75,6 +75,14 @@ public partial class Campo1 : Node2D
 			return;
 		}
 
+		// Tropa bloqueada (hechizo o atrapada por tentáculos): no se muestra el menú de
+		// acciones, solo sus barras de vida/escudo (ya visibles por el propio clic).
+		if (EstaBlockeada(tropa))
+		{
+			MostrarAviso("Esta tropa no puede actuar ahora mismo", Colors.OrangeRed);
+			return;
+		}
+
 		// Evitar refresco redundante si el menú ya está abierto para esta misma tropa
 		if (tropaSeleccionada == tropa && menuAcciones.Visible) return;
 		tropaSeleccionada = tropa;
@@ -218,11 +226,13 @@ public partial class Campo1 : Node2D
 		if (juegoTerminado || !esTurnoJugador || !puntoMod.IsInGroup("zonas_invocacion")) return false;
 		if (puntoMod.GetNodeOrNull("Ocupado") != null || escenaTropa == null) return false;
 		Node2D t = (Node2D)escenaTropa.Instantiate();
-		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition;
+		AddChild(t);
+		if (t is TropaBase tbInv) tbInv.ColocarPorCentroColision(puntoMod.GlobalPosition);
+		else                      t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
 		t.Visible = true; t.Modulate = Colors.White; // seguro anti-invisible
 		if (idxMazo >= 0) t.SetMeta("idx_mazo", idxMazo); // para el sistema de reaparición
-		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 10, "Mod2" => 5, _ => 1 };
+		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 100, "Mod2" => 50, _ => 10 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
 
 		// Activar inmediatamente para que se pueda usar en el mismo turno
@@ -247,10 +257,11 @@ public partial class Campo1 : Node2D
 		if (escenaTropa == null || puntoMod == null) return;
 		Node2D t = (Node2D)escenaTropa.Instantiate();
 		AddChild(t);
-		t.GlobalPosition = puntoMod.GlobalPosition;
+		if (t is TropaBase tbRival) tbRival.ColocarPorCentroColision(puntoMod.GlobalPosition);
+		else                        t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_rival");
 		t.SetMeta("carril", puntoMod.Name);
-		t.ZIndex = (string)puntoMod.Name switch { "ModRival3" => 10, "ModRival2" => 5, _ => 1 };
+		t.ZIndex = (string)puntoMod.Name switch { "ModRival3" => 100, "ModRival2" => 50, _ => 10 };
 
 		// Garantizar visibilidad: evita tropas rivales que aparecen invisibles por
 		// un modulate/visible heredado de la escena.

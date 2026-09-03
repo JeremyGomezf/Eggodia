@@ -22,9 +22,9 @@ public partial class Campo1 : Node2D
 		carril.ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 
 	// Mayor coordenada Y = carril visualmente más frontal → ZIndex mayor.
-	// Mismo esquema que ya usan TropaInvocada/InvocacionRival (Mod3/ModRival3 = 10).
+	// Mismo esquema que ya usan TropaInvocada/InvocacionRival (Mod3/ModRival3 = 100).
 	private static int TierZIndexCarril(string carril) =>
-		NormalizarCarril(carril) switch { "3" => 10, "2" => 5, _ => 1 };
+		NormalizarCarril(carril) switch { "3" => 100, "2" => 50, _ => 10 };
 
 	// ── SELECCIÓN POR CLIC (JUGADOR) ─────────────────────────────────────────
 
@@ -171,8 +171,13 @@ public partial class Campo1 : Node2D
 		Node2D zonaDestino = GetTree().Root.FindChild(carrilDestino, true, false) as Node2D;
 		if (zonaDestino == null) return;
 
-		Vector2 posOrigenTorre = torre.GlobalPosition;
-		Vector2 posDestino     = zonaDestino.GlobalPosition;
+		// Centro de colisión, no el origen crudo: Torre y aliado pueden tener CollisionShape2D
+		// en posiciones locales distintas dentro de su propia escena. El aliado debe terminar
+		// con SU centro de colisión donde estaba el centro de colisión de la Torre, no en su
+		// GlobalPosition crudo.
+		Vector2 centroOrigenTorre = torre.PosicionCentroColision;
+		Vector2 posDestino       = torre.DestinoGlobalParaCentro(zonaDestino.GlobalPosition);
+		Vector2 posDestinoAliado = aliado != null ? aliado.DestinoGlobalParaCentro(centroOrigenTorre) : Vector2.Zero;
 
 		// 1) State Lock — anti-spam / anti-doble clic en ambas tropas involucradas, más el
 		//    bloqueo global de tablero para que la IA no dispare otra acción mientras dura.
@@ -193,7 +198,7 @@ public partial class Campo1 : Node2D
 		tw.TweenProperty(torre, "global_position", posDestino, 0.38f)
 		  .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 		if (aliado != null)
-			tw.TweenProperty(aliado, "global_position", posOrigenTorre, 0.38f)
+			tw.TweenProperty(aliado, "global_position", posDestinoAliado, 0.38f)
 			  .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 
 		await ToSignal(tw, Tween.SignalName.Finished);

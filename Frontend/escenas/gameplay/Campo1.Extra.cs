@@ -367,7 +367,15 @@ public partial class Campo1 : Node2D
 
 	private bool EstaBlockeada(Node2D t)
 	{
-		if (t.HasMeta("bloqueado")) try { return (bool)t.GetMeta("bloqueado"); } catch { }
+		if (t.HasMeta("bloqueado")) try { if ((bool)t.GetMeta("bloqueado")) return true; } catch { }
+		// "atrapado_tentaculo": bloqueo persistente del Calamar Gigante, independiente del
+		// contador de turnos de "bloqueado" (dura hasta que se rompe el escudo del Calamar,
+		// no un número fijo de turnos) — ver TentaculoHabilidadPrime.cs.
+		if (t.HasMeta("atrapado_tentaculo")) try { if ((bool)t.GetMeta("atrapado_tentaculo")) return true; } catch { }
+		// "en_postura_permanente": el propio Calamar, mientras mantiene atrapados a los
+		// enemigos, pierde su propio menú de acciones (ATACAR/DEFENSA/HABILIDAD) — ver
+		// CalamarGPrime.cs.
+		if (t.HasMeta("en_postura_permanente")) try { return (bool)t.GetMeta("en_postura_permanente"); } catch { }
 		return false;
 	}
 

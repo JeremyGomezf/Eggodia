@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://heafx6pabfig"]
+
+[ext_resource type="Texture2D" uid="uid://d1jlq61alg1nh" path="res://imagenes/sprites/Efectos_OG2.png" id="1_x30bh"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(427, 363)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g0hym"]
+atlas = ExtResource("1_x30bh")
+region = Rect2(609, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l7wpy"]
+atlas = ExtResource("1_x30bh")
+region = Rect2(1218, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_26d38"]
+atlas = ExtResource("1_x30bh")
+region = Rect2(0, 1006, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kwjve"]
+atlas = ExtResource("1_x30bh")
+region = Rect2(609, 1006, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e02fg"]
+atlas = ExtResource("1_x30bh")
+region = Rect2(1218, 1006, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yqswv"]
+atlas = ExtResource("1_x30bh")
+region = Rect2(0, 1509, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_d2dm6"]
+atlas = ExtResource("1_x30bh")
+region = Rect2(609, 1509, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ptwwo"]
+atlas = ExtResource("1_x30bh")
+region = Rect2(1218, 1509, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_urb80"]
+atlas = ExtResource("1_x30bh")
+region = Rect2(0, 2012, 609, 503)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g0hym")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l7wpy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_26d38")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_26d38")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kwjve")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e02fg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yqswv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_d2dm6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ptwwo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_urb80")
+}],
+"loop": 0,
+"name": &"humo_efecto",
+"speed": 13.0
+}]
+
+[node name="humo transformacion" type="Area2D" unique_id=1934137725]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(6, -22.5)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(1, -30)
+scale = Vector2(0.575, 0.577)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"humo_efecto"
+frame = 9
+frame_progress = 1.0

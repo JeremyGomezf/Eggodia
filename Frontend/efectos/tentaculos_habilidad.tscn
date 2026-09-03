@@ -1,0 +1,89 @@
+[gd_scene format=3 uid="uid://b2t734j06lpgj"]
+
+[ext_resource type="Script" path="res://cartas prime/TentaculoHabilidadPrime.cs" id="1_cv32o"]
+[ext_resource type="Texture2D" uid="uid://d1jlq61alg1nh" path="res://imagenes/sprites/Efectos_OG2.png" id="2_cv32o"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(136.29028, 105)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_60jo0"]
+atlas = ExtResource("2_cv32o")
+region = Rect2(0, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_alvn1"]
+atlas = ExtResource("2_cv32o")
+region = Rect2(609, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7dw7n"]
+atlas = ExtResource("2_cv32o")
+region = Rect2(1218, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_51y6r"]
+atlas = ExtResource("2_cv32o")
+region = Rect2(0, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_14110"]
+atlas = ExtResource("2_cv32o")
+region = Rect2(0, 503, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_10ago"]
+atlas = ExtResource("2_cv32o")
+region = Rect2(1218, 0, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yi3w5"]
+atlas = ExtResource("2_cv32o")
+region = Rect2(609, 0, 609, 503)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_60jo0")
+}],
+"loop": 1,
+"name": &"idle_tentaculo",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alvn1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7dw7n")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_51y6r")
+}],
+"loop": 0,
+"name": &"irse_tentaculo",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_14110")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_10ago")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yi3w5")
+}],
+"loop": 0,
+"name": &"respawn_tentaculo",
+"speed": 10.0
+}]
+
+[node name="tentaculos" type="Area2D" unique_id=1934137725]
+position = Vector2(0, -18)
+script = ExtResource("1_cv32o")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(-4.499996, 0)
+scale = Vector2(1.2400004, 1.2000002)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(1, -47)
+scale = Vector2(0.48408484, 0.47045815)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"idle_tentaculo"

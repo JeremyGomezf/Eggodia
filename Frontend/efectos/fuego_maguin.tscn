@@ -1,0 +1,73 @@
+[gd_scene format=3 uid="uid://big2kjs6dkkha"]
+
+[ext_resource type="Script" uid="uid://btmy00ok45sm3" path="res://cartas prime/FuegoMaguinPrime.cs" id="1_lxwxb"]
+[ext_resource type="Texture2D" uid="uid://d1jlq61alg1nh" path="res://imagenes/sprites/Efectos_OG2.png" id="2_lxwxb"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(124.19352, 164.99998)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_v84jv"]
+atlas = ExtResource("2_lxwxb")
+region = Rect2(609, 2012, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cywwu"]
+atlas = ExtResource("2_lxwxb")
+region = Rect2(1218, 2012, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yxyel"]
+atlas = ExtResource("2_lxwxb")
+region = Rect2(0, 2515, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3ltht"]
+atlas = ExtResource("2_lxwxb")
+region = Rect2(609, 2515, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l2yuw"]
+atlas = ExtResource("2_lxwxb")
+region = Rect2(1218, 2515, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e5e8b"]
+atlas = ExtResource("2_lxwxb")
+region = Rect2(0, 3018, 609, 503)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_v84jv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cywwu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yxyel")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3ltht")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l2yuw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e5e8b")
+}],
+"loop": 0,
+"name": &"respawn_fuego_maguin",
+"speed": 11.0
+}]
+
+[node name="fuego de maguin" type="Area2D" unique_id=1934137725]
+position = Vector2(0, -18)
+script = ExtResource("1_lxwxb")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(-4, -36)
+scale = Vector2(1.2400004, 1.2000002)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(3.9999998, -102)
+scale = Vector2(0.904, 0.888)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"respawn_fuego_maguin"
+frame = 2

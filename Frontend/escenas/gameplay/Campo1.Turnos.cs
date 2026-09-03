@@ -157,6 +157,7 @@ public partial class Campo1 : Node2D
 				TickVeneno(tropa);
 				TickBloqueo(tropa);
 				if (tropa.HasMethod("TickHabilidad")) tropa.Call("TickHabilidad");
+				if (tropa.HasMethod("TickTransformacion")) tropa.Call("TickTransformacion");
 				if (Gi(tropa, "vidaActual") <= 0) EjecutarMuerteTropaSacrificada(tropa);
 			}
 		}

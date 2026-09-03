@@ -279,8 +279,8 @@ public partial class MenuConstructor : Control
 		// Sincronizar selección con la pestaña activa
 		bool esTropaTab = (_pestanaActual == "TROPAS");
 		if (_cartaSeleccionada == null || 
-		    (esTropaTab && _cartaSeleccionada.Categoria != CategoriaCarta.Unidad) ||
-		    (!esTropaTab && _cartaSeleccionada.Categoria == CategoriaCarta.Unidad))
+			(esTropaTab && _cartaSeleccionada.Categoria != CategoriaCarta.Unidad) ||
+			(!esTropaTab && _cartaSeleccionada.Categoria == CategoriaCarta.Unidad))
 		{
 			var primeraDePestana = _todasLasCartas.Find(c => esTropaTab 
 				? c.Categoria == CategoriaCarta.Unidad 

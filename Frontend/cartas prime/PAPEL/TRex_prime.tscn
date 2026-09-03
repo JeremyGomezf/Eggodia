@@ -448,6 +448,9 @@ script = ExtResource("1_wjcmm")
 position = Vector2(32, -29)
 shape = SubResource("RectangleShape2D_wjcmm")
 
+[node name="efecto_secundario_slot" type="Marker2D" parent="."]
+position = Vector2(32, -29)
+
 [node name="SpotInvocacion" type="Marker2D" parent="."]
 position = Vector2(240, -29)
 

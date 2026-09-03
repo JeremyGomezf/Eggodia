@@ -188,7 +188,10 @@ public partial class PeonPrime : TropaBase
 
 		Node2D nuevaTropa = escenaNueva.Instantiate<Node2D>();
 
-		nuevaTropa.GlobalPosition = GlobalPosition;
+		// Centro de colisión, no el origen crudo: la pieza nueva puede tener un
+		// CollisionShape2D en una posición local distinta a la del Peón.
+		if (nuevaTropa is TropaBase nuevaTB) nuevaTB.ColocarPorCentroColision(PosicionCentroColision);
+		else                                 nuevaTropa.GlobalPosition = GlobalPosition;
 		// La pieza promovida hereda el Z-Index exacto del carril del Peón (profundidad visual
 		// por carril: Mod1/ModRival1=1, Mod2/ModRival2=5, Mod3/ModRival3=10), en vez de quedarse
 		// con el ZIndex por defecto de su propia escena.

@@ -1,5 +1,18 @@
 using Godot;
 
+/// <summary>Offsets de sub-capa dentro del ZIndex de un carril (tier base 10/50/100 por
+/// Mod1-2-3, ver TropaInvocada/InvocacionRival/GolemPrime/Enroque). De atrás hacia adelante:
+/// Tropa (0) &lt; Tentáculo &lt; Fuego &lt; Humo &lt; Muro. El hueco entre tiers (mínimo 40, entre
+/// tier2=50 y tier3=100) es de sobra para estos 5 escalones sin invadir el carril vecino.</summary>
+public static class NivelZIndex
+{
+	public const int Tropa     = 0;
+	public const int Tentaculo = 2;
+	public const int Fuego     = 4;
+	public const int Humo      = 6;
+	public const int Muro      = 8;
+}
+
 /// <summary>
 /// Clase base abstracta para todas las tropas del juego.
 /// Aplica: Herencia, Encapsulamiento, Polimorfismo, Abstracción (POO).
@@ -226,27 +239,61 @@ public abstract partial class TropaBase : Area2D
 	/// <summary>Posición canónica del carril propio (GlobalPosition del Marker2D de la zona),
 	/// para que el regreso de un salto/vuelo aterrice siempre exacto en su slot, sin depender de
 	/// una posición cacheada que pudiera arrastrar desvíos. <paramref name="posDeRespaldo"/> se
-	/// usa solo si esta tropa no tiene carril asignado o la zona no existe.</summary>
+	/// usa solo si esta tropa no tiene carril asignado o la zona no existe. Ya viene corregida
+	/// por el centro de colisión (ver <see cref="DestinoGlobalParaCentro"/>).</summary>
 	protected Vector2 ObtenerPosicionCarrilPropio(Vector2 posDeRespaldo)
 	{
 		if (!HasMeta("carril")) return posDeRespaldo;
 		string carril = (string)GetMeta("carril");
 		Node2D zona = GetTree().Root.FindChild(carril, true, false) as Node2D;
-		return zona != null ? zona.GlobalPosition : posDeRespaldo;
+		return zona != null ? DestinoGlobalParaCentro(zona.GlobalPosition) : posDeRespaldo;
 	}
 
+	// ── CENTRADO POR COLISIÓN ────────────────────────────────────────────────
+	// "efecto_secundario_slot" (Marker2D presente en TODAS las escenas de tropa) marca el
+	// centro real de su CollisionShape2D — no siempre coincide con el origen (0,0) del Area2D,
+	// que es lo que arrastraba el desalineamiento visual contra los círculos de los carriles.
+	// Todo el posicionamiento "oficial" (invocación, regreso de salto, Enroque, promoción,
+	// transmutación) debe pasar por estos helpers en vez de comparar GlobalPosition en crudo.
+
+	/// <summary>Offset local (respecto al origen del Area2D) del centro real de colisión.
+	/// Cero si la escena no tiene "efecto_secundario_slot" (nunca debería faltar, pero evita
+	/// romper nada si alguna escena todavía no lo tiene).</summary>
+	public Vector2 OffsetCentroColision()
+	{
+		var slot = GetNodeOrNull<Marker2D>("efecto_secundario_slot");
+		return slot != null ? slot.Position : Vector2.Zero;
+	}
+
+	/// <summary>Posición global real del centro de colisión de esta tropa — el punto que de
+	/// verdad se ve alineado con el carril, a diferencia de GlobalPosition (origen del nodo).</summary>
+	public Vector2 PosicionCentroColision => GlobalPosition + OffsetCentroColision();
+
+	/// <summary>GlobalPosition que hay que asignarle a esta tropa para que su CENTRO DE
+	/// COLISIÓN (no su origen) caiga exactamente sobre <paramref name="posicionCentroDeseada"/>.</summary>
+	public Vector2 DestinoGlobalParaCentro(Vector2 posicionCentroDeseada) => posicionCentroDeseada - OffsetCentroColision();
+
+	/// <summary>Coloca esta tropa de modo que su centro de colisión caiga exactamente sobre
+	/// <paramref name="posicionDestino"/> — el punto único de posicionamiento "oficial" que debe
+	/// usar Campo1 tras cualquier invocación, promoción, Enroque o transmutación, independiente
+	/// del tamaño/recorte del sprite de cada tropa.</summary>
+	public void ColocarPorCentroColision(Vector2 posicionDestino) => GlobalPosition = DestinoGlobalParaCentro(posicionDestino);
+
 	/// <summary>Fuerza a esta tropa a coincidir exactamente con el Marker2D de un slot/carril,
-	/// usando siempre GlobalPosition (nunca Position, que es relativa al padre y no sirve si la
-	/// tropa y el slot no comparten el mismo Node2D padre). Es el punto único de "recalce" que
-	/// puede llamar Campo1 tras cualquier invocación, promoción o Enroque para garantizar que el
-	/// root de la tropa quede exactamente sobre el círculo rojo del slot. No corrige por sí solo
-	/// un desfase visual causado por el offset propio del AnimatedSprite2D dentro de la escena de
-	/// la tropa (eso requiere ajustar la posición del sprite hijo en su .tscn); solo garantiza que
-	/// el ORIGEN (0,0) de la tropa esté exactamente donde está el slot.</summary>
+	/// por su centro de colisión (no el origen crudo del nodo).</summary>
 	public void RealinearConCarril(Marker2D slotTarget)
 	{
 		if (slotTarget == null || !IsInstanceValid(slotTarget)) return;
-		GlobalPosition = slotTarget.GlobalPosition;
+		ColocarPorCentroColision(slotTarget.GlobalPosition);
+	}
+
+	/// <summary>Posición global orientada del "efecto_secundario_slot" — punto de anclaje para
+	/// humo, fuego, tentáculos y cualquier otro efecto externo. Ya refleja el lado (jugador ve a
+	/// la derecha, rival ve a la izquierda) igual que <see cref="ObtenerSpotOrientado"/>.</summary>
+	public Vector2 ObtenerSlotEfectoSecundario()
+	{
+		var slot = GetNodeOrNull<Marker2D>("efecto_secundario_slot");
+		return slot != null ? ObtenerSpotOrientado(slot) : GlobalPosition;
 	}
 
 	/// <summary>Desvanece un nodo (Modulate:a de 1 a 0 en <paramref name="duracion"/> segundos) y
