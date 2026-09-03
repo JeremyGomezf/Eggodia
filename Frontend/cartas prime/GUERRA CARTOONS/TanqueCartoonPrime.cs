@@ -111,7 +111,7 @@ public partial class TanqueCartoonPrime : TropaBase
 	// ── DERROTA ──────────────────────────────────────────────────────────────
 	// El tanque solo tiene "derrota - dañado" (no existe "derrota" normal).
 	// "new" oculta TropaBase.ReproducirDerrota para que Call("ReproducirDerrota") llegue aquí.
-	public new void ReproducirDerrota()
+	public override void ReproducirDerrota()
 	{
 		_estaMuerto = true;
 		_anim.Play("derrota - dañado");

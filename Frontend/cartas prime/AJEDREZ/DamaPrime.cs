@@ -331,56 +331,7 @@ public partial class DamaPrime : TropaBase
 		return objetivoCercano;
 	}
 
-	private Node2D BuscarObjetivoEnCarril()
-	{
-		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
-		string grupoMuro    = IsInGroup("tropas_jugador") ? "muros_rival"  : "muros_jugador";
 
-		if (HasMeta("carril"))
-		{
-			string miCarril = ((string)GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-
-			foreach (Node n in GetTree().GetNodesInGroup(grupoMuro))
-			{
-				if (!(n is Node2D m) || !IsInstanceValid(m) || !m.HasMeta("carril")) continue;
-				string cm = ((string)m.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-				if (cm == miCarril) return m;
-			}
-
-			Node2D mejorEnCarril = null;
-			int minVida = int.MaxValue;
-
-			foreach (Node n in GetTree().GetNodesInGroup(grupoEnemigo))
-			{
-				if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
-				string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
-				if (c != miCarril) continue;
-
-				int v = 0;
-				try { v = (int)e.Get("vidaActual"); } catch { }
-				if (v > 0 && v < minVida)
-				{
-					minVida = v;
-					mejorEnCarril = e;
-				}
-			}
-
-			if (mejorEnCarril != null) return mejorEnCarril;
-		}
-
-		// Fallback: Si no hay en su carril, agarra al primer enemigo vivo
-		foreach (Node n in GetTree().GetNodesInGroup(grupoEnemigo))
-		{
-			if (n is Node2D e && IsInstanceValid(e))
-			{
-				int v = 1;
-				try { v = (int)e.Get("vidaActual"); } catch { }
-				if (v > 0) return e;
-			}
-		}
-
-		return null;
-	}
 
 	private void AplicarDañoDirecto(Node2D objetivo, int cantidad)
 	{

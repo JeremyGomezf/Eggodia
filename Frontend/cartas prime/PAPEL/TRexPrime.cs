@@ -154,6 +154,8 @@ public partial class TRexPrime : TropaBase
 			int vidaAntes = 0; try { vidaAntes = (int)_objetivoPendiente.Get("vidaActual"); } catch { }
 			int vidaNueva = Mathf.Max(0, vidaAntes - DAÑO_VERDADERO);
 			try { _objetivoPendiente.Set("vidaActual", vidaNueva); } catch { }
+			if (_objetivoPendiente.HasMethod("ActualizarBarrasUI"))
+				_objetivoPendiente.Call("ActualizarBarrasUI");
 
 			if (vidaNueva <= 0)
 			{

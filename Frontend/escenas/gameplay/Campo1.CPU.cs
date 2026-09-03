@@ -192,12 +192,9 @@ public partial class Campo1 : Node2D
 		return (objetivo is TRexPrime || objetivo is TanqueCartoonPrime) ? 1 : 0;
 	}
 
-	private PackedScene ElegirTropaCPU()
-	{
-		if (_dificultadCPU == 2) return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length / 2, escenasTropas.Length)]);
-		if (_dificultadCPU == 0) return GD.Load<PackedScene>(escenasTropas[random.Next(0, escenasTropas.Length / 2)]);
-		return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length)]);
-	}
+	// El CPU roba de su propio mazo (3 tácticos, 3 asesinos) e invoca un coloso
+	// en sus turnos de coloso (cada 3 turnos), igual que el jugador.
+	private PackedScene ElegirTropaCPU() => ElegirTropaCPUDeck();
 
 	private bool DebeDefender(Node2D t, Node2D obj)
 	{

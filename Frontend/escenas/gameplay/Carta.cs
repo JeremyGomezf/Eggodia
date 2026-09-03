@@ -109,7 +109,7 @@ public partial class Carta : Control
 	private bool ConfirmarInvocacion(Node2D puntoMod)
 	{
 		var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
-		bool colocada = campo != null && campo.TropaInvocada(puntoMod, EscenaTropa);
+		bool colocada = campo != null && campo.TropaInvocada(puntoMod, EscenaTropa, IdCarta);
 		if (colocada)
 		{
 			EstaEnMano = false;

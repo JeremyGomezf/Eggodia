@@ -184,13 +184,9 @@ public partial class Campo1 : Node2D
 
 	private void CompletarManoAlInicio()
 	{
-		foreach (string s in new[] { "Spot1", "Spot2", "Spot3", "Spot4" })
-		{
-			bool o = false;
-			foreach (Node n in contenedorMano.GetChildren())
-				if (n is Carta c && c.NombreSpot == s && !c.IsQueuedForDeletion()) o = true;
-			if (!o) CrearNuevaCartaEnSpot(s);
-		}
+		// Rellena los spots vacíos respetando la composición objetivo del turno
+		// (2 tácticos + 2 asesinos, o coloso cada 3 turnos).
+		RellenarManoObjetivo();
 	}
 
 	public void _on_sacrificar_pressed()
@@ -217,13 +213,14 @@ public partial class Campo1 : Node2D
 	private void CancelarSacrificio() { modoSacrificioActivo = false; Input.SetCustomMouseCursor(null); }
 
 	// ── INVOCACIÓN Y TRANSFORMACIÓN ───────────────────────────────────────
-	public bool TropaInvocada(Node2D puntoMod, PackedScene escenaTropa)
+	public bool TropaInvocada(Node2D puntoMod, PackedScene escenaTropa, int idxMazo = -1)
 	{
 		if (juegoTerminado || !esTurnoJugador || !puntoMod.IsInGroup("zonas_invocacion")) return false;
 		if (puntoMod.GetNodeOrNull("Ocupado") != null || escenaTropa == null) return false;
 		Node2D t = (Node2D)escenaTropa.Instantiate();
 		AddChild(t); t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
+		if (idxMazo >= 0) t.SetMeta("idx_mazo", idxMazo); // para el sistema de reaparición
 		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 10, "Mod2" => 5, _ => 1 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
 
@@ -253,6 +250,11 @@ public partial class Campo1 : Node2D
 		t.AddToGroup("tropas_rival");
 		t.SetMeta("carril", puntoMod.Name);
 		t.ZIndex = (string)puntoMod.Name switch { "ModRival3" => 10, "ModRival2" => 5, _ => 1 };
+
+		// Garantizar visibilidad: evita tropas rivales que aparecen invisibles por
+		// un modulate/visible heredado de la escena.
+		t.Visible  = true;
+		t.Modulate = Colors.White;
 
 		// Corregir orientación sin romper escala ni rotaciones
 		AsegurarOrientacionRival(t);
@@ -345,6 +347,8 @@ public partial class Campo1 : Node2D
 		{
 			vidaJugador -= castigo; if (vidaJugador < 0) vidaJugador = 0;
 			_tropasEliminadasJugador++;
+			// Registrar cooldown de reaparición de la carta del jugador
+			NotificarMuerteIndiceJugador(tropa);
 		}
 
 		if (tropa.HasMeta("carril"))
@@ -371,10 +375,8 @@ public partial class Campo1 : Node2D
 
 	public void BarajarMazoInicial()
 	{
-		CrearNuevaCartaEnSpot("Spot1");
-		CrearNuevaCartaEnSpot("Spot2");
-		CrearNuevaCartaEnSpot("Spot3");
-		CrearNuevaCartaEnSpot("Spot4");
+		// Mano de apertura: 2 tácticos + 2 asesinos (turno 1 no es de coloso).
+		RellenarManoObjetivo();
 		MostrarTutorialInicio();
 	}
 
@@ -398,18 +400,12 @@ public partial class Campo1 : Node2D
 		}
 	}
 
+	// Roba UNA carta elegible a un spot concreto (usado por el hechizo "Robar carta").
 	private void CrearNuevaCartaEnSpot(string id)
 	{
-		if (juegoTerminado || escenaCartaBase == null || contenedorMano == null) return;
-		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return;
-		Carta n = (Carta)escenaCartaBase.Instantiate(); n.NombreSpot = id; contenedorMano.AddChild(n);
-		n.Rotation = spot.Rotation;
-		Vector2 esc = new Vector2(1.05f, 1.05f); n.Scale = esc;
-		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2);
-		n.GuardarEstadoOriginal();
-		if (proximoIndiceMazo >= mazoIndices.Count) PrepararMazoSinRepetir();
-		int idx = mazoIndices[proximoIndiceMazo++];
-		n.AsignarDatos(imagenesCartas[idx], escenasTropas[idx], idx);
+		int idx = ElegirIndiceParaSpot();
+		if (idx < 0) idx = ElegirRelajado();
+		if (idx >= 0) CrearCartaConIndice(id, idx);
 	}
 
 	private void CrearEscenaDeBatalla()

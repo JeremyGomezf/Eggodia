@@ -214,6 +214,8 @@ public partial class Campo1 : Node2D
 
 		AplicarIdentidadEra();
 		PrepararMazoSinRepetir();
+		InicializarClasificacionMazo();
+		InicializarMazoCPU();
 		CrearEscenaDeBatalla();
 		BarajarMazoInicial();
 		_faseApertura  = true;

@@ -148,7 +148,7 @@ public partial class KaBarCartoonPrime : TropaBase
 
 	// ── DERROTA POR SACRIFICIO ────────────────────────────────────────────────
 	// Llamado por Campo1 vía Call("ReproducirDerrota"). Sin fase fantasma.
-	public new void ReproducirDerrota()
+	public override void ReproducirDerrota()
 	{
 		_estaMuerto = true;
 		_anim.Play("derrota");

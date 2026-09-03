@@ -162,7 +162,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 	}
 
 	// ── DERROTA (llamada al morir o por EjecutarMuerteTropaSacrificada) ───────
-	public new void ReproducirDerrota()
+	public override void ReproducirDerrota()
 	{
 		_estaMuerto = true;
 		_anim.Play(AF("derrota"));

@@ -42,8 +42,13 @@ public partial class Campo1 : Node2D
 
 		ProcesarStatusEfectos();
 
+		// Libera carriles cuyo "Ocupado" quedó sin tropa (evita carriles fantasma).
+		LimpiarCarrilesFantasma();
+
 		if (esTurnoJugador)
 		{
+			// Avanzar cooldowns de reaparición antes de robar la mano del turno.
+			AvanzarCooldownsJugador();
 			CompletarManoAlInicio();
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
 			{
@@ -51,7 +56,13 @@ public partial class Campo1 : Node2D
 				if (n.HasMethod("AvanzarTurnoTropa")) n.Call("AvanzarTurnoTropa");
 			}
 		}
-		else EjecutarTurnoCPU();
+		else
+		{
+			// Programar aparición de coloso del CPU cada 3 turnos.
+			int turnoNum = _turnosJugados / 2 + 1;
+			_cpuColosoPendiente = (turnoNum % 3 == 0);
+			EjecutarTurnoCPU();
+		}
 
 		AnunciarTurno();
 		ActualizarInterfaz();

@@ -382,7 +382,7 @@ public abstract partial class TropaBase : Area2D
 		ReproducirIdle();
 	}
 
-	public void ReproducirDerrota() { _estaMuerto = true; _anim.Play("derrota"); }
+	public virtual void ReproducirDerrota() { _estaMuerto = true; _anim.Play("derrota"); }
 
 	// ── UI (encapsulada) ──────────────────────────────────────────────────
 
