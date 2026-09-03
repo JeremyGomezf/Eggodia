@@ -24,7 +24,7 @@ public class UsuariosController : ControllerBase
         {
             Nombre   = req.Nombre,
             Email    = req.Email,
-            Password = req.Password  // TODO: hashear con BCrypt en producción
+            Password = BCrypt.Net.BCrypt.HashPassword(req.Password) // hash seguro (nunca texto plano)
         };
 
         _db.Usuarios.Add(usuario);
@@ -39,14 +39,35 @@ public class UsuariosController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        var usuario = await _db.Usuarios
-            .FirstOrDefaultAsync(u => u.Email == req.Email && u.Password == req.Password);
-
+        var usuario = await _db.Usuarios.FirstOrDefaultAsync(u => u.Email == req.Email);
         if (usuario == null)
+            return Unauthorized(new { mensaje = "Email o contraseña incorrectos." });
+
+        bool ok;
+        if (EsHashBCrypt(usuario.Password))
+        {
+            ok = BCrypt.Net.BCrypt.Verify(req.Password, usuario.Password);
+        }
+        else
+        {
+            // Cuenta antigua con contraseña en texto plano: comparar y migrar a hash al vuelo.
+            ok = usuario.Password == req.Password;
+            if (ok)
+            {
+                usuario.Password = BCrypt.Net.BCrypt.HashPassword(req.Password);
+                await _db.SaveChangesAsync();
+            }
+        }
+
+        if (!ok)
             return Unauthorized(new { mensaje = "Email o contraseña incorrectos." });
 
         return Ok(ToDto(usuario));
     }
+
+    // Detecta si un valor ya es un hash BCrypt ($2a$/$2b$/$2y$...).
+    private static bool EsHashBCrypt(string valor) =>
+        !string.IsNullOrEmpty(valor) && valor.StartsWith("$2") && valor.Length >= 55;
 
     // GET: api/usuarios/5
     [HttpGet("{id}")]
