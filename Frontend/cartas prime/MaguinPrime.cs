@@ -127,6 +127,7 @@ public partial class MaguinPrime : TropaBase
 
 		Node2D humo = (Node2D)GD.Load<PackedScene>(RUTA_HUMO).Instantiate();
 		GetTree().Root.AddChild(humo);
+		humo.AddToGroup("efectos_maguin"); // para LimpiezaEfectos.cs al reiniciar/salir
 		humo.GlobalPosition = posObjetivo;
 		// La capa más alta sobre la propia tropa (por delante de tentáculos y fuego si
 		// coinciden), pero todavía por detrás de un muro si lo hubiera en ese carril.

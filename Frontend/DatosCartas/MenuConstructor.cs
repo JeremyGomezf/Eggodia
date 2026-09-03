@@ -539,7 +539,7 @@ public partial class MenuConstructor : Control
 		if (_lblDetalleHp != null) _lblDetalleHp.Text = $"HP: {datos.Vida}";
 		if (_lblDetalleAtk != null) _lblDetalleAtk.Text = $"ATK: {datos.Ataque}";
 		if (_lblDetalleDef != null) _lblDetalleDef.Text = $"DEF: {datos.Defensa}";
-		if (_lblDetalleCosto != null) _lblDetalleCosto.Text = $"Costo: {datos.Costo}";
+		if (_lblDetalleCosto != null) _lblDetalleCosto.Visible = false; // el juego no tiene sistema de costo
 
 		var info = ClasificacionCartas.Clasificar(datos.RutaEscena, datos.Nombre);
 		// Antes mostraba "Elemento: X"; ahora muestra la Serie de la tropa.

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c4c8irqd5agf1"]
 
-[ext_resource type="Script" path="res://cartas prime/TortugaYPescado.cs" id="1_script"]
+[ext_resource type="Script" uid="uid://ctr75f66nr80j" path="res://cartas prime/TortugaYPescado.cs" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://db5i2jat50cjk" path="res://imagenes/sprites/tortugaYpescado.png" id="2_e8jhn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sfeue"]
@@ -687,8 +687,8 @@ script = ExtResource("1_script")
 position = Vector2(-9, -16)
 shape = SubResource("RectangleShape2D_sfeue")
 
-[node name="efecto_secundario_slot" type="Marker2D" parent="."]
-position = Vector2(-9, -16)
+[node name="efecto_secundario_slot" type="Marker2D" parent="." unique_id=866844985]
+position = Vector2(-5, 0)
 
 [node name="SpotInvocacion" type="Marker2D" parent="." unique_id=1835913434]
 position = Vector2(87, -5)

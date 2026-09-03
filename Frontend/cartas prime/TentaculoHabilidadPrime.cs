@@ -20,6 +20,10 @@ public partial class TentaculoHabilidadPrime : Area2D
 
 	public override void _Ready()
 	{
+		// Vive fuera del árbol de Campo1 (instanciado en GetTree().Root) — este grupo permite
+		// que LimpiezaEfectos.cs lo elimine al reiniciar/salir de la partida.
+		AddToGroup("efectos_calamar");
+
 		_anim = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 		if (_anim != null)
 		{
@@ -73,14 +77,20 @@ public partial class TentaculoHabilidadPrime : Area2D
 		};
 	}
 
-	/// <summary>Libera al objetivo (quita "atrapado_tentaculo") y reproduce la salida antes de
-	/// eliminarse. Llamado por CalamarGPrime cuando su escudo llega a 0.</summary>
+	/// <summary>Libera al objetivo (quita "atrapado_tentaculo"/"tentaculo_activo") y reproduce
+	/// la salida antes de eliminarse. Llamado por CalamarGPrime cuando su escudo llega a 0, por
+	/// Campo1 de inmediato si el objetivo muere, o por el propio tick de daño si el objetivo ya
+	/// no es válido.</summary>
 	public void Liberar()
 	{
 		if (_liberando) return;
 		_liberando = true;
 
-		if (IsInstanceValid(objetivo)) objetivo.RemoveMeta("atrapado_tentaculo");
+		if (IsInstanceValid(objetivo))
+		{
+			objetivo.RemoveMeta("atrapado_tentaculo");
+			objetivo.RemoveMeta("tentaculo_activo");
+		}
 
 		if (_anim != null) _anim.Play("irse_tentaculo");
 		else QueueFree();

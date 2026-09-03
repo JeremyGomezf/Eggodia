@@ -79,7 +79,9 @@ public partial class CalamarGPrime : TropaBase
 		{
 			foreach (Node n in GetTree().GetNodesInGroup(grupoEnemigo))
 			{
-				if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
+				// El Tanque es la única carta inmune a los tentáculos: puede seguir siendo
+				// alcanzado por el ataque directo del Maguín, pero nunca queda atrapado.
+				if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril") || e is TanqueCartoonPrime) continue;
 				string c = ((string)e.GetMeta("carril")).ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 				if (c != carril) continue;
 				int v = 0; try { v = (int)e.Get("vidaActual"); } catch { }
@@ -116,6 +118,9 @@ public partial class CalamarGPrime : TropaBase
 			if (tentaculo is TentaculoHabilidadPrime tp)
 			{
 				tp.objetivo = obj;
+				// Referencia directa: si esta tropa muere por cualquier vía, Campo1 la libera
+				// de inmediato en vez de esperar al próximo tick de daño (cada 10s).
+				obj.SetMeta("tentaculo_activo", tp);
 				tp.AplicarOrientacion(esCalamarJugador);
 				_tentaculosActivos.Add(tp);
 			}

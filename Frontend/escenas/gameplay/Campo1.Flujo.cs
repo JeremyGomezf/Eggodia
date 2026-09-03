@@ -334,6 +334,15 @@ public partial class Campo1 : Node2D
 	{
 		if (!IsInstanceValid(tropa)) return;
 
+		// Si esta tropa estaba atrapada por los tentáculos del Calamar, se liberan de
+		// inmediato al morir (sin esperar al próximo tick de daño cada 10s).
+		if (tropa.HasMeta("tentaculo_activo"))
+		{
+			var tentRef = tropa.GetMeta("tentaculo_activo").AsGodotObject() as Node;
+			if (tentRef != null && IsInstanceValid(tentRef) && tentRef.HasMethod("Liberar"))
+				tentRef.Call("Liberar");
+		}
+
 		// Algunas tropas (p. ej. Granadero) ya reproducen su propia animación de derrota
 		// antes de notificar aquí — no reiniciarla si ya está en curso.
 		var animSprite = tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");

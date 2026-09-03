@@ -479,8 +479,8 @@ script = ExtResource("1_sk8r6")
 position = Vector2(-18, -25)
 shape = SubResource("RectangleShape2D_sk8r6")
 
-[node name="efecto_secundario_slot" type="Marker2D" parent="."]
-position = Vector2(-18, -25)
+[node name="efecto_secundario_slot" type="Marker2D" parent="." unique_id=1671076004]
+position = Vector2(-3, 26)
 
 [node name="SpotInvocacion" type="Marker2D" parent="." unique_id=1976765285]
 position = Vector2(155, 30)

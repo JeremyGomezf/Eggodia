@@ -17,6 +17,10 @@ public partial class FuegoMaguinPrime : Area2D
 
 	public override void _Ready()
 	{
+		// Vive fuera del árbol de Campo1 (instanciado en GetTree().Root) — este grupo permite
+		// que LimpiezaEfectos.cs lo elimine al reiniciar/salir de la partida.
+		AddToGroup("efectos_maguin");
+
 		_anim = GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 		if (_anim != null)
 		{

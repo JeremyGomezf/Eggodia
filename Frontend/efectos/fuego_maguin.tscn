@@ -66,8 +66,7 @@ scale = Vector2(1.2400004, 1.2000002)
 shape = SubResource("RectangleShape2D_xr762")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
-position = Vector2(3.9999998, -102)
+position = Vector2(3.9999998, -116.00001)
 scale = Vector2(0.904, 0.888)
 sprite_frames = SubResource("SpriteFrames_shcb7")
 animation = &"respawn_fuego_maguin"
-frame = 2

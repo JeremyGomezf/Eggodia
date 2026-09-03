@@ -21,7 +21,7 @@ public partial class TortugaYPescado : TropaBase
 	public int    vidaOriginalGuardada;
 	public int    escudoOriginalGuardado;
 
-	private int  _faseTortuga     = 1;    // solo aplica si especie == "tortuga"
+	private int  _faseTortuga     = 1;    // 1: normal, 2: caparazón roto
 	private int  _turnosRestantes = 4;
 	private bool _revirtiendo     = false;
 	private bool _enDefensa       = false;
@@ -32,9 +32,8 @@ public partial class TortugaYPescado : TropaBase
 	{
 		if (vidaMaxima == 0)
 		{
-			vidaActual = vidaMaxima = 100;
-			if (especie == "tortuga") { escudoActual = escudoMaximo = 250; puntosAtaque = 50; }
-			else                      { escudoActual = escudoMaximo = 0;   puntosAtaque = 70; }
+			if (especie == "tortuga") { vidaActual = vidaMaxima = 70;  escudoActual = escudoMaximo = 250; puntosAtaque = 40; }
+			else                      { vidaActual = vidaMaxima = 100; escudoActual = escudoMaximo = 0;   puntosAtaque = 70; }
 		}
 		base._Ready();
 
@@ -50,10 +49,7 @@ public partial class TortugaYPescado : TropaBase
 	}
 
 	/// <summary>Orientación explícita, llamada por Maguín justo después de asignar el grupo
-	/// (tropas_jugador/tropas_rival) al instanciar. Misma convención que el resto del roster
-	/// (Campo1.AsegurarOrientacionRival): el arte base mira a la derecha sin voltear; se voltea
-	/// únicamente cuando la transmutación queda del lado del rival, que debe mirar a la
-	/// izquierda.</summary>
+	/// (tropas_jugador/tropas_rival) al instanciar.</summary>
 	public void AplicarOrientacion(bool esLadoJugador)
 	{
 		if (_anim != null) _anim.FlipH = !esLadoJugador;
@@ -62,9 +58,11 @@ public partial class TortugaYPescado : TropaBase
 	// ── CAPACIDADES / UI ──────────────────────────────────────────────────────
 	public override bool AutogestionaDañoAtaque() => true;
 	public override bool TieneHabilidadEspecial() => false;
-	public override bool MostrarBotonHabilidad()  => false;                 // ninguna de las dos formas tiene habilidad
-	public override bool MostrarBotonDefensa()    => especie == "tortuga";  // el Pez no defiende
-	public override bool TienePosturaDefensiva()  => especie == "tortuga";
+	public override bool MostrarBotonHabilidad()  => false;
+
+	// Si está en Fase 2 (caparazón roto), NO puede defenderse ni la IA ni el Jugador.
+	public override bool MostrarBotonDefensa()    => especie == "tortuga" && _faseTortuga == 1;
+	public override bool TienePosturaDefensiva()  => especie == "tortuga" && _faseTortuga == 1;
 
 	// ── NOMBRES DE ANIMACIÓN SEGÚN ESPECIE/FASE ──────────────────────────────
 	private string NombreAnim(string baseAnim)
@@ -88,54 +86,77 @@ public partial class TortugaYPescado : TropaBase
 
 			case "preparar_defensa":
 				_yaActuo = true;
-				if (especie == "tortuga")
+				// La IA o el Jugador solo entran en defensa si la tortuga conserve su escudo (Fase 1)
+				if (especie == "tortuga" && _faseTortuga == 1)
 				{
 					_enDefensa = true;
-					_anim.Play("pre defensa-tortuga"); // única variante, sin "_2"
+					_anim.Play("pre defensa-tortuga");
 				}
 				else
 				{
-					_anim.Play(NombreAnim("idle")); // el Pez no tiene postura defensiva
+					_enDefensa = false;
+					_anim.Play(NombreAnim("idle"));
 				}
 				break;
 
 			case "defender":
-				if (especie == "tortuga") _anim.Play(NombreAnim("defensa"));
+				if (especie == "tortuga" && _faseTortuga == 1 && _enDefensa) 
+				{
+					_anim.Play("defensa-tortuga");
+				}
 				break;
 
 			case "recibir_daño":
-				if (!_enDefensa) _anim.Play(NombreAnim("daño"));
+				_anim.Play(NombreAnim("daño"));
 				break;
 		}
 	}
 
-	// ── RECIBIR DAÑO: escudo persistente (Tortuga) + transición de fase ─────────
+	// ── RECIBIR DAÑO: el escudo SOLO se activa/gasta mientras está defendiendo ──
+	// Si no está defendiendo, el golpe va directo a la vida y el escudo no se toca para nada
+	// (ni se reduce, ni puede romperse) — así lo confirmó el diseño: "el escudo se activa
+	// cuando la tortuga se defiende".
 	public override void RecibirDaño(int cantidad)
 	{
 		if (_estaMuerto) return;
 		EfectoGolpe();
 
-		if (_enDefensa && especie == "tortuga")
-		{
-			EjecutarAccion("defender");
-			cantidad = (int)(cantidad * 0.5f);
-		}
+		bool estabaDefendiendo = _enDefensa && especie == "tortuga" && _faseTortuga == 1;
 
-		if (especie == "tortuga" && escudoActual > 0)
+		if (!estabaDefendiendo)
 		{
-			int escudoAntes = escudoActual;
-			// Anti-overkill: el exceso nunca traspasa a la vida mientras haya escudo.
-			if (cantidad <= escudoActual) { escudoActual -= cantidad; cantidad = 0; }
-			else                          { cantidad = 0; escudoActual = 0; }
+			// No estaba defendiendo: el escudo ni se toca, todo el daño es directo a la vida.
+			vidaActual -= cantidad;
 			ActualizarBarrasUI();
 
-			if (escudoAntes > 0 && escudoActual == 0 && _faseTortuga == 1)
+			if (vidaActual <= 0)
 			{
-				// Escudo roto por primera vez -> Fase 2: transición y luego idle en bucle.
+				var campoN = GetTree().Root.FindChild("Campo1", true, false);
+				if (campoN != null) campoN.Call("EjecutarMuerteTropaSacrificada", this);
+			}
+			else
+			{
+				EjecutarAccion("recibir_daño"); // "daño-tortuga" o "daño-tortuga_2"
+			}
+			return;
+		}
+
+		// Defendiendo: 50% de reducción y el escudo absorbe primero.
+		cantidad = (int)(cantidad * 0.5f);
+		bool seRompioEscudoAhora = false;
+
+		if (escudoActual > 0)
+		{
+			int escudoAntes = escudoActual;
+			if (cantidad <= escudoActual) { escudoActual -= cantidad; cantidad = 0; }
+			else                          { cantidad -= escudoActual; escudoActual = 0; }
+			ActualizarBarrasUI();
+
+			if (escudoAntes > 0 && escudoActual == 0)
+			{
 				_faseTortuga = 2;
 				_enDefensa   = false;
-				_anim.Play("defensa-tortuga_2");
-				return;
+				seRompioEscudoAhora = true;
 			}
 		}
 
@@ -147,9 +168,13 @@ public partial class TortugaYPescado : TropaBase
 			var campo = GetTree().Root.FindChild("Campo1", true, false);
 			if (campo != null) campo.Call("EjecutarMuerteTropaSacrificada", this);
 		}
-		else if (!_enDefensa)
+		else if (seRompioEscudoAhora)
 		{
-			EjecutarAccion("recibir_daño");
+			_anim.Play("defensa-tortuga_2"); // Animación especial de rotura de caparazón
+		}
+		else
+		{
+			EjecutarAccion("defender"); // "defensa-tortuga": bloqueó y conserva algo de escudo
 		}
 	}
 
@@ -157,7 +182,7 @@ public partial class TortugaYPescado : TropaBase
 	public override void ReproducirDerrota()
 	{
 		_estaMuerto = true;
-		_revirtiendo = true; // cancela cualquier reversión pendiente
+		_revirtiendo = true;
 		if (IsInstanceValid(tropaOriginal)) tropaOriginal.QueueFree();
 		_anim.Play(especie == "tortuga" ? $"derrota-tortuga{(_faseTortuga == 2 ? "_2" : "")}" : "derrota-pez");
 	}
@@ -167,7 +192,6 @@ public partial class TortugaYPescado : TropaBase
 	{
 		string anim = (string)_anim.Animation;
 
-		// Golpe: frame de impacto según especie (pez: frame 5 de 7; tortuga: último frame, 3).
 		if (anim == NombreAnim("ataque"))
 		{
 			int frameImpacto = especie == "pez" ? 5 : 3;
@@ -190,13 +214,11 @@ public partial class TortugaYPescado : TropaBase
 		}
 		else if (anim == "defensa-tortuga_2")
 		{
-			// Fin de la transición de fase: entra en bucle a partir de aquí.
 			if (!_estaMuerto) _anim.Play("idle-tortuga_2");
 		}
 	}
 
 	// ── DURACIÓN Y REVERSIÓN ──────────────────────────────────────────────────
-	// Llamado una vez por cada CambiarTurno() (ambos bandos) desde Campo1.ProcesarStatusEfectos.
 	public void TickTransformacion()
 	{
 		if (_estaMuerto || _revirtiendo) return;
@@ -223,8 +245,8 @@ public partial class TortugaYPescado : TropaBase
 
 		Node2D humo = (Node2D)escenaHumo.Instantiate();
 		GetTree().Root.AddChild(humo);
+		humo.AddToGroup("efectos_maguin"); // para LimpiezaEfectos.cs al reiniciar/salir
 		humo.GlobalPosition = ObtenerSlotEfectoSecundario();
-		// La capa más alta sobre la propia criatura, por detrás de un muro si lo hubiera.
 		humo.ZIndex = ZIndex + NivelZIndex.Humo;
 
 		var animHumo = humo.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
@@ -238,8 +260,6 @@ public partial class TortugaYPescado : TropaBase
 		}
 
 		bool restaurado = false;
-		// Igual que en la transmutación de ida: la escena guarda frame=9/frame_progress=1.0
-		// (último frame) como vista previa del editor — hay que forzar el reinicio a 0.
 		animHumo.Play("humo_efecto");
 		animHumo.Frame = 0;
 		animHumo.FrameProgress = 0f;
@@ -248,13 +268,10 @@ public partial class TortugaYPescado : TropaBase
 			if (!restaurado && animHumo.Frame == 3)
 			{
 				restaurado = true;
-				RestaurarTropaOriginal(); // esto ya libera "this" (el animal); el humo se libera aparte, abajo
+				RestaurarTropaOriginal();
 			}
 		};
 
-		// Fade-out suave (no corte abrupto): al llegar al antepenúltimo frame (~80% de
-		// progreso) se desvanece el alfa y recién ahí se libera — mismo criterio que las
-		// explosiones cartoon del juego.
 		bool desvanecido = false;
 		animHumo.FrameChanged += () =>
 		{
@@ -270,7 +287,7 @@ public partial class TortugaYPescado : TropaBase
 				campo?.Call("FinalizarBloqueoTablero");
 			};
 		};
-		// Red de seguridad: si por algo el fade nunca se dispara, igual se libera al terminar.
+
 		animHumo.AnimationFinished += () =>
 		{
 			if (desvanecido) return;
