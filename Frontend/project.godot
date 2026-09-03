@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="juegoecotec"
-run/main_scene="uid://b0kjxhih543ce"
+run/main_scene="res://escenas/menu/PanelLogin.tscn"
 config/features=PackedStringArray("4.6", "C#", "Mobile")
 config/icon="res://icon.svg"
 
