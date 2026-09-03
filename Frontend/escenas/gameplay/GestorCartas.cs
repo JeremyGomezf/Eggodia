@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 
 /// <summary>
-/// GestorCartas — conecta el juego con el backend KromaNexus.
+/// GestorCartas — conecta el juego con el backend Eggodia.
 /// Carga las cartas desde la API al iniciar y notifica a Campo1.
 ///
 /// CÓMO USAR:

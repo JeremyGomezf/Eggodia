@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using KromaNexus.API.Data;
+using Eggodia.API.Data;
 
 /// <summary>
 /// Le dice a Entity Framework cómo crear el DbContext en tiempo de diseño

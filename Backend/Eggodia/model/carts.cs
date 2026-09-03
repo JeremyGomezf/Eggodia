@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace KromaNexus.API.model
+namespace Eggodia.API.model
 {
     /// <summary>
     /// Modelo de carta — contiene todos los stats que usa el juego Godot.

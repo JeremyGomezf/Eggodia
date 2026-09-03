@@ -6,7 +6,7 @@ using System.Text.Json;
 /// <summary>
 /// PanelLogin — pantalla de login/registro.
 /// Se muestra antes del menú principal.
-/// Conecta con el backend KromaNexus.
+/// Conecta con el backend Eggodia.
 ///
 /// Nodos requeridos en la escena:
 ///   TabContainer (con tabs "Iniciar Sesión" y "Registrarse")

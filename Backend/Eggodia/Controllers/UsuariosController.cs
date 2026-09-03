@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KromaNexus.API.Data;
-using KromaNexus.API.model;
+using Eggodia.API.Data;
+using Eggodia.API.model;
 
 [ApiController]
 [Route("api/[controller]")]

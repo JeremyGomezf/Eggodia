@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using KromaNexus.API.model;
+using Eggodia.API.model;
 
-namespace KromaNexus.API.Data
+namespace Eggodia.API.Data
 {
     public class AppDbContext : DbContext
     {

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using KromaNexus.API.Data;
+using Eggodia.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

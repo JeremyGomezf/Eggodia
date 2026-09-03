@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace KromaNexus.API.model
+namespace Eggodia.API.model
 {
     public class Usuario
     {

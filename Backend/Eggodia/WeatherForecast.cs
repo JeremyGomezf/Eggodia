@@ -1,4 +1,4 @@
-namespace KromaNexus.API
+namespace Eggodia.API
 {
     public class WeatherForecast
     {

@@ -32,7 +32,7 @@ window/stretch/aspect="expand"
 
 [dotnet]
 
-project/assembly_name="juegoecotec"
+project/assembly_name="Eggodia"
 
 [physics]
 

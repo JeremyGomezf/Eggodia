@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C#: KromaNexus.API [Default Configuration]",
+            "name": "C#: Eggodia.API [Default Configuration]",
             "type": "dotnet",
             "request": "launch",
-            "projectPath": "${workspaceFolder}\\Backend\\KromaNexus\\KromaNexus.API\\KromaNexus.API.csproj"
+            "projectPath": "${workspaceFolder}\\Backend\\Eggodia\\Eggodia.API.csproj"
         }
     ]
 }

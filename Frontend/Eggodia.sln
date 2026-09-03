@@ -1,6 +1,6 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "juegoecotec", "juegoecotec.csproj", "{97D24B6B-6A47-40B7-A0E5-86BA44B104DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eggodia", "Eggodia.csproj", "{97D24B6B-6A47-40B7-A0E5-86BA44B104DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

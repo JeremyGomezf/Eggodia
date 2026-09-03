@@ -1,0 +1,6 @@
+@Eggodia.API_HostAddress = http://localhost:5289
+
+GET {{Eggodia.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

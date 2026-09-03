@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace KromaNexus.API.Controllers
+namespace Eggodia.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
