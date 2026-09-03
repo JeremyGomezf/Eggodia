@@ -17,5 +17,5 @@ Rango = "LARGO"
 FuerteContra = "Fuego"
 DebilContra = "Naturaleza"
 Descripcion = "Ventisca: 100 daño de hielo y bloqueo 1 turno"
-RutaEscena = "res://cartas prime/Maguin_prime.tscn"
+RutaEscena = "res://cartas prime/MEDIEVAL/Maguin_prime.tscn"
 Imagen = ExtResource("1_pksid")

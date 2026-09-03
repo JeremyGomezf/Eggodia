@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Tierra"
 DebilContra = "Agua"
 Descripcion = "Lanzamiento Explosivo: Lanza granadas que causan daño de rea"
-RutaEscena = "res://cartas prime/GUERRA CARTOONS/Granadero_cartoon_prime.tscn"
+RutaEscena = "res://cartas prime/TOONS/Granadero_cartoon_prime.tscn"
 Imagen = ExtResource("1_icon")

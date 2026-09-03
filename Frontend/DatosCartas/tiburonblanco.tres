@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Fuego"
 DebilContra = "Naturaleza"
 Descripcion = "Mordida feroz: siguiente ataque hace x2 daño"
-RutaEscena = "res://cartas prime/Tiburon_prime.tscn"
+RutaEscena = "res://cartas prime/PACIFICO/Tiburon_prime.tscn"
 Imagen = ExtResource("1_o86g0")

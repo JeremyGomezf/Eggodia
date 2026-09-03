@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Fuego"
 DebilContra = "Sombra"
 Descripcion = "Muralla: absorbe daño masivo"
-RutaEscena = "res://cartas prime/Golem_prime.tscn"
+RutaEscena = "res://cartas prime/MEDIEVAL/Golem_prime.tscn"
 Imagen = ExtResource("1_62sng")

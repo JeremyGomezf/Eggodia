@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class MenuPrincipal : Control
 {
@@ -44,6 +45,7 @@ public partial class MenuPrincipal : Control
 				if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
 					AbrirSelectorSkin();
 			};
+			ActualizarHuevoMenu();
 		}
 
 		// 2. Obtener UI de ajustes y diálogos
@@ -101,29 +103,12 @@ public partial class MenuPrincipal : Control
 			AgregarAnimacionHover(btnVsBot);
 		}
 
-		// 4. Vincular botones secundarios (Bestiario, Cómo Jugar, Pruebas)
-		var btnBestiario = GetNodeOrNull<Button>("SecondaryButtons/BtnBestiario");
-		if (btnBestiario != null)
-		{
-			btnBestiario.Pressed += () => GetTree().ChangeSceneToFile(RutaBestiario);
-			AgregarAnimacionHover(btnBestiario);
-		}
+		// 4. Los botones sueltos de Bestiario/Cómo Jugar/Pruebas quedan ocultos: Cómo Jugar
+		// vive ahora en BtnSettings, y BtnDev es acceso directo a campo de pruebas.
+		var secundarios = GetNodeOrNull<Control>("SecondaryButtons");
+		if (secundarios != null) secundarios.Visible = false;
 
-		var btnComoJugar = GetNodeOrNull<Button>("SecondaryButtons/BtnComoJugar");
-		if (btnComoJugar != null)
-		{
-			btnComoJugar.Pressed += AbrirComoJugar;
-			AgregarAnimacionHover(btnComoJugar);
-		}
-
-		var btnPruebas = GetNodeOrNull<Button>("SecondaryButtons/BtnPruebas");
-		if (btnPruebas != null)
-		{
-			btnPruebas.Pressed += () => GetTree().ChangeSceneToFile(RutaCampoPruebas);
-			AgregarAnimacionHover(btnPruebas);
-		}
-
-		// 4b. Vincular BotonDev (acceso directo para desarrolladores)
+		// 4b. BtnDev: acceso directo a campo de pruebas, sin panel intermedio.
 		var btnDev = GetNodeOrNull<BaseButton>("BtnDev");
 		if (btnDev != null)
 		{
@@ -138,6 +123,23 @@ public partial class MenuPrincipal : Control
 			btnSettings.Pressed += MostrarSettings;
 			AgregarAnimacionHover(btnSettings);
 		}
+
+		// 5b. HUD superior: nombre/nivel del jugador + perfil al hacer clic en UserPanel.
+		var userPanel = GetNodeOrNull<Control>("TopHUD/UserPanel");
+		if (userPanel != null)
+		{
+			var lblUser = userPanel.GetNodeOrNull<Label>("Label");
+			if (lblUser != null) lblUser.Text = SesionJuego.Instance?.NombreJugador ?? "Invitado";
+			userPanel.MouseFilter = Control.MouseFilterEnum.Stop;
+			userPanel.GuiInput += (ev) => {
+				if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+					AbrirPerfil();
+			};
+			AgregarAnimacionHover(userPanel);
+		}
+
+		var lblNivel = GetNodeOrNull<Label>("TopHUD/LevelPanel/Label");
+		if (lblNivel != null) lblNivel.Text = $"Nv. {Preferencias.Nivel}";
 
 		var btnClosePopup = GetNodeOrNull<Button>("PopupDialog/VBox/BtnClosePopup");
 		if (btnClosePopup != null)
@@ -273,9 +275,9 @@ public partial class MenuPrincipal : Control
 
 		var panel = new PanelContainer();
 		panel.SetAnchorsPreset(Control.LayoutPreset.Center);
-		panel.CustomMinimumSize = new Vector2(680, 440);
-		panel.OffsetLeft = -340; panel.OffsetRight = 340;
-		panel.OffsetTop  = -220; panel.OffsetBottom = 220;
+		panel.CustomMinimumSize = new Vector2(860, 480);
+		panel.OffsetLeft = -430; panel.OffsetRight = 430;
+		panel.OffsetTop  = -240; panel.OffsetBottom = 240;
 
 		var sb = new StyleBoxFlat();
 		sb.BgColor = new Color(0.06f, 0.08f, 0.16f, 0.98f);
@@ -322,7 +324,7 @@ public partial class MenuPrincipal : Control
 			bool activa  = Preferencias.SkinActivaIdx == i;
 
 			var skinPanel = new PanelContainer();
-			skinPanel.CustomMinimumSize = new Vector2(148, 200);
+			skinPanel.CustomMinimumSize = new Vector2(175, 320);
 
 			var sbSkin = new StyleBoxFlat();
 			sbSkin.BgColor = activa ? new Color(0.12f, 0.22f, 0.10f) : new Color(0.08f, 0.10f, 0.20f, 0.95f);
@@ -340,9 +342,11 @@ public partial class MenuPrincipal : Control
 			svbox.AddThemeConstantOverride("separation", 6);
 
 			var tex = new TextureRect();
-			tex.CustomMinimumSize = new Vector2(110, 110);
+			tex.CustomMinimumSize = new Vector2(155, 230); // misma proporción que el huevo del menú (195×350)
 			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+			// KeepAspectCentered: muestra la imagen COMPLETA (sin recortar), aunque distintas
+			// skins puedan verse a tamaños ligeramente distintos según su proporción original.
 			tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			var txImg = GD.Load<Texture2D>(Preferencias.SKIN_IMAGENES[capI]);
 			if (txImg != null) tex.Texture = txImg;
@@ -405,10 +409,212 @@ public partial class MenuPrincipal : Control
 		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 	}
 
+	private const string RUTA_REY_HUEVO_CORONADO = "res://imagenes/MenuNuevo/ReyHuevoCrowned.png";
+
+	/// <summary>Refleja en el menú principal la skin de huevo equipada. La corona es exclusiva
+	/// del Rey Huevo (skin 0) — las demás skins se muestran tal cual, sin corona.</summary>
 	private void ActualizarHuevoMenu()
 	{
-		// El huevo visualmente en el menú siempre muestra ReyHuevoCrowned.png (el nodo del .tscn)
-		// Solo el personaje en batalla cambia — no hay que cambiar la textura aquí.
+		if (_reyHuevoNode == null) return;
+		int idx = Preferencias.SkinActivaIdx;
+		string ruta = idx == 0 ? RUTA_REY_HUEVO_CORONADO : Preferencias.SKIN_IMAGENES[idx];
+		var tex = GD.Load<Texture2D>(ruta);
+		if (tex != null) _reyHuevoNode.Texture = tex;
+	}
+
+	// ── PERFIL DEL JUGADOR ────────────────────────────────────────────────────
+	// Tamaño de referencia del huevo del menú principal (IslaContainer/ReyHuevoCrowned):
+	// 195×350 — todas las imágenes de huevo en overlays deben verse a esa misma escala.
+	private static readonly Vector2 TAMAÑO_HUEVO_REFERENCIA = new Vector2(195, 350);
+
+	private void AbrirPerfil()
+	{
+		if (GetNodeOrNull("PerfilJugador") != null) return;
+
+		// Capa casi transparente: solo atrapa el clic para poder cerrar tocando afuera,
+		// sin oscurecer el fondo (mismo criterio visual que PanelSettings, que no tiene backdrop).
+		var overlay = new ColorRect();
+		overlay.Name = "PerfilJugador";
+		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		overlay.Color = new Color(0, 0, 0, 0.12f);
+		overlay.ZIndex = 200;
+		overlay.MouseFilter = Control.MouseFilterEnum.Stop;
+		AddChild(overlay);
+
+		var panel = new PanelContainer();
+		// Anclado y centrado con offsets fijos (no solo AnchorsPreset) — así queda centrado de
+		// verdad sin importar el tamaño final del contenido, igual que el selector de skins.
+		panel.SetAnchorsPreset(Control.LayoutPreset.Center);
+		panel.OffsetLeft = -300; panel.OffsetRight = 300;
+		panel.OffsetTop  = -310; panel.OffsetBottom = 310;
+		panel.CustomMinimumSize = new Vector2(600, 0);
+		panel.MouseFilter = Control.MouseFilterEnum.Stop;
+		panel.GuiInput += (ev) => { if (ev is InputEventMouseButton) AcceptEvent(); };
+
+		// Cierra AMBOS nodos (antes solo se liberaba "overlay" y el panel se quedaba pegado).
+		void Cerrar()
+		{
+			if (IsInstanceValid(overlay)) overlay.QueueFree();
+			if (IsInstanceValid(panel))   panel.QueueFree();
+		}
+		overlay.GuiInput += (ev) => { if (ev is InputEventMouseButton mb && mb.Pressed) Cerrar(); };
+
+		// Vidrio semitransparente tipo PanelSettings, con borde neón — se ve el fondo del
+		// menú a través, en vez del recuadro casi opaco de antes.
+		var sb = new StyleBoxFlat();
+		sb.BgColor = new Color(0.10f, 0.13f, 0.20f, 0.82f);
+		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
+		sb.BorderColor = new Color(0.3f, 0.9f, 1.0f, 0.85f); // borde neón cian
+		sb.ShadowColor = new Color(0.2f, 0.9f, 1.0f, 0.35f);
+		sb.ShadowSize = 14;
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
+		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 18;
+		sb.ContentMarginLeft = sb.ContentMarginRight = 26;
+		sb.ContentMarginTop  = sb.ContentMarginBottom = 20;
+		panel.AddThemeStyleboxOverride("panel", sb);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 12);
+		panel.AddChild(vbox);
+
+		// Cabecera: nombre + X
+		var header = new HBoxContainer();
+		var lblNombre = new Label();
+		lblNombre.Text = SesionJuego.Instance?.NombreJugador ?? "Invitado";
+		lblNombre.AddThemeColorOverride("font_color", new Color(0.4f, 0.95f, 1.0f));
+		lblNombre.AddThemeFontSizeOverride("font_size", 26);
+		lblNombre.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		header.AddChild(lblNombre);
+		var btnX = new Button();
+		btnX.Text = "✕";
+		btnX.CustomMinimumSize = new Vector2(40, 40);
+		btnX.Pressed += Cerrar;
+		header.AddChild(btnX);
+		vbox.AddChild(header);
+
+		// Fila superior: huevo equipado (a tamaño real) + carta más usada (en su propio cuadro).
+		var filaTop = new HBoxContainer();
+		filaTop.AddThemeConstantOverride("separation", 24);
+		filaTop.Alignment = BoxContainer.AlignmentMode.Center;
+		vbox.AddChild(filaTop);
+
+		var colSkin = new VBoxContainer();
+		colSkin.AddThemeConstantOverride("separation", 6);
+		var tex = new TextureRect();
+		tex.CustomMinimumSize = TAMAÑO_HUEVO_REFERENCIA;
+		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		int idxSkin = Preferencias.SkinActivaIdx;
+		string rutaSkin = idxSkin == 0 ? RUTA_REY_HUEVO_CORONADO : Preferencias.SKIN_IMAGENES[idxSkin];
+		var txSkin = GD.Load<Texture2D>(rutaSkin);
+		if (txSkin != null) tex.Texture = txSkin;
+		colSkin.AddChild(tex);
+		var lblSkin = new Label();
+		lblSkin.Text = Preferencias.SKIN_NOMBRES[idxSkin];
+		lblSkin.HorizontalAlignment = HorizontalAlignment.Center;
+		lblSkin.AddThemeColorOverride("font_color", new Color(0.85f, 0.9f, 1f));
+		colSkin.AddChild(lblSkin);
+		filaTop.AddChild(colSkin);
+
+		// Cuadro de la carta más usada (mismo tratamiento visual que un cuadro de hechizo/trampa).
+		var (nombreCarta, imgCarta) = ResolverCartaPorRuta(Preferencias.CartaMasUsada());
+		var colCarta = new VBoxContainer();
+		colCarta.AddThemeConstantOverride("separation", 6);
+		var cartaFrame = new PanelContainer();
+		cartaFrame.CustomMinimumSize = new Vector2(150, 210);
+		var sbCarta = new StyleBoxFlat();
+		sbCarta.BgColor = new Color(0.05f, 0.06f, 0.10f, 0.9f);
+		sbCarta.BorderWidthLeft = sbCarta.BorderWidthTop = sbCarta.BorderWidthRight = sbCarta.BorderWidthBottom = 2;
+		sbCarta.BorderColor = new Color(0.95f, 0.78f, 0.25f, 0.9f); // borde dorado, como una carta
+		sbCarta.CornerRadiusTopLeft = sbCarta.CornerRadiusTopRight =
+		sbCarta.CornerRadiusBottomLeft = sbCarta.CornerRadiusBottomRight = 12;
+		cartaFrame.AddThemeStyleboxOverride("panel", sbCarta);
+		if (imgCarta != null)
+		{
+			var texCarta = new TextureRect();
+			texCarta.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+			texCarta.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			texCarta.Texture = imgCarta;
+			cartaFrame.AddChild(texCarta);
+		}
+		else
+		{
+			var lblVacio = new Label();
+			lblVacio.Text = "—";
+			lblVacio.HorizontalAlignment = HorizontalAlignment.Center;
+			lblVacio.VerticalAlignment   = VerticalAlignment.Center;
+			lblVacio.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.6f));
+			cartaFrame.AddChild(lblVacio);
+		}
+		colCarta.AddChild(cartaFrame);
+		var lblCartaNombre = new Label();
+		lblCartaNombre.Text = nombreCarta ?? "Carta más usada";
+		lblCartaNombre.HorizontalAlignment = HorizontalAlignment.Center;
+		lblCartaNombre.AddThemeColorOverride("font_color", new Color(0.85f, 0.9f, 1f));
+		colCarta.AddChild(lblCartaNombre);
+		filaTop.AddChild(colCarta);
+
+		vbox.AddChild(new HSeparator());
+
+		void Fila(string etiqueta, string valor)
+		{
+			var fila = new HBoxContainer();
+			var k = new Label(); k.Text = etiqueta; k.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+			k.AddThemeColorOverride("font_color", new Color(0.7f, 0.75f, 0.85f));
+			var v = new Label(); v.Text = valor;
+			v.AddThemeColorOverride("font_color", new Color(1f, 0.92f, 0.5f));
+			fila.AddChild(k); fila.AddChild(v);
+			vbox.AddChild(fila);
+		}
+
+		Fila("Nivel",              Preferencias.Nivel.ToString());
+		Fila("Experiencia",        $"{Preferencias.ExperienciaTotal} XP");
+		Fila("Monedas",            (Economia.Instancia()?.Monedas ?? 0).ToString());
+		Fila("Partidas ganadas",   Preferencias.PartidasGanadas.ToString());
+		Fila("Partidas perdidas",  Preferencias.PartidasPerdidas.ToString());
+		Fila("Hechizo más usado",  Preferencias.HechizoMasUsado() ?? "—");
+
+		AddChild(panel);
+		panel.Scale = new Vector2(0.7f, 0.7f);
+		panel.PivotOffset = panel.Size / 2;
+		var tw = panel.CreateTween();
+		tw.TweenProperty(panel, "scale", Vector2.One, 0.22f)
+		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+	}
+
+	private Dictionary<string, CartaData> _cacheCartaData;
+
+	/// <summary>Resuelve (nombre, ilustración) de la CartaData cuya RutaEscena coincide con
+	/// <paramref name="rutaEscena"/> (la clave que guarda Preferencias.CartaMasUsada()). Mismo
+	/// criterio de cruce que usa Campo1 para el MVT de fin de partida.</summary>
+	private (string nombre, Texture2D imagen) ResolverCartaPorRuta(string rutaEscena)
+	{
+		if (string.IsNullOrEmpty(rutaEscena)) return (null, null);
+
+		if (_cacheCartaData == null)
+		{
+			_cacheCartaData = new Dictionary<string, CartaData>();
+			using var dir = DirAccess.Open("res://DatosCartas");
+			if (dir != null)
+			{
+				dir.ListDirBegin();
+				string archivo = dir.GetNext();
+				while (archivo != "")
+				{
+					if (archivo.EndsWith(".tres"))
+					{
+						var datos = GD.Load<CartaData>($"res://DatosCartas/{archivo}");
+						if (datos != null && !string.IsNullOrEmpty(datos.RutaEscena))
+							_cacheCartaData[datos.RutaEscena] = datos;
+					}
+					archivo = dir.GetNext();
+				}
+			}
+		}
+
+		return _cacheCartaData.TryGetValue(rutaEscena, out var carta)
+			? (carta.Nombre, carta.Imagen)
+			: (null, null);
 	}
 
 	private void MostrarSettings()

@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Metal"
 DebilContra = "Fuego"
 Descripcion = "Fuego automático: Dispara ráfagas rápidas de metralla"
-RutaEscena = "res://cartas prime/GUERRA CARTOONS/Soldado_cartoon_prime.tscn"
+RutaEscena = "res://cartas prime/TOONS/Soldado_cartoon_prime.tscn"
 Imagen = ExtResource("1_icon")

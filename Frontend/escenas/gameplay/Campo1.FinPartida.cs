@@ -104,6 +104,7 @@ public partial class Campo1 : Node2D
 
 		if (msg.Contains("DERROTA"))
 		{
+			Preferencias.PartidasPerdidas++;
 			int monedasConsuelo = Economia.Instancia().RecompensarPartida("derrota", 0);
 			var escenaDerrota = GD.Load<PackedScene>("res://escenas/gameplay/PantallaDerrota.tscn");
 			if (escenaDerrota != null)
@@ -126,6 +127,8 @@ public partial class Campo1 : Node2D
 
 		if (msg.Contains("VICTORIA"))
 		{
+			Preferencias.PartidasGanadas++;
+			Preferencias.AgregarExperiencia(Preferencias.XP_POR_VICTORIA);
 			VerificarLogros(msg);
 			var escenaVictoria = GD.Load<PackedScene>("res://escenas/gameplay/PantallaVictoria.tscn");
 			int monedasGanadas = Economia.Instancia().RecompensarPartida("victoria", _rachaVictorias + 1);

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://d0whnwqteuws2"]
 
-[ext_resource type="Script" uid="uid://dkgrsfn4rs1ty" path="res://cartas prime/SoldadoRealPrime.cs" id="1_0kohr"]
+[ext_resource type="Script" uid="uid://dkgrsfn4rs1ty" path="res://cartas prime/MEDIEVAL/SoldadoRealPrime.cs" id="1_0kohr"]
 [ext_resource type="Texture2D" uid="uid://danehte1tdb56" path="res://imagenes/sprites/soldadoreal_sprite.png" id="1_wtv12"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]

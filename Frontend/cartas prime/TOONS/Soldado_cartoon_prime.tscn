@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bm3qgnidx6hrs"]
 
-[ext_resource type="Script" uid="uid://4q6txxpemxyu" path="res://cartas prime/GUERRA CARTOONS/SoldadoCartoonPrime.cs" id="1_vmkn6"]
+[ext_resource type="Script" uid="uid://4q6txxpemxyu" path="res://cartas prime/TOONS/SoldadoCartoonPrime.cs" id="1_vmkn6"]
 [ext_resource type="Texture2D" uid="uid://c68bdqcefplmv" path="res://imagenes/sprites/Guerra Cartoons/soldado-cartoon.png" id="2_d3h4m"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]

@@ -17,5 +17,5 @@ Rango = "LARGO"
 FuerteContra = "Naturaleza"
 DebilContra = "Agua"
 Descripcion = "Aliento de fuego: daño AoE al 40% del ataque"
-RutaEscena = "res://cartas prime/Dragon_prime.tscn"
+RutaEscena = "res://cartas prime/MEDIEVAL/Dragon_prime.tscn"
 Imagen = ExtResource("1_1r3hj")

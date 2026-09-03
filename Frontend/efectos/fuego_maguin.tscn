@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://big2kjs6dkkha"]
 
-[ext_resource type="Script" uid="uid://btmy00ok45sm3" path="res://cartas prime/FuegoMaguinPrime.cs" id="1_lxwxb"]
+[ext_resource type="Script" uid="uid://btmy00ok45sm3" path="res://cartas prime/MEDIEVAL/FuegoMaguinPrime.cs" id="1_lxwxb"]
 [ext_resource type="Texture2D" uid="uid://d1jlq61alg1nh" path="res://imagenes/sprites/Efectos_OG2.png" id="2_lxwxb"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]

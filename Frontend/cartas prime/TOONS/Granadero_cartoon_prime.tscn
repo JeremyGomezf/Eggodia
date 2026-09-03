@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://brf7mjfqlnh1s"]
 
-[ext_resource type="Script" uid="uid://daw4h7wuohwps" path="res://cartas prime/GUERRA CARTOONS/GranaderoCartoonPrime.cs" id="1_8siqb"]
+[ext_resource type="Script" uid="uid://daw4h7wuohwps" path="res://cartas prime/TOONS/GranaderoCartoonPrime.cs" id="1_8siqb"]
 [ext_resource type="Texture2D" uid="uid://yok2ggvm5g5k" path="res://imagenes/sprites/Guerra Cartoons/soldado explosivo 1.png" id="2_eqcln"]
 [ext_resource type="Texture2D" uid="uid://bm752dc1dukw0" path="res://imagenes/sprites/Guerra Cartoons/soldado explosivo 2.png" id="3_a3amn"]
 [ext_resource type="Texture2D" uid="uid://djmjqa33qgyl0" path="res://imagenes/sprites/Guerra Cartoons/Soldado explosivo 3.png" id="4_41iuf"]

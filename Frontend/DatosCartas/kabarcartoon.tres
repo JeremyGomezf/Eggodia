@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Fuego"
 DebilContra = "Metal"
 Descripcion = "Invisibilidad Espectral: Atraviesa enemigos y ataca por la espalda"
-RutaEscena = "res://cartas prime/GUERRA CARTOONS/Ka-Bar_cartoon_prime.tscn"
+RutaEscena = "res://cartas prime/TOONS/Ka-Bar_cartoon_prime.tscn"
 Imagen = ExtResource("1_icon")

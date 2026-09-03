@@ -16,6 +16,82 @@ public static class Preferencias
 		set => EscribirBool("tutorial_visto", value);
 	}
 
+	// ── NIVEL / EXPERIENCIA ──────────────────────────────────────────────────
+	// +150 XP por cada victoria. Umbral nivel 2 = 1000, nivel 3 = 1500, nivel 4 = 2000...
+	// (1000 + 500 por cada nivel adicional desde el 2).
+	public const int XP_POR_VICTORIA = 150;
+
+	public static int ExperienciaTotal
+	{
+		get => LeerIntEn(SECCION, "experiencia_total", 0);
+		set => EscribirIntEn(SECCION, "experiencia_total", Mathf.Max(0, value));
+	}
+
+	public static int UmbralParaNivel(int nivel) => nivel <= 1 ? 0 : 1000 + (nivel - 2) * 500;
+
+	public static int Nivel
+	{
+		get
+		{
+			int xp = ExperienciaTotal;
+			int nivel = 1;
+			while (xp >= UmbralParaNivel(nivel + 1)) nivel++;
+			return nivel;
+		}
+	}
+
+	public static void AgregarExperiencia(int cantidad) => ExperienciaTotal += cantidad;
+
+	// ── ESTADÍSTICAS (para el perfil del jugador) ────────────────────────────
+	public static int PartidasGanadas
+	{
+		get => LeerIntEn(SECCION, "partidas_ganadas", 0);
+		set => EscribirIntEn(SECCION, "partidas_ganadas", Mathf.Max(0, value));
+	}
+
+	public static int PartidasPerdidas
+	{
+		get => LeerIntEn(SECCION, "partidas_perdidas", 0);
+		set => EscribirIntEn(SECCION, "partidas_perdidas", Mathf.Max(0, value));
+	}
+
+	private const string SEC_USO_CARTAS   = "uso_cartas";
+	private const string SEC_USO_HECHIZOS = "uso_hechizos";
+
+	/// <summary>Suma un uso de <paramref name="nombreCarta"/> (p. ej. GetType().Name de la
+	/// tropa) al contador persistente — solo debe llamarse para invocaciones del JUGADOR.</summary>
+	public static void RegistrarUsoCarta(string nombreCarta)
+	{
+		if (string.IsNullOrEmpty(nombreCarta)) return;
+		int actual = LeerIntEn(SEC_USO_CARTAS, nombreCarta, 0);
+		EscribirIntEn(SEC_USO_CARTAS, nombreCarta, actual + 1);
+	}
+
+	public static void RegistrarUsoHechizo(string nombreHechizo)
+	{
+		if (string.IsNullOrEmpty(nombreHechizo)) return;
+		int actual = LeerIntEn(SEC_USO_HECHIZOS, nombreHechizo, 0);
+		EscribirIntEn(SEC_USO_HECHIZOS, nombreHechizo, actual + 1);
+	}
+
+	/// <summary>Nombre de la clave con más usos dentro de la sección dada, o null si no hay
+	/// ninguna registrada todavía.</summary>
+	private static string MasUsadoEn(string seccion)
+	{
+		var cfg = new ConfigFile();
+		if (cfg.Load(RUTA) != Error.Ok || !cfg.HasSection(seccion)) return null;
+		string mejor = null; int max = 0;
+		foreach (string clave in cfg.GetSectionKeys(seccion))
+		{
+			int usos = (int)cfg.GetValue(seccion, clave, 0);
+			if (usos > max) { max = usos; mejor = clave; }
+		}
+		return mejor;
+	}
+
+	public static string CartaMasUsada()   => MasUsadoEn(SEC_USO_CARTAS);
+	public static string HechizoMasUsado() => MasUsadoEn(SEC_USO_HECHIZOS);
+
 	// ── SKINS DE HUEVO ────────────────────────────────────────────────────────
 	public static readonly string[] SKIN_ESCENAS = {
 		"res://escenas/personajes/reyhuevo1.tscn",

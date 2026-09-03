@@ -1,7 +1,7 @@
 using Godot;
 
 /// <summary>Maguín — daño de ataque en frame 2. Habilidad (turno 4): Transmutación — convierte a
-/// la tropa rival con más vida actual en Tortuga o Pez (res://cartas prime/TortugaYPescado.tscn)
+/// la tropa rival con más vida actual en Tortuga o Pez (res://cartas prime/MEDIEVAL/TortugaYPescado.tscn)
 /// durante 2 rondas completas, en vez de infligir daño directo.</summary>
 public partial class MaguinPrime : TropaBase
 {
@@ -9,7 +9,7 @@ public partial class MaguinPrime : TropaBase
 	protected override int TurnoDesbloqueoHabilidad => 4;
 
 	private const string RUTA_HUMO   = "res://efectos/humo_transformacion.tscn";
-	private const string RUTA_ANIMAL = "res://cartas prime/TortugaYPescado.tscn";
+	private const string RUTA_ANIMAL = "res://cartas prime/MEDIEVAL/TortugaYPescado.tscn";
 	private const string RUTA_FUEGO  = "res://efectos/fuego_maguin.tscn";
 
 	private Node2D _objetivo;

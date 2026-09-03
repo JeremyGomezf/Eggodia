@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Sombra"
 DebilContra = "Fuego"
 Descripcion = "Formación: +150 escudo a todos los aliados"
-RutaEscena = "res://cartas prime/SoldadoReal_prime.tscn"
+RutaEscena = "res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn"
 Imagen = ExtResource("1_55xal")

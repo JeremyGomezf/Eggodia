@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b2t734j06lpgj"]
 
-[ext_resource type="Script" path="res://cartas prime/TentaculoHabilidadPrime.cs" id="1_cv32o"]
+[ext_resource type="Script" path="res://cartas prime/PACIFICO/TentaculoHabilidadPrime.cs" id="1_cv32o"]
 [ext_resource type="Texture2D" uid="uid://d1jlq61alg1nh" path="res://imagenes/sprites/Efectos_OG2.png" id="2_cv32o"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]

@@ -220,18 +220,14 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 20
-text = "3 · Sistema de tipos"
+text = "3 · Habilidades con tiempo de espera"
 
 [node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card3/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
 theme_override_font_sizes/font_size = 15
-text = "Cada tropa tiene un tipo elemental (Fuego, Agua, Naturaleza, Metal o Sombra). Atacar con ventaja da +25% de daño; con desventaja, -20%."
+text = "Cada tropa necesita sobrevivir un número de turnos propios antes de poder usar su habilidad especial (2, 3 o 4 turnos según la carta). El botón de Habilidad aparece bloqueado hasta entonces — para el rival aplica exactamente igual."
 autowrap_mode = 2
-
-[node name="ChipsRow" type="HBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card3/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 6
 
 [node name="Card4" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
 layout_mode = 2
@@ -297,6 +293,116 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
 theme_override_font_sizes/font_size = 15
 text = "Cada ataque tiene 10% de probabilidad de ser un golpe crítico que hace 1.5× de daño. Se combina con el bonus de tipo."
+autowrap_mode = 2
+
+[node name="Card7" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card7"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card7/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "7 · Enroque de la Torre"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card7/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "La habilidad de la Torre intercambia su carril con un aliado adyacente (o se mueve sola si está vacío), con una animación de arrastre — sin teletransporte."
+autowrap_mode = 2
+
+[node name="Card8" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card8"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card8/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "8 · Transmutación del Maguín"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card8/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Al desbloquear su habilidad, el Maguín convierte a la tropa rival con más vida en Tortuga (si tiene más escudo que vida) o Pez (en cualquier otro caso) durante 4 medios turnos. Al terminar, la tropa original regresa exactamente con la vida y el escudo que tenía."
+autowrap_mode = 2
+
+[node name="Card9" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card9"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card9/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "9 · Tentáculos del Calamar Gigante"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card9/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Atrapa con tentáculos a las tropas rivales de sus dos carriles que NO son el suyo (nunca a la que tiene de frente), regenera su escudo al 100% y queda en guardia permanente. Las tropas atrapadas no pueden actuar. Todo termina cuando el escudo del Calamar vuelve a llegar a 0."
+autowrap_mode = 2
+
+[node name="Card10" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card10"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card10/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "10 · No dejes carriles vacíos"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card10/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Si terminas tu turno con algún carril propio sin tropa, recibes daño directo a tu Huevo — igual para ti que para el rival."
+autowrap_mode = 2
+
+[node name="Card11" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card11"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card11/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "11 · Sacrificio"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card11/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Puedes retirar una tropa propia del campo hasta 2 veces por partida (no disponible si tu HP ya está en 500 o menos) — útil para reordenar tus carriles cuando lo necesites."
 autowrap_mode = 2
 
 [node name="Tip" type="Label" parent="Root/Scroll/Margin/Contenido"]

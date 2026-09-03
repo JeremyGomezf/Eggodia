@@ -385,7 +385,13 @@ public partial class MenuConstructor : Control
 
 		bool tieneSpriteAnimado = false;
 
-		if (!string.IsNullOrEmpty(datos.RutaEscena) && ResourceLoader.Exists(datos.RutaEscena))
+		// Caso especial: el Soldado Real usa un render estático en vez de su idle animado
+		// en este selector — se salta por completo la instanciación de su escena.
+		const string RUTA_SOLDADO_REAL = "res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn";
+		const string RENDER_SOLDADO_REAL_MENU = "res://imagenes/RendersTropa/SoldadoReal_Menu.png";
+		bool esRenderEstaticoForzado = datos.RutaEscena == RUTA_SOLDADO_REAL;
+
+		if (!esRenderEstaticoForzado && !string.IsNullOrEmpty(datos.RutaEscena) && ResourceLoader.Exists(datos.RutaEscena))
 		{
 			try
 			{
@@ -445,7 +451,10 @@ public partial class MenuConstructor : Control
 			_fallbackTextureCenter.Visible = !tieneSpriteAnimado;
 			if (!tieneSpriteAnimado)
 			{
-				_fallbackTextureCenter.Texture = datos.Imagen;
+				if (esRenderEstaticoForzado && ResourceLoader.Exists(RENDER_SOLDADO_REAL_MENU))
+					_fallbackTextureCenter.Texture = GD.Load<Texture2D>(RENDER_SOLDADO_REAL_MENU);
+				else
+					_fallbackTextureCenter.Texture = datos.Imagen;
 			}
 		}
 

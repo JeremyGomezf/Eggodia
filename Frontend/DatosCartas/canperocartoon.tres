@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Agua"
 DebilContra = "Sombra"
 Descripcion = "Camuflaje: Oculto en arbustos hasta que dispara su rifle de francotirador"
-RutaEscena = "res://cartas prime/GUERRA CARTOONS/Campero_cartoon_prime.tscn"
+RutaEscena = "res://cartas prime/TOONS/Campero_cartoon_prime.tscn"
 Imagen = ExtResource("1_icon")

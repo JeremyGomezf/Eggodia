@@ -17,5 +17,5 @@ Rango = "LARGO"
 FuerteContra = "Metal"
 DebilContra = "Fuego"
 Descripcion = "Depredador acuático"
-RutaEscena = "res://cartas prime/CalamarG_prime.tscn"
+RutaEscena = "res://cartas prime/PACIFICO/CalamarG_prime.tscn"
 Imagen = ExtResource("1_ce6uv")

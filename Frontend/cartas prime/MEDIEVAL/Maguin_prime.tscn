@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bwcvhrcui6hvs"]
 
 [ext_resource type="Texture2D" uid="uid://fptinvcbuhoj" path="res://imagenes/sprites/magin_sprite.png" id="1_o72ys"]
-[ext_resource type="Script" uid="uid://dk3hdt17iv5f0" path="res://cartas prime/MaguinPrime.cs" id="1_sfeue"]
+[ext_resource type="Script" uid="uid://dk3hdt17iv5f0" path="res://cartas prime/MEDIEVAL/MaguinPrime.cs" id="1_sfeue"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sfeue"]
 size = Vector2(132, 128)

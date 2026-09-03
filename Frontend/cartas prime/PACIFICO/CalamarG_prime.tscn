@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://1kcgfm0ot8pr"]
 
-[ext_resource type="Script" uid="uid://c6rjs4mi2hgdn" path="res://cartas prime/CalamarGPrime.cs" id="1_rcra0"]
+[ext_resource type="Script" uid="uid://c6rjs4mi2hgdn" path="res://cartas prime/PACIFICO/CalamarGPrime.cs" id="1_rcra0"]
 [ext_resource type="Texture2D" uid="uid://bg26tdb04qrno" path="res://imagenes/sprites/CalamarG_sprite.png" id="2_rcra0"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jmqmn"]

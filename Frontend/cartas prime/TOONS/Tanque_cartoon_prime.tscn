@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://02tlprjro2mi"]
 
-[ext_resource type="Script" uid="uid://byowr52py3ef6" path="res://cartas prime/GUERRA CARTOONS/TanqueCartoonPrime.cs" id="1_fegrd"]
+[ext_resource type="Script" uid="uid://byowr52py3ef6" path="res://cartas prime/TOONS/TanqueCartoonPrime.cs" id="1_fegrd"]
 [ext_resource type="Texture2D" uid="uid://dkeucho1smkmb" path="res://imagenes/sprites/Guerra Cartoons/tanque cartoon.png" id="2_dllqx"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]

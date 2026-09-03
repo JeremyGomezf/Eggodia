@@ -23,62 +23,6 @@
 [ext_resource type="Texture2D" uid="uid://fpvvmkvxcnkr" path="res://imagenes/MenuNuevo/BotonDev.png" id="21_btn_dev"]
 [ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="22_font_almendra"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_level"]
-bg_color = Color(0.0431373, 0.0705882, 0.12549, 0.95)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.133333, 0.827451, 0.933333, 0.8)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_color = Color(0.133333, 0.827451, 0.933333, 0.25)
-shadow_size = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_coins"]
-content_margin_left = 12.0
-content_margin_right = 12.0
-bg_color = Color(0.0431373, 0.0705882, 0.12549, 0.95)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.952941, 0.780392, 0.25098, 0.8)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_color = Color(0.952941, 0.780392, 0.25098, 0.25)
-shadow_size = 6
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_coin_icon"]
-bg_color = Color(1, 0.823529, 0.25098, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.752941, 0.54902, 0.0980392, 1)
-corner_radius_top_left = 11
-corner_radius_top_right = 11
-corner_radius_bottom_right = 11
-corner_radius_bottom_left = 11
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_user"]
-bg_color = Color(0.0431373, 0.0705882, 0.12549, 0.95)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.6, 0.35, 0.95, 0.8)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_color = Color(0.6, 0.35, 0.95, 0.25)
-shadow_size = 6
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sec_btn"]
 content_margin_left = 10.0
 content_margin_right = 10.0
@@ -106,86 +50,6 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_online_normal"]
-bg_color = Color(0.164706, 0.0470588, 0.0705882, 0.96)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.956863, 0.247059, 0.368627, 0.9)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(0.882353, 0.113725, 0.282353, 0.4)
-shadow_size = 14
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_online_pressed"]
-bg_color = Color(0.101961, 0.0235294, 0.0392157, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.75, 0.12, 0.22, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_online_hover"]
-bg_color = Color(0.266667, 0.0784314, 0.117647, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(1, 0.443137, 0.521569, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(1, 0.2, 0.35, 0.7)
-shadow_size = 20
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bot_normal"]
-bg_color = Color(0.0470588, 0.0980392, 0.180392, 0.96)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.219608, 0.741176, 0.972549, 0.9)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(0.00784314, 0.517647, 0.780392, 0.4)
-shadow_size = 14
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bot_pressed"]
-bg_color = Color(0.0235294, 0.054902, 0.109804, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.00784314, 0.4, 0.65, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bot_hover"]
-bg_color = Color(0.0862745, 0.176471, 0.305882, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.490196, 0.827451, 0.988235, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
-shadow_color = Color(0.1, 0.75, 1, 0.7)
-shadow_size = 20
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_popup"]
 content_margin_left = 25.0
@@ -255,17 +119,6 @@ offset_bottom = 652.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Isla" type="TextureRect" parent="IslaContainer" unique_id=1687723678]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("3_isla")
-expand_mode = 1
-stretch_mode = 5
-
 [node name="Portal" type="TextureRect" parent="IslaContainer" unique_id=474972807]
 layout_mode = 1
 anchors_preset = 15
@@ -275,6 +128,17 @@ grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(684, 441)
 texture = ExtResource("4_portal")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Isla" type="TextureRect" parent="IslaContainer" unique_id=1687723678]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_isla")
 expand_mode = 1
 stretch_mode = 5
 
@@ -339,7 +203,6 @@ custom_minimum_size = Vector2(230, 95)
 layout_mode = 2
 texture = ExtResource("13_cuadro_nivel")
 expand_mode = 1
-stretch_mode = 0
 
 [node name="Label" type="Label" parent="TopHUD/LevelPanel" unique_id=1328965670]
 layout_mode = 1
@@ -351,7 +214,7 @@ grow_vertical = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
 theme_override_fonts/font = ExtResource("22_font_almendra")
 theme_override_font_sizes/font_size = 32
-text = "Nv. 2"
+text = "Nivel"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -360,7 +223,6 @@ custom_minimum_size = Vector2(310, 95)
 layout_mode = 2
 texture = ExtResource("14_cuadro_moneda")
 expand_mode = 1
-stretch_mode = 0
 
 [node name="HBox" type="HBoxContainer" parent="TopHUD/CoinsPanel" unique_id=284793023]
 layout_mode = 1
@@ -387,7 +249,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.92, 0.45, 1)
 theme_override_fonts/font = ExtResource("22_font_almendra")
 theme_override_font_sizes/font_size = 34
-text = "2304"
+text = "Moneda"
 vertical_alignment = 1
 
 [node name="UserPanel" type="TextureRect" parent="TopHUD" unique_id=1949122023]
@@ -395,7 +257,6 @@ custom_minimum_size = Vector2(310, 95)
 layout_mode = 2
 texture = ExtResource("16_cuadro_nombre")
 expand_mode = 1
-stretch_mode = 0
 
 [node name="Label" type="Label" parent="TopHUD/UserPanel" unique_id=1352896183]
 layout_mode = 1
@@ -407,7 +268,7 @@ grow_vertical = 2
 theme_override_colors/font_color = Color(0.95, 0.9, 1, 1)
 theme_override_fonts/font = ExtResource("22_font_almendra")
 theme_override_font_sizes/font_size = 32
-text = "SrGonza"
+text = "Usuario"
 horizontal_alignment = 1
 vertical_alignment = 1
 

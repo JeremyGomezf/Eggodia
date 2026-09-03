@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c4c8irqd5agf1"]
 
-[ext_resource type="Script" uid="uid://ctr75f66nr80j" path="res://cartas prime/TortugaYPescado.cs" id="1_script"]
+[ext_resource type="Script" uid="uid://ctr75f66nr80j" path="res://cartas prime/MEDIEVAL/TortugaYPescado.cs" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://db5i2jat50cjk" path="res://imagenes/sprites/tortugaYpescado.png" id="2_e8jhn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sfeue"]

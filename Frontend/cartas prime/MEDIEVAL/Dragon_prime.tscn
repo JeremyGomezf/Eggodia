@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cgb50yvqub087"]
 
 [ext_resource type="Texture2D" uid="uid://d3fvy288m8t4u" path="res://imagenes/sprites/dragon_sprite.png" id="1_0pk1a"]
-[ext_resource type="Script" uid="uid://cs7utoydypr5h" path="res://cartas prime/DragonPrime.cs" id="1_sk8r6"]
+[ext_resource type="Script" uid="uid://cs7utoydypr5h" path="res://cartas prime/MEDIEVAL/DragonPrime.cs" id="1_sk8r6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_sk8r6"]
 size = Vector2(246, 194)

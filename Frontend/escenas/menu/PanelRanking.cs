@@ -51,7 +51,7 @@ public partial class PanelRanking : Control
 
 		// Título
 		var titulo = new Label();
-		titulo.Text = "🏆 RANKING — AGE OF CARDS";
+		titulo.Text = "🏆 RANKING — EGGODIA";
 		titulo.AddThemeColorOverride("font_color", Colors.Gold);
 		titulo.AddThemeFontSizeOverride("font_size", 22);
 		titulo.HorizontalAlignment = HorizontalAlignment.Center;

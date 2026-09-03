@@ -231,6 +231,9 @@ public partial class Campo1 : Node2D
 		else                      t.GlobalPosition = puntoMod.GlobalPosition;
 		t.AddToGroup("tropas_jugador"); t.SetMeta("carril", puntoMod.Name);
 		t.Visible = true; t.Modulate = Colors.White; // seguro anti-invisible
+		// Estadística de "carta más usada" (perfil): se guarda por ruta de escena, no por nombre
+		// corto, para poder cruzarla luego con CartaData y mostrar su imagen real.
+		if (!string.IsNullOrEmpty(t.SceneFilePath)) Preferencias.RegistrarUsoCarta(t.SceneFilePath);
 		if (idxMazo >= 0) t.SetMeta("idx_mazo", idxMazo); // para el sistema de reaparición
 		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 100, "Mod2" => 50, _ => 10 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);

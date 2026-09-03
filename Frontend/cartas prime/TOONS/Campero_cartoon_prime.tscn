@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bypafn5mbft83"]
 
-[ext_resource type="Script" uid="uid://bot21fqhxefy6" path="res://cartas prime/GUERRA CARTOONS/CamperoCartoonPrime.cs" id="1_fefla"]
+[ext_resource type="Script" uid="uid://bot21fqhxefy6" path="res://cartas prime/TOONS/CamperoCartoonPrime.cs" id="1_fefla"]
 [ext_resource type="Texture2D" uid="uid://dut4iodci03kb" path="res://imagenes/sprites/Guerra Cartoons/cartoon campero.png" id="2_hy2mn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_opij5"]

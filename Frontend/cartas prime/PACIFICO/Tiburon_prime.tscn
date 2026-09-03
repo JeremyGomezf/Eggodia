@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bsjyiuay4ywdx"]
 
-[ext_resource type="Script" uid="uid://b8cpk2ik2t1r3" path="res://cartas prime/TiburonPrime.cs" id="1_5ma2x"]
+[ext_resource type="Script" uid="uid://b8cpk2ik2t1r3" path="res://cartas prime/PACIFICO/TiburonPrime.cs" id="1_5ma2x"]
 [ext_resource type="Texture2D" uid="uid://csqf2d2sdrt0u" path="res://imagenes/sprites/tiburon_sprite.png" id="1_jmqmn"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_jmqmn"]

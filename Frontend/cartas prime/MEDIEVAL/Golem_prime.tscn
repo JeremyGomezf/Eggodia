@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cuppc66y7umgg"]
 
 [ext_resource type="Texture2D" uid="uid://plsiq2d8n4je" path="res://imagenes/sprites/golem_sprite.png" id="1_lssw2"]
-[ext_resource type="Script" uid="uid://5xd70uhsdohk" path="res://cartas prime/GolemPrime.cs" id="1_yfqxk"]
+[ext_resource type="Script" uid="uid://5xd70uhsdohk" path="res://cartas prime/MEDIEVAL/GolemPrime.cs" id="1_yfqxk"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lssw2"]
 size = Vector2(237, 212)

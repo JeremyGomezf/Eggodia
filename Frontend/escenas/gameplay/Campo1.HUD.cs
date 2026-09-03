@@ -332,6 +332,8 @@ public partial class Campo1 : Node2D
 		if (_hechizoUsadoEsteTurno) { MostrarAvisoHechizoLimite(); return; }
 		_hechizoUsadoEsteTurno = true; // se compromete al usar este hechizo, aunque falte elegir objetivo
 		int pi = _hechizosMano[slotIdx];
+		string[] nombresHechizo = { "Curación", "Robar Carta", "Veneno", "Bloqueo", "Encebollado" };
+		if (pi >= 0 && pi < nombresHechizo.Length) Preferencias.RegistrarUsoHechizo(nombresHechizo[pi]);
 		switch (pi)
 		{
 			case 0: IniciarSeleccion("curacion",    slotIdx); break;
