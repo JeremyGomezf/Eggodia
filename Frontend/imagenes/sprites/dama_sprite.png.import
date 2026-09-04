@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://byahnaxn2dp5l"
 path.s3tc="res://.godot/imported/dama_sprite.png-cf60a969779aca726b58cf5a30074f7c.s3tc.ctex"
+path.etc2="res://.godot/imported/dama_sprite.png-cf60a969779aca726b58cf5a30074f7c.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/dama_sprite.png"
-dest_files=["res://.godot/imported/dama_sprite.png-cf60a969779aca726b58cf5a30074f7c.s3tc.ctex"]
+dest_files=["res://.godot/imported/dama_sprite.png-cf60a969779aca726b58cf5a30074f7c.s3tc.ctex", "res://.godot/imported/dama_sprite.png-cf60a969779aca726b58cf5a30074f7c.etc2.ctex"]
 
 [params]
 

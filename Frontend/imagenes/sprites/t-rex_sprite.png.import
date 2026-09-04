@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://0j6m4h2hutte"
 path.s3tc="res://.godot/imported/t-rex_sprite.png-4ee80264c788c33dc294efd4704c36ac.s3tc.ctex"
+path.etc2="res://.godot/imported/t-rex_sprite.png-4ee80264c788c33dc294efd4704c36ac.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/t-rex_sprite.png"
-dest_files=["res://.godot/imported/t-rex_sprite.png-4ee80264c788c33dc294efd4704c36ac.s3tc.ctex"]
+dest_files=["res://.godot/imported/t-rex_sprite.png-4ee80264c788c33dc294efd4704c36ac.s3tc.ctex", "res://.godot/imported/t-rex_sprite.png-4ee80264c788c33dc294efd4704c36ac.etc2.ctex"]
 
 [params]
 

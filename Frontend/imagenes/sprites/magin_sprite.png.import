@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://fptinvcbuhoj"
 path.s3tc="res://.godot/imported/magin_sprite.png-c9afac9b0a7a60c141602c78a7debc46.s3tc.ctex"
+path.etc2="res://.godot/imported/magin_sprite.png-c9afac9b0a7a60c141602c78a7debc46.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/magin_sprite.png"
-dest_files=["res://.godot/imported/magin_sprite.png-c9afac9b0a7a60c141602c78a7debc46.s3tc.ctex"]
+dest_files=["res://.godot/imported/magin_sprite.png-c9afac9b0a7a60c141602c78a7debc46.s3tc.ctex", "res://.godot/imported/magin_sprite.png-c9afac9b0a7a60c141602c78a7debc46.etc2.ctex"]
 
 [params]
 

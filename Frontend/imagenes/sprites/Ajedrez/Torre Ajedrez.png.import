@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://fpoxuwm2146m"
 path.s3tc="res://.godot/imported/Torre Ajedrez.png-e25dee8b30058465933b3224fb9953b0.s3tc.ctex"
+path.etc2="res://.godot/imported/Torre Ajedrez.png-e25dee8b30058465933b3224fb9953b0.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Ajedrez/Torre Ajedrez.png"
-dest_files=["res://.godot/imported/Torre Ajedrez.png-e25dee8b30058465933b3224fb9953b0.s3tc.ctex"]
+dest_files=["res://.godot/imported/Torre Ajedrez.png-e25dee8b30058465933b3224fb9953b0.s3tc.ctex", "res://.godot/imported/Torre Ajedrez.png-e25dee8b30058465933b3224fb9953b0.etc2.ctex"]
 
 [params]
 

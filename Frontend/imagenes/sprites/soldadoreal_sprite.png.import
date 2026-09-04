@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://danehte1tdb56"
 path.s3tc="res://.godot/imported/soldadoreal_sprite.png-e6596478c43c2eb6343f7de7057e1271.s3tc.ctex"
+path.etc2="res://.godot/imported/soldadoreal_sprite.png-e6596478c43c2eb6343f7de7057e1271.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/soldadoreal_sprite.png"
-dest_files=["res://.godot/imported/soldadoreal_sprite.png-e6596478c43c2eb6343f7de7057e1271.s3tc.ctex"]
+dest_files=["res://.godot/imported/soldadoreal_sprite.png-e6596478c43c2eb6343f7de7057e1271.s3tc.ctex", "res://.godot/imported/soldadoreal_sprite.png-e6596478c43c2eb6343f7de7057e1271.etc2.ctex"]
 
 [params]
 

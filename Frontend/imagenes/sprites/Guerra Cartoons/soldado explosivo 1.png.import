@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://yok2ggvm5g5k"
 path.s3tc="res://.godot/imported/soldado explosivo 1.png-a90941859899647bdb663aa59c30c9ae.s3tc.ctex"
+path.etc2="res://.godot/imported/soldado explosivo 1.png-a90941859899647bdb663aa59c30c9ae.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Guerra Cartoons/soldado explosivo 1.png"
-dest_files=["res://.godot/imported/soldado explosivo 1.png-a90941859899647bdb663aa59c30c9ae.s3tc.ctex"]
+dest_files=["res://.godot/imported/soldado explosivo 1.png-a90941859899647bdb663aa59c30c9ae.s3tc.ctex", "res://.godot/imported/soldado explosivo 1.png-a90941859899647bdb663aa59c30c9ae.etc2.ctex"]
 
 [params]
 

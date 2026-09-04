@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dlkvojt1gcm1k"
 path.s3tc="res://.godot/imported/EX-GRANADA.png-05a14178fe71bc72eec2cb76feb67e8b.s3tc.ctex"
+path.etc2="res://.godot/imported/EX-GRANADA.png-05a14178fe71bc72eec2cb76feb67e8b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Guerra Cartoons/EX-GRANADA.png"
-dest_files=["res://.godot/imported/EX-GRANADA.png-05a14178fe71bc72eec2cb76feb67e8b.s3tc.ctex"]
+dest_files=["res://.godot/imported/EX-GRANADA.png-05a14178fe71bc72eec2cb76feb67e8b.s3tc.ctex", "res://.godot/imported/EX-GRANADA.png-05a14178fe71bc72eec2cb76feb67e8b.etc2.ctex"]
 
 [params]
 

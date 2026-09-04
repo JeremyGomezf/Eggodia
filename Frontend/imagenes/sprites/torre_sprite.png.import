@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://552gnfg3qojb"
 path.s3tc="res://.godot/imported/torre_sprite.png-ff0262d8e55460b5d1c86807d6f0adce.s3tc.ctex"
+path.etc2="res://.godot/imported/torre_sprite.png-ff0262d8e55460b5d1c86807d6f0adce.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/torre_sprite.png"
-dest_files=["res://.godot/imported/torre_sprite.png-ff0262d8e55460b5d1c86807d6f0adce.s3tc.ctex"]
+dest_files=["res://.godot/imported/torre_sprite.png-ff0262d8e55460b5d1c86807d6f0adce.s3tc.ctex", "res://.godot/imported/torre_sprite.png-ff0262d8e55460b5d1c86807d6f0adce.etc2.ctex"]
 
 [params]
 

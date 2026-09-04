@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bv7d5o7l10u7b"
 path.s3tc="res://.godot/imported/SE-granada.png-85ee9d3ae179c93222a6aea21e579898.s3tc.ctex"
+path.etc2="res://.godot/imported/SE-granada.png-85ee9d3ae179c93222a6aea21e579898.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Guerra Cartoons/SE-granada.png"
-dest_files=["res://.godot/imported/SE-granada.png-85ee9d3ae179c93222a6aea21e579898.s3tc.ctex"]
+dest_files=["res://.godot/imported/SE-granada.png-85ee9d3ae179c93222a6aea21e579898.s3tc.ctex", "res://.godot/imported/SE-granada.png-85ee9d3ae179c93222a6aea21e579898.etc2.ctex"]
 
 [params]
 
