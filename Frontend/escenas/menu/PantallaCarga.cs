@@ -64,17 +64,47 @@ public partial class PantallaCarga : Control
 
 		CargarPeon();
 
-		foreach (string ruta in RUTAS_A_PRECARGAR)
+		// En móvil, precargar las ~30 escenas a la vez consume ~2.6 GB de RAM y el sistema
+		// mata la app (Low Memory Killer). Se omite la precarga: cada escena se carga bajo
+		// demanda durante la partida (mucho menos memoria). En PC sí se precarga.
+		bool esMovil = OS.HasFeature("mobile");
+
+		if (!esMovil)
 		{
-			if (!ResourceLoader.Exists(ruta)) continue;
-			if (ResourceLoader.LoadThreadedRequest(ruta) == Error.Ok)
-				_pendientes.Add(ruta);
+			foreach (string ruta in RUTAS_A_PRECARGAR)
+			{
+				if (!ResourceLoader.Exists(ruta)) continue;
+				if (ResourceLoader.LoadThreadedRequest(ruta) == Error.Ok)
+					_pendientes.Add(ruta);
+			}
 		}
 		_total = _pendientes.Count;
 
 		if (_total == 0)
 		{
-			CallDeferred(nameof(IrASiguiente));
+			if (esMovil)
+				MostrarCargaDecorativa(); // barra animada 1.5s, sin precarga real
+			else
+				CallDeferred(nameof(IrASiguiente));
+		}
+	}
+
+	// Móvil: llena la barra en ~1.5s (solo estético) y pasa a login, sin precargar nada pesado.
+	private void MostrarCargaDecorativa()
+	{
+		Tween tw = CreateTween();
+		tw.TweenMethod(Callable.From<double>(ActualizarBarraDecorativa), 0.0, 100.0, 1.5);
+		tw.Finished += IrASiguiente;
+	}
+
+	private void ActualizarBarraDecorativa(double v)
+	{
+		if (_barra != null) _barra.Value = v;
+		if (_lblPorcentaje != null) _lblPorcentaje.Text = $"{Mathf.RoundToInt((float)v)}%";
+		if (_peon != null && _barra != null)
+		{
+			Vector2 origen = _barra.GlobalPosition;
+			_peon.GlobalPosition = new Vector2(origen.X + (float)(v / 100.0) * _barra.Size.X, origen.Y - 6f);
 		}
 	}
 
