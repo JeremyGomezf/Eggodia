@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Eggodia"
 run/main_scene="res://escenas/menu/PantallaCarga.tscn"
-config/features=PackedStringArray("4.7", "C#", "Mobile")
+config/features=PackedStringArray("4.6", "C#", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -29,6 +29,7 @@ window/size/viewport_height=1080
 window/size/mode=2
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation="sensor_landscape"
 
 [dotnet]
 
@@ -43,3 +44,4 @@ project/assembly_name="Eggodia"
 textures/canvas_textures/default_texture_filter=2
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
