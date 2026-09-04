@@ -15,9 +15,6 @@ namespace Eggodia.API.model
         [Required]
         public string Nombre { get; set; } = "";
 
-        // Era: 1 = Primordial, 2 = Medieval, 3 = Mística
-        public int Era { get; set; } = 1;
-
         // Stats de combate (coinciden con las variables de los scripts de Godot)
         public int VidaMaxima    { get; set; }
         public int EscudoMaximo  { get; set; }
@@ -30,12 +27,9 @@ namespace Eggodia.API.model
         // Descripción de la habilidad especial (para mostrar en UI)
         public string? Habilidad { get; set; }
 
-        // Tipo elemental heredado (legado — se mantiene por compatibilidad)
-        public string Tipo { get; set; } = "Normal";
-
-        // ── CLASIFICACIÓN ACTUAL DEL JUEGO ────────────────────────────────
-        // Rol de combate: "Tactico" | "Asesino" | "Coloso"
-        public string Rol { get; set; } = "";
+        // ── CLASIFICACIÓN DEL JUEGO ────────────────────────────────────────
+        // Tipo de combate: "Tactico" | "Asesino" | "Coloso"
+        public string Tipo  { get; set; } = "";
         // Serie / facción: "Ajedrez" | "Toon" | "Medieval" | "Pacifico" | "Papeleo"
         public string Serie { get; set; } = "";
     }

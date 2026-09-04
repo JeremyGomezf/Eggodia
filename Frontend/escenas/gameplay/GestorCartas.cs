@@ -101,23 +101,23 @@ public partial class GestorCartas : Node
 		GD.Print("[GestorCartas] Usando cartas locales (modo offline).");
 		Cartas = new List<DatoCarta>
 		{
-			new() { Id=1,  Nombre="Peón",            Rol="Tactico", Serie="Ajedrez",  Era=2, VidaMaxima=150, EscudoMaximo=150, PuntosAtaque=100, RutaImagen="res://imagenes/CartasPng/PeonCart.png",      RutaEscena="res://cartas prime/AJEDREZ/Peon_prime.tscn" },
-			new() { Id=2,  Nombre="Torre",           Rol="Coloso",  Serie="Ajedrez",  Era=2, VidaMaxima=500, EscudoMaximo=450, PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/TorreCart.png",     RutaEscena="res://cartas prime/AJEDREZ/Torre_prime.tscn" },
-			new() { Id=3,  Nombre="Arfil",           Rol="Tactico", Serie="Ajedrez",  Era=2, VidaMaxima=280, EscudoMaximo=270, PuntosAtaque=240, RutaImagen="res://imagenes/CartasPng/ArfilCart.png",     RutaEscena="res://cartas prime/AJEDREZ/Arfil_prime.tscn" },
-			new() { Id=4,  Nombre="Caballo",         Rol="Tactico", Serie="Ajedrez",  Era=2, VidaMaxima=230, EscudoMaximo=250, PuntosAtaque=200, RutaImagen="res://imagenes/CartasPng/CaballoCart.png",   RutaEscena="res://cartas prime/AJEDREZ/Caballo_prime.tscn" },
-			new() { Id=5,  Nombre="Dama",            Rol="Asesino", Serie="Ajedrez",  Era=2, VidaMaxima=350, EscudoMaximo=300, PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/DamaCart.png",      RutaEscena="res://cartas prime/AJEDREZ/Dama_prime.tscn" },
-			new() { Id=6,  Nombre="Soldado Cartoon", Rol="Asesino", Serie="Toon",     Era=3, VidaMaxima=220, EscudoMaximo=350, PuntosAtaque=50,  RutaImagen="res://imagenes/CartasPng/SoldCartoonCart.png",RutaEscena="res://cartas prime/TOONS/Soldado_cartoon_prime.tscn" },
-			new() { Id=7,  Nombre="Tanque",          Rol="Coloso",  Serie="Toon",     Era=3, VidaMaxima=820, EscudoMaximo=0,   PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/TanqueCart.png",    RutaEscena="res://cartas prime/TOONS/Tanque_cartoon_prime.tscn" },
-			new() { Id=8,  Nombre="Granadero",       Rol="Asesino", Serie="Toon",     Era=3, VidaMaxima=50,  EscudoMaximo=600, PuntosAtaque=230, RutaImagen="res://imagenes/CartasPng/GranaderoCart.png", RutaEscena="res://cartas prime/TOONS/Granadero_cartoon_prime.tscn" },
-			new() { Id=9,  Nombre="Ka-Bar",          Rol="Asesino", Serie="Toon",     Era=3, VidaMaxima=250, EscudoMaximo=360, PuntosAtaque=100, RutaImagen="res://imagenes/CartasPng/FantasmaCart.png",  RutaEscena="res://cartas prime/TOONS/Ka-Bar_cartoon_prime.tscn" },
-			new() { Id=10, Nombre="Campero",         Rol="Tactico", Serie="Toon",     Era=3, VidaMaxima=200, EscudoMaximo=300, PuntosAtaque=250, RutaImagen="res://imagenes/CartasPng/CamperoCart.png",   RutaEscena="res://cartas prime/TOONS/Campero_cartoon_prime.tscn" },
-			new() { Id=11, Nombre="Soldado Real",    Rol="Tactico", Serie="Medieval", Era=2, VidaMaxima=250, EscudoMaximo=300, PuntosAtaque=150, RutaImagen="res://imagenes/CartasPng/SoldRealCart.png",  RutaEscena="res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn" },
-			new() { Id=12, Nombre="Maguín",          Rol="Tactico", Serie="Medieval", Era=2, VidaMaxima=200, EscudoMaximo=220, PuntosAtaque=250, RutaImagen="res://imagenes/CartasPng/MaguinCart.png",    RutaEscena="res://cartas prime/MEDIEVAL/Maguin_prime.tscn" },
-			new() { Id=13, Nombre="Dragón",          Rol="Asesino", Serie="Medieval", Era=2, VidaMaxima=350, EscudoMaximo=250, PuntosAtaque=280, RutaImagen="res://imagenes/CartasPng/DragonCart.png",    RutaEscena="res://cartas prime/MEDIEVAL/Dragon_prime.tscn" },
-			new() { Id=14, Nombre="Golem",           Rol="Coloso",  Serie="Medieval", Era=2, VidaMaxima=450, EscudoMaximo=500, PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/GolemCart.png",     RutaEscena="res://cartas prime/MEDIEVAL/Golem_prime.tscn" },
-			new() { Id=15, Nombre="Tiburón",         Rol="Asesino", Serie="Pacifico", Era=1, VidaMaxima=300, EscudoMaximo=200, PuntosAtaque=230, RutaImagen="res://imagenes/CartasPng/TiburonCart.png",   RutaEscena="res://cartas prime/PACIFICO/Tiburon_prime.tscn" },
-			new() { Id=16, Nombre="Calamar Gigante", Rol="Coloso",  Serie="Pacifico", Era=1, VidaMaxima=400, EscudoMaximo=380, PuntosAtaque=370, RutaImagen="res://imagenes/CartasPng/CalamarGCart.png",  RutaEscena="res://cartas prime/PACIFICO/CalamarG_prime.tscn" },
-			new() { Id=17, Nombre="Paper-Rex",       Rol="Coloso",  Serie="Papeleo",  Era=1, VidaMaxima=850, EscudoMaximo=0,   PuntosAtaque=370, RutaImagen="res://imagenes/CartasPng/PaperReXCart.png",  RutaEscena="res://cartas prime/PAPEL/TRex_prime.tscn" },
+			new() { Id=1,  Nombre="Peón",            Tipo="Tactico", Serie="Ajedrez",  VidaMaxima=150, EscudoMaximo=150, PuntosAtaque=100, RutaImagen="res://imagenes/CartasPng/PeonCart.png",      RutaEscena="res://cartas prime/AJEDREZ/Peon_prime.tscn" },
+			new() { Id=2,  Nombre="Torre",           Tipo="Coloso",  Serie="Ajedrez",  VidaMaxima=500, EscudoMaximo=450, PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/TorreCart.png",     RutaEscena="res://cartas prime/AJEDREZ/Torre_prime.tscn" },
+			new() { Id=3,  Nombre="Arfil",           Tipo="Tactico", Serie="Ajedrez",  VidaMaxima=280, EscudoMaximo=270, PuntosAtaque=240, RutaImagen="res://imagenes/CartasPng/ArfilCart.png",     RutaEscena="res://cartas prime/AJEDREZ/Arfil_prime.tscn" },
+			new() { Id=4,  Nombre="Caballo",         Tipo="Tactico", Serie="Ajedrez",  VidaMaxima=230, EscudoMaximo=250, PuntosAtaque=200, RutaImagen="res://imagenes/CartasPng/CaballoCart.png",   RutaEscena="res://cartas prime/AJEDREZ/Caballo_prime.tscn" },
+			new() { Id=5,  Nombre="Dama",            Tipo="Asesino", Serie="Ajedrez",  VidaMaxima=350, EscudoMaximo=300, PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/DamaCart.png",      RutaEscena="res://cartas prime/AJEDREZ/Dama_prime.tscn" },
+			new() { Id=6,  Nombre="Soldado Cartoon", Tipo="Asesino", Serie="Toon",     VidaMaxima=220, EscudoMaximo=350, PuntosAtaque=50,  RutaImagen="res://imagenes/CartasPng/SoldCartoonCart.png",RutaEscena="res://cartas prime/TOONS/Soldado_cartoon_prime.tscn" },
+			new() { Id=7,  Nombre="Tanque",          Tipo="Coloso",  Serie="Toon",     VidaMaxima=820, EscudoMaximo=0,   PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/TanqueCart.png",    RutaEscena="res://cartas prime/TOONS/Tanque_cartoon_prime.tscn" },
+			new() { Id=8,  Nombre="Granadero",       Tipo="Asesino", Serie="Toon",     VidaMaxima=50,  EscudoMaximo=600, PuntosAtaque=230, RutaImagen="res://imagenes/CartasPng/GranaderoCart.png", RutaEscena="res://cartas prime/TOONS/Granadero_cartoon_prime.tscn" },
+			new() { Id=9,  Nombre="Ka-Bar",          Tipo="Asesino", Serie="Toon",     VidaMaxima=250, EscudoMaximo=360, PuntosAtaque=100, RutaImagen="res://imagenes/CartasPng/FantasmaCart.png",  RutaEscena="res://cartas prime/TOONS/Ka-Bar_cartoon_prime.tscn" },
+			new() { Id=10, Nombre="Campero",         Tipo="Tactico", Serie="Toon",     VidaMaxima=200, EscudoMaximo=300, PuntosAtaque=250, RutaImagen="res://imagenes/CartasPng/CamperoCart.png",   RutaEscena="res://cartas prime/TOONS/Campero_cartoon_prime.tscn" },
+			new() { Id=11, Nombre="Soldado Real",    Tipo="Tactico", Serie="Medieval", VidaMaxima=250, EscudoMaximo=300, PuntosAtaque=150, RutaImagen="res://imagenes/CartasPng/SoldRealCart.png",  RutaEscena="res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn" },
+			new() { Id=12, Nombre="Maguín",          Tipo="Tactico", Serie="Medieval", VidaMaxima=200, EscudoMaximo=220, PuntosAtaque=250, RutaImagen="res://imagenes/CartasPng/MaguinCart.png",    RutaEscena="res://cartas prime/MEDIEVAL/Maguin_prime.tscn" },
+			new() { Id=13, Nombre="Dragón",          Tipo="Asesino", Serie="Medieval", VidaMaxima=350, EscudoMaximo=250, PuntosAtaque=280, RutaImagen="res://imagenes/CartasPng/DragonCart.png",    RutaEscena="res://cartas prime/MEDIEVAL/Dragon_prime.tscn" },
+			new() { Id=14, Nombre="Golem",           Tipo="Coloso",  Serie="Medieval", VidaMaxima=450, EscudoMaximo=500, PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/GolemCart.png",     RutaEscena="res://cartas prime/MEDIEVAL/Golem_prime.tscn" },
+			new() { Id=15, Nombre="Tiburón",         Tipo="Asesino", Serie="Pacifico", VidaMaxima=300, EscudoMaximo=200, PuntosAtaque=230, RutaImagen="res://imagenes/CartasPng/TiburonCart.png",   RutaEscena="res://cartas prime/PACIFICO/Tiburon_prime.tscn" },
+			new() { Id=16, Nombre="Calamar Gigante", Tipo="Coloso",  Serie="Pacifico", VidaMaxima=400, EscudoMaximo=380, PuntosAtaque=370, RutaImagen="res://imagenes/CartasPng/CalamarGCart.png",  RutaEscena="res://cartas prime/PACIFICO/CalamarG_prime.tscn" },
+			new() { Id=17, Nombre="Paper-Rex",       Tipo="Coloso",  Serie="Papeleo",  VidaMaxima=850, EscudoMaximo=0,   PuntosAtaque=370, RutaImagen="res://imagenes/CartasPng/PaperReXCart.png",  RutaEscena="res://cartas prime/PAPEL/TRex_prime.tscn" },
 		};
 		CartasCargadas = true;
 		EmitSignal(SignalName.OnCartasCargadas);
@@ -125,8 +125,8 @@ public partial class GestorCartas : Node
 
 	// ── API PÚBLICA ───────────────────────────────────────────────────────
 	public List<DatoCarta> ObtenerCartas()        => Cartas;
-	public List<DatoCarta> ObtenerCartasPorEra(int era) =>
-		Cartas.FindAll(c => c.Era == era);
+	public List<DatoCarta> ObtenerCartasPorTipo(string tipo) =>
+		Cartas.FindAll(c => c.Tipo == tipo);
 
 	public string[] ObtenerRutasImagenes() =>
 		Cartas.ConvertAll(c => c.RutaImagen).ToArray();
@@ -140,14 +140,12 @@ public class DatoCarta
 {
 	public int    Id           { get; set; }
 	public string Nombre       { get; set; } = "";
-	public int    Era          { get; set; }
-	public string Tipo         { get; set; } = "Normal";
 	public int    VidaMaxima   { get; set; }
 	public int    EscudoMaximo { get; set; }
 	public int    PuntosAtaque { get; set; }
 	public string RutaImagen   { get; set; } = "";
 	public string RutaEscena   { get; set; } = "";
 	public string Habilidad    { get; set; } = "";
-	public string Rol          { get; set; } = ""; // Tactico | Asesino | Coloso
+	public string Tipo         { get; set; } = ""; // Tactico | Asesino | Coloso
 	public string Serie        { get; set; } = ""; // Ajedrez | Toon | Medieval | Pacifico | Papeleo
 }

@@ -5,10 +5,10 @@ using Eggodia.API.model;
 
 /// <summary>
 /// Endpoints de cartas.
-/// GET  /api/cartas          → todas las cartas
-/// GET  /api/cartas/{id}     → una carta por id
-/// GET  /api/cartas/era/{n}  → cartas filtradas por era (1, 2 ó 3)
-/// POST /api/cartas          → crear carta nueva (admin)
+/// GET  /api/cartas             → todas las cartas
+/// GET  /api/cartas/{id}        → una carta por id
+/// GET  /api/cartas/tipo/{t}    → cartas por tipo (Tactico | Asesino | Coloso)
+/// POST /api/cartas             → crear carta nueva (admin)
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -26,7 +26,7 @@ public class CartasController : ControllerBase
     public async Task<IActionResult> GetCartas()
     {
         var lista = await _context.Cartas
-            .OrderBy(c => c.Era)
+            .OrderBy(c => c.Serie)
             .ThenBy(c => c.Id)
             .ToListAsync();
         return Ok(lista);
@@ -41,12 +41,12 @@ public class CartasController : ControllerBase
         return Ok(carta);
     }
 
-    // GET: api/cartas/era/1
-    [HttpGet("era/{era}")]
-    public async Task<IActionResult> GetCartasPorEra(int era)
+    // GET: api/cartas/tipo/Coloso
+    [HttpGet("tipo/{tipo}")]
+    public async Task<IActionResult> GetCartasPorTipo(string tipo)
     {
         var lista = await _context.Cartas
-            .Where(c => c.Era == era)
+            .Where(c => c.Tipo == tipo)
             .OrderBy(c => c.Id)
             .ToListAsync();
         return Ok(lista);
