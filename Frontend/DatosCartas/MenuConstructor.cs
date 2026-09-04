@@ -14,6 +14,14 @@ public partial class MenuConstructor : Control
 	[Export] public string RutaMenu    = "res://escenas/menu/menu_principal.tscn";
 	[Export] private PackedScene _escenaCartaMini;
 
+	// Renders "de héroe": ruta de escena de la carta -> PNG estático que se muestra en su lugar
+	// en el showcase del selector, saliéndose del marco hacia arriba (ver ActualizarShowcaseAnimado).
+	// Para agregar otra carta con este tratamiento, solo hace falta sumar una línea aquí.
+	private static readonly Dictionary<string, string> RENDERS_HEROE = new()
+	{
+		{ "res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn", "res://imagenes/RendersTropa/SoldadoReal_Menu.png" },
+	};
+
 	[ExportGroup("Texturas y Assets")]
 	[Export] private Texture2D _texTropaSelector;
 	[Export] private Texture2D _texArdidSelector;
@@ -385,13 +393,12 @@ public partial class MenuConstructor : Control
 
 		bool tieneSpriteAnimado = false;
 
-		// Caso especial: el Soldado Real usa un render estático en vez de su idle animado
-		// en este selector — se salta por completo la instanciación de su escena.
-		const string RUTA_SOLDADO_REAL = "res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn";
-		const string RENDER_SOLDADO_REAL_MENU = "res://imagenes/RendersTropa/SoldadoReal_Menu.png";
-		bool esRenderEstaticoForzado = datos.RutaEscena == RUTA_SOLDADO_REAL;
+		// Renders "de héroe": para estas cartas se muestra un PNG estático grande, saliéndose
+		// del marco del showcase hacia arriba, en vez de su idle animado normal. Para sumar una
+		// carta más a este tratamiento, solo hace falta agregar su entrada acá.
+		bool esRenderHeroe = RENDERS_HEROE.TryGetValue(datos.RutaEscena ?? "", out string rutaRenderHeroe);
 
-		if (!esRenderEstaticoForzado && !string.IsNullOrEmpty(datos.RutaEscena) && ResourceLoader.Exists(datos.RutaEscena))
+		if (!esRenderHeroe && !string.IsNullOrEmpty(datos.RutaEscena) && ResourceLoader.Exists(datos.RutaEscena))
 		{
 			try
 			{
@@ -451,8 +458,8 @@ public partial class MenuConstructor : Control
 			_fallbackTextureCenter.Visible = !tieneSpriteAnimado;
 			if (!tieneSpriteAnimado)
 			{
-				if (esRenderEstaticoForzado && ResourceLoader.Exists(RENDER_SOLDADO_REAL_MENU))
-					_fallbackTextureCenter.Texture = GD.Load<Texture2D>(RENDER_SOLDADO_REAL_MENU);
+				if (esRenderHeroe && ResourceLoader.Exists(rutaRenderHeroe))
+					_fallbackTextureCenter.Texture = GD.Load<Texture2D>(rutaRenderHeroe);
 				else
 					_fallbackTextureCenter.Texture = datos.Imagen;
 			}
@@ -471,15 +478,48 @@ public partial class MenuConstructor : Control
 			_fallbackTextureCenter.AnchorRight = 0.5f;
 			_fallbackTextureCenter.AnchorTop = 0.5f;
 			_fallbackTextureCenter.AnchorBottom = 0.5f;
-			_fallbackTextureCenter.OffsetLeft = -90.0f;
-			_fallbackTextureCenter.OffsetRight = 90.0f;
-			_fallbackTextureCenter.OffsetTop = -60.0f;
-			_fallbackTextureCenter.OffsetBottom = 160.0f;
 
+			if (esRenderHeroe)
+			{
+				// Tamaño moderado, igual de proporcionado que las piezas de ajedrez por
+				// defecto: la base queda justo en el borde superior del tablero (Y≈460 en
+				// pantalla) — MazoContainer se dibuja DESPUÉS de ShowcaseContainer en el árbol
+				// de la escena, así que el tablero ya tapa cualquier pequeño sobrante por
+				// debajo de esa línea, dando el efecto de "detrás del mazo" sin código extra.
+				_fallbackTextureCenter.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+				_fallbackTextureCenter.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+				_fallbackTextureCenter.OffsetLeft   = -150.0f;
+				_fallbackTextureCenter.OffsetRight  = 150.0f;
+				_fallbackTextureCenter.OffsetTop    = -110.0f; // despeja el banner del nombre (Y≈135 en pantalla)
+				_fallbackTextureCenter.OffsetBottom = 215.0f;  // toca el borde del tablero (Y≈460), sin invadirlo
+			}
+			else
+			{
+				_fallbackTextureCenter.OffsetLeft = -90.0f;
+				_fallbackTextureCenter.OffsetRight = 90.0f;
+				_fallbackTextureCenter.OffsetTop = -60.0f;
+				_fallbackTextureCenter.OffsetBottom = 160.0f;
+			}
+
+			// "Respiración" — vaivén vertical + pulso de escala en paralelo, para que el render
+			// estático se sienta vivo mientras está seleccionado (sin necesitar más fotogramas
+			// de arte). El pivote se centra para que el pulso de escala no se note desplazado.
 			Vector2 posBase = _fallbackTextureCenter.Position;
-			_idleTween = CreateTween().SetLoops();
-			_idleTween.TweenProperty(_fallbackTextureCenter, "position:y", posBase.Y - 6f, 1.2f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			_idleTween.TweenProperty(_fallbackTextureCenter, "position:y", posBase.Y, 1.2f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+			Vector2 escalaBase = _fallbackTextureCenter.Scale;
+			_fallbackTextureCenter.PivotOffset = _fallbackTextureCenter.Size / 2f;
+
+			float amplitudBob = esRenderHeroe ? 10f : 6f;
+			_idleTween = CreateTween().SetLoops().SetParallel(true);
+			// Fase 1 (sube + agranda), ambas en paralelo:
+			_idleTween.TweenProperty(_fallbackTextureCenter, "position:y", posBase.Y - amplitudBob, 1.2f)
+					   .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+			_idleTween.TweenProperty(_fallbackTextureCenter, "scale", escalaBase * 1.035f, 1.2f)
+					   .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+			// Fase 2 (baja + vuelve al tamaño original), también en paralelo entre sí:
+			_idleTween.Chain().TweenProperty(_fallbackTextureCenter, "position:y", posBase.Y, 1.2f)
+					   .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+			_idleTween.TweenProperty(_fallbackTextureCenter, "scale", escalaBase, 1.2f)
+					   .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 		}
 	}
 
