@@ -87,7 +87,7 @@ public partial class PantallaCarga : Control
 		if (escena == null) return;
 
 		_peon = escena.Instantiate<Node2D>();
-		_peon.Scale = new Vector2(0.36f, 0.36f);
+		_peon.Scale = new Vector2(0.72f, 0.72f); // el doble del tamaño original (0.36 -> 0.72)
 		_peon.ZIndex = 60;
 		if (_peon is Area2D area)
 		{
