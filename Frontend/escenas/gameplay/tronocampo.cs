@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class tronocampo : StaticBody2D
+public partial class TronoCampo : StaticBody2D
 {
 	private Node2D huevoInstancia;
 

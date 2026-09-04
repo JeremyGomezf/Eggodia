@@ -437,13 +437,13 @@ public partial class Campo1 : Node2D
 		Marker2D m1 = GetNodeOrNull<Marker2D>("SpawnTrono1"), m2 = GetNodeOrNull<Marker2D>("SpawnTrono2");
 		if (m1 == null || m2 == null || escenaTronoRef == null) return;
 
-		tronoJugador = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoJugador);
+		tronoJugador = (TronoCampo)escenaTronoRef.Instantiate(); AddChild(tronoJugador);
 		tronoJugador.GlobalPosition = m1.GlobalPosition;
 		string skinPath = Preferencias.RutaSkinActiva;
 		var skinJugador = ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : escenaReyHuevoRef;
 		tronoJugador.CargarHuevo(skinJugador ?? escenaReyHuevoRef, false);
 
-		tronoRival = (tronocampo)escenaTronoRef.Instantiate(); AddChild(tronoRival);
+		tronoRival = (TronoCampo)escenaTronoRef.Instantiate(); AddChild(tronoRival);
 		tronoRival.GlobalPosition = m2.GlobalPosition;
 		tronoRival.CargarHuevo(SkinAleatoria() ?? escenaDinoHuevoRef, true);
 	}

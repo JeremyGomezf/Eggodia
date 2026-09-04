@@ -153,7 +153,7 @@ public partial class Campo1 : Node2D
 	[Export] private PackedScene escenaReyHuevoRef  = GD.Load<PackedScene>("res://escenas/personajes/reyhuevo1.tscn");
 	[Export] private PackedScene escenaDinoHuevoRef = GD.Load<PackedScene>("res://escenas/personajes/dinohuevo1.tscn");
 
-	private tronocampo tronoJugador, tronoRival;
+	private TronoCampo tronoJugador, tronoRival;
 
 	// ══════════════════════════════════════════════════════════════════════
 	public override void _Ready()
