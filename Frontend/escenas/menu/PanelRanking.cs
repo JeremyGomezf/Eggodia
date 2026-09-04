@@ -11,7 +11,7 @@ using System.Text.Json;
 /// </summary>
 public partial class PanelRanking : Control
 {
-	private const string URL_RANKING = "http://localhost:5289/api/usuarios/ranking";
+	private static string URL_RANKING => ApiConfig.Ranking;
 
 	private VBoxContainer     _lista;
 	private Godot.HttpRequest _http;
