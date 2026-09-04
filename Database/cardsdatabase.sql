@@ -1,94 +1,63 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Mar 21, 2026 at 06:50 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- ============================================================================
+-- Eggodia — Esquema de referencia de la base de datos
+-- ----------------------------------------------------------------------------
+-- Motor real en uso: SQLite (Backend/Eggodia/cards.db)
+-- La BD la crea automáticamente Entity Framework (AppDbContext) al arrancar el
+-- backend (Program.cs -> EnsureCreated). Este archivo es solo DOCUMENTACIÓN /
+-- referencia del esquema y de los datos semilla; no hace falta ejecutarlo.
+-- ============================================================================
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
+-- ── TABLA: usuarios (cuentas + estadísticas de ranking) ─────────────────────
+CREATE TABLE IF NOT EXISTS usuarios (
+    Id            INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    Nombre        TEXT    NOT NULL,
+    Email         TEXT    NOT NULL,
+    Password      TEXT    NOT NULL,            -- hash BCrypt (nunca texto plano)
+    Victorias     INTEGER NOT NULL DEFAULT 0,
+    Derrotas      INTEGER NOT NULL DEFAULT 0,
+    Empates       INTEGER NOT NULL DEFAULT 0,
+    DañoTotal     INTEGER NOT NULL DEFAULT 0,
+    FechaRegistro TEXT    NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS IX_usuarios_Email ON usuarios (Email);
 
+-- ── TABLA: cartas (catálogo de las 17 tropas) ───────────────────────────────
+CREATE TABLE IF NOT EXISTS cartas (
+    Id           INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    Nombre       TEXT    NOT NULL,
+    Era          INTEGER NOT NULL DEFAULT 1,   -- legado
+    VidaMaxima   INTEGER NOT NULL,
+    EscudoMaximo INTEGER NOT NULL,
+    PuntosAtaque INTEGER NOT NULL,
+    RutaImagen   TEXT    NOT NULL,             -- CartasPng (imagen grande de mano)
+    RutaEscena   TEXT    NOT NULL,             -- escena .tscn de la tropa
+    Habilidad    TEXT,
+    Tipo         TEXT    NOT NULL DEFAULT 'Normal', -- legado (serie elemental)
+    Rol          TEXT    NOT NULL DEFAULT '',  -- Tactico | Asesino | Coloso
+    Serie        TEXT    NOT NULL DEFAULT ''   -- Ajedrez | Toon | Medieval | Pacifico | Papeleo
+);
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
--- Db cardsdatabase
-
--- tabla de estructura de las cartas
-
-CREATE TABLE `cartas` (
-  `ID` int(11) NOT NULL,
-  `Nombre` varchar(100) NOT NULL,
-  `Tipo` varchar(50) NOT NULL,
-  `Costo` int(11) NOT NULL,
-  `Ataque` int(11) NOT NULL,
-  `Defensa` int(11) NOT NULL,
-  `Habilidad` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data para tabla cartas
---
-
-INSERT INTO `cartas` (`ID`, `Nombre`, `Tipo`, `Costo`, `Ataque`, `Defensa`, `Habilidad`) VALUES
-(1, 'Soldado Real', 'Guerrero', 3, 20, 200, 'Ataque de corta distancia con su espada'),
-(2, 'Dragón de fuego', 'Aéreo', 6, 45, 300, 'Lanza flamas por su boca'),
-(3, 'T-Rex', 'Titán', 0, 80, 500, 'Mordedura colosal que perfora las tropas. (Respawn cada 2 minutos por partidos)'),
-(4, 'Sanadora', 'Curandero', 5, 20, 100, 'Cura tropas aliadas'),
-(5, 'Granjero', 'Buffer', 0, 0, 999999, 'Cosecha plantas mágicas que sube de nivel a las tropas. (Aparece al inicio de partida)'),
-(6, 'Stone Golem', 'Defensivo', 4, 50, 450, 'Solo se dedica a proteger la torre'),
-(7, 'Tiburón', 'Defensivo', 5, 30, 250, 'Ataca a tropas enemigos que están en el puente'),
-(8, 'Majin', 'Hechicero', 3, 30, 120, 'Lanza flamas de color azul');
-
-
-
---
--- estructura de cartas `__efmigrationshistory`
---
---carlos es zorro, el mas zorro que conozco, el mas zorroooooooooooooooooo
-CREATE TABLE `__efmigrationshistory` (
-  `MigrationId` varchar(150) NOT NULL,
-  `ProductVersion` varchar(32) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data para las cartas`__efmigrationshistory`
---
-
-INSERT INTO `__efmigrationshistory` (`MigrationId`, `ProductVersion`) VALUES
-('20260321030235_InitialCreate', '8.0.2');
-
---
--- indxxx's for dumped tabla
---
-
---
--- Indxxx's for tabla cartas
-ALTER TABLE `cartas`
-  ADD PRIMARY KEY (`ID`);
-
---
--- Indxxx's para la ttabla `__efmigrationshistory`
---
-ALTER TABLE `__efmigrationshistory`
-  ADD PRIMARY KEY (`MigrationId`);
-
---
--- AUTO_INCREMENT for dumped tables///aprendan en casa
---
-
---
--- AUTO_INCREMENT for table `cartas`
---
-ALTER TABLE `cartas`
-  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- ── DATOS SEMILLA: cartas ───────────────────────────────────────────────────
+INSERT INTO cartas (Id, Nombre, Rol, Serie, Era, VidaMaxima, EscudoMaximo, PuntosAtaque, RutaImagen, RutaEscena, Habilidad, Tipo) VALUES
+-- AJEDREZ
+(1,  'Peón',            'Tactico', 'Ajedrez',  2, 150, 150, 100, 'res://imagenes/CartasPng/PeonCart.png',       'res://cartas prime/AJEDREZ/Peon_prime.tscn',            'Sacrificio',                          'Ajedrez'),
+(2,  'Torre',           'Coloso',  'Ajedrez',  2, 500, 450, 350, 'res://imagenes/CartasPng/TorreCart.png',      'res://cartas prime/AJEDREZ/Torre_prime.tscn',           'Enroque táctico / forma gigante',     'Ajedrez'),
+(3,  'Arfil',           'Tactico', 'Ajedrez',  2, 280, 270, 240, 'res://imagenes/CartasPng/ArfilCart.png',      'res://cartas prime/AJEDREZ/Arfil_prime.tscn',           'Salto diagonal',                      'Ajedrez'),
+(4,  'Caballo',         'Tactico', 'Ajedrez',  2, 230, 250, 200, 'res://imagenes/CartasPng/CaballoCart.png',    'res://cartas prime/AJEDREZ/Caballo_prime.tscn',         'Salto en L: x2 daño a 2 carriles',    'Ajedrez'),
+(5,  'Dama',            'Asesino', 'Ajedrez',  2, 350, 300, 350, 'res://imagenes/CartasPng/DamaCart.png',       'res://cartas prime/AJEDREZ/Dama_prime.tscn',            'Vuelo con inspiración aliada',        'Ajedrez'),
+-- TOON
+(6,  'Soldado Cartoon', 'Asesino', 'Toon',     3, 220, 350,  50, 'res://imagenes/CartasPng/SoldCartoonCart.png','res://cartas prime/TOONS/Soldado_cartoon_prime.tscn',   'Soldado explosivo',                   'Toon'),
+(7,  'Tanque',          'Coloso',  'Toon',     3, 820,   0, 350, 'res://imagenes/CartasPng/TanqueCart.png',     'res://cartas prime/TOONS/Tanque_cartoon_prime.tscn',    'Doble disparo de misil',              'Toon'),
+(8,  'Granadero',       'Asesino', 'Toon',     3,  50, 600, 230, 'res://imagenes/CartasPng/GranaderoCart.png',  'res://cartas prime/TOONS/Granadero_cartoon_prime.tscn', 'Escudo masivo',                       'Toon'),
+(9,  'Ka-Bar',          'Asesino', 'Toon',     3, 250, 360, 100, 'res://imagenes/CartasPng/FantasmaCart.png',   'res://cartas prime/TOONS/Ka-Bar_cartoon_prime.tscn',    'Resucita como fantasma',              'Toon'),
+(10, 'Campero',         'Tactico', 'Toon',     3, 200, 300, 250, 'res://imagenes/CartasPng/CamperoCart.png',    'res://cartas prime/TOONS/Campero_cartoon_prime.tscn',   'Postura defensiva',                   'Toon'),
+-- MEDIEVAL
+(11, 'Soldado Real',    'Tactico', 'Medieval', 2, 250, 300, 150, 'res://imagenes/CartasPng/SoldRealCart.png',   'res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn',    'Guardia real',                        'Medieval'),
+(12, 'Maguín',          'Tactico', 'Medieval', 2, 200, 220, 250, 'res://imagenes/CartasPng/MaguinCart.png',     'res://cartas prime/MEDIEVAL/Maguin_prime.tscn',         'Transmutación',                       'Medieval'),
+(13, 'Dragón',          'Asesino', 'Medieval', 2, 350, 250, 280, 'res://imagenes/CartasPng/DragonCart.png',     'res://cartas prime/MEDIEVAL/Dragon_prime.tscn',         'Fuego eterno',                        'Medieval'),
+(14, 'Golem',           'Coloso',  'Medieval', 2, 450, 500, 350, 'res://imagenes/CartasPng/GolemCart.png',      'res://cartas prime/MEDIEVAL/Golem_prime.tscn',          'Rocas escudo: +200 ESC a aliados',    'Medieval'),
+-- PACIFICO
+(15, 'Tiburón',         'Asesino', 'Pacifico', 1, 300, 200, 230, 'res://imagenes/CartasPng/TiburonCart.png',    'res://cartas prime/PACIFICO/Tiburon_prime.tscn',        'Ataque en profundidad',               'Pacifico'),
+(16, 'Calamar Gigante', 'Coloso',  'Pacifico', 1, 400, 380, 370, 'res://imagenes/CartasPng/CalamarGCart.png',   'res://cartas prime/PACIFICO/CalamarG_prime.tscn',       'Tinta bloqueadora',                   'Pacifico'),
+-- PAPELEO
+(17, 'Paper-Rex',       'Coloso',  'Papeleo',  1, 850,   0, 370, 'res://imagenes/CartasPng/PaperReXCart.png',   'res://cartas prime/PAPEL/TRex_prime.tscn',              'Rugido primordial: -30% ataque enemigo','Papeleo');

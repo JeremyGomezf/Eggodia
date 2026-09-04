@@ -30,7 +30,13 @@ namespace Eggodia.API.model
         // Descripción de la habilidad especial (para mostrar en UI)
         public string? Habilidad { get; set; }
 
-        // Tipo para futuras ventajas entre eras
+        // Tipo elemental heredado (legado — se mantiene por compatibilidad)
         public string Tipo { get; set; } = "Normal";
+
+        // ── CLASIFICACIÓN ACTUAL DEL JUEGO ────────────────────────────────
+        // Rol de combate: "Tactico" | "Asesino" | "Coloso"
+        public string Rol { get; set; } = "";
+        // Serie / facción: "Ajedrez" | "Toon" | "Medieval" | "Pacifico" | "Papeleo"
+        public string Serie { get; set; } = "";
     }
 }

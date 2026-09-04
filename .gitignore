@@ -491,3 +491,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Base de datos SQLite runtime (se regenera con EnsureCreated)
+Backend/Eggodia/cards.db
+Backend/Eggodia/cards.db-shm
+Backend/Eggodia/cards.db-wal
