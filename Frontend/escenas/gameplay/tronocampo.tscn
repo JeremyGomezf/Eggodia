@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bv7g7ssxuqmga"]
 
-[ext_resource type="Script" uid="uid://dn7jghugam0wv" path="res://escenas/gameplay/tronocampo.cs" id="1_ktk0l"]
+[ext_resource type="Script" uid="uid://dn7jghugam0wv" path="res://escenas/gameplay/TronoCampo.cs" id="1_ktk0l"]
 [ext_resource type="Texture2D" uid="uid://b4lmp4ltcgcap" path="res://imagenes/PersonajesPng/TronoAlpha.png" id="2_2rktf"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2rktf"]
