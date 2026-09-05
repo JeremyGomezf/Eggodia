@@ -53,7 +53,7 @@ public partial class GestorCartas : Node
 		Error error = _http.Request(URL_BASE);
 		if (error != Error.Ok)
 		{
-			GD.PrintErr($"[GestorCartas] Error al conectar: {error}");
+			GD.Print($"[GestorCartas] Backend no disponible ({error}) — modo offline, usando cartas locales.");
 			UsarCartasLocales(); // Fallback si no hay internet
 		}
 	}
@@ -63,7 +63,7 @@ public partial class GestorCartas : Node
 	{
 		if (result != (long)Godot.HttpRequest.Result.Success || responseCode != 200)
 		{
-			GD.PrintErr($"[GestorCartas] Error HTTP {responseCode}. Usando cartas locales.");
+			GD.Print($"[GestorCartas] Backend no disponible (HTTP {responseCode}) — modo offline, usando cartas locales.");
 			UsarCartasLocales();
 			return;
 		}

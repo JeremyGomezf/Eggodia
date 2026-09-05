@@ -1,0 +1,85 @@
+{
+  "info": {
+    "name": "Eggodia API",
+    "description": "Colección para probar el backend de Eggodia (ASP.NET + SQLite). No necesitas XAMPP.\n\nAntes de usar: levanta el backend con `dotnet run` en Backend/Eggodia (escucha en http://localhost:5289). También puedes abrir Swagger en http://localhost:5289/swagger.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5289" },
+    { "key": "usuarioId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Registro",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/usuarios/registro", "host": ["{{baseUrl}}"], "path": ["api","usuarios","registro"] },
+            "body": { "mode": "raw", "raw": "{\n  \"Nombre\": \"Jeremy\",\n  \"Email\": \"jeremy@ejemplo.com\",\n  \"Password\": \"123456\"\n}" }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/usuarios/login", "host": ["{{baseUrl}}"], "path": ["api","usuarios","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"Email\": \"jeremy@ejemplo.com\",\n  \"Password\": \"123456\"\n}" }
+          }
+        },
+        {
+          "name": "Obtener usuario por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/usuarios/{{usuarioId}}", "host": ["{{baseUrl}}"], "path": ["api","usuarios","{{usuarioId}}"] }
+          }
+        },
+        {
+          "name": "Guardar resultado de partida",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/usuarios/resultado", "host": ["{{baseUrl}}"], "path": ["api","usuarios","resultado"] },
+            "body": { "mode": "raw", "raw": "{\n  \"UsuarioId\": {{usuarioId}},\n  \"Resultado\": \"victoria\",\n  \"DañoHecho\": 1500\n}" }
+          }
+        },
+        {
+          "name": "Ranking (top 20)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/usuarios/ranking", "host": ["{{baseUrl}}"], "path": ["api","usuarios","ranking"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cartas",
+      "item": [
+        {
+          "name": "Todas las cartas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/cartas", "host": ["{{baseUrl}}"], "path": ["api","cartas"] }
+          }
+        },
+        {
+          "name": "Carta por id",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/cartas/1", "host": ["{{baseUrl}}"], "path": ["api","cartas","1"] }
+          }
+        },
+        {
+          "name": "Cartas por tipo (Tactico/Asesino/Coloso)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/cartas/tipo/Coloso", "host": ["{{baseUrl}}"], "path": ["api","cartas","tipo","Coloso"] }
+          }
+        }
+      ]
+    }
+  ]
+}
