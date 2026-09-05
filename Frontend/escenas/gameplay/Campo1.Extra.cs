@@ -147,7 +147,7 @@ public partial class Campo1 : Node2D
 
 	public void AplicarVenenoMeta(Node2D t, int daño, int turnos)
 	{
-		t.SetMeta("envenenado", true); t.SetMeta("dañoVeneno", daño); t.SetMeta("turnosVeneno", turnos);
+		t.SetMeta("envenenado", true); t.SetMeta("danoVeneno", daño); t.SetMeta("turnosVeneno", turnos);
 		t.Modulate = new Color(0.6f, 1f, 0.4f);
 		ActualizarIconosEstado(t);
 	}

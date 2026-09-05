@@ -316,7 +316,7 @@ public partial class Campo1 : Node2D
 		if (random.Next(2) == 0)
 		{
 			objetivo.SetMeta("envenenado",   true);
-			objetivo.SetMeta("dañoVeneno",   40);
+			objetivo.SetMeta("danoVeneno",   40);
 			objetivo.SetMeta("turnosVeneno", 2);
 			objetivo.Modulate = new Color(0.6f, 1f, 0.4f);
 			ActualizarIconosEstado(objetivo);

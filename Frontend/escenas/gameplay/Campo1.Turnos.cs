@@ -169,7 +169,7 @@ public partial class Campo1 : Node2D
 		if (!t.HasMeta("envenenado")) return;
 		bool env; try { env = (bool)t.GetMeta("envenenado"); } catch { return; }
 		if (!env) return;
-		int daño   = t.HasMeta("dañoVeneno")  ? (int)t.GetMeta("dañoVeneno")  : 30;
+		int daño   = t.HasMeta("danoVeneno")  ? (int)t.GetMeta("danoVeneno")  : 30;
 		int turnos = t.HasMeta("turnosVeneno") ? (int)t.GetMeta("turnosVeneno"): 1;
 		MostrarDañoFlotante(t.GlobalPosition, daño);
 		if (t.HasMethod("RecibirDaño")) t.Call("RecibirDaño", daño);

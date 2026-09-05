@@ -76,7 +76,7 @@ public partial class Campo1 : Node2D
 		{
 			case "veneno":
 				objetivo.SetMeta("envenenado",   true);
-				objetivo.SetMeta("dañoVeneno",   50);
+				objetivo.SetMeta("danoVeneno",   50);
 				objetivo.SetMeta("turnosVeneno", 3);
 				objetivo.Modulate = new Color(0.6f,1f,0.4f);
 				usadoVeneno = true;

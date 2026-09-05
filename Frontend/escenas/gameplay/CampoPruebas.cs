@@ -412,7 +412,7 @@ public partial class CampoPruebas : Node2D
 		var t = ObtenerObjetivoHechizo();
 		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
 		t.SetMeta("envenenado",   true);
-		t.SetMeta("dañoVeneno",   50);
+		t.SetMeta("danoVeneno",   50);
 		t.SetMeta("turnosVeneno", 3);
 		t.Modulate = new Color(0.6f, 1f, 0.4f);
 		// Tick inmediato de demostración
