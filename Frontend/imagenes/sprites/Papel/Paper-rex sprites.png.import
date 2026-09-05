@@ -5,7 +5,7 @@ type="CompressedTexture2D"
 uid="uid://d0tfa02a6lmmh"
 path="res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.ctex"
 metadata={
-"vram_texture": false
+"vram_texture": true
 }
 
 [deps]
@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
