@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b285l7eluotn7"
-path="res://.godot/imported/Efectos_OG.png-c4f1234107c408487a071f6ec5e9d300.ctex"
+uid="uid://bf1ty43cu4rsf"
+path="res://.godot/imported/SoldadoCartoon_Menu.png-07cb4028aec565b09f1568408a2d3ad8.ctex"
 metadata={
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/sprites/Efectos_OG.png"
-dest_files=["res://.godot/imported/Efectos_OG.png-c4f1234107c408487a071f6ec5e9d300.ctex"]
+source_file="res://imagenes/RendersTropa/SoldadoCartoon_Menu.png"
+dest_files=["res://.godot/imported/SoldadoCartoon_Menu.png-07cb4028aec565b09f1568408a2d3ad8.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

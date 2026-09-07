@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b285l7eluotn7"
-path="res://.godot/imported/Efectos_OG.png-c4f1234107c408487a071f6ec5e9d300.ctex"
+uid="uid://j6aasvfqi64v"
+path="res://.godot/imported/Calamar_Menu.png-6aaf22a3fc4abeac27b6c658993991ad.ctex"
 metadata={
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/sprites/Efectos_OG.png"
-dest_files=["res://.godot/imported/Efectos_OG.png-c4f1234107c408487a071f6ec5e9d300.ctex"]
+source_file="res://imagenes/RendersTropa/Calamar_Menu.png"
+dest_files=["res://.godot/imported/Calamar_Menu.png-6aaf22a3fc4abeac27b6c658993991ad.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

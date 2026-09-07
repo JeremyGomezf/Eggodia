@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b285l7eluotn7"
-path="res://.godot/imported/Efectos_OG.png-c4f1234107c408487a071f6ec5e9d300.ctex"
+uid="uid://cyt6mtx53bv6"
+path="res://.godot/imported/NombreTropa_interfaz.png-492396c8cc92697c1d27fe86817288b8.ctex"
 metadata={
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/sprites/Efectos_OG.png"
-dest_files=["res://.godot/imported/Efectos_OG.png-c4f1234107c408487a071f6ec5e9d300.ctex"]
+source_file="res://imagenes/MenuConstructor/NombreTropa_interfaz.png"
+dest_files=["res://.godot/imported/NombreTropa_interfaz.png-492396c8cc92697c1d27fe86817288b8.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

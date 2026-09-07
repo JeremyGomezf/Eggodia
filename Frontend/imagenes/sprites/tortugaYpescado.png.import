@@ -5,7 +5,7 @@ type="CompressedTexture2D"
 uid="uid://db5i2jat50cjk"
 path="res://.godot/imported/tortugaYpescado.png-b6b9fb680fecdaf47a29b2b007ba6820.ctex"
 metadata={
-"vram_texture": false
+"vram_texture": true
 }
 
 [deps]
@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/tortugaYpescado.png-b6b9fb680fecdaf47a29b2b00
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

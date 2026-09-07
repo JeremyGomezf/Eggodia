@@ -5,7 +5,7 @@ type="CompressedTexture2D"
 uid="uid://d1jlq61alg1nh"
 path="res://.godot/imported/Efectos_OG2.png-0dde385b3b4d0774b4707e03141e15f0.ctex"
 metadata={
-"vram_texture": false
+"vram_texture": true
 }
 
 [deps]
@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/Efectos_OG2.png-0dde385b3b4d0774b4707e03141e1
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
