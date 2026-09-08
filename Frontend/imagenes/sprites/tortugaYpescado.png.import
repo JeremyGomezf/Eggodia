@@ -3,15 +3,17 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://db5i2jat50cjk"
-path="res://.godot/imported/tortugaYpescado.png-b6b9fb680fecdaf47a29b2b007ba6820.ctex"
+path.s3tc="res://.godot/imported/tortugaYpescado.png-b6b9fb680fecdaf47a29b2b007ba6820.s3tc.ctex"
+path.etc2="res://.godot/imported/tortugaYpescado.png-b6b9fb680fecdaf47a29b2b007ba6820.etc2.ctex"
 metadata={
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/tortugaYpescado.png"
-dest_files=["res://.godot/imported/tortugaYpescado.png-b6b9fb680fecdaf47a29b2b007ba6820.ctex"]
+dest_files=["res://.godot/imported/tortugaYpescado.png-b6b9fb680fecdaf47a29b2b007ba6820.s3tc.ctex", "res://.godot/imported/tortugaYpescado.png-b6b9fb680fecdaf47a29b2b007ba6820.etc2.ctex"]
 
 [params]
 

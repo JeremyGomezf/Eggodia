@@ -3,15 +3,17 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://djdgkcndc2nls"
-path="res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.ctex"
+path.s3tc="res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.s3tc.ctex"
+path.etc2="res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.etc2.ctex"
 metadata={
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Ajedrez/Caballo Ajedrez.png"
-dest_files=["res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.ctex"]
+dest_files=["res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.s3tc.ctex", "res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.etc2.ctex"]
 
 [params]
 

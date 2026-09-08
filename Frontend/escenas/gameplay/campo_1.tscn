@@ -78,8 +78,9 @@ position = Vector2(132, 417)
 position = Vector2(1296, 414)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1921821545]
-position = Vector2(732, 309)
-zoom = Vector2(1.09, 0.963)
+position = Vector2(730.00006, 416)
+scale = Vector2(-0.99, -0.928)
+zoom = Vector2(1.335, 1.445)
 
 [node name="PantallaFinal" type="ColorRect" parent="." unique_id=1712408150]
 anchors_preset = 15

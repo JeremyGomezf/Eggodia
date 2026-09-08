@@ -3,15 +3,17 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0tfa02a6lmmh"
-path="res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.ctex"
+path.s3tc="res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.s3tc.ctex"
+path.etc2="res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.etc2.ctex"
 metadata={
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Papel/Paper-rex sprites.png"
-dest_files=["res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.ctex"]
+dest_files=["res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.s3tc.ctex", "res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.etc2.ctex"]
 
 [params]
 
