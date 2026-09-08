@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 <Project Sdk="Godot.NET.Sdk/4.7.1">
+=======
+<Project Sdk="Godot.NET.Sdk/4.6.1">
+>>>>>>> Stashed changes
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
