@@ -12,6 +12,9 @@ using System.Collections.Generic;
 /// Ruta: res://escenas/gameplay/SesionJuego.cs
 /// Nombre: SesionJuego
 /// </summary>
+using System;
+using System.Text.Json;
+
 public partial class SesionJuego : Node
 {
 	public static SesionJuego Instance { get; private set; }
@@ -25,16 +28,19 @@ public partial class SesionJuego : Node
 	// Lista de rutas de escenas (.tscn) que el jugador armó en el constructor
 	public List<string> MazoSeleccionado { get; set; } = new();
 	public List<string> ImagenesMazo     { get; set; } = new();
-	public bool TieneMazo => MazoSeleccionado.Count > 0;
+	public bool TieneMazo => MazoSeleccionado != null && MazoSeleccionado.Count >= 8;
 
 	// ── RESULTADO ÚLTIMA PARTIDA ──────────────────────────────────────────
 	public string UltimoResultado  { get; set; } = "";
 	public int    DañoUltimaPartida { get; set; } = 0;
 	public int    RachaActual       { get; set; } = 0;
 
+	private const string RUTA_MAZO_GUARDADO = "user://mazo_guardado.json";
+
 	public override void _Ready()
 	{
 		Instance = this;
+		CargarMazoDeDisco();
 	}
 
 	public void CerrarSesion()
@@ -45,11 +51,66 @@ public partial class SesionJuego : Node
 		ImagenesMazo.Clear();
 	}
 
-	/// <summary>Guardar mazo desde el constructor antes de ir a la batalla.</summary>
+	/// <summary>Guardar mazo desde el constructor antes de ir a la batalla o volver al menú.</summary>
 	public void GuardarMazo(List<string> escenas, List<string> imagenes)
 	{
 		MazoSeleccionado = new List<string>(escenas);
 		ImagenesMazo     = new List<string>(imagenes);
-		GD.Print($"[SesionJuego] Mazo guardado: {MazoSeleccionado.Count} cartas.");
+		GuardarMazoEnDisco();
+		GD.Print($"[SesionJuego] Mazo guardado en memoria y disco: {MazoSeleccionado.Count} cartas.");
+	}
+
+	private void GuardarMazoEnDisco()
+	{
+		try
+		{
+			using var file = FileAccess.Open(RUTA_MAZO_GUARDADO, FileAccess.ModeFlags.Write);
+			if (file != null)
+			{
+				var data = new MazoPersistenteData
+				{
+					Escenas = MazoSeleccionado,
+					Imagenes = ImagenesMazo
+				};
+				string json = JsonSerializer.Serialize(data);
+				file.StoreString(json);
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"[SesionJuego] Error al guardar mazo en disco: {ex.Message}");
+		}
+	}
+
+	private void CargarMazoDeDisco()
+	{
+		try
+		{
+			if (FileAccess.FileExists(RUTA_MAZO_GUARDADO))
+			{
+				using var file = FileAccess.Open(RUTA_MAZO_GUARDADO, FileAccess.ModeFlags.Read);
+				if (file != null)
+				{
+					string json = file.GetAsText();
+					var data = JsonSerializer.Deserialize<MazoPersistenteData>(json);
+					if (data != null && data.Escenas != null && data.Escenas.Count >= 8)
+					{
+						MazoSeleccionado = data.Escenas;
+						ImagenesMazo = data.Imagenes ?? new List<string>();
+						GD.Print($"[SesionJuego] Mazo cargado desde disco: {MazoSeleccionado.Count} cartas.");
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"[SesionJuego] Error al cargar mazo desde disco: {ex.Message}");
+		}
+	}
+
+	private class MazoPersistenteData
+	{
+		public List<string> Escenas { get; set; } = new();
+		public List<string> Imagenes { get; set; } = new();
 	}
 }

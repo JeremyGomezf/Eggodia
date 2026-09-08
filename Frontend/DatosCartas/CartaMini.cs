@@ -61,7 +61,7 @@ public partial class CartaMini : Control
 				if (_pinIcon != null)
 				{
 					_pinIcon.OffsetLeft = -14; _pinIcon.OffsetRight = 14;
-					_pinIcon.OffsetTop = -14; _pinIcon.OffsetBottom = 20;
+					_pinIcon.OffsetTop = 4; _pinIcon.OffsetBottom = 36;
 				}
 			}
 		}

@@ -185,8 +185,8 @@ public partial class Campo1 : Node2D
 	}
 
 	// ── RELLENO DE LA MANO ────────────────────────────────────────────────
-	// Nombres de los 4 spots visibles de la mano.
-	private static readonly string[] SPOTS_MANO = { "Spot1", "Spot2", "Spot3", "Spot4" };
+	// Nombres de los 3 spots visibles de la mano (solicitado: 3 cartas en partida).
+	private static readonly string[] SPOTS_MANO = { "Spot1", "Spot2", "Spot3" };
 
 	private void RellenarManoObjetivo()
 	{
@@ -215,8 +215,8 @@ public partial class Campo1 : Node2D
 
 		int turnoNum = _turnosJugados / 2 + 1;
 		bool colosoTurn = (turnoNum % 3 == 0) && _idxColoso.Count > 0;
-		int tgtTac = 2;
-		int tgtAse = colosoTurn ? 1 : 2;
+		int tgtTac = colosoTurn ? 1 : 2;
+		int tgtAse = 1;
 		int tgtCol = colosoTurn ? 1 : 0;
 
 		int needTac = Math.Max(0, tgtTac - ocupTac);

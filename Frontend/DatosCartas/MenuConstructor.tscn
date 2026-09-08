@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://rf3h2j6kp815"]
+[gd_scene format=3 uid="uid://crgc7q8vp78fn"]
 
 [ext_resource type="Script" uid="uid://7fk7m6kf1qwx" path="res://DatosCartas/MenuConstructor.cs" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://cc4dl7d6qlseb" path="res://DatosCartas/CartaMini.tscn" id="2_cartamini"]
@@ -10,15 +10,33 @@
 [ext_resource type="Texture2D" uid="uid://dvmtcn06d8cf4" path="res://imagenes/MenuConstructor/Tropa_Mazo.png" id="8_tropamazo"]
 [ext_resource type="Texture2D" uid="uid://di0wdn57b0rvo" path="res://imagenes/MenuConstructor/Ardid_Mazo.png" id="9_ardidmazo"]
 [ext_resource type="Texture2D" uid="uid://be6si2whi2bqn" path="res://imagenes/MenuConstructor/Info_Cart.png" id="10_infocart"]
-[ext_resource type="FontFile" uid="uid://bxcf0a6c8i8q8" path="res://Almendra.ttf" id="11_almendra"]
-[ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="12_almendra_bold"]
+[ext_resource type="Texture2D" uid="uid://cyt6mtx53bv6" path="res://imagenes/MenuConstructor/NombreTropa_interfaz.png" id="11_nombretropa"]
 
 [sub_resource type="FontVariation" id="FontVariation_bold"]
-base_font = ExtResource("12_almendra_bold")
-variation_embolden = 0.6
+variation_embolden = 1.2
 
-[sub_resource type="FontVariation" id="FontVariation_regular"]
-base_font = ExtResource("11_almendra")
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scroll_grabber"]
+bg_color = Color(0.85, 0.7, 0.35, 0.45)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scroll_grabber_hover"]
+bg_color = Color(1, 0.85, 0.45, 0.75)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_scroll_track"]
+
+[sub_resource type="Theme" id="Theme_subtle_scroll"]
+VScrollBar/styles/grabber = SubResource("StyleBoxFlat_scroll_grabber")
+VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_scroll_grabber_hover")
+VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_scroll_grabber_hover")
+VScrollBar/styles/scroll = SubResource("StyleBoxEmpty_scroll_track")
+VScrollBar/styles/scroll_focus = SubResource("StyleBoxEmpty_scroll_track")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_banner_white"]
 bg_color = Color(0.98, 0.98, 1, 0.96)
@@ -89,21 +107,6 @@ corner_radius_bottom_left = 14
 shadow_color = Color(0.15, 0.82, 0.98, 0.8)
 shadow_size = 16
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card_info_box"]
-bg_color = Color(0.98, 0.99, 1, 0.95)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.72, 0.78, 0.88, 1)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_color = Color(0, 0, 0, 0.2)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal_bg"]
 bg_color = Color(0.06, 0.09, 0.15, 0.96)
 border_width_left = 3
@@ -117,30 +120,7 @@ corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 shadow_size = 24
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scroll_grabber"]
-bg_color = Color(0.85, 0.7, 0.35, 0.45)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_scroll_grabber_hover"]
-bg_color = Color(1, 0.85, 0.45, 0.75)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_scroll_track"]
-
-[sub_resource type="Theme" id="Theme_subtle_scroll"]
-VScrollBar/styles/grabber = SubResource("StyleBoxFlat_scroll_grabber")
-VScrollBar/styles/grabber_highlight = SubResource("StyleBoxFlat_scroll_grabber_hover")
-VScrollBar/styles/grabber_pressed = SubResource("StyleBoxFlat_scroll_grabber_hover")
-VScrollBar/styles/scroll = SubResource("StyleBoxEmpty_scroll_track")
-VScrollBar/styles/scroll_focus = SubResource("StyleBoxEmpty_scroll_track")
-
-[node name="MenuConstructor" type="Control" node_paths=PackedStringArray("_rectSelectorBg", "_btnTabTropas", "_btnTabArdid", "_gridSelector", "_txtBuscador", "_lblShowcaseNombre", "_containerSpriteCenter", "_fallbackTextureCenter", "_lblTituloMazo", "_rectMazoBg", "_gridMazoSlots", "_btnBatallar", "_btnVolver", "_lblContadorMazo", "_lblDetalleTitulo", "_lblDetalleHp", "_lblDetalleAtk", "_lblDetalleDef", "_lblDetalleCosto", "_lblDetalleElemento", "_lblDetalleHabilidad", "_lblDetalleExtra", "_btnDuda", "_modalAyuda", "_btnCerrarAyuda")]
+[node name="MenuConstructor" type="Control" unique_id=1753145290 node_paths=PackedStringArray("_rectSelectorBg", "_btnTabTropas", "_btnTabArdid", "_gridSelector", "_txtBuscador", "_lblShowcaseNombre", "_containerSpriteCenter", "_fallbackTextureCenter", "_lblTituloMazo", "_rectMazoBg", "_gridMazoSlots", "_btnBatallar", "_btnVolver", "_lblContadorMazo", "_lblDetalleTitulo", "_lblDetalleHp", "_lblDetalleAtk", "_lblDetalleDef", "_lblDetalleCosto", "_lblDetalleElemento", "_lblDetalleHabilidad", "_lblDetalleExtra", "_btnDuda", "_modalAyuda", "_btnCerrarAyuda")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -148,8 +128,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
-RutaBatalla = "res://escenas/gameplay/campo_1.tscn"
-RutaMenu = "res://escenas/menu/menu_principal.tscn"
 _escenaCartaMini = ExtResource("2_cartamini")
 _texTropaSelector = ExtResource("6_tropaselector")
 _texArdidSelector = ExtResource("7_ardidselector")
@@ -181,7 +159,7 @@ _btnDuda = NodePath("TopRightContainer/BotonDuda")
 _modalAyuda = NodePath("ModalAyuda")
 _btnCerrarAyuda = NodePath("ModalAyuda/CenterContainer/Panel/Margin/VBox/BtnCerrarAyuda")
 
-[node name="Fondo" type="TextureRect" parent="."]
+[node name="Fondo" type="TextureRect" parent="." unique_id=663336646]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -192,15 +170,15 @@ texture = ExtResource("3_fondo")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="BuscadorContainer" type="Control" parent="."]
+[node name="BuscadorContainer" type="Control" parent="." unique_id=819066872]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 40.0
-offset_top = 18.0
-offset_right = 530.0
-offset_bottom = 128.0
+offset_left = 20.0
+offset_top = 15.0
+offset_right = 510.0
+offset_bottom = 125.0
 
-[node name="BuscadorBg" type="TextureRect" parent="BuscadorContainer"]
+[node name="BuscadorBg" type="TextureRect" parent="BuscadorContainer" unique_id=1623015032]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -211,33 +189,32 @@ texture = ExtResource("4_buscador")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TxtBuscador" type="LineEdit" parent="BuscadorContainer"]
+[node name="TxtBuscador" type="LineEdit" parent="BuscadorContainer" unique_id=1111217619]
 layout_mode = 0
-offset_left = 135.0
-offset_top = 37.0
-offset_right = 445.0
-offset_bottom = 73.0
+offset_left = 154.0
+offset_top = 28.0
+offset_right = 434.0
+offset_bottom = 64.0
 theme_override_colors/font_color = Color(0.12, 0.15, 0.22, 1)
 theme_override_colors/font_placeholder_color = Color(0.45, 0.5, 0.6, 0.8)
 theme_override_fonts/font = SubResource("FontVariation_bold")
 theme_override_font_sizes/font_size = 18
 placeholder_text = "Buscar carta..."
-alignment = 0
-flat = true
 clear_button_enabled = true
+flat = true
 
-[node name="TopRightContainer" type="Control" parent="."]
+[node name="TopRightContainer" type="Control" parent="." unique_id=296998725]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -135.0
-offset_top = 20.0
-offset_right = -45.0
-offset_bottom = 110.0
+offset_left = -115.0
+offset_top = 18.0
+offset_right = -25.0
+offset_bottom = 108.0
 grow_horizontal = 0
 
-[node name="BotonDuda" type="TextureButton" parent="TopRightContainer"]
+[node name="BotonDuda" type="TextureButton" parent="TopRightContainer" unique_id=1937270629]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -249,15 +226,15 @@ texture_normal = ExtResource("5_botonduda")
 ignore_texture_size = true
 stretch_mode = 5
 
-[node name="SelectorContainer" type="Control" parent="."]
+[node name="SelectorContainer" type="Control" parent="." unique_id=671258125]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 40.0
-offset_top = 140.0
-offset_right = 570.0
-offset_bottom = 980.0
+offset_left = 20.0
+offset_top = 135.0
+offset_right = 585.0
+offset_bottom = 1055.0
 
-[node name="SelectorBg" type="TextureRect" parent="SelectorContainer"]
+[node name="SelectorBg" type="TextureRect" parent="SelectorContainer" unique_id=1553454345]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -267,87 +244,104 @@ grow_vertical = 2
 texture = ExtResource("6_tropaselector")
 expand_mode = 1
 
-[node name="TabTropas" type="Button" parent="SelectorContainer"]
+[node name="TabTropas" type="Button" parent="SelectorContainer" unique_id=664581781]
 layout_mode = 0
-offset_left = 75.0
-offset_top = 20.0
-offset_right = 240.0
-offset_bottom = 85.0
+offset_left = 80.0
+offset_top = 22.0
+offset_right = 265.0
+offset_bottom = 95.0
 focus_mode = 0
 mouse_default_cursor_shape = 2
 flat = true
 
-[node name="TabArdid" type="Button" parent="SelectorContainer"]
+[node name="TabArdid" type="Button" parent="SelectorContainer" unique_id=139200345]
 layout_mode = 0
-offset_left = 255.0
-offset_top = 20.0
-offset_right = 415.0
-offset_bottom = 85.0
+offset_left = 280.0
+offset_top = 22.0
+offset_right = 460.0
+offset_bottom = 95.0
 focus_mode = 0
 mouse_default_cursor_shape = 2
 flat = true
 
-[node name="ScrollCartas" type="ScrollContainer" parent="SelectorContainer"]
+[node name="ScrollCartas" type="ScrollContainer" parent="SelectorContainer" unique_id=2095476746]
 layout_mode = 0
 offset_left = 75.0
-offset_top = 105.0
-offset_right = 465.0
-offset_bottom = 760.0
+offset_top = 115.0
+offset_right = 510.0
+offset_bottom = 895.0
 theme = SubResource("Theme_subtle_scroll")
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 2
 
-[node name="GridCartas" type="GridContainer" parent="SelectorContainer/ScrollCartas"]
+[node name="GridCartas" type="GridContainer" parent="SelectorContainer/ScrollCartas" unique_id=209447049]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 12
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
 columns = 3
 
-[node name="ShowcaseContainer" type="Control" parent="."]
+[node name="ShowcaseContainer" type="Control" parent="." unique_id=95860427]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 643.0
+offset_left = 595.0
 offset_top = 20.0
-offset_right = 1276.0
-offset_bottom = 470.0
+offset_right = 1325.0
+offset_bottom = 485.0
 
-[node name="BannerNombre" type="PanelContainer" parent="ShowcaseContainer"]
+[node name="BannerNombre" type="NinePatchRect" parent="ShowcaseContainer" unique_id=744594248]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -200.0
-offset_top = 15.0
-offset_right = 200.0
-offset_bottom = 80.0
+offset_left = -240.0
+offset_top = 6.0
+offset_right = 240.0
+offset_bottom = 102.0
 grow_horizontal = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_banner_white")
+texture = ExtResource("11_nombretropa")
+patch_margin_left = 75
+patch_margin_top = 24
+patch_margin_right = 75
+patch_margin_bottom = 24
 
-[node name="LblShowcaseNombre" type="Label" parent="ShowcaseContainer/BannerNombre"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.08, 0.12, 0.18, 1)
+[node name="LblShowcaseNombre" type="Label" parent="ShowcaseContainer/BannerNombre" unique_id=642300158]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 45.0
+offset_top = 6.0
+offset_right = -45.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.94, 0.76, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
 theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 25
 text = "SOLDADO REAL"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StageSprite" type="Control" parent="ShowcaseContainer"]
+[node name="StageSprite" type="Control" parent="ShowcaseContainer" unique_id=1752436190]
 layout_mode = 1
-anchors_preset = 8
 anchor_left = 0.5
-anchor_top = 0.5
+anchor_top = 0.87000006
 anchor_right = 0.5
-anchor_bottom = 0.5
-offset_top = 50.0
-offset_bottom = 50.0
+anchor_bottom = 0.87000006
+offset_left = 7.5
+offset_top = -26.50003
+offset_right = 9.0
+offset_bottom = -26.50003
 grow_horizontal = 2
 grow_vertical = 2
 mouse_default_cursor_shape = 2
 
-[node name="FallbackTexture" type="TextureRect" parent="ShowcaseContainer"]
+[node name="FallbackTexture" type="TextureRect" parent="ShowcaseContainer" unique_id=1429061482]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -364,15 +358,15 @@ grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="MazoContainer" type="Control" parent="."]
+[node name="MazoContainer" type="Control" parent="." unique_id=1567517415]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 615.0
-offset_top = 460.0
-offset_right = 1305.0
-offset_bottom = 885.0
+offset_left = 595.0
+offset_top = 465.0
+offset_right = 1325.0
+offset_bottom = 920.0
 
-[node name="MazoBg" type="TextureRect" parent="MazoContainer"]
+[node name="MazoBg" type="TextureRect" parent="MazoContainer" unique_id=577048957]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -382,7 +376,7 @@ grow_vertical = 2
 texture = ExtResource("8_tropamazo")
 expand_mode = 1
 
-[node name="BannerTituloMazo" type="PanelContainer" parent="MazoContainer"]
+[node name="BannerTituloMazo" type="PanelContainer" parent="MazoContainer" unique_id=1665380789]
 visible = false
 layout_mode = 1
 anchors_preset = 5
@@ -395,7 +389,7 @@ offset_bottom = 168.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_banner_white")
 
-[node name="LblTituloMazo" type="Label" parent="MazoContainer/BannerTituloMazo"]
+[node name="LblTituloMazo" type="Label" parent="MazoContainer/BannerTituloMazo" unique_id=1818182682]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.08, 0.12, 0.18, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
@@ -404,59 +398,59 @@ text = "Mazo arma de tropas"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="GridMazo" type="GridContainer" parent="MazoContainer"]
+[node name="GridMazo" type="GridContainer" parent="MazoContainer" unique_id=1613111041]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -290.0
-offset_top = -140.0
-offset_right = 290.0
-offset_bottom = 140.0
+offset_left = -330.0
+offset_top = -50.0
+offset_right = 330.0
+offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/h_separation = 16
-theme_override_constants/v_separation = 12
-columns = 4
+theme_override_constants/h_separation = 7
+theme_override_constants/v_separation = 6
+columns = 8
 
-[node name="BarraAccionesMazo" type="HBoxContainer" parent="MazoContainer"]
+[node name="BarraAccionesMazo" type="HBoxContainer" parent="MazoContainer" unique_id=1839000021]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -316.0
-offset_top = 30.0
-offset_right = 316.0
-offset_bottom = 85.0
+offset_left = -330.0
+offset_top = 18.0
+offset_right = 330.0
+offset_bottom = 73.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 16
 
-[node name="BtnVolver" type="Button" parent="MazoContainer/BarraAccionesMazo"]
-custom_minimum_size = Vector2(160, 50)
+[node name="BtnVolver" type="Button" parent="MazoContainer/BarraAccionesMazo" unique_id=152220832]
+custom_minimum_size = Vector2(170, 50)
 layout_mode = 2
 mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.92, 0.95, 1, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_volver")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_volver_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_volver_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_volver_hover")
 text = "VOLVER"
 
-[node name="Spacer" type="Control" parent="MazoContainer/BarraAccionesMazo"]
+[node name="Spacer" type="Control" parent="MazoContainer/BarraAccionesMazo" unique_id=2085651560]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ContadorBox" type="PanelContainer" parent="MazoContainer/BarraAccionesMazo"]
+[node name="ContadorBox" type="PanelContainer" parent="MazoContainer/BarraAccionesMazo" unique_id=1942989123]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_banner_white")
 
-[node name="LblContadorMazo" type="Label" parent="MazoContainer/BarraAccionesMazo/ContadorBox"]
+[node name="LblContadorMazo" type="Label" parent="MazoContainer/BarraAccionesMazo/ContadorBox" unique_id=1495382196]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.08, 0.12, 0.18, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
@@ -465,37 +459,31 @@ text = " 0/8 "
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Spacer2" type="Control" parent="MazoContainer/BarraAccionesMazo"]
+[node name="Spacer2" type="Control" parent="MazoContainer/BarraAccionesMazo" unique_id=1067218653]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="BtnBatallar" type="Button" parent="MazoContainer/BarraAccionesMazo"]
-custom_minimum_size = Vector2(180, 50)
+[node name="BtnBatallar" type="Button" parent="MazoContainer/BarraAccionesMazo" unique_id=303216996]
+custom_minimum_size = Vector2(210, 50)
 layout_mode = 2
 mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
 theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_batallar")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_batallar_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_batallar_hover")
-text = "BATALLAR"
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_batallar_hover")
+text = "SELECCIONAR"
 
-[node name="InfoContainer" type="Control" parent="."]
+[node name="InfoContainer" type="Control" parent="." unique_id=692689363]
 layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -580.0
-offset_top = -435.0
-offset_right = -40.0
-offset_bottom = 435.0
-grow_horizontal = 0
-grow_vertical = 2
+anchors_preset = 0
+offset_left = 1335.0
+offset_top = 135.0
+offset_right = 1900.0
+offset_bottom = 1055.0
 
-[node name="InfoBg" type="TextureRect" parent="InfoContainer"]
+[node name="InfoBg" type="TextureRect" parent="InfoContainer" unique_id=153545499]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -505,146 +493,152 @@ grow_vertical = 2
 texture = ExtResource("10_infocart")
 expand_mode = 1
 
-[node name="HeaderDatos" type="Control" parent="InfoContainer"]
-layout_mode = 0
-offset_left = 200.0
-offset_top = 125.0
-offset_right = 320.0
-offset_bottom = 165.0
+[node name="HeaderDatos" type="Control" parent="InfoContainer" unique_id=1723334670]
+anchors_preset = 0
+offset_left = 190.0
+offset_top = 130.0
+offset_right = 385.0
+offset_bottom = 175.0
 
-[node name="LblDetalleTitulo" type="Label" parent="InfoContainer/HeaderDatos"]
+[node name="LblDetalleTitulo" type="Label" parent="InfoContainer/HeaderDatos" unique_id=389324297]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0.12, 0.14, 0.2, 1)
+theme_override_colors/font_color = Color(0.1, 0.12, 0.16, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 23
 text = "Datos"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StatsBox" type="Control" parent="InfoContainer"]
-layout_mode = 0
-offset_left = 120.0
-offset_top = 180.0
-offset_right = 400.0
-offset_bottom = 385.0
+[node name="StatsBox" type="Control" parent="InfoContainer" unique_id=1969684130]
+anchors_preset = 0
+offset_left = 125.0
+offset_top = 185.0
+offset_right = 445.0
+offset_bottom = 430.0
 
-[node name="Margin" type="MarginContainer" parent="InfoContainer/StatsBox"]
+[node name="Margin" type="MarginContainer" parent="InfoContainer/StatsBox" unique_id=692046344]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 4
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
 
-[node name="VBoxStats" type="VBoxContainer" parent="InfoContainer/StatsBox/Margin"]
+[node name="VBoxStats" type="VBoxContainer" parent="InfoContainer/StatsBox/Margin" unique_id=969935030]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 5
 alignment = 1
 
-[node name="LblHp" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats"]
+[node name="LblHp" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1029601990]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.12, 0.18, 1)
+theme_override_colors/font_color = Color(0.1, 0.12, 0.18, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
 theme_override_font_sizes/font_size = 22
 text = "HP: 200"
 horizontal_alignment = 1
 
-[node name="LblAtk" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats"]
+[node name="LblAtk" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1865172839]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.12, 0.18, 1)
+theme_override_colors/font_color = Color(0.1, 0.12, 0.18, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
 theme_override_font_sizes/font_size = 22
 text = "ATK: 250"
 horizontal_alignment = 1
 
-[node name="LblDef" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats"]
+[node name="LblDef" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=107636715]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.12, 0.18, 1)
+theme_override_colors/font_color = Color(0.1, 0.12, 0.18, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
 theme_override_font_sizes/font_size = 22
 text = "DEF: 340"
 horizontal_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="InfoContainer/StatsBox/Margin/VBoxStats"]
+[node name="HSeparator" type="HSeparator" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1297508467]
 layout_mode = 2
 
-[node name="LblCosto" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats"]
+[node name="LblCosto" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1657969010]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.35, 0.75, 1)
+theme_override_colors/font_color = Color(0.12, 0.35, 0.75, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 19
 text = "Costo: 4"
 horizontal_alignment = 1
 
-[node name="LblElemento" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats"]
+[node name="LblElemento" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1893528408]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.12, 0.50, 0.25, 1)
+theme_override_colors/font_color = Color(0.12, 0.55, 0.25, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 19
 text = "Elemento: Metal"
 horizontal_alignment = 1
 
-[node name="HabilidadBox" type="Control" parent="InfoContainer"]
-layout_mode = 0
-offset_left = 120.0
-offset_top = 450.0
-offset_right = 400.0
-offset_bottom = 690.0
+[node name="HabilidadBox" type="Control" parent="InfoContainer" unique_id=1087317719]
+anchors_preset = 0
+offset_left = 125.0
+offset_top = 475.0
+offset_right = 445.0
+offset_bottom = 790.0
 
-[node name="Margin" type="MarginContainer" parent="InfoContainer/HabilidadBox"]
+[node name="Margin" type="MarginContainer" parent="InfoContainer/HabilidadBox" unique_id=355476580]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -3.0
+offset_right = -3.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 8
+theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 14
 
-[node name="VBoxHabilidad" type="VBoxContainer" parent="InfoContainer/HabilidadBox/Margin"]
+[node name="VBoxHabilidad" type="VBoxContainer" parent="InfoContainer/HabilidadBox/Margin" unique_id=775251707]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 6
 
-[node name="LblHabilidadTitulo" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad"]
+[node name="LblHabilidadTitulo" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad" unique_id=1718749025]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.15, 0.12, 0.18, 1)
+theme_override_colors/font_color = Color(0.1, 0.12, 0.18, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 22
-text = "Habilidad:"
+theme_override_font_sizes/font_size = 20
+text = "Habilidad"
 horizontal_alignment = 1
 
-[node name="LblHabilidad" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad"]
-custom_minimum_size = Vector2(250, 115)
+[node name="LblHabilidad" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad" unique_id=1307508624]
+custom_minimum_size = Vector2(260, 130)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.2, 0.2, 0.26, 1)
-theme_override_fonts/font = SubResource("FontVariation_regular")
-theme_override_font_sizes/font_size = 18
-text = "Te hace parry osea se cubrirá pero cuando lo ataques te pegara el doble"
+theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)
+theme_override_font_sizes/font_size = 15
+text = "Te hace parry osea se cubrirá 
+pero cuando lo ataques 
+te pegara el doble"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="LblExtra" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad"]
+[node name="LblExtra" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad" unique_id=1967802788]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.25, 0.25, 0.35, 1)
+theme_override_colors/font_color = Color(0.2, 0.25, 0.35, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 16
-text = "Ventaja: Fuego  |  Desventaja: Metal"
+theme_override_font_sizes/font_size = 14
+text = "Ventaja: Fuego  
+
+Desventaja: Metal
+"
 horizontal_alignment = 1
 
-[node name="ModalAyuda" type="Control" parent="."]
+[node name="ModalAyuda" type="Control" parent="." unique_id=341276553]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -653,7 +647,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Overlay" type="ColorRect" parent="ModalAyuda"]
+[node name="Overlay" type="ColorRect" parent="ModalAyuda" unique_id=1220347203]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -662,7 +656,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.02, 0.04, 0.08, 0.75)
 
-[node name="CenterContainer" type="CenterContainer" parent="ModalAyuda"]
+[node name="CenterContainer" type="CenterContainer" parent="ModalAyuda" unique_id=2097053506]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -670,23 +664,23 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="PanelContainer" parent="ModalAyuda/CenterContainer"]
+[node name="Panel" type="PanelContainer" parent="ModalAyuda/CenterContainer" unique_id=496712826]
 custom_minimum_size = Vector2(680, 480)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_modal_bg")
 
-[node name="Margin" type="MarginContainer" parent="ModalAyuda/CenterContainer/Panel"]
+[node name="Margin" type="MarginContainer" parent="ModalAyuda/CenterContainer/Panel" unique_id=224597823]
 layout_mode = 2
 theme_override_constants/margin_left = 36
 theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 36
 theme_override_constants/margin_bottom = 32
 
-[node name="VBox" type="VBoxContainer" parent="ModalAyuda/CenterContainer/Panel/Margin"]
+[node name="VBox" type="VBoxContainer" parent="ModalAyuda/CenterContainer/Panel/Margin" unique_id=427149128]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="TituloAyuda" type="Label" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox"]
+[node name="TituloAyuda" type="Label" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1137496643]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
@@ -694,7 +688,7 @@ theme_override_font_sizes/font_size = 30
 text = "¿CÓMO CONSTRUIR TU MAZO?"
 horizontal_alignment = 1
 
-[node name="TextoAyuda" type="RichTextLabel" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox"]
+[node name="TextoAyuda" type="RichTextLabel" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1481088334]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.9, 0.94, 1, 1)
@@ -708,7 +702,7 @@ text = "[b]1. Selector Izquierdo:[/b] Explora tus cartas por pestañas ([color=#
 
 [b]4. ¡A Batallar!:[/b] Cuando tu mazo tenga 8 cartas válidas, presiona el botón [color=#00e5ff]BATALLAR[/color] para iniciar el duelo."
 
-[node name="BtnCerrarAyuda" type="Button" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox"]
+[node name="BtnCerrarAyuda" type="Button" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1922394009]
 custom_minimum_size = Vector2(200, 48)
 layout_mode = 2
 size_flags_horizontal = 4

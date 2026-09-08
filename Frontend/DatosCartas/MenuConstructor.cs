@@ -14,13 +14,34 @@ public partial class MenuConstructor : Control
 	[Export] public string RutaMenu    = "res://escenas/menu/menu_principal.tscn";
 	[Export] private PackedScene _escenaCartaMini;
 
-	// Renders "de héroe": ruta de escena de la carta -> PNG estático que se muestra en su lugar
-	// en el showcase del selector, saliéndose del marco hacia arriba (ver ActualizarShowcaseAnimado).
-	// Para agregar otra carta con este tratamiento, solo hace falta sumar una línea aquí.
-	private static readonly Dictionary<string, string> RENDERS_HEROE = new()
+	// Renders estáticos de tropas para el showcase central del selector de mazo (carpeta RendersTropa).
+	// Al seleccionar cualquier tropa, se muestra su render estático apoyado sobre el borde superior del mazo.
+	private static readonly (string clave, string rutaRender)[] RENDERS_TROPA = new[]
 	{
-		{ "res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn", "res://imagenes/RendersTropa/SoldadoReal_Menu.png" },
+		("peon",           "res://imagenes/RendersTropa/Peon_Menu.png"),
+		("torre",          "res://imagenes/RendersTropa/Torre_Menu.png"),
+		("arfil",          "res://imagenes/RendersTropa/Arfil_Menu.png"),
+		("caballo",        "res://imagenes/RendersTropa/Caballo_Menu.png"),
+		("dama",           "res://imagenes/RendersTropa/Dama_Menu.png"),
+		("soldadocartoon", "res://imagenes/RendersTropa/SoldadoCartoon_Render.png"),
+		("tanque",         "res://imagenes/RendersTropa/Tanque_Menu.png"),
+		("granadero",      "res://imagenes/RendersTropa/Granadero_Menu.png"),
+		("kabar",          "res://imagenes/RendersTropa/Kabar_Menu.png"),
+		("campero",        "res://imagenes/RendersTropa/Campero_Menu.png"),
+		("soldadoreal",    "res://imagenes/RendersTropa/SoldadoReal_Render.png"),
+		("maguin",         "res://imagenes/RendersTropa/Maguin_Menu.png"),
+		("majin",          "res://imagenes/RendersTropa/Maguin_Menu.png"),
+		("dragon",         "res://imagenes/RendersTropa/Dragon_Menu.png"),
+		("golem",          "res://imagenes/RendersTropa/Golem_Menu.png"),
+		("tiburon",        "res://imagenes/RendersTropa/Tiburon_Menu.png"),
+		("calamar",        "res://imagenes/RendersTropa/Calamar_Menu.png"),
+		("rex",            "res://imagenes/RendersTropa/Paperex_Menu.png"),
+		("paperex",        "res://imagenes/RendersTropa/Paperex_Menu.png"),
+		("machi",          "res://imagenes/RendersTropa/Machi_Menu.png"),
 	};
+
+	private const string RUTA_SOLDADO_REAL_MENU = "res://imagenes/RendersTropa/SoldadoReal_Menu.png";
+	private const string RUTA_SOLDADO_REAL_RENDER = "res://imagenes/RendersTropa/SoldadoReal_Render.png";
 
 	[ExportGroup("Texturas y Assets")]
 	[Export] private Texture2D _texTropaSelector;
@@ -73,10 +94,13 @@ public partial class MenuConstructor : Control
 	private readonly List<CartaData> _todasLasCartas = new();
 	private readonly List<CartaData> _cartasEnMazo = new();
 	private readonly List<CartaData> _cartasArdidEnMazo = new();
+	private List<CartaData> _mazoInicial = null;
 	private string _pestanaActual = "TROPAS"; // "TROPAS" o "ARDID"
 	private CartaData _cartaSeleccionada = null;
 	private AnimatedSprite2D _spriteAnimadoActual = null;
 	private Tween _idleTween = null;
+	private Tween _soldadoRealTween = null;
+	private TextureRect _overlayTextureCenter = null;
 	private bool _estaAtacando = false;
 
 	public override void _Ready()
@@ -89,9 +113,15 @@ public partial class MenuConstructor : Control
 		if (_txtBuscador != null)
 		{
 			_txtBuscador.TextChanged += (txt) => FiltrarCartas(txt);
+			_txtBuscador.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
+			_txtBuscador.AddThemeStyleboxOverride("normal", new StyleBoxEmpty());
 		}
 
-		if (_btnBatallar != null) _btnBatallar.Pressed += IrABatalla;
+		if (_btnBatallar != null)
+		{
+			_btnBatallar.Text = "SELECCIONAR";
+			_btnBatallar.Pressed += ConfirmarSeleccionMazo;
+		}
 		if (_btnVolver != null) _btnVolver.Pressed += VolverAlMenu;
 
 		if (_btnDuda != null) _btnDuda.Pressed += AbrirAyuda;
@@ -108,7 +138,37 @@ public partial class MenuConstructor : Control
 			};
 		}
 
+		if (_fallbackTextureCenter != null)
+		{
+			_fallbackTextureCenter.MouseFilter = Control.MouseFilterEnum.Stop;
+			_fallbackTextureCenter.GuiInput += (ev) =>
+			{
+				if (ev is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left && mb.Pressed)
+				{
+					EjecutarAnimacionAtaqueShowcase();
+				}
+			};
+
+			// Capa superior para el cross-fade del aura de Soldado Real
+			_overlayTextureCenter = new TextureRect();
+			_overlayTextureCenter.Name = "SoldadoRealAuraOverlay";
+			_overlayTextureCenter.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+			_overlayTextureCenter.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			_overlayTextureCenter.AnchorLeft = 0f;
+			_overlayTextureCenter.AnchorTop = 0f;
+			_overlayTextureCenter.AnchorRight = 1f;
+			_overlayTextureCenter.AnchorBottom = 1f;
+			_overlayTextureCenter.OffsetLeft = 0f;
+			_overlayTextureCenter.OffsetTop = 0f;
+			_overlayTextureCenter.OffsetRight = 0f;
+			_overlayTextureCenter.OffsetBottom = 0f;
+			_overlayTextureCenter.MouseFilter = Control.MouseFilterEnum.Ignore;
+			_overlayTextureCenter.Visible = false;
+			_fallbackTextureCenter.AddChild(_overlayTextureCenter);
+		}
+
 		CargarCartasDesdeDisco();
+		InicializarMazoJugador();
 		CambiarPestana("TROPAS");
 
 		if (_todasLasCartas.Count > 0)
@@ -206,6 +266,77 @@ public partial class MenuConstructor : Control
 		});
 	}
 
+	private void InicializarMazoJugador()
+	{
+		_cartasEnMazo.Clear();
+
+		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
+		{
+			foreach (string ruta in SesionJuego.Instance.MazoSeleccionado)
+			{
+				string norm = ClasificacionCartas.Normalizar(ruta);
+				var match = _todasLasCartas.Find(c => !string.IsNullOrEmpty(c.RutaEscena) && ClasificacionCartas.Normalizar(c.RutaEscena) == norm);
+				if (match != null && !_cartasEnMazo.Contains(match))
+				{
+					_cartasEnMazo.Add(match);
+				}
+			}
+		}
+
+		if (_cartasEnMazo.Count < MAX_CARTAS)
+		{
+			AutoCompletarMazoValido();
+		}
+
+		_mazoInicial = new List<CartaData>(_cartasEnMazo);
+	}
+
+	private void AutoCompletarMazoValido()
+	{
+		int nTac = ContarPorTipo(TipoTropa.Tactico);
+		int nAse = ContarPorTipo(TipoTropa.Asesino);
+		int nCol = ContarPorTipo(TipoTropa.Coloso);
+
+		foreach (var c in _todasLasCartas)
+		{
+			if (c.Categoria != CategoriaCarta.Unidad || string.IsNullOrEmpty(c.RutaEscena) || _cartasEnMazo.Contains(c))
+				continue;
+
+			var tipo = ClasificacionCartas.TipoDe(c.RutaEscena, c.Nombre);
+			if (tipo == TipoTropa.Tactico && nTac < MAX_TACTICOS)
+			{
+				_cartasEnMazo.Add(c);
+				nTac++;
+			}
+			else if (tipo == TipoTropa.Asesino && nAse < MAX_ASESINOS)
+			{
+				_cartasEnMazo.Add(c);
+				nAse++;
+			}
+			else if (tipo == TipoTropa.Coloso && nCol < MAX_COLOSOS)
+			{
+				_cartasEnMazo.Add(c);
+				nCol++;
+			}
+
+			if (_cartasEnMazo.Count >= MAX_CARTAS) break;
+		}
+
+		if (_cartasEnMazo.Count == MAX_CARTAS && (SesionJuego.Instance == null || !SesionJuego.Instance.TieneMazo))
+		{
+			var esc = new List<string>();
+			var img = new List<string>();
+			foreach (var c in _cartasEnMazo)
+			{
+				esc.Add(c.RutaEscena);
+				string png = ClasificacionCartas.ImagenBatalla(c.RutaEscena, c.Nombre);
+				if (string.IsNullOrEmpty(png)) png = c.Imagen != null ? c.Imagen.ResourcePath : "";
+				img.Add(png);
+			}
+			SesionJuego.Instance?.GuardarMazo(esc, img);
+		}
+	}
+
 	public void CambiarPestana(string nuevaPestana)
 	{
 		_pestanaActual = nuevaPestana.ToUpper();
@@ -224,8 +355,8 @@ public partial class MenuConstructor : Control
 
 			if (mazoContainer != null)
 			{
-				mazoContainer.Position = new Vector2(615, 460);
-				mazoContainer.Size = new Vector2(690, 425);
+				mazoContainer.Position = new Vector2(595, 465);
+				mazoContainer.Size = new Vector2(730, 455);
 			}
 
 			if (_gridMazoSlots != null)
@@ -235,12 +366,12 @@ public partial class MenuConstructor : Control
 				_gridMazoSlots.AnchorRight = 0.5f;
 				_gridMazoSlots.AnchorTop = 0.5f;
 				_gridMazoSlots.AnchorBottom = 0.5f;
-				_gridMazoSlots.OffsetLeft = -290.0f;
-				_gridMazoSlots.OffsetRight = 290.0f;
-				_gridMazoSlots.OffsetTop = -140.0f;
-				_gridMazoSlots.OffsetBottom = 140.0f;
-				_gridMazoSlots.AddThemeConstantOverride("h_separation", 18);
-				_gridMazoSlots.AddThemeConstantOverride("v_separation", 14);
+				_gridMazoSlots.OffsetLeft = -315.0f;
+				_gridMazoSlots.OffsetRight = 315.0f;
+				_gridMazoSlots.OffsetTop = -160.0f;
+				_gridMazoSlots.OffsetBottom = 160.0f;
+				_gridMazoSlots.AddThemeConstantOverride("h_separation", 22);
+				_gridMazoSlots.AddThemeConstantOverride("v_separation", 16);
 			}
 		}
 		else
@@ -253,8 +384,8 @@ public partial class MenuConstructor : Control
 
 			if (mazoContainer != null)
 			{
-				mazoContainer.Position = new Vector2(615, 380);
-				mazoContainer.Size = new Vector2(690, 490);
+				mazoContainer.Position = new Vector2(595, 400);
+				mazoContainer.Size = new Vector2(730, 520);
 			}
 
 			if (_gridMazoSlots != null)
@@ -264,11 +395,11 @@ public partial class MenuConstructor : Control
 				_gridMazoSlots.AnchorRight = 0.5f;
 				_gridMazoSlots.AnchorTop = 0.5f;
 				_gridMazoSlots.AnchorBottom = 0.5f;
-				_gridMazoSlots.OffsetLeft = -290.0f;
-				_gridMazoSlots.OffsetRight = 290.0f;
-				_gridMazoSlots.OffsetTop = -210.0f;
-				_gridMazoSlots.OffsetBottom = 210.0f;
-				_gridMazoSlots.AddThemeConstantOverride("h_separation", 18);
+				_gridMazoSlots.OffsetLeft = -315.0f;
+				_gridMazoSlots.OffsetRight = 315.0f;
+				_gridMazoSlots.OffsetTop = -220.0f;
+				_gridMazoSlots.OffsetBottom = 220.0f;
+				_gridMazoSlots.AddThemeConstantOverride("h_separation", 22);
 				_gridMazoSlots.AddThemeConstantOverride("v_separation", 16);
 			}
 		}
@@ -367,9 +498,33 @@ public partial class MenuConstructor : Control
 
 		if (_lblShowcaseNombre != null)
 		{
-			_lblShowcaseNombre.Text = datos.Nombre.ToUpper();
+			string nombreUpper = datos.Nombre.ToUpper();
+			_lblShowcaseNombre.Text = nombreUpper;
+
+			// Ajustar tamaño de fuente y ancho del banner holgadamente para que no quede "a la medida" apretado,
+			// sino que mantenga proporciones amplias y elegantes como en el diseño original.
+			int fontSize = 25;
+			if (nombreUpper.Length > 14) fontSize = 23;
+			if (nombreUpper.Length > 18) fontSize = 20;
+			_lblShowcaseNombre.AddThemeFontSizeOverride("font_size", fontSize);
+
+			var font = _lblShowcaseNombre.GetThemeFont("font");
+			float textWidth = font != null
+				? font.GetStringSize(nombreUpper, HorizontalAlignment.Center, -1, fontSize).X
+				: nombreUpper.Length * (fontSize * 0.65f);
+
+			// Mantener un ancho amplio con márgenes generosos a los lados (mínimo 440px, máximo 560px)
+			float bannerWidth = Mathf.Clamp(textWidth + 180f, 440f, 560f);
+
+			var banner = _lblShowcaseNombre.GetParent<Control>();
+			if (banner != null)
+			{
+				banner.OffsetLeft = -bannerWidth / 2f;
+				banner.OffsetRight = bannerWidth / 2f;
+			}
+
 			_lblShowcaseNombre.PivotOffset = _lblShowcaseNombre.Size / 2f;
-			_lblShowcaseNombre.Scale = new Vector2(1.1f, 1.1f);
+			_lblShowcaseNombre.Scale = new Vector2(1.06f, 1.06f);
 			var tw = _lblShowcaseNombre.CreateTween();
 			tw.TweenProperty(_lblShowcaseNombre, "scale", Vector2.One, 0.18f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 		}
@@ -378,11 +533,28 @@ public partial class MenuConstructor : Control
 		ActualizarFichaDetalles(datos);
 	}
 
+	private static string ObtenerRutaRenderTropa(CartaData datos)
+	{
+		if (datos == null) return null;
+		string norm = ClasificacionCartas.Normalizar(datos.RutaEscena) + "|" + ClasificacionCartas.Normalizar(datos.Nombre);
+		foreach (var entry in RENDERS_TROPA)
+		{
+			if (norm.Contains(entry.clave))
+			{
+				return entry.rutaRender;
+			}
+		}
+		return null;
+	}
+
 	private void ActualizarShowcaseAnimado(CartaData datos)
 	{
-		if (_containerSpriteCenter == null) return;
+		if (_fallbackTextureCenter == null) return;
 
 		_idleTween?.Kill();
+		_idleTween = null;
+		_soldadoRealTween?.Kill();
+		_soldadoRealTween = null;
 		_estaAtacando = false;
 
 		if (_spriteAnimadoActual != null && IsInstanceValid(_spriteAnimadoActual))
@@ -391,194 +563,93 @@ public partial class MenuConstructor : Control
 			_spriteAnimadoActual = null;
 		}
 
-		bool tieneSpriteAnimado = false;
+		string norm = ClasificacionCartas.Normalizar(datos.RutaEscena) + "|" + ClasificacionCartas.Normalizar(datos.Nombre);
+		bool esSoldadoReal = norm.Contains("soldadoreal");
+		string rutaRender = ObtenerRutaRenderTropa(datos);
 
-		// Renders "de héroe": para estas cartas se muestra un PNG estático grande, saliéndose
-		// del marco del showcase hacia arriba, en vez de su idle animado normal. Para sumar una
-		// carta más a este tratamiento, solo hace falta agregar su entrada acá.
-		bool esRenderHeroe = RENDERS_HEROE.TryGetValue(datos.RutaEscena ?? "", out string rutaRenderHeroe);
+		_fallbackTextureCenter.Visible = true;
+		_fallbackTextureCenter.AnchorLeft = 0.5f;
+		_fallbackTextureCenter.AnchorRight = 0.5f;
+		_fallbackTextureCenter.AnchorTop = 0.5f;
+		_fallbackTextureCenter.AnchorBottom = 0.5f;
+		_fallbackTextureCenter.Scale = Vector2.One;
 
-		if (!esRenderHeroe && !string.IsNullOrEmpty(datos.RutaEscena) && ResourceLoader.Exists(datos.RutaEscena))
+		if (rutaRender != null)
 		{
-			try
+			// Render estático de tropa apoyado sobre el borde superior del mazo (Y≈460 en pantalla):
+			// OffsetTop=-110 despeja el banner del nombre y OffsetBottom=220 posa la base de la tropa
+			// directamente sobre el cofre/mazo sin flotar.
+			_fallbackTextureCenter.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+			_fallbackTextureCenter.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			_fallbackTextureCenter.OffsetLeft   = -220.0f;
+			_fallbackTextureCenter.OffsetRight  = 220.0f;
+			_fallbackTextureCenter.OffsetTop    = -90.0f;
+			_fallbackTextureCenter.OffsetBottom = 265.0f;
+
+			if (esSoldadoReal)
 			{
-				var packed = ResourceLoader.Load<PackedScene>(datos.RutaEscena);
-				if (packed != null)
+				_fallbackTextureCenter.Texture = GD.Load<Texture2D>(RUTA_SOLDADO_REAL_RENDER);
+
+				if (_overlayTextureCenter != null)
 				{
-					var instancia = packed.Instantiate();
-					AnimatedSprite2D animEncontrado = null;
+					_overlayTextureCenter.Texture = GD.Load<Texture2D>(RUTA_SOLDADO_REAL_MENU);
+					_overlayTextureCenter.Visible = true;
+					_overlayTextureCenter.Modulate = new Color(1, 1, 1, 0);
 
-					if (instancia is AnimatedSprite2D a) animEncontrado = a;
-					else animEncontrado = instancia.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D")
-										  ?? BuscarNodoRecursivo<AnimatedSprite2D>(instancia);
-
-					if (animEncontrado != null && animEncontrado.SpriteFrames != null)
-					{
-						_spriteAnimadoActual = new AnimatedSprite2D();
-						_spriteAnimadoActual.SpriteFrames = animEncontrado.SpriteFrames;
-						_spriteAnimadoActual.Position = new Vector2(0, 0);
-						_spriteAnimadoActual.Scale = new Vector2(0.55f, 0.55f);
-
-						_containerSpriteCenter.AddChild(_spriteAnimadoActual);
-
-						// Buscar la mejor animación de reposo disponible
-						string[] posiblesIdles = { "idle", "idle 1", "idle_fantasma", "idle1", "reposo", "quieto" };
-						string animIdleElegida = null;
-						foreach (var nombreIdle in posiblesIdles)
-						{
-							if (_spriteAnimadoActual.SpriteFrames.HasAnimation(nombreIdle))
-							{
-								animIdleElegida = nombreIdle;
-								break;
-							}
-						}
-
-						if (animIdleElegida != null)
-						{
-							_spriteAnimadoActual.Play(animIdleElegida);
-						}
-						else if (_spriteAnimadoActual.SpriteFrames.GetAnimationNames().Length > 0)
-						{
-							_spriteAnimadoActual.Play(_spriteAnimadoActual.SpriteFrames.GetAnimationNames()[0]);
-						}
-
-						tieneSpriteAnimado = true;
-					}
-					instancia.QueueFree();
+					// Animación de cambio de color/aura: pasa de SoldadoReal RENDER a SoldadoReal_Menu
+					// suavemente como si estuviera concentrando energía, sin flotar ni desplazarse
+					_soldadoRealTween = CreateTween().SetLoops();
+					_soldadoRealTween.TweenProperty(_overlayTextureCenter, "modulate:a", 1.0f, 1.3f)
+						.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+					_soldadoRealTween.TweenInterval(0.35f);
+					_soldadoRealTween.TweenProperty(_overlayTextureCenter, "modulate:a", 0.0f, 1.3f)
+						.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+					_soldadoRealTween.TweenInterval(0.35f);
 				}
-			}
-			catch (Exception ex)
-			{
-				GD.PrintErr($"[MenuConstructor] Error al cargar sprite animado de {datos.Nombre}: {ex.Message}");
-			}
-		}
-
-		if (_fallbackTextureCenter != null)
-		{
-			_fallbackTextureCenter.Visible = !tieneSpriteAnimado;
-			if (!tieneSpriteAnimado)
-			{
-				if (esRenderHeroe && ResourceLoader.Exists(rutaRenderHeroe))
-					_fallbackTextureCenter.Texture = GD.Load<Texture2D>(rutaRenderHeroe);
-				else
-					_fallbackTextureCenter.Texture = datos.Imagen;
-			}
-		}
-
-		if (_spriteAnimadoActual != null && IsInstanceValid(_spriteAnimadoActual))
-		{
-			Vector2 posBase = _spriteAnimadoActual.Position;
-			_idleTween = CreateTween().SetLoops();
-			_idleTween.TweenProperty(_spriteAnimadoActual, "position:y", posBase.Y - 8f, 1.2f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			_idleTween.TweenProperty(_spriteAnimadoActual, "position:y", posBase.Y, 1.2f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-		}
-		else if (_fallbackTextureCenter != null && _fallbackTextureCenter.Visible)
-		{
-			_fallbackTextureCenter.AnchorLeft = 0.5f;
-			_fallbackTextureCenter.AnchorRight = 0.5f;
-			_fallbackTextureCenter.AnchorTop = 0.5f;
-			_fallbackTextureCenter.AnchorBottom = 0.5f;
-
-			if (esRenderHeroe)
-			{
-				// Tamaño moderado, igual de proporcionado que las piezas de ajedrez por
-				// defecto: la base queda justo en el borde superior del tablero (Y≈460 en
-				// pantalla) — MazoContainer se dibuja DESPUÉS de ShowcaseContainer en el árbol
-				// de la escena, así que el tablero ya tapa cualquier pequeño sobrante por
-				// debajo de esa línea, dando el efecto de "detrás del mazo" sin código extra.
-				_fallbackTextureCenter.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-				_fallbackTextureCenter.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-				_fallbackTextureCenter.OffsetLeft   = -150.0f;
-				_fallbackTextureCenter.OffsetRight  = 150.0f;
-				_fallbackTextureCenter.OffsetTop    = -110.0f; // despeja el banner del nombre (Y≈135 en pantalla)
-				_fallbackTextureCenter.OffsetBottom = 215.0f;  // toca el borde del tablero (Y≈460), sin invadirlo
 			}
 			else
 			{
-				_fallbackTextureCenter.OffsetLeft = -90.0f;
-				_fallbackTextureCenter.OffsetRight = 90.0f;
-				_fallbackTextureCenter.OffsetTop = -60.0f;
-				_fallbackTextureCenter.OffsetBottom = 160.0f;
+				if (_overlayTextureCenter != null)
+				{
+					_overlayTextureCenter.Visible = false;
+				}
+				_fallbackTextureCenter.Texture = GD.Load<Texture2D>(rutaRender);
+				// Todas las demás tropas se muestran de forma completamente estática
 			}
-
-			// "Respiración" — vaivén vertical + pulso de escala en paralelo, para que el render
-			// estático se sienta vivo mientras está seleccionado (sin necesitar más fotogramas
-			// de arte). El pivote se centra para que el pulso de escala no se note desplazado.
-			Vector2 posBase = _fallbackTextureCenter.Position;
-			Vector2 escalaBase = _fallbackTextureCenter.Scale;
-			_fallbackTextureCenter.PivotOffset = _fallbackTextureCenter.Size / 2f;
-
-			float amplitudBob = esRenderHeroe ? 10f : 6f;
-			_idleTween = CreateTween().SetLoops().SetParallel(true);
-			// Fase 1 (sube + agranda), ambas en paralelo:
-			_idleTween.TweenProperty(_fallbackTextureCenter, "position:y", posBase.Y - amplitudBob, 1.2f)
-					   .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			_idleTween.TweenProperty(_fallbackTextureCenter, "scale", escalaBase * 1.035f, 1.2f)
-					   .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			// Fase 2 (baja + vuelve al tamaño original), también en paralelo entre sí:
-			_idleTween.Chain().TweenProperty(_fallbackTextureCenter, "position:y", posBase.Y, 1.2f)
-					   .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-			_idleTween.TweenProperty(_fallbackTextureCenter, "scale", escalaBase, 1.2f)
-					   .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 		}
+		else
+		{
+			// Cartas de ardid / hechizos u otros sin render de tropa
+			if (_overlayTextureCenter != null)
+			{
+				_overlayTextureCenter.Visible = false;
+			}
+			_fallbackTextureCenter.Texture = datos.Imagen;
+			_fallbackTextureCenter.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+			_fallbackTextureCenter.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			_fallbackTextureCenter.OffsetLeft   = -90.0f;
+			_fallbackTextureCenter.OffsetRight  = 90.0f;
+			_fallbackTextureCenter.OffsetTop    = -60.0f;
+			_fallbackTextureCenter.OffsetBottom = 160.0f;
+		}
+
+		_fallbackTextureCenter.PivotOffset = _fallbackTextureCenter.Size / 2f;
 	}
 
 	public void EjecutarAnimacionAtaqueShowcase()
 	{
 		if (_estaAtacando) return;
 
-		if (_spriteAnimadoActual != null && IsInstanceValid(_spriteAnimadoActual))
-		{
-			string[] posiblesAtaques = { "ataque", "ataque 1", "ataque_fantasma", "habilidad", "habilidad 1", "daño", "daño 1", "defensa" };
-			string animAtaque = null;
-			foreach (var nombreAtk in posiblesAtaques)
-			{
-				if (_spriteAnimadoActual.SpriteFrames.HasAnimation(nombreAtk))
-				{
-					animAtaque = nombreAtk;
-					break;
-				}
-			}
-
-			if (animAtaque != null)
-			{
-				_estaAtacando = true;
-				_spriteAnimadoActual.Play(animAtaque);
-
-				GlobalAudioManager.Instance?.PlayClickSound();
-
-				var tw = CreateTween();
-				tw.TweenProperty(_spriteAnimadoActual, "scale", new Vector2(0.65f, 0.65f), 0.1f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-				tw.TweenProperty(_spriteAnimadoActual, "scale", new Vector2(0.55f, 0.55f), 0.15f);
-
-				_spriteAnimadoActual.AnimationFinished += VolverAIdle;
-			}
-		}
-		else if (_fallbackTextureCenter != null && _fallbackTextureCenter.Visible)
+		if (_fallbackTextureCenter != null && _fallbackTextureCenter.Visible)
 		{
 			_estaAtacando = true;
+			GlobalAudioManager.Instance?.PlayClickSound();
+			_fallbackTextureCenter.PivotOffset = _fallbackTextureCenter.Size / 2f;
 			var tw = CreateTween();
-			tw.TweenProperty(_fallbackTextureCenter, "scale", new Vector2(1.12f, 1.12f), 0.1f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-			tw.TweenProperty(_fallbackTextureCenter, "scale", Vector2.One, 0.15f);
+			tw.TweenProperty(_fallbackTextureCenter, "scale", new Vector2(1.08f, 1.08f), 0.08f)
+				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+			tw.TweenProperty(_fallbackTextureCenter, "scale", Vector2.One, 0.12f);
 			tw.TweenCallback(Callable.From(() => _estaAtacando = false));
-		}
-	}
-
-	private void VolverAIdle()
-	{
-		if (_spriteAnimadoActual != null && IsInstanceValid(_spriteAnimadoActual))
-		{
-			_spriteAnimadoActual.AnimationFinished -= VolverAIdle;
-			string[] posiblesIdles = { "idle", "idle 1", "idle_fantasma", "idle1", "reposo" };
-			foreach (var nombreIdle in posiblesIdles)
-			{
-				if (_spriteAnimadoActual.SpriteFrames.HasAnimation(nombreIdle))
-				{
-					_spriteAnimadoActual.Play(nombreIdle);
-					break;
-				}
-			}
-			_estaAtacando = false;
 		}
 	}
 
@@ -815,6 +886,7 @@ public partial class MenuConstructor : Control
 
 		if (_btnBatallar != null)
 		{
+			_btnBatallar.Text = "SELECCIONAR";
 			bool listo = (_cartasEnMazo.Count == MAX_CARTAS);
 			_btnBatallar.Disabled = !listo;
 			_btnBatallar.Modulate = listo ? Colors.White : new Color(0.75f, 0.75f, 0.75f, 0.8f);
@@ -825,11 +897,11 @@ public partial class MenuConstructor : Control
 
 	#region Acciones de Botones y Navegación
 
-	private void IrABatalla()
+	private void ConfirmarSeleccionMazo()
 	{
 		if (_cartasEnMazo.Count < MIN_CARTAS)
 		{
-			MostrarMensajeAviso($"Necesitas {MIN_CARTAS} cartas para batallar.");
+			MostrarMensajeAviso($"Necesitas {MIN_CARTAS} cartas para completar tu mazo.");
 			return;
 		}
 
@@ -869,13 +941,23 @@ public partial class MenuConstructor : Control
 			SesionJuego.Instance.GuardarMazo(escenas, imagenes);
 		}
 
-		GD.Print($"[MenuConstructor] Mazo de {_cartasEnMazo.Count} cartas guardado → ¡A Batallar!");
-		GetTree().ChangeSceneToFile(RutaBatalla);
+		// Actualizar snapshot confirmado
+		_mazoInicial = new List<CartaData>(_cartasEnMazo);
+		GlobalAudioManager.Instance?.PlayClickSound();
+
+		GD.Print($"[MenuConstructor] Mazo de {_cartasEnMazo.Count} cartas seleccionado y guardado → Volviendo al Menú Principal");
+		GetTree().ChangeSceneToFile(RutaMenu);
 	}
 
 	private void VolverAlMenu()
 	{
 		GlobalAudioManager.Instance?.PlayClickSound();
+		// Descartar cambios no guardados y restaurar el mazo tal como estaba al entrar
+		_cartasEnMazo.Clear();
+		if (_mazoInicial != null)
+		{
+			_cartasEnMazo.AddRange(_mazoInicial);
+		}
 		GetTree().ChangeSceneToFile(RutaMenu);
 	}
 

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public partial class MenuPrincipal : Control
 {
 	[Export] public string RutaEscenaJuego     = "res://escenas/gameplay/campo_1.tscn";
-	[Export] public string RutaConstructorMazo = "res://DatosCartas/MenuConstructor.tscn";
+	[Export] public string RutaConstructorMazo = "res://escenas/menu/MenuConstructor.tscn";
 	[Export] public string RutaCampoPruebas    = "res://escenas/gameplay/campo_pruebas.tscn";
 	[Export] public string RutaComoJugar       = "res://escenas/menu/PantallaComoJugar.tscn";
 	[Export] public string RutaBestiario       = "res://escenas/menu/PantallaBestiario.tscn";
@@ -103,16 +103,67 @@ public partial class MenuPrincipal : Control
 			AgregarAnimacionHover(btnVsBot);
 		}
 
-		// 4. Los botones sueltos de Bestiario/Cómo Jugar/Pruebas quedan ocultos: Cómo Jugar
-		// vive ahora en BtnSettings, y BtnDev es acceso directo a campo de pruebas.
+		// 4. Panel de desarrollador con los botones secundarios (Bestiario, Cómo Jugar, Pruebas)
 		var secundarios = GetNodeOrNull<Control>("SecondaryButtons");
-		if (secundarios != null) secundarios.Visible = false;
+		if (secundarios != null)
+		{
+			secundarios.Visible = false;
 
-		// 4b. BtnDev: acceso directo a campo de pruebas, sin panel intermedio.
+			var btnBestiario = secundarios.GetNodeOrNull<Button>("BtnBestiario");
+			if (btnBestiario != null)
+			{
+				btnBestiario.Pressed += () => GetTree().ChangeSceneToFile(RutaBestiario);
+				AgregarAnimacionHover(btnBestiario);
+			}
+
+			var btnComoJugar = secundarios.GetNodeOrNull<Button>("BtnComoJugar");
+			if (btnComoJugar != null)
+			{
+				btnComoJugar.Pressed += () => GetTree().ChangeSceneToFile(RutaComoJugar);
+				AgregarAnimacionHover(btnComoJugar);
+			}
+
+			var btnPruebas = secundarios.GetNodeOrNull<Button>("BtnPruebas");
+			if (btnPruebas != null)
+			{
+				btnPruebas.Pressed += () => GetTree().ChangeSceneToFile(RutaCampoPruebas);
+				AgregarAnimacionHover(btnPruebas);
+			}
+		}
+
+		// 4b. BtnDev: al hacer clic, alterna la visualización de los botones secundarios con animación suave
 		var btnDev = GetNodeOrNull<BaseButton>("BtnDev");
 		if (btnDev != null)
 		{
-			btnDev.Pressed += () => GetTree().ChangeSceneToFile(RutaCampoPruebas);
+			btnDev.Pressed += () =>
+			{
+				if (secundarios != null)
+				{
+					bool mostrar = !secundarios.Visible;
+					secundarios.Visible = mostrar;
+					GlobalAudioManager.Instance?.PlayClickSound();
+
+					var btnControl = btnDev as Control;
+					if (btnControl != null)
+					{
+						btnControl.PivotOffset = btnControl.Size / 2f;
+						var twBtn = btnControl.CreateTween();
+						twBtn.TweenProperty(btnControl, "rotation_degrees", 25f, 0.08f);
+						twBtn.TweenProperty(btnControl, "rotation_degrees", 0f, 0.12f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+					}
+
+					if (mostrar)
+					{
+						secundarios.Modulate = new Color(1, 1, 1, 0);
+						secundarios.Scale = new Vector2(0.92f, 0.92f);
+						secundarios.PivotOffset = new Vector2(secundarios.Size.X, 0);
+						var tw = secundarios.CreateTween().SetParallel(true);
+						tw.TweenProperty(secundarios, "modulate:a", 1.0f, 0.16f);
+						tw.TweenProperty(secundarios, "scale", Vector2.One, 0.16f)
+							.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+					}
+				}
+			};
 			AgregarAnimacionHover(btnDev);
 		}
 
