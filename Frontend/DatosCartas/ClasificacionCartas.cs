@@ -31,27 +31,27 @@ public static class ClasificacionCartas
 	private static readonly (string clave, TipoTropa tipo, SerieTropa serie, string png)[] TABLA =
 	{
 		// ── AJEDREZ ──
-		("peon",           TipoTropa.Tactico, SerieTropa.Ajedrez,  "res://imagenes/CartasPng/PeonCart.png"),
-		("torre",          TipoTropa.Coloso,  SerieTropa.Ajedrez,  "res://imagenes/CartasPng/TorreCart.png"),
-		("arfil",          TipoTropa.Tactico, SerieTropa.Ajedrez,  "res://imagenes/CartasPng/ArfilCart.png"),
-		("caballo",        TipoTropa.Tactico, SerieTropa.Ajedrez,  "res://imagenes/CartasPng/CaballoCart.png"),
-		("dama",           TipoTropa.Asesino, SerieTropa.Ajedrez,  "res://imagenes/CartasPng/DamaCart.png"),
+		("peon",           TipoTropa.Tactico, SerieTropa.Ajedrez,  "res://imagenes/CartasPng/Peon_Cart.png"),
+		("torre",          TipoTropa.Coloso,  SerieTropa.Ajedrez,  "res://imagenes/CartasPng/Torre_Cart.png"),
+		("arfil",          TipoTropa.Tactico, SerieTropa.Ajedrez,  "res://imagenes/CartasPng/Arfil_Cart.png"),
+		("caballo",        TipoTropa.Tactico, SerieTropa.Ajedrez,  "res://imagenes/CartasPng/Caballo_Cart.png"),
+		("dama",           TipoTropa.Asesino, SerieTropa.Ajedrez,  "res://imagenes/CartasPng/Dama_Cart.png"),
 		// ── TOON ──
-		("soldadocartoon", TipoTropa.Asesino, SerieTropa.Toon,     "res://imagenes/CartasPng/SoldCartoonCart.png"),
-		("tanque",         TipoTropa.Coloso,  SerieTropa.Toon,     "res://imagenes/CartasPng/TanqueCart.png"),
-		("granadero",      TipoTropa.Asesino, SerieTropa.Toon,     "res://imagenes/CartasPng/GranaderoCart.png"),
-		("kabar",          TipoTropa.Asesino, SerieTropa.Toon,     "res://imagenes/CartasPng/FantasmaCart.png"),
-		("campero",        TipoTropa.Tactico, SerieTropa.Toon,     "res://imagenes/CartasPng/CamperoCart.png"),
+		("soldadocartoon", TipoTropa.Asesino, SerieTropa.Toon,     "res://imagenes/CartasPng/SoldCartoon_Cart.png"),
+		("tanque",         TipoTropa.Coloso,  SerieTropa.Toon,     "res://imagenes/CartasPng/Tanque_Cart.png"),
+		("granadero",      TipoTropa.Asesino, SerieTropa.Toon,     "res://imagenes/CartasPng/Granadero_Cart.png"),
+		("kabar",          TipoTropa.Asesino, SerieTropa.Toon,     "res://imagenes/CartasPng/Kabar_Cart.png"),
+		("campero",        TipoTropa.Tactico, SerieTropa.Toon,     "res://imagenes/CartasPng/Campero_Cart.png"),
 		// ── MEDIEVAL ──
-		("soldadoreal",    TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/SoldRealCart.png"),
-		("maguin",         TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/MaguinCart.png"),
-		("dragon",         TipoTropa.Asesino, SerieTropa.Medieval, "res://imagenes/CartasPng/DragonCart.png"),
-		("golem",          TipoTropa.Coloso,  SerieTropa.Medieval, "res://imagenes/CartasPng/GolemCart.png"),
+		("soldadoreal",    TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/SoldReal_Cart.png"),
+		("maguin",         TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/Maguin_Cart.png"),
+		("dragon",         TipoTropa.Asesino, SerieTropa.Medieval, "res://imagenes/CartasPng/DragonFlama_Cart.png"),
+		("golem",          TipoTropa.Coloso,  SerieTropa.Medieval, "res://imagenes/CartasPng/GolemPedregal_Cart.png"),
 		// ── PACIFICO ──
-		("tiburon",        TipoTropa.Asesino, SerieTropa.Pacifico, "res://imagenes/CartasPng/TiburonCart.png"),
-		("calamar",        TipoTropa.Coloso,  SerieTropa.Pacifico, "res://imagenes/CartasPng/CalamarGCart.png"),
+		("tiburon",        TipoTropa.Asesino, SerieTropa.Pacifico, "res://imagenes/CartasPng/Tiburon_Cart.png"),
+		("calamar",        TipoTropa.Coloso,  SerieTropa.Pacifico, "res://imagenes/CartasPng/Calamar_Cart.png"),
 		// ── PAPELEO ── (Paper-Rex: escena Paper_Rex.tscn o TRex_prime.tscn, ambas contienen "rex")
-		("rex",            TipoTropa.Coloso,  SerieTropa.Papeleo,  "res://imagenes/CartasPng/PaperReXCart.png"),
+		("rex",            TipoTropa.Coloso,  SerieTropa.Papeleo,  "res://imagenes/CartasPng/PapeRex_Cart.png"),
 	};
 
 	/// <summary>Normaliza: minúsculas y solo caracteres a-z 0-9 (sin espacios, guiones, tildes).</summary>

@@ -88,7 +88,7 @@ public partial class Campo1 : Node2D
 		new Color(0.30f,0.65f,1f), new Color(0.60f,0.30f,0.75f), new Color(0.25f,0.55f,0.90f),
 		new Color(1f,0.65f,0.15f)
 	};
-	private int[]   _hechizosMano     = new int[2];
+	private int[]    _hechizosMano     = new int[2];
 	private Panel[] _tarjetasHechizo  = new Panel[2];
 	private Panel[] _overlayHechizo   = new Panel[2];
 	private Label[] _lblEstadoHechizo = new Label[2];
@@ -125,15 +125,12 @@ public partial class Campo1 : Node2D
 	private Random    random            = new Random();
 
 	private string[] imagenesCartas = {
-		"res://imagenes/CartasPng/DragonCart.png",   "res://imagenes/CartasPng/GolemCart.png",
-		"res://imagenes/CartasPng/MaguinCart.png",   "res://imagenes/CartasPng/SoldRealCart.png",
-		"res://imagenes/CartasPng/PaperReXCart.png",     "res://imagenes/CartasPng/TiburonCart.png",
-		"res://imagenes/CartasPng/PeonCart.png",     "res://imagenes/CartasPng/TanqueCart.png",
-		"res://imagenes/CartasPng/CalamarGCart.png", "res://imagenes/CartasPng/CaballoCart.png",
-		"res://imagenes/CartasPng/DamaCart.png",     "res://imagenes/CartasPng/TorreCart.png",
-		"res://imagenes/CartasPng/SoldCartoonCart.png", "res://imagenes/CartasPng/CamperoCart.png",
-		"res://imagenes/CartasPng/ArfilCart.png" , "res://imagenes/CartasPng/FantasmaCart.png",
-		"res://imagenes/CartasPng/GranaderoCart.png"
+		"res://imagenes/CartasPng/DragonFlama_Cart.png", "res://imagenes/CartasPng/GolemPedregal_Cart.png", "res://imagenes/CartasPng/Maguin_Cart.png",
+		"res://imagenes/CartasPng/SoldReal_Cart.png", "res://imagenes/CartasPng/PapeRex_Cart.png", "res://imagenes/CartasPng/Tiburon_Cart.png",
+		"res://imagenes/CartasPng/Peon_Cart.png", "res://imagenes/CartasPng/Tanque_Cart.png", "res://imagenes/CartasPng/Calamar_Cart.png",
+		"res://imagenes/CartasPng/Caballo_Cart.png", "res://imagenes/CartasPng/Dama_Cart.png", "res://imagenes/CartasPng/Torre_Cart.png",
+		"res://imagenes/CartasPng/SoldCartoon_Cart.png", "res://imagenes/CartasPng/Campero_Cart.png", "res://imagenes/CartasPng/Arfil_Cart.png",
+		"res://imagenes/CartasPng/Kabar_Cart.png", "res://imagenes/CartasPng/Granadero_Cart.png"
 	};
 
 	private string[] escenasTropas = {

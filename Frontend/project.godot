@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Eggodia"
 run/main_scene="res://escenas/menu/PantallaCarga.tscn"
-config/features=PackedStringArray("4.6", "C#", "Mobile")
+config/features=PackedStringArray("4.7", "C#", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
