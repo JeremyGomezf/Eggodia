@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bguo2eel58il7"
-path="res://.godot/imported/exit3.png-0579951082b82b327167af0b05ae267c.ctex"
+uid="uid://bkf5n2vqxo150"
+path="res://.godot/imported/toonslFONDO.png-ed62ed780fd3c733c78875df19323798.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/exit3.png"
-dest_files=["res://.godot/imported/exit3.png-0579951082b82b327167af0b05ae267c.ctex"]
+source_file="res://imagenes/Escenarios/toonslFONDO.png"
+dest_files=["res://.godot/imported/toonslFONDO.png-ed62ed780fd3c733c78875df19323798.ctex"]
 
 [params]
 

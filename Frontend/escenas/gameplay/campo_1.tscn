@@ -115,7 +115,6 @@ rotation = -0.22
 
 [node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
 position = Vector2(0, -188)
-rotation = 0.0
 
 [node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
 position = Vector2(125, -165)

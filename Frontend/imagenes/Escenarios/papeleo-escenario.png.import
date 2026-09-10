@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://nhaihcreuvkw"
-path="res://.godot/imported/Play.png-aa6f7ae8100ae56bbc4cc7a929732a4d.ctex"
+uid="uid://vk1cmu5v24a"
+path="res://.godot/imported/papeleo-escenario.png-a08c2437eda90d99506864f009a86581.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/Play.png"
-dest_files=["res://.godot/imported/Play.png-aa6f7ae8100ae56bbc4cc7a929732a4d.ctex"]
+source_file="res://imagenes/Escenarios/papeleo-escenario.png"
+dest_files=["res://.godot/imported/papeleo-escenario.png-a08c2437eda90d99506864f009a86581.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://i88c3872560d"
-path="res://.godot/imported/Menu 2.png-0c4bbce424b3682a79a977117a5d436b.ctex"
+uid="uid://djcnkss81ma71"
+path="res://.godot/imported/ContadorTurno.png-7177fc39023a76466d6dcf0bc3e8116f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/Menu 2.png"
-dest_files=["res://.godot/imported/Menu 2.png-0c4bbce424b3682a79a977117a5d436b.ctex"]
+source_file="res://imagenes/botonescampo1/ContadorTurno.png"
+dest_files=["res://.godot/imported/ContadorTurno.png-7177fc39023a76466d6dcf0bc3e8116f.ctex"]
 
 [params]
 

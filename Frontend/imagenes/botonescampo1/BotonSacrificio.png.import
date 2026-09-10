@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bg4fr2apg5ew5"
-path="res://.godot/imported/exit1.png-b7bbcd7e075bc3fc2651aba483ac1a48.ctex"
+uid="uid://c8ccxlebsbf1i"
+path="res://.godot/imported/BotonSacrificio.png-a0674a9c5f97645d6986bac0dfcb4199.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/exit1.png"
-dest_files=["res://.godot/imported/exit1.png-b7bbcd7e075bc3fc2651aba483ac1a48.ctex"]
+source_file="res://imagenes/botonescampo1/BotonSacrificio.png"
+dest_files=["res://.godot/imported/BotonSacrificio.png-a0674a9c5f97645d6986bac0dfcb4199.ctex"]
 
 [params]
 

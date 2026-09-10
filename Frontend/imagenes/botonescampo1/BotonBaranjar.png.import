@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dc1m7m3uykmeq"
-path="res://.godot/imported/Settings3.png-834915069fada632b53fb891a8a16d5f.ctex"
+uid="uid://din5j31n0hxcg"
+path="res://.godot/imported/BotonBaranjar.png-0037cb8d23c2c9ff40e26e6103b3d1a6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/Settings3.png"
-dest_files=["res://.godot/imported/Settings3.png-834915069fada632b53fb891a8a16d5f.ctex"]
+source_file="res://imagenes/botonescampo1/BotonBaranjar.png"
+dest_files=["res://.godot/imported/BotonBaranjar.png-0037cb8d23c2c9ff40e26e6103b3d1a6.ctex"]
 
 [params]
 

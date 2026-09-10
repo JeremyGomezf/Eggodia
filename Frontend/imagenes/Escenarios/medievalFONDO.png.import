@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xsw3j6diq1kp"
-path="res://.godot/imported/exit2.png-349059fd9312af5d1f8e7a5140cf5a6d.ctex"
+uid="uid://kf7oiropv673"
+path="res://.godot/imported/medievalFONDO.png-79510c04db965f0c5631cc687327ede2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/exit2.png"
-dest_files=["res://.godot/imported/exit2.png-349059fd9312af5d1f8e7a5140cf5a6d.ctex"]
+source_file="res://imagenes/Escenarios/medievalFONDO.png"
+dest_files=["res://.godot/imported/medievalFONDO.png-79510c04db965f0c5631cc687327ede2.ctex"]
 
 [params]
 

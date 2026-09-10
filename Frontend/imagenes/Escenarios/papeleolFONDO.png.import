@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7gy742o4ekkc"
-path="res://.godot/imported/Settings2.png-8ff7bba9391fc23f67a0a337969b8441.ctex"
+uid="uid://bvkxwd1ltq6ke"
+path="res://.godot/imported/papeleolFONDO.png-78f4d4e742c9ce6af58ed4f83d0c45d3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/Settings2.png"
-dest_files=["res://.godot/imported/Settings2.png-8ff7bba9391fc23f67a0a337969b8441.ctex"]
+source_file="res://imagenes/Escenarios/papeleolFONDO.png"
+dest_files=["res://.godot/imported/papeleolFONDO.png-78f4d4e742c9ce6af58ed4f83d0c45d3.ctex"]
 
 [params]
 

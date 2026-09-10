@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cbw6olkiw2yq0"
-path="res://.godot/imported/Play2.png-bdfc22e013fdecb8de6c352f1a0c155a.ctex"
+uid="uid://cs33rlkju5iei"
+path="res://.godot/imported/ajedrez-escenario.png-87f1dbc746c779958b7a61eaa9417bc4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/Play2.png"
-dest_files=["res://.godot/imported/Play2.png-bdfc22e013fdecb8de6c352f1a0c155a.ctex"]
+source_file="res://imagenes/Escenarios/ajedrez-escenario.png"
+dest_files=["res://.godot/imported/ajedrez-escenario.png-87f1dbc746c779958b7a61eaa9417bc4.ctex"]
 
 [params]
 

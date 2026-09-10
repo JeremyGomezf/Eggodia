@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7fboml60kgfx"
-path="res://.godot/imported/Settings1.png-e2ee217c688f82d438304ea2c1409990.ctex"
+uid="uid://knmkuh7kk1fq"
+path="res://.godot/imported/BotonCambioArdid.png-4619b0de90d82d191968fb8393737125.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/Settings1.png"
-dest_files=["res://.godot/imported/Settings1.png-e2ee217c688f82d438304ea2c1409990.ctex"]
+source_file="res://imagenes/botonescampo1/BotonCambioArdid.png"
+dest_files=["res://.godot/imported/BotonCambioArdid.png-4619b0de90d82d191968fb8393737125.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djdsv3gcq1ash"
-path="res://.godot/imported/Tematicafondo.png-daeb7144057a6ba1c0fe2ce3dcbd9262.ctex"
+uid="uid://bh5p2d4wtxage"
+path="res://.godot/imported/ajedrezlFONDO.png-f5988f9eea17ee71f1ed4788476657ec.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/MenuPng/Tematicafondo.png"
-dest_files=["res://.godot/imported/Tematicafondo.png-daeb7144057a6ba1c0fe2ce3dcbd9262.ctex"]
+source_file="res://imagenes/Escenarios/ajedrezlFONDO.png"
+dest_files=["res://.godot/imported/ajedrezlFONDO.png-f5988f9eea17ee71f1ed4788476657ec.ctex"]
 
 [params]
 
