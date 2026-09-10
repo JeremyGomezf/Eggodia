@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Eggodia — Casa Abierta</title>
+<style>
+  @page {
+    size: Letter;
+    margin: 2.54cm;
+    @top-right { content: counter(page); font-family: "Times New Roman", serif; font-size: 12pt; color: #000; }
+  }
+  @page :first { @top-right { content: normal; } }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12pt;
+    line-height: 2.0;
+    color: #000;
+    text-align: left;
+  }
+  p { text-indent: 1.27cm; text-align: justify; margin: 0; }
+  p.noindent { text-indent: 0; }
+  h1 { font-size: 12pt; font-weight: bold; text-align: center; margin: 0; }
+  h2 { font-size: 12pt; font-weight: bold; text-align: left; margin: 24pt 0 0 0; }
+  h3 { font-size: 12pt; font-weight: bold; font-style: italic; text-align: left; margin: 18pt 0 0 0; }
+  ol, ul { margin: 0 0 0 1.27cm; padding: 0; }
+  li { margin: 0; text-align: justify; }
+
+  /* --------- Portada --------- */
+  .portada { text-align: center; page-break-after: always; height: 100%; }
+  .portada .empujar { height: 3.5cm; }   /* baja el título al tercio superior */
+  .portada .titulo { font-weight: bold; font-size: 14pt; line-height: 2.0; }
+  .portada .sub { margin-top: 1cm; line-height: 2.0; }
+  .portada .fecha { margin-top: 4cm; }
+
+  /* --------- Contenido --------- */
+  .titulo-secundario { text-align: center; font-weight: bold; font-size: 12pt; margin-bottom: 12pt; }
+
+  .figura { margin: 18pt 0; page-break-inside: avoid; text-align: left; }
+  .figura .num { font-weight: bold; }
+  .figura .cap { font-style: italic; margin-bottom: 6pt; }
+  .figura img { max-width: 100%; max-height: 12cm; display: block; margin: 6pt 0 6pt 0; border: none; }
+  .figura .nota { font-size: 10pt; line-height: 1.5; text-indent: 0; margin-top: 4pt; }
+
+  table { border-collapse: collapse; width: 100%; margin: 12pt 0; font-family: "Times New Roman", serif; font-size: 11pt; }
+  table caption { text-align: left; font-weight: bold; margin-bottom: 6pt; caption-side: top; }
+  th, td { padding: 6pt 8pt; text-align: left; vertical-align: top; }
+  thead th { border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold; }
+  tbody tr:last-child td { border-bottom: 1px solid #000; }
+
+  .refs p { text-indent: 0; padding-left: 1.27cm; text-indent: -1.27cm; text-align: left; }
+  .link { color: #000; text-decoration: none; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<!-- ==================== PORTADA ==================== -->
+<section class="portada">
+  <div class="empujar"></div>
+  <div class="titulo">
+    Eggodia: Videojuego móvil de cartas por turnos<br>
+    Proyecto final — Casa Abierta
+  </div>
+  <div class="sub">
+    Jeremy Gómez<br>
+    Gonzalo Sigüenza<br>
+    Carlos Jurado
+  </div>
+  <div class="sub">
+    Universidad Ecotec<br>
+    Casa Abierta — Proyectos Finales
+  </div>
+  <div class="fecha">
+    10 de septiembre de 2026
+  </div>
+</section>
+
+<!-- ==================== CONTENIDO ==================== -->
+<h1>Eggodia: Videojuego móvil de cartas por turnos</h1>
+
+<p>El presente documento describe el proyecto <em>Eggodia</em>, un videojuego para dispositivos Android desarrollado como proyecto final para Casa Abierta. El escrito incluye el enlace de descarga de la aplicación, las credenciales de acceso, las capturas del ambiente inicial del juego y una explicación de su funcionamiento.</p>
+
+<h2>Enlace de acceso al proyecto</h2>
+
+<p>El juego se distribuye como un archivo APK instalable en dispositivos Android. Se aloja en Google Drive como una carpeta pública de descarga:</p>
+
+<p class="noindent"><a class="link" href="https://drive.google.com/drive/folders/1JCkD1l_6C_888zdqzfZU-WK_OU90tSqb?usp=drive_link">https://drive.google.com/drive/folders/1JCkD1l_6C_888zdqzfZU-WK_OU90tSqb</a></p>
+
+<p>El archivo se denomina Eggodia.apk y ocupa aproximadamente 223 MB. Requiere Android 8.0 o superior. Para instalarlo, el usuario debe descargar el archivo desde el enlace anterior, permitir la instalación de aplicaciones de origen desconocido en la configuración de seguridad del dispositivo, ejecutar el archivo descargado y confirmar la instalación. Una vez instalado, el juego aparece como Eggodia en el menú de aplicaciones.</p>
+
+<p>El código fuente del proyecto se aloja en un repositorio privado de GitHub (github.com/JeremyGomezf/Eggodia), con 161 commits registrados y cuatro contribuyentes.</p>
+
+<h3>Nota sobre el modo Online</h3>
+
+<p>La modalidad multijugador en línea requiere un servidor de respaldo que actualmente se ejecuta en Linux y no ha sido desplegado públicamente. Para la evaluación se recomienda utilizar el modo VS BOT, el cual es completamente funcional sin conexión a internet.</p>
+
+<h2>Usuario y clave de ingreso</h2>
+
+<p>El juego incorpora un modo de acceso como Invitado que no requiere registro. El usuario puede probar todas las funciones del modo offline sin necesidad de credenciales. Al ingresar como Invitado se muestra el nombre correspondiente junto con el nivel inicial y las monedas de arranque, lo que permite acceder a la Tienda, al constructor de mazos y a las partidas contra el bot.</p>
+
+<p>El sistema de registro e inicio de sesión está implementado y disponible en la aplicación, pero su uso completo depende del servidor mencionado en la sección anterior.</p>
+
+<h2>Ambiente inicial del proyecto</h2>
+
+<p>A continuación se presentan tres capturas del juego que muestran, respectivamente, la pantalla de inicio, la sección de Tienda y el constructor de mazos.</p>
+
+<div class="figura">
+  <p class="cap noindent"><span class="num">Figura 1</span></p>
+  <p class="cap noindent"><em>Pantalla de inicio del juego</em></p>
+  <img src="01_menu_principal.png" alt="Pantalla de inicio">
+  <p class="nota noindent"><em>Nota.</em> Menú principal de Eggodia. Se observa el contador de monedas del jugador, el nombre de usuario en el modo Invitado, y el acceso al constructor de mazos mediante el botón Cartas. En el centro aparece la mascota del juego (el Rey Huevo) acompañada del reloj de arena y del despertador que enmarcan el portal principal.</p>
+</div>
+
+<div class="figura">
+  <p class="cap noindent"><span class="num">Figura 2</span></p>
+  <p class="cap noindent"><em>Sección Tienda</em></p>
+  <img src="02_tienda.png" alt="Tienda">
+  <p class="nota noindent"><em>Nota.</em> Sección Tienda del juego. Se muestran los cosméticos disponibles: cinco variantes o skins de huevo (Rey Huevo, Capitán Huevo, Dino Huevo, Majestad Huevo y Paper Dino Huevo). Cada cosmético tiene un costo en monedas obtenidas al finalizar partidas. En la parte inferior se anticipan las próximas skins de cartas.</p>
+</div>
+
+<div class="figura">
+  <p class="cap noindent"><span class="num">Figura 3</span></p>
+  <p class="cap noindent"><em>Constructor de mazos</em></p>
+  <img src="03_armar_baraja.png" alt="Constructor de mazos">
+  <p class="nota noindent"><em>Nota.</em> Pantalla del constructor de mazos. En el panel izquierdo se presenta la colección completa de tropas del jugador, en el panel central el mazo que se está armando y en el panel derecho los datos de la carta seleccionada (nombre, puntos de vida, ataque, defensa, serie y habilidad especial).</p>
+</div>
+
+<h2>Explicación del funcionamiento del proyecto</h2>
+
+<p>Eggodia es un videojuego de cartas por turnos para dispositivos móviles Android, ambientado en cuatro eras: Primordial, Medieval, Moderna y Mística. La propuesta se inspira en títulos como Clash Royale y Hearthstone, pero incorpora mecánicas propias enfocadas en partidas cortas y de alta estrategia.</p>
+
+<h3>Flujo general de juego</h3>
+
+<p>El jugador ingresa al juego como Invitado o con una cuenta registrada. Desde el menú principal accede a la sección Cartas para construir un mazo de ocho unidades, elegidas de una colección de trece tropas disponibles, que incluyen dragones, gólems, dinosaurios, soldados y piezas de ajedrez. Una vez armado el mazo, el jugador selecciona el modo VS BOT para enfrentarse a un oponente controlado por el juego, o bien el modo Online para partidas contra otros jugadores.</p>
+
+<p>La partida inicia con una fase de apertura en la que ambos participantes colocan tres tropas en sus respectivos carriles de invocación. A partir de ese momento se alternan los turnos, disponiendo cada jugador de una cantidad limitada de energía (entre tres y cinco puntos, según el turno) para invocar nuevas tropas, atacar, defender o activar habilidades especiales. La partida termina cuando uno de los jugadores reduce a cero los puntos de vida del rival, o cuando se agota el tiempo máximo de cinco minutos, en cuyo caso gana quien conserve más puntos de vida.</p>
+
+<p>Al finalizar la partida el jugador recibe monedas que se acumulan en su perfil y que puede utilizar en la Tienda para desbloquear cosméticos, actualmente disponibles como skins de huevo.</p>
+
+<h3>Sistemas implementados</h3>
+
+<p>El proyecto incorpora un sistema de tipos elementales compuesto por cinco categorías (Fuego, Agua, Naturaleza, Metal y Sombra) con relaciones de ventaja y desventaja mutuas al estilo de piedra, papel o tijera de cinco vías. Adicionalmente, el sistema de eras aporta un segundo multiplicador de daño según la era de origen de la tropa. Los aciertos críticos ocurren con probabilidad aleatoria y multiplican el daño resultante.</p>
+
+<p>El modo VS BOT emplea un bot con lógica de decisión adaptativa que ajusta su dificultad entre tres niveles (Fácil, Normal y Difícil) según el desempeño del jugador, con el objetivo de mantener el desafío en un nivel adecuado. El juego también cuenta con un sistema de logros, una economía persistente que sobrevive al cierre de la aplicación, un sistema de niveles para el jugador, un bestiario con la información completa de cada tropa, un tutorial automático que se muestra en la primera partida y un historial de batalla desplegable que registra en tiempo real las acciones ocurridas durante el combate.</p>
+
+<h3>Tecnología utilizada</h3>
+
+<table>
+  <caption>Tabla 1</caption>
+  <caption style="font-style:italic;font-weight:normal;margin-top:-6pt;">Componentes técnicos del proyecto</caption>
+  <thead>
+    <tr><th>Componente</th><th>Tecnología</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Motor de videojuego</td><td>Godot Engine 4.6.1 (Mono, C#)</td></tr>
+    <tr><td>Servidor de respaldo</td><td>ASP.NET Core 8 (Linux)</td></tr>
+    <tr><td>Base de datos</td><td>SQLite</td></tr>
+    <tr><td>Plataforma de destino</td><td>Android (APK, arm64 y arm7)</td></tr>
+    <tr><td>Lenguaje de programación</td><td>C# 12 (.NET 8)</td></tr>
+    <tr><td>Control de versiones</td><td>Git y GitHub</td></tr>
+  </tbody>
+</table>
+
+<h3>Estado actual del proyecto</h3>
+
+<p>La versión entregada corresponde a una fase Beta pública en pruebas. Se encuentran implementados el sistema de batalla completo con bot adaptativo, las trece tropas con sus habilidades únicas y tipos elementales asociados, el sistema de eras y ventajas, el constructor de mazos con la colección completa, los menús principales, el tutorial, el bestiario y las opciones, el modo Invitado junto con el sistema de registro e inicio de sesión, el sistema persistente de monedas y la Tienda de cosméticos con las cinco skins de huevo mencionadas.</p>
+
+<p>Están pendientes para la versión final el despliegue del servidor de respaldo en Linux, el cual habilitará el modo Online, la ampliación del catálogo de la Tienda con skins de cartas y la incorporación de nuevas eras y facciones desbloqueables.</p>
+
+<h2>Referencias</h2>
+<div class="refs">
+  <p>Godot Engine Contributors. (2024). <em>Godot Engine 4.6</em> [Software]. https://godotengine.org</p>
+  <p>Microsoft. (2024). <em>ASP.NET Core 8.0 documentation</em>. https://learn.microsoft.com/aspnet/core</p>
+  <p>SQLite Consortium. (2024). <em>SQLite database engine</em>. https://sqlite.org</p>
+</div>
+
+</body>
+</html>
