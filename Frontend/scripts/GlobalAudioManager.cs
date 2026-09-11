@@ -51,7 +51,14 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 	{
 		// Solo click sound: el juego es para móvil y MouseEntered no aplica en touch
 		if (node is BaseButton btn)
-			btn.ButtonDown += () => PlayClickSound();
+		{
+			// Evitar doble conexión: al re-parentar un botón (RemoveChild+AddChild,
+			// p.ej. MoverACanvasInmune) NodeAdded se dispara otra vez para el mismo
+			// botón. Conectar solo si aún no está conectado.
+			var callable = Callable.From(PlayClickSound);
+			if (!btn.IsConnected(BaseButton.SignalName.ButtonDown, callable))
+				btn.Connect(BaseButton.SignalName.ButtonDown, callable);
+		}
 	}
 
 	public void PlayClickSound()
