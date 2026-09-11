@@ -94,16 +94,10 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_kni6g")
 
-[node name="Fondo" type="TextureRect" parent="." unique_id=393314323]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="FondoMenu" type="Sprite2D" parent="." unique_id=1298234289]
+position = Vector2(923, 568)
+scale = Vector2(0.8, 0.8)
 texture = ExtResource("2_fondo")
-expand_mode = 1
-stretch_mode = 6
 
 [node name="IslaContainer" type="Control" parent="." unique_id=1096408613]
 layout_mode = 1
@@ -437,5 +431,5 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_popup_btn")
 text = "ENTENDIDO"
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=670170101]
-position = Vector2(964, 540)
-zoom = Vector2(1.2, 1.2)
+position = Vector2(1050, 554)
+zoom = Vector2(1.405, 1.405)
