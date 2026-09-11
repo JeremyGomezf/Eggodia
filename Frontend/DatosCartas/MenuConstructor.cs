@@ -23,7 +23,7 @@ public partial class MenuConstructor : Control
 		("arfil",          "res://imagenes/RendersTropa/Arfil_Menu.png"),
 		("caballo",        "res://imagenes/RendersTropa/Caballo_Menu.png"),
 		("dama",           "res://imagenes/RendersTropa/Dama_Menu.png"),
-		("soldadocartoon", "res://imagenes/RendersTropa/SoldadoCartoon_Render.png"),
+		("soldadocartoon", "res://imagenes/RendersTropa/SoldadoCartoon_Menu.png"),
 		("tanque",         "res://imagenes/RendersTropa/Tanque_Menu.png"),
 		("granadero",      "res://imagenes/RendersTropa/Granadero_Menu.png"),
 		("kabar",          "res://imagenes/RendersTropa/Kabar_Menu.png"),
@@ -35,9 +35,29 @@ public partial class MenuConstructor : Control
 		("golem",          "res://imagenes/RendersTropa/Golem_Menu.png"),
 		("tiburon",        "res://imagenes/RendersTropa/Tiburon_Menu.png"),
 		("calamar",        "res://imagenes/RendersTropa/Calamar_Menu.png"),
-		("rex",            "res://imagenes/RendersTropa/Paperex_Menu.png"),
 		("paperex",        "res://imagenes/RendersTropa/Paperex_Menu.png"),
-		("machi",          "res://imagenes/RendersTropa/Machi_Menu.png"),
+	};
+
+	// Ajustes finos de posición vertical por render (en píxeles; negativo = sube, positivo = baja).
+	// Retocar acá si algún render queda muy arriba/abajo respecto al resto.
+	private static readonly Dictionary<string, float> AJUSTE_VERTICAL_RENDER = new()
+	{
+		{ "res://imagenes/RendersTropa/Maguin_Menu.png",         -110f },
+		{ "res://imagenes/RendersTropa/Dragon_Menu.png",          -20f },
+		{ "res://imagenes/RendersTropa/Calamar_Menu.png",         -20f },
+		{ "res://imagenes/RendersTropa/Paperex_Menu.png",          20f },
+		{ "res://imagenes/RendersTropa/Peon_Menu.png",              0f },
+		{ "res://imagenes/RendersTropa/Torre_Menu.png",             0f },
+		{ "res://imagenes/RendersTropa/Arfil_Menu.png",             0f },
+		{ "res://imagenes/RendersTropa/Caballo_Menu.png",          -10f },
+		{ "res://imagenes/RendersTropa/Dama_Menu.png",              0f },
+		{ "res://imagenes/RendersTropa/SoldadoCartoon_Menu.png",   -10f },
+		{ "res://imagenes/RendersTropa/Tanque_Menu.png",            -5f },
+		{ "res://imagenes/RendersTropa/Granadero_Menu.png",        -10f },
+		{ "res://imagenes/RendersTropa/Kabar_Menu.png",            -30f },
+		{ "res://imagenes/RendersTropa/Campero_Menu.png",          -20f },
+		{ "res://imagenes/RendersTropa/Golem_Menu.png",             -5f },
+		{ "res://imagenes/RendersTropa/Tiburon_Menu.png",           0f },
 	};
 
 	private const string RUTA_SOLDADO_REAL_MENU = "res://imagenes/RendersTropa/SoldadoReal_Menu.png";
@@ -59,7 +79,7 @@ public partial class MenuConstructor : Control
 	[ExportGroup("Referencias Showcase Central")]
 	[Export] private Label _lblShowcaseNombre;
 	[Export] private Control _containerSpriteCenter;
-	[Export] private TextureRect _fallbackTextureCenter;
+	[Export] private Sprite2D _fallbackTextureCenter;
 	[Export] private Label _lblTituloMazo;
 	[Export] private TextureRect _rectMazoBg;
 	[Export] private GridContainer _gridMazoSlots;
@@ -100,7 +120,7 @@ public partial class MenuConstructor : Control
 	private AnimatedSprite2D _spriteAnimadoActual = null;
 	private Tween _idleTween = null;
 	private Tween _soldadoRealTween = null;
-	private TextureRect _overlayTextureCenter = null;
+	private Sprite2D _overlayTextureCenter = null;
 	private bool _estaAtacando = false;
 
 	public override void _Ready()
@@ -144,29 +164,13 @@ public partial class MenuConstructor : Control
 
 		if (_fallbackTextureCenter != null)
 		{
-			_fallbackTextureCenter.MouseFilter = Control.MouseFilterEnum.Stop;
-			_fallbackTextureCenter.GuiInput += (ev) =>
-			{
-				if (ev is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left && mb.Pressed)
-				{
-					EjecutarAnimacionAtaqueShowcase();
-				}
-			};
+			// Sprite2D no tiene GuiInput (eso es exclusivo de Control) — el clic para la animación
+			// de ataque queda disponible a través de _containerSpriteCenter, como ya estaba previsto.
 
-			// Capa superior para el cross-fade del aura de Soldado Real
-			_overlayTextureCenter = new TextureRect();
+			// Capa superior para el cross-fade del aura de Soldado Real. Al ser hija de un Sprite2D
+			// centrado, con Position en (0,0) queda automáticamente alineada encima sin más cálculo.
+			_overlayTextureCenter = new Sprite2D();
 			_overlayTextureCenter.Name = "SoldadoRealAuraOverlay";
-			_overlayTextureCenter.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
-			_overlayTextureCenter.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-			_overlayTextureCenter.AnchorLeft = 0f;
-			_overlayTextureCenter.AnchorTop = 0f;
-			_overlayTextureCenter.AnchorRight = 1f;
-			_overlayTextureCenter.AnchorBottom = 1f;
-			_overlayTextureCenter.OffsetLeft = 0f;
-			_overlayTextureCenter.OffsetTop = 0f;
-			_overlayTextureCenter.OffsetRight = 0f;
-			_overlayTextureCenter.OffsetBottom = 0f;
-			_overlayTextureCenter.MouseFilter = Control.MouseFilterEnum.Ignore;
 			_overlayTextureCenter.Visible = false;
 			_fallbackTextureCenter.AddChild(_overlayTextureCenter);
 		}
@@ -572,43 +576,38 @@ public partial class MenuConstructor : Control
 		string rutaRender = ObtenerRutaRenderTropa(datos);
 
 		_fallbackTextureCenter.Visible = true;
-		_fallbackTextureCenter.AnchorLeft = 0.5f;
-		_fallbackTextureCenter.AnchorRight = 0.5f;
-		_fallbackTextureCenter.AnchorTop = 0.5f;
-		_fallbackTextureCenter.AnchorBottom = 0.5f;
-		_fallbackTextureCenter.Scale = Vector2.One;
+		_fallbackTextureCenter.Position = Vector2.Zero;
+		_fallbackTextureCenter.Rotation = 0f;
 
 		if (rutaRender != null)
 		{
-			// Render estático de tropa apoyado sobre el borde superior del mazo (Y≈460 en pantalla):
-			// OffsetTop=-110 despeja el banner del nombre y OffsetBottom=220 posa la base de la tropa
-			// directamente sobre el cofre/mazo sin flotar.
-			_fallbackTextureCenter.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-			_fallbackTextureCenter.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-			_fallbackTextureCenter.OffsetLeft   = -220.0f;
-			_fallbackTextureCenter.OffsetRight  = 220.0f;
-			_fallbackTextureCenter.OffsetTop    = -90.0f;
-			_fallbackTextureCenter.OffsetBottom = 265.0f;
-
+			// Tamaño real: se carga cada render 1:1 tal cual es su imagen original (ej. Soldado
+			// Real 830x666), sin escalar hacia abajo — a diferencia del fallback de ardides, que
+			// sí se ajusta a una caja (ver AplicarTexturaAjustada más abajo).
 			if (esSoldadoReal)
 			{
-				_fallbackTextureCenter.Texture = GD.Load<Texture2D>(RUTA_SOLDADO_REAL_RENDER);
+				var texRender = GD.Load<Texture2D>(RUTA_SOLDADO_REAL_RENDER);
+				CargarTexturaNativa(_fallbackTextureCenter, texRender);
 
 				if (_overlayTextureCenter != null)
 				{
-					_overlayTextureCenter.Texture = GD.Load<Texture2D>(RUTA_SOLDADO_REAL_MENU);
+					var texMenu = GD.Load<Texture2D>(RUTA_SOLDADO_REAL_MENU);
+					CargarTexturaNativa(_overlayTextureCenter, texMenu);
 					_overlayTextureCenter.Visible = true;
 					_overlayTextureCenter.Modulate = new Color(1, 1, 1, 0);
 
-					// Animación de cambio de color/aura: pasa de SoldadoReal RENDER a SoldadoReal_Menu
-					// suavemente como si estuviera concentrando energía, sin flotar ni desplazarse
-					_soldadoRealTween = CreateTween().SetLoops();
-					_soldadoRealTween.TweenProperty(_overlayTextureCenter, "modulate:a", 1.0f, 1.3f)
+					// Efecto "aura de imágenes": se ve el render de combate 2.5s y ahí, una sola vez
+					// (no en bucle), se funde al render de menú y se queda en él.
+					_soldadoRealTween = CreateTween();
+					_soldadoRealTween.TweenInterval(2.5f);
+					_soldadoRealTween.TweenProperty(_overlayTextureCenter, "modulate:a", 1.0f, 0.3f)
 						.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-					_soldadoRealTween.TweenInterval(0.35f);
-					_soldadoRealTween.TweenProperty(_overlayTextureCenter, "modulate:a", 0.0f, 1.3f)
-						.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-					_soldadoRealTween.TweenInterval(0.35f);
+					_soldadoRealTween.TweenCallback(Callable.From(() =>
+					{
+						if (!IsInstanceValid(_fallbackTextureCenter) || !IsInstanceValid(_overlayTextureCenter)) return;
+						CargarTexturaNativa(_fallbackTextureCenter, texMenu);
+						_overlayTextureCenter.Visible = false;
+					}));
 				}
 			}
 			else
@@ -617,27 +616,41 @@ public partial class MenuConstructor : Control
 				{
 					_overlayTextureCenter.Visible = false;
 				}
-				_fallbackTextureCenter.Texture = GD.Load<Texture2D>(rutaRender);
+				CargarTexturaNativa(_fallbackTextureCenter, GD.Load<Texture2D>(rutaRender));
+				if (AJUSTE_VERTICAL_RENDER.TryGetValue(rutaRender, out float ajusteY))
+					_fallbackTextureCenter.Position = new Vector2(0f, ajusteY);
 				// Todas las demás tropas se muestran de forma completamente estática
 			}
 		}
 		else
 		{
-			// Cartas de ardid / hechizos u otros sin render de tropa
+			// Cartas de ardid / hechizos u otros sin render de tropa: siguen ajustadas a una caja
+			// chica (son íconos, no renders grandes) para no salir gigantes en el mismo slot.
 			if (_overlayTextureCenter != null)
 			{
 				_overlayTextureCenter.Visible = false;
 			}
-			_fallbackTextureCenter.Texture = datos.Imagen;
-			_fallbackTextureCenter.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-			_fallbackTextureCenter.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-			_fallbackTextureCenter.OffsetLeft   = -90.0f;
-			_fallbackTextureCenter.OffsetRight  = 90.0f;
-			_fallbackTextureCenter.OffsetTop    = -60.0f;
-			_fallbackTextureCenter.OffsetBottom = 160.0f;
+			AplicarTexturaAjustada(_fallbackTextureCenter, datos.Imagen, 180f, 220f);
 		}
+	}
 
-		_fallbackTextureCenter.PivotOffset = _fallbackTextureCenter.Size / 2f;
+	// Carga la textura a su tamaño real (Scale 1:1) — usado para los renders grandes de tropa.
+	private static void CargarTexturaNativa(Sprite2D sprite, Texture2D tex)
+	{
+		sprite.Texture = tex;
+		sprite.Scale = Vector2.One;
+	}
+
+	// Escala el Sprite2D para que su textura quepa dentro de una caja de cajaAncho×cajaAlto
+	// SIN deformarse (mantiene proporción) — usado solo para el ícono de ardides/hechizos.
+	private static void AplicarTexturaAjustada(Sprite2D sprite, Texture2D tex, float cajaAncho, float cajaAlto)
+	{
+		sprite.Texture = tex;
+		if (tex == null) return;
+		float w = tex.GetWidth(), h = tex.GetHeight();
+		if (w <= 0 || h <= 0) return;
+		float factor = Mathf.Min(cajaAncho / w, cajaAlto / h);
+		sprite.Scale = new Vector2(factor, factor);
 	}
 
 	public void EjecutarAnimacionAtaqueShowcase()
@@ -648,11 +661,11 @@ public partial class MenuConstructor : Control
 		{
 			_estaAtacando = true;
 			GlobalAudioManager.Instance?.PlayClickSound();
-			_fallbackTextureCenter.PivotOffset = _fallbackTextureCenter.Size / 2f;
+			Vector2 escalaBase = _fallbackTextureCenter.Scale;
 			var tw = CreateTween();
-			tw.TweenProperty(_fallbackTextureCenter, "scale", new Vector2(1.08f, 1.08f), 0.08f)
+			tw.TweenProperty(_fallbackTextureCenter, "scale", escalaBase * 1.08f, 0.08f)
 				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-			tw.TweenProperty(_fallbackTextureCenter, "scale", Vector2.One, 0.12f);
+			tw.TweenProperty(_fallbackTextureCenter, "scale", escalaBase, 0.12f);
 			tw.TweenCallback(Callable.From(() => _estaAtacando = false));
 		}
 	}
@@ -988,22 +1001,53 @@ public partial class MenuConstructor : Control
 		}
 	}
 
+	private Control _avisoBloqueoActual;
+
+	// Pantalla semi oscura + texto grande blanco con borde negro grueso (ej. "Tipo Colosos ya
+	// lleno. Prueba otro tipo.") — reemplaza el texto amarillo anterior, que quedaba arriba
+	// y era poco legible.
 	private void MostrarMensajeAviso(string mensaje)
 	{
+		if (_avisoBloqueoActual != null && IsInstanceValid(_avisoBloqueoActual)) _avisoBloqueoActual.QueueFree();
+
+		var overlay = new Control();
+		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		overlay.MouseFilter = Control.MouseFilterEnum.Ignore;
+		overlay.ZIndex = 300;
+		AddChild(overlay);
+		_avisoBloqueoActual = overlay;
+
+		var fondo = new ColorRect();
+		fondo.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		fondo.Color = new Color(0, 0, 0, 0.55f);
+		fondo.MouseFilter = Control.MouseFilterEnum.Ignore;
+		overlay.AddChild(fondo);
+
+		var centro = new CenterContainer();
+		centro.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		centro.MouseFilter = Control.MouseFilterEnum.Ignore;
+		overlay.AddChild(centro);
+
 		var lbl = new Label();
 		lbl.Text = mensaje;
-		lbl.AddThemeFontSizeOverride("font_size", 20);
-		lbl.AddThemeColorOverride("font_color", new Color(1f, 0.9f, 0.2f));
-		lbl.Position = new Vector2(700, 30);
-		lbl.ZIndex = 200;
-		AddChild(lbl);
+		lbl.CustomMinimumSize = new Vector2(720, 0);
+		lbl.HorizontalAlignment = HorizontalAlignment.Center;
+		lbl.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		lbl.AddThemeFontSizeOverride("font_size", 34);
+		lbl.AddThemeColorOverride("font_color", Colors.White);
+		lbl.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+		lbl.AddThemeConstantOverride("outline_size", 9);
+		lbl.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.6f));
+		lbl.AddThemeConstantOverride("shadow_offset_x", 3);
+		lbl.AddThemeConstantOverride("shadow_offset_y", 4);
+		centro.AddChild(lbl);
 
-		var tw = lbl.CreateTween();
-		lbl.Modulate = new Color(1, 1, 1, 0);
-		tw.TweenProperty(lbl, "modulate", Colors.White, 0.2f);
+		overlay.Modulate = new Color(1, 1, 1, 0);
+		var tw = overlay.CreateTween();
+		tw.TweenProperty(overlay, "modulate:a", 1.0f, 0.2f);
 		tw.TweenInterval(1.8f);
-		tw.TweenProperty(lbl, "modulate", new Color(1, 1, 1, 0), 0.3f);
-		tw.TweenCallback(Callable.From(() => lbl.QueueFree()));
+		tw.TweenProperty(overlay, "modulate:a", 0.0f, 0.35f);
+		tw.TweenCallback(Callable.From(() => { if (IsInstanceValid(overlay)) overlay.QueueFree(); }));
 	}
 
 	private static T BuscarNodoRecursivo<T>(Node padre) where T : Node

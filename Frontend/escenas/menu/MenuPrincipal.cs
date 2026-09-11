@@ -11,6 +11,11 @@ public partial class MenuPrincipal : Control
 	[Export] public string RutaBestiario       = "res://escenas/menu/PantallaBestiario.tscn";
 	[Export] public string RutaTienda          = "res://escenas/menu/Tienda.tscn";
 
+	// Refuerzo de escala por skin en el selector (mismo orden que Preferencias.SKIN_ESCENAS:
+	// Rey, Capitán, Dino, Majestad, Paper Dino). Compensa que sus PNG originales tienen
+	// proporciones/márgenes distintos y por eso "KeepAspectCentered" los deja más chicos.
+	private static readonly float[] SKIN_ESCALA_EXTRA = { 1.0f, 1.5f, 1.3f, 1.0f, 1.6f };
+
 	// Nodos de animación y UI
 	private Control _islaContainer;
 	private TextureRect _portalNode;
@@ -42,6 +47,10 @@ public partial class MenuPrincipal : Control
 		if (_reyHuevoNode    != null)
 		{
 			_posInicialReyHuevo = _reyHuevoNode.Position;
+			// Aplica la skin activa (y su compensación de escala) ANTES de armar el hover, para
+			// que este capture la escala ya correcta como base — si no, al sacar el mouse
+			// siempre volvería a la escala de cuando arrancó la escena, no a la de la skin actual.
+			ActualizarHuevoMenu();
 			_reyHuevoNode.PivotOffset = new Vector2(_reyHuevoNode.Size.X / 2, _reyHuevoNode.Size.Y * 0.8f);
 			AgregarAnimacionHover(_reyHuevoNode);
 			_reyHuevoNode.MouseFilter = Control.MouseFilterEnum.Stop;
@@ -49,7 +58,6 @@ public partial class MenuPrincipal : Control
 				if (ev is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
 					AbrirSelectorSkin();
 			};
-			ActualizarHuevoMenu();
 		}
 
 		// 2. Obtener UI de ajustes y diálogos
@@ -251,8 +259,12 @@ public partial class MenuPrincipal : Control
 		btn.PivotOffset = btn.Size / 2;
 		btn.Resized += () => btn.PivotOffset = btn.Size / 2;
 
-		btn.MouseEntered += () => 
+		btn.MouseEntered += () =>
 		{
+			// Recaptura la escala base por si cambió desde afuera (ej. el huevo de la isla
+			// cambia de escala al equipar otra skin) — si no, el mouse-exit volvería siempre
+			// a la escala de cuando se armó el hover, no a la actual.
+			escalaBase = btn.Scale;
 			var tween = btn.CreateTween();
 			tween.TweenProperty(btn, "scale", escalaBase * 1.08f, 0.15f)
 				 .SetTrans(Tween.TransitionType.Back)
@@ -301,9 +313,9 @@ public partial class MenuPrincipal : Control
 
 		var panel = new PanelContainer();
 		panel.SetAnchorsPreset(Control.LayoutPreset.Center);
-		panel.CustomMinimumSize = new Vector2(860, 480);
-		panel.OffsetLeft = -430; panel.OffsetRight = 430;
-		panel.OffsetTop  = -240; panel.OffsetBottom = 240;
+		panel.CustomMinimumSize = new Vector2(820, 420);
+		panel.OffsetLeft = -410; panel.OffsetRight = 410;
+		panel.OffsetTop  = -210; panel.OffsetBottom = 210;
 
 		var sb = new StyleBoxFlat();
 		sb.BgColor = new Color(0.06f, 0.08f, 0.16f, 0.98f);
@@ -336,10 +348,12 @@ public partial class MenuPrincipal : Control
 		header.AddChild(btnX);
 		vbox.AddChild(header);
 
-		// Grid de skins
+		// Grid de skins — 5 columnas (una fila), ya que hay 5 skins: con 4 columnas la 5ta
+		// (Paper Dino Huevo) caía en una segunda fila que desbordaba el panel y quedaba
+		// inaccesible/cortada.
 		var grid = new GridContainer();
-		grid.Columns = 4;
-		grid.AddThemeConstantOverride("h_separation", 12);
+		grid.Columns = Preferencias.SKIN_NOMBRES.Length;
+		grid.AddThemeConstantOverride("h_separation", 10);
 		grid.AddThemeConstantOverride("v_separation", 12);
 		vbox.AddChild(grid);
 
@@ -350,7 +364,7 @@ public partial class MenuPrincipal : Control
 			bool activa  = Preferencias.SkinActivaIdx == i;
 
 			var skinPanel = new PanelContainer();
-			skinPanel.CustomMinimumSize = new Vector2(175, 320);
+			skinPanel.CustomMinimumSize = new Vector2(150, 300);
 
 			var sbSkin = new StyleBoxFlat();
 			sbSkin.BgColor = activa ? new Color(0.12f, 0.22f, 0.10f) : new Color(0.08f, 0.10f, 0.20f, 0.95f);
@@ -368,14 +382,19 @@ public partial class MenuPrincipal : Control
 			svbox.AddThemeConstantOverride("separation", 6);
 
 			var tex = new TextureRect();
-			tex.CustomMinimumSize = new Vector2(155, 230); // misma proporción que el huevo del menú (195×350)
+			tex.CustomMinimumSize = new Vector2(130, 195); // misma proporción que el huevo del menú (195×350)
 			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-			// KeepAspectCentered: muestra la imagen COMPLETA (sin recortar), aunque distintas
-			// skins puedan verse a tamaños ligeramente distintos según su proporción original.
+			// KeepAspectCentered ajusta la imagen COMPLETA sin deformar, pero como Rey/Capitán/
+			// Dino/Majestad/Paper Dino tienen proporciones y márgenes transparentes distintos en
+			// su PNG original, terminan viéndose a tamaños diferentes aunque la caja sea igual.
+			// SKIN_ESCALA_EXTRA compensa eso con un refuerzo de escala por skin.
 			tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			var txImg = GD.Load<Texture2D>(Preferencias.SKIN_IMAGENES[capI]);
 			if (txImg != null) tex.Texture = txImg;
+			tex.PivotOffset = tex.CustomMinimumSize / 2f;
+			float escalaExtra = capI < SKIN_ESCALA_EXTRA.Length ? SKIN_ESCALA_EXTRA[capI] : 1.0f;
+			tex.Scale = new Vector2(escalaExtra, escalaExtra);
 			// Grayscale para skins no poseídas
 			if (!poseida) tex.Modulate = new Color(0.4f, 0.4f, 0.4f);
 			svbox.AddChild(tex);
@@ -446,6 +465,8 @@ public partial class MenuPrincipal : Control
 		string ruta = idx == 0 ? RUTA_REY_HUEVO_CORONADO : Preferencias.SKIN_IMAGENES[idx];
 		var tex = GD.Load<Texture2D>(ruta);
 		if (tex != null) _reyHuevoNode.Texture = tex;
+		float escalaExtra = idx < SKIN_ESCALA_EXTRA.Length ? SKIN_ESCALA_EXTRA[idx] : 1.0f;
+		_reyHuevoNode.Scale = new Vector2(escalaExtra, escalaExtra);
 	}
 
 	// ── PERFIL DEL JUGADOR ────────────────────────────────────────────────────
@@ -534,6 +555,9 @@ public partial class MenuPrincipal : Control
 		string rutaSkin = idxSkin == 0 ? RUTA_REY_HUEVO_CORONADO : Preferencias.SKIN_IMAGENES[idxSkin];
 		var txSkin = GD.Load<Texture2D>(rutaSkin);
 		if (txSkin != null) tex.Texture = txSkin;
+		tex.PivotOffset = tex.CustomMinimumSize / 2f;
+		float escalaExtraPerfil = idxSkin < SKIN_ESCALA_EXTRA.Length ? SKIN_ESCALA_EXTRA[idxSkin] : 1.0f;
+		tex.Scale = new Vector2(escalaExtraPerfil, escalaExtraPerfil);
 		colSkin.AddChild(tex);
 		var lblSkin = new Label();
 		lblSkin.Text = Preferencias.SKIN_NOMBRES[idxSkin];

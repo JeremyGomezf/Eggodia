@@ -44,8 +44,28 @@ public partial class Campo1 : Node2D
 
 		// Turno propio de cada tropa rival: se adelanta antes de cualquier invocación/ataque
 		// de este turno, para que una tropa recién invocada hoy no se cuente a sí misma.
+		// De paso, avisa al jugador si alguna tropa RIVAL acaba de desbloquear su habilidad
+		// (misma detección que ya existe para las tropas propias en CambiarTurno).
+		var avisosRival = new List<(string texto, Color color)>();
 		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
-			if (n.HasMethod("AvanzarTurnoTropa")) n.Call("AvanzarTurnoTropa");
+		{
+			if (!(n is Node2D tropaRival) || !IsInstanceValid(tropaRival)) continue;
+
+			bool bloqueadaAntes = false;
+			try { bloqueadaAntes = (bool)tropaRival.Call("HabilidadBloqueada"); } catch { }
+			if (tropaRival.HasMethod("AvanzarTurnoTropa")) tropaRival.Call("AvanzarTurnoTropa");
+
+			bool tieneHabilidad = false;
+			try { tieneHabilidad = (bool)tropaRival.Call("TieneHabilidadEspecial"); } catch { }
+			if (tieneHabilidad && bloqueadaAntes)
+			{
+				bool sigueBloqueada = true;
+				try { sigueBloqueada = (bool)tropaRival.Call("HabilidadBloqueada"); } catch { }
+				if (!sigueBloqueada)
+					avisosRival.Add(($"¡{NombreCorto(tropaRival)} del rival ya tiene su habilidad lista!", new Color(1f, 0.55f, 0.35f)));
+			}
+		}
+		if (avisosRival.Count > 0) MostrarAvisosAsistente(avisosRival);
 
 		// Cadencia orgánica entre acciones de la IA (0.5s-1.0s): más lenta en fácil, más ágil
 		// en difícil, pero siempre dentro del rango legible para el jugador.

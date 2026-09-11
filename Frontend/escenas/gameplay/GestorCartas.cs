@@ -117,7 +117,7 @@ public partial class GestorCartas : Node
 			new() { Id=14, Nombre="Golem",           Tipo="Coloso",  Serie="Medieval", VidaMaxima=450, EscudoMaximo=500, PuntosAtaque=350, RutaImagen="res://imagenes/CartasPng/GolemCart.png",     RutaEscena="res://cartas prime/MEDIEVAL/Golem_prime.tscn" },
 			new() { Id=15, Nombre="Tiburón",         Tipo="Asesino", Serie="Pacifico", VidaMaxima=300, EscudoMaximo=200, PuntosAtaque=230, RutaImagen="res://imagenes/CartasPng/TiburonCart.png",   RutaEscena="res://cartas prime/PACIFICO/Tiburon_prime.tscn" },
 			new() { Id=16, Nombre="Calamar Gigante", Tipo="Coloso",  Serie="Pacifico", VidaMaxima=400, EscudoMaximo=380, PuntosAtaque=370, RutaImagen="res://imagenes/CartasPng/CalamarGCart.png",  RutaEscena="res://cartas prime/PACIFICO/CalamarG_prime.tscn" },
-			new() { Id=17, Nombre="Paper-Rex",       Tipo="Coloso",  Serie="Papeleo",  VidaMaxima=850, EscudoMaximo=0,   PuntosAtaque=370, RutaImagen="res://imagenes/CartasPng/PaperReXCart.png",  RutaEscena="res://cartas prime/PAPEL/TRex_prime.tscn" },
+			new() { Id=17, Nombre="Paper-Rex",       Tipo="Coloso",  Serie="Papeleo",  VidaMaxima=850, EscudoMaximo=0,   PuntosAtaque=370, RutaImagen="res://imagenes/CartasPng/PaperReXCart.png",  RutaEscena="res://cartas prime/PAPEL/Paper_Rex.tscn" },
 		};
 		CartasCargadas = true;
 		EmitSignal(SignalName.OnCartasCargadas);

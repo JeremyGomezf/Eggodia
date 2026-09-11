@@ -17,5 +17,5 @@ Rango = "CORTO"
 FuerteContra = "Agua"
 DebilContra = "Metal"
 Descripcion = "Rugido primordial: -30% ataque enemigo 2 turnos"
-RutaEscena = "res://cartas prime/PAPEL/TRex_prime.tscn"
+RutaEscena = "res://cartas prime/PAPEL/Paper_Rex.tscn"
 Imagen = ExtResource("1_j8wyx")

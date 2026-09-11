@@ -120,7 +120,7 @@ corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 shadow_size = 24
 
-[node name="MenuConstructor" type="Control" unique_id=1753145290 node_paths=PackedStringArray("_rectSelectorBg", "_btnTabTropas", "_btnTabArdid", "_gridSelector", "_txtBuscador", "_lblShowcaseNombre", "_containerSpriteCenter", "_fallbackTextureCenter", "_lblTituloMazo", "_rectMazoBg", "_gridMazoSlots", "_btnBatallar", "_btnVolver", "_lblContadorMazo", "_lblDetalleTitulo", "_lblDetalleHp", "_lblDetalleAtk", "_lblDetalleDef", "_lblDetalleCosto", "_lblDetalleElemento", "_lblDetalleHabilidad", "_lblDetalleExtra", "_btnDuda", "_modalAyuda", "_btnCerrarAyuda")]
+[node name="MenuConstructor" type="Control" unique_id=1753145290 node_paths=PackedStringArray("_rectSelectorBg", "_btnTabTropas", "_btnTabArdid", "_gridSelector", "_txtBuscador", "_lblShowcaseNombre", "_fallbackTextureCenter", "_lblTituloMazo", "_rectMazoBg", "_gridMazoSlots", "_btnBatallar", "_btnVolver", "_lblContadorMazo", "_lblDetalleTitulo", "_lblDetalleHp", "_lblDetalleAtk", "_lblDetalleDef", "_lblDetalleCosto", "_lblDetalleElemento", "_lblDetalleHabilidad", "_lblDetalleExtra", "_btnDuda", "_modalAyuda", "_btnCerrarAyuda")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -139,8 +139,7 @@ _btnTabArdid = NodePath("SelectorContainer/TabArdid")
 _gridSelector = NodePath("SelectorContainer/ScrollCartas/GridCartas")
 _txtBuscador = NodePath("BuscadorContainer/TxtBuscador")
 _lblShowcaseNombre = NodePath("ShowcaseContainer/BannerNombre/LblShowcaseNombre")
-_containerSpriteCenter = NodePath("ShowcaseContainer/StageSprite")
-_fallbackTextureCenter = NodePath("ShowcaseContainer/FallbackTexture")
+_fallbackTextureCenter = NodePath("ShowcaseContainer/personajes/RenderTropa")
 _lblTituloMazo = NodePath("MazoContainer/BannerTituloMazo/LblTituloMazo")
 _rectMazoBg = NodePath("MazoContainer/MazoBg")
 _gridMazoSlots = NodePath("MazoContainer/GridMazo")
@@ -173,10 +172,10 @@ stretch_mode = 6
 [node name="BuscadorContainer" type="Control" parent="." unique_id=819066872]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 20.0
-offset_top = 15.0
-offset_right = 510.0
-offset_bottom = 125.0
+offset_left = 34.0
+offset_top = 47.0
+offset_right = 524.0
+offset_bottom = 157.0
 
 [node name="BuscadorBg" type="TextureRect" parent="BuscadorContainer" unique_id=1623015032]
 layout_mode = 1
@@ -208,10 +207,10 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -115.0
-offset_top = 18.0
-offset_right = -25.0
-offset_bottom = 108.0
+offset_left = -176.0
+offset_top = 93.0
+offset_right = -86.0
+offset_bottom = 183.0
 grow_horizontal = 0
 
 [node name="BotonDuda" type="TextureButton" parent="TopRightContainer" unique_id=1937270629]
@@ -219,8 +218,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -188.00003
+offset_top = -11.999998
+offset_right = -188.00003
+offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.44, 1.44)
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("5_botonduda")
 ignore_texture_size = true
@@ -285,9 +289,9 @@ columns = 3
 [node name="ShowcaseContainer" type="Control" parent="." unique_id=95860427]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 595.0
+offset_left = 616.0
 offset_top = 20.0
-offset_right = 1325.0
+offset_right = 1346.0
 offset_bottom = 485.0
 
 [node name="BannerNombre" type="NinePatchRect" parent="ShowcaseContainer" unique_id=744594248]
@@ -295,10 +299,10 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -240.0
+offset_left = -205.0
 offset_top = 6.0
-offset_right = 240.0
-offset_bottom = 102.0
+offset_right = 204.0
+offset_bottom = 128.0
 grow_horizontal = 2
 texture = ExtResource("11_nombretropa")
 patch_margin_left = 75
@@ -327,43 +331,17 @@ text = "SOLDADO REAL"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StageSprite" type="Control" parent="ShowcaseContainer" unique_id=1752436190]
-layout_mode = 1
-anchor_left = 0.5
-anchor_top = 0.87000006
-anchor_right = 0.5
-anchor_bottom = 0.87000006
-offset_left = 7.5
-offset_top = -26.50003
-offset_right = 9.0
-offset_bottom = -26.50003
-grow_horizontal = 2
-grow_vertical = 2
-mouse_default_cursor_shape = 2
+[node name="personajes" type="Marker2D" parent="ShowcaseContainer" unique_id=1213626175]
+position = Vector2(361, 400)
 
-[node name="FallbackTexture" type="TextureRect" parent="ShowcaseContainer" unique_id=1429061482]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -90.0
-offset_top = 15.0
-offset_right = 90.0
-offset_bottom = 240.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
+[node name="RenderTropa" type="Sprite2D" parent="ShowcaseContainer/personajes" unique_id=1564656486]
 
 [node name="MazoContainer" type="Control" parent="." unique_id=1567517415]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 595.0
+offset_left = 616.0
 offset_top = 465.0
-offset_right = 1325.0
+offset_right = 1346.0
 offset_bottom = 920.0
 
 [node name="MazoBg" type="TextureRect" parent="MazoContainer" unique_id=577048957]
@@ -478,10 +456,10 @@ text = "SELECCIONAR"
 [node name="InfoContainer" type="Control" parent="." unique_id=692689363]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 1335.0
-offset_top = 135.0
-offset_right = 1900.0
-offset_bottom = 1055.0
+offset_left = 1365.0
+offset_top = 175.0
+offset_right = 1930.0
+offset_bottom = 1095.0
 
 [node name="InfoBg" type="TextureRect" parent="InfoContainer" unique_id=153545499]
 layout_mode = 1
@@ -495,16 +473,18 @@ expand_mode = 1
 
 [node name="HeaderDatos" type="Control" parent="InfoContainer" unique_id=1723334670]
 anchors_preset = 0
-offset_left = 190.0
-offset_top = 130.0
-offset_right = 385.0
-offset_bottom = 175.0
+offset_left = 181.0
+offset_top = 134.0
+offset_right = 376.0
+offset_bottom = 179.0
 
 [node name="LblDetalleTitulo" type="Label" parent="InfoContainer/HeaderDatos" unique_id=389324297]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -6.0
+offset_right = -6.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.1, 0.12, 0.16, 1)
@@ -516,10 +496,10 @@ vertical_alignment = 1
 
 [node name="StatsBox" type="Control" parent="InfoContainer" unique_id=1969684130]
 anchors_preset = 0
-offset_left = 125.0
-offset_top = 185.0
-offset_right = 445.0
-offset_bottom = 430.0
+offset_left = 116.0
+offset_top = 189.0
+offset_right = 436.0
+offset_bottom = 434.0
 
 [node name="Margin" type="MarginContainer" parent="InfoContainer/StatsBox" unique_id=692046344]
 layout_mode = 1
@@ -583,10 +563,10 @@ horizontal_alignment = 1
 
 [node name="HabilidadBox" type="Control" parent="InfoContainer" unique_id=1087317719]
 anchors_preset = 0
-offset_left = 125.0
-offset_top = 475.0
-offset_right = 445.0
-offset_bottom = 790.0
+offset_left = 116.0
+offset_top = 479.0
+offset_right = 436.0
+offset_bottom = 794.0
 
 [node name="Margin" type="MarginContainer" parent="InfoContainer/HabilidadBox" unique_id=355476580]
 layout_mode = 1
@@ -698,9 +678,11 @@ text = "[b]1. Selector Izquierdo:[/b] Explora tus cartas por pestañas ([color=#
 
 [b]2. Previsualización:[/b] Haz clic en cualquier carta para ver su personaje animado en el centro e inspeccionar sus atributos completos a la derecha. ¡Toca al personaje en el centro para probar su ataque!
 
-[b]3. Cofre del Mazo:[/b] Selecciona [b]8 cartas[/b] para completar tu mazo de combate. Haz clic sobre una carta dentro del cofre para retirarla.
+[b]3. Categorías de Tropa:[/b] Cada tropa pertenece a una de 3 categorías: [b]Táctico[/b], [b]Asesino[/b] o [b]Coloso[/b]. Tu mazo necesita una cantidad fija de cada una para quedar completo.
 
-[b]4. ¡A Batallar!:[/b] Cuando tu mazo tenga 8 cartas válidas, presiona el botón [color=#00e5ff]BATALLAR[/color] para iniciar el duelo."
+[b]4. Cofre del Mazo:[/b] Selecciona [b]8 cartas[/b] para completar tu mazo de combate. Haz clic sobre una carta dentro del cofre para retirarla.
+
+[b]5. ¡A Batallar!:[/b] Cuando tu mazo tenga 8 cartas válidas, presiona el botón [color=#00e5ff]BATALLAR[/color] para iniciar el duelo."
 
 [node name="BtnCerrarAyuda" type="Button" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1922394009]
 custom_minimum_size = Vector2(200, 48)
@@ -713,3 +695,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn_batallar")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_batallar_hover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_batallar_hover")
 text = "ENTENDIDO"
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1168142099]
+position = Vector2(967, 518)
+zoom = Vector2(1.1, 1.06)

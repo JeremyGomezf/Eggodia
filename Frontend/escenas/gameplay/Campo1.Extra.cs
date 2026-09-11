@@ -67,18 +67,37 @@ public partial class Campo1 : Node2D
 		MostrarAvisoCentrado(ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), 26), 300f, DURACION_TOAST);
 	}
 
-	// Frase burlona/celebratoria de fin de partida — mismo toast "gelatina", más grande y más
-	// centrada. La secuencia completa de cierre dura 4s (ver FinalizarPartida), pero el toast
-	// debe alcanzar a desvanecerse ANTES de que aparezca la pantalla de Victoria/Derrota: con
+	// Frase burlona/celebratoria de fin de partida — SIN panel/caja de fondo, solo la letra:
+	// blanca, grande, con borde negro grueso y sombra oscura difuminada detrás. Mismo efecto
+	// "gelatina" al aparecer. La secuencia completa de cierre dura 4s (ver FinalizarPartida),
+	// pero el texto debe alcanzar a desvanecerse ANTES de la pantalla de Victoria/Derrota: con
 	// ~0.45s de pop + 3.0s de espera + 0.35s de fade queda completamente invisible a los 3.8s.
 	private void MostrarFraseFinPartida(string frase, Color acento)
 	{
-		MostrarAvisoCentrado(ConstruirToast(frase, acento, 40), 400f, 3.0f);
+		MostrarAvisoCentrado(ConstruirTextoGrande(frase, 90), 350f, 3.0f);
+	}
+
+	// Solo texto, sin panel de fondo: blanco, borde negro grueso, sombra difuminada detrás.
+	private Label ConstruirTextoGrande(string texto, int fontSize)
+	{
+		var lbl = new Label();
+		lbl.Text = texto;
+		lbl.AddThemeColorOverride("font_color", Colors.White);
+		lbl.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1f));
+		lbl.AddThemeConstantOverride("outline_size", 14);
+		lbl.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.65f));
+		lbl.AddThemeConstantOverride("shadow_offset_x", 4);
+		lbl.AddThemeConstantOverride("shadow_offset_y", 6);
+		lbl.AddThemeConstantOverride("shadow_outline_size", 12);
+		lbl.AddThemeFontSizeOverride("font_size", fontSize);
+		lbl.HorizontalAlignment = HorizontalAlignment.Center;
+		lbl.VerticalAlignment = VerticalAlignment.Center;
+		return lbl;
 	}
 
 	// Muestra un aviso centrado, más abajo para no tapar el HUD superior. Efecto "gelatina"
 	// (pop elástico) al aparecer. Solo uno a la vez (evita solapamiento).
-	private void MostrarAvisoCentrado(PanelContainer panel, float top, float duracion)
+	private void MostrarAvisoCentrado(Control panel, float top, float duracion)
 	{
 		if (_avisoActual != null && IsInstanceValid(_avisoActual)) _avisoActual.QueueFree();
 
@@ -232,8 +251,14 @@ public partial class Campo1 : Node2D
 		return Tipos.NEUTRO;
 	}
 
+	// Nombre tal como aparece en el Menú Constructor (CartaData.Nombre) — ej. "Dragón de Flama"
+	// en vez de "Dragon". Si la tropa no tiene CartaData asociada (caso raro), cae al nombre
+	// corto derivado de su clase, como antes.
 	private string NombreCorto(Node2D tropa)
 	{
+		string nombreCompleto = ObtenerNombreCompleto(tropa);
+		if (!string.IsNullOrEmpty(nombreCompleto)) return nombreCompleto;
+
 		string n = tropa.GetType().Name.Replace("Prime", "");
 		return n switch
 		{

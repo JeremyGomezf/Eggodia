@@ -6,9 +6,9 @@ public partial class Campo1 : Node2D
 {
 	// ── MÚSICA Y AUDIO ───────────────────────────────────────────────────
 	[Export] private AudioStream _musicaPartida = GD.Load<AudioStream>("res://musica/DECISIVE BATTLE.mp3");
-	// 0dB: misma intensidad relativa que la música del menú (GlobalAudioManager no aplica
-	// ningún offset propio); ambas quedan afectadas por igual por el volumen/mute del Bus Master.
-	[Export] private float _volumenMusicaDb = 0.0f;
+	// -6dB respecto a la música del menú (que suena a 0dB propio): a 0dB quedaba muy fuerte en
+	// batalla. Ambas siguen afectadas por igual por el volumen/mute del Bus Master.
+	[Export] private float _volumenMusicaDb = -6.0f;
 	private AudioStreamPlayer _reproductorMusica;
 
 	// ── VIDA ──────────────────────────────────────────────────────────────
@@ -139,8 +139,8 @@ public partial class Campo1 : Node2D
 	};
 
 	// ── SECUENCIA DE FIN DE PARTIDA ─────────────────────────────────────────
-	private static readonly string[] FRASES_VICTORIA = { "GG EZ", "BYE BYE", "HUEVO ROTO", "VAMOOOOS SIII", "OSIOSIOSI" };
-	private static readonly string[] FRASES_DERROTA   = { "VALISTE OE", "YA TE FUISTE MANO", "GG BRO", "ÑIÑIÑIÑI", "XDDDDxdxd :V", "TE MURISTE ÑAÑO" };
+	private static readonly string[] FRASES_VICTORIA = { "GG BRO", "BYE BYE", "HUEVO ROTO", "VAMOOOOS SIII", "OSIOSIOSI" };
+	private static readonly string[] FRASES_DERROTA   = { "VALISTE OE", "YA TE FUISTE MANO", "GG EZ", "ÑIÑIÑIÑI", "XDDDDxdxd :V", "TE MURISTE ÑAÑO" };
 	private static readonly string[] CARAS_VICTORIA   = { "B)", ":)", "🥚", ":D" };
 	private static readonly string[] CARAS_DERROTA    = { "XD", ":v", ":(", "🍳" };
 

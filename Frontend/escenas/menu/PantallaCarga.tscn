@@ -1,7 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://c0vpdxtju8uck"]
 
-[ext_resource type="Script" path="res://escenas/menu/PantallaCarga.cs" id="1_carga"]
-[ext_resource type="Texture2D" path="res://imagenes/pantalladecargaprueba.png" id="2_fondo"]
+[ext_resource type="Script" uid="uid://bg3jnsbn37glq" path="res://escenas/menu/PantallaCarga.cs" id="1_carga"]
+[ext_resource type="Texture2D" uid="uid://dxw085jknxf1m" path="res://imagenes/pantalladecargaprueba.png" id="2_fondo"]
 [ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="3_font"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_barra_bg"]
@@ -27,7 +27,7 @@ height = 40
 fill_from = Vector2(0, 0.5)
 fill_to = Vector2(1, 0.5)
 
-[node name="PantallaCarga" type="Control"]
+[node name="PantallaCarga" type="Control" unique_id=314261867]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -36,8 +36,8 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_carga")
 
-[node name="Fondo" type="TextureRect" parent="."]
-anchors_preset = 15
+[node name="Fondo" type="TextureRect" parent="." unique_id=178607194]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
@@ -46,9 +46,9 @@ texture = ExtResource("2_fondo")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="BarraContenedor" type="PanelContainer" parent="."]
+[node name="BarraContenedor" type="PanelContainer" parent="." unique_id=1184025850]
 layout_mode = 1
-anchors_preset = 8
+anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -61,22 +61,21 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_barra_bg")
 
-[node name="Margin" type="MarginContainer" parent="BarraContenedor"]
+[node name="Margin" type="MarginContainer" parent="BarraContenedor" unique_id=387448143]
 layout_mode = 2
 theme_override_constants/margin_left = 6
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 6
 theme_override_constants/margin_bottom = 6
 
-[node name="Barra" type="TextureProgressBar" parent="BarraContenedor/Margin"]
-layout_mode = 2
+[node name="Barra" type="TextureProgressBar" parent="BarraContenedor/Margin" unique_id=112941204]
 custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
 texture_progress = SubResource("GradientTexture2D_barra")
-fill_mode = 0
 
-[node name="LblPorcentaje" type="Label" parent="."]
+[node name="LblPorcentaje" type="Label" parent="." unique_id=126741666]
 layout_mode = 1
-anchors_preset = 8
+anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5

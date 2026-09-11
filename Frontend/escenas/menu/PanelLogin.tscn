@@ -22,13 +22,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -235.0
-offset_top = -258.0
-offset_right = 235.0
-offset_bottom = -212.0
+offset_left = -330.0
+offset_top = -361.0
+offset_right = 330.0
+offset_bottom = -297.0
 text = "EGGODIA"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 38
+theme_override_font_sizes/font_size = 54
 
 [node name="Subtitulo" type="Label" parent="."]
 modulate = Color(0.7, 0.78, 0.9, 1)
@@ -37,13 +37,14 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -235.0
-offset_top = -206.0
-offset_right = 235.0
-offset_bottom = -182.0
+offset_left = -330.0
+offset_top = -289.0
+offset_right = 330.0
+offset_bottom = -253.0
 text = "Inicia sesión o regístrate para guardar tu progreso"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 14
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 19
 
 [node name="TabContainer" type="TabContainer" parent="."]
 layout_mode = 1
@@ -51,88 +52,105 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -235.0
-offset_top = -168.0
-offset_right = 235.0
-offset_bottom = 172.0
+offset_left = -330.0
+offset_top = -235.0
+offset_right = 330.0
+offset_bottom = 241.0
+theme_override_font_sizes/font_size = 20
 
 [node name="Login" type="VBoxContainer" parent="TabContainer"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 16
 
 [node name="LblEmail" type="Label" parent="TabContainer/Login"]
 layout_mode = 2
 text = "Email"
+theme_override_font_sizes/font_size = 20
 
 [node name="EmailLogin" type="LineEdit" parent="TabContainer/Login"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 placeholder_text = "tucorreo@ejemplo.com"
+theme_override_font_sizes/font_size = 22
 
 [node name="LblPass" type="Label" parent="TabContainer/Login"]
 layout_mode = 2
 text = "Contraseña"
+theme_override_font_sizes/font_size = 20
 
 [node name="PasswordLogin" type="LineEdit" parent="TabContainer/Login"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 placeholder_text = "Tu contraseña"
 secret = true
+theme_override_font_sizes/font_size = 22
 
 [node name="BtnLogin" type="Button" parent="TabContainer/Login"]
-custom_minimum_size = Vector2(0, 46)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 text = "Iniciar Sesión"
+theme_override_font_sizes/font_size = 24
 
 [node name="LblErrorLogin" type="Label" parent="TabContainer/Login"]
 modulate = Color(1, 0.45, 0.4, 1)
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 17
 
 [node name="Registro" type="VBoxContainer" parent="TabContainer"]
 visible = false
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 12
 
 [node name="LblNombre" type="Label" parent="TabContainer/Registro"]
 layout_mode = 2
 text = "Nombre de jugador"
+theme_override_font_sizes/font_size = 20
 
 [node name="NombreReg" type="LineEdit" parent="TabContainer/Registro"]
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 placeholder_text = "Tu nombre"
+theme_override_font_sizes/font_size = 22
 
 [node name="LblEmailReg" type="Label" parent="TabContainer/Registro"]
 layout_mode = 2
 text = "Email"
+theme_override_font_sizes/font_size = 20
 
 [node name="EmailReg" type="LineEdit" parent="TabContainer/Registro"]
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 placeholder_text = "tucorreo@ejemplo.com"
+theme_override_font_sizes/font_size = 22
 
 [node name="LblPassReg" type="Label" parent="TabContainer/Registro"]
 layout_mode = 2
 text = "Contraseña"
+theme_override_font_sizes/font_size = 20
 
 [node name="PasswordReg" type="LineEdit" parent="TabContainer/Registro"]
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 placeholder_text = "Crea una contraseña"
 secret = true
+theme_override_font_sizes/font_size = 22
 
 [node name="BtnRegistro" type="Button" parent="TabContainer/Registro"]
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 text = "Registrarse"
+theme_override_font_sizes/font_size = 24
 
 [node name="LblErrorRegistro" type="Label" parent="TabContainer/Registro"]
 modulate = Color(1, 0.45, 0.4, 1)
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
+autowrap_mode = 2
+theme_override_font_sizes/font_size = 17
 
 [node name="BtnContinuarSinLogin" type="Button" parent="."]
 layout_mode = 1
@@ -140,8 +158,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -235.0
-offset_top = 186.0
-offset_right = 235.0
-offset_bottom = 226.0
+offset_left = -330.0
+offset_top = 260.0
+offset_right = 330.0
+offset_bottom = 308.0
 text = "Jugar como invitado"
+theme_override_font_sizes/font_size = 22

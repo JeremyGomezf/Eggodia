@@ -14,6 +14,7 @@ public partial class Campo1 : Node2D
 	}
 	private readonly Dictionary<ulong, RegistroTropa> _statsPorTropa = new();
 	private Dictionary<string, Texture2D> _cacheIlustraciones;
+	private Dictionary<string, string> _cacheNombresCompletos;
 
 	/// <summary>Acumula el daño causado por una tropa individual, para el ranking de MVT al
 	/// terminar la partida. Debe llamarse en todo punto donde una tropa aplique daño, tanto
@@ -65,6 +66,37 @@ public partial class Campo1 : Node2D
 		return _cacheIlustraciones.TryGetValue(ruta, out var tex) ? tex : null;
 	}
 
+	// Empareja la escena de batalla de la tropa (SceneFilePath) con el Nombre completo definido
+	// en su CartaData — para que los avisos en pantalla digan "Dragón de Flama" y no "Dragon",
+	// exactamente como aparece en el Menú Constructor.
+	public string ObtenerNombreCompleto(Node2D tropa)
+	{
+		string ruta = tropa.SceneFilePath;
+		if (string.IsNullOrEmpty(ruta)) return null;
+
+		if (_cacheNombresCompletos == null)
+		{
+			_cacheNombresCompletos = new Dictionary<string, string>();
+			using var dir = DirAccess.Open("res://DatosCartas");
+			if (dir != null)
+			{
+				dir.ListDirBegin();
+				string archivo = dir.GetNext();
+				while (archivo != "")
+				{
+					if (archivo.EndsWith(".tres"))
+					{
+						var datos = GD.Load<CartaData>($"res://DatosCartas/{archivo}");
+						if (datos != null && !string.IsNullOrEmpty(datos.RutaEscena) && !string.IsNullOrEmpty(datos.Nombre))
+							_cacheNombresCompletos[datos.RutaEscena] = datos.Nombre;
+					}
+					archivo = dir.GetNext();
+				}
+			}
+		}
+		return _cacheNombresCompletos.TryGetValue(ruta, out var nombre) ? nombre : null;
+	}
+
 	/// <summary>Tropa más valiosa del bando indicado (mayor daño total causado en la partida).</summary>
 	private (string nombre, int daño, Texture2D ilustracion) ObtenerMVT(bool ladoJugador)
 	{
@@ -113,6 +145,16 @@ public partial class Campo1 : Node2D
 
 			MostrarFraseFinPartida(frases[random.Next(frases.Length)], colorFrase);
 			if (_lblTiempo != null) _lblTiempo.Text = caras[random.Next(caras.Length)];
+
+			// Salta a los últimos 10s de la canción como cierre — victoria o derrota. En victoria
+			// esos 10s quedan en loop (sigue sonando en la pantalla de Victoria); en derrota NO
+			// se repiten, termina y se queda en silencio.
+			if (_reproductorMusica != null && _reproductorMusica.Stream != null)
+			{
+				if (_reproductorMusica.Stream is AudioStreamMP3 mp3) mp3.Loop = esVictoria;
+				float duracion = (float)_reproductorMusica.Stream.GetLength();
+				if (duracion > 10f) _reproductorMusica.Seek(duracion - 10f);
+			}
 
 			await ToSignal(GetTree().CreateTimer(4.0), "timeout");
 			if (!IsInstanceValid(this)) return;
