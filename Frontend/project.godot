@@ -13,7 +13,9 @@ config_version=5
 config/name="Eggodia"
 run/main_scene="res://escenas/menu/PantallaCarga.tscn"
 config/features=PackedStringArray("4.7", "C#", "Mobile")
-config/icon="res://icon.svg"
+config/icon="uid://d2fpu5k7c3qi6"
+config/macos_native_icon="uid://d2fpu5k7c3qi6"
+config/windows_native_icon="uid://d2fpu5k7c3qi6"
 
 [autoload]
 
