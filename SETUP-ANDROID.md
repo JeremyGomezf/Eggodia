@@ -1,11 +1,17 @@
 # Eggodia — Guía para exportar la APK (Android)
 
 Esta guía explica cómo generar el `.apk` del juego para probarlo en un celular.
-El juego es **Godot 4.6.1 (Mono / C#)**, así que la exportación a Android es un poco
+El juego es **Godot 4.7.2 (Mono / C#)**, así que la exportación a Android es un poco
 más pesada que un proyecto solo con GDScript.
 
+> **IMPORTANTE — versión de Godot:** todo el equipo debe usar **Godot 4.7.2 Mono**.
+> El `Eggodia.csproj` y `project.godot` guardan la versión (`Godot.NET.Sdk/4.7.2`,
+> `features "4.7"`); si abres el proyecto con otra versión de Godot, esos archivos se
+> reescriben y el **export de la APK falla** (se genera incompleta, sin el C#). Si ves
+> un conflicto de git en esos dos archivos, es señal de que alguien usó otra versión.
+
 > **¿Solo quieres jugar/probar?** No necesitas nada de esto.
-> - Clona el repo y ábrelo en **Godot 4.6.1 mono** → juega en la PC, **o**
+> - Clona el repo y ábrelo en **Godot 4.7.2 mono** → juega en la PC, **o**
 > - Pide el archivo `Eggodia.apk` a quien lo exporta y instálalo en tu celular
 >   (Android pedirá permiso de **"Instalar apps desconocidas"** → concédelo).
 >
@@ -17,11 +23,11 @@ más pesada que un proyecto solo con GDScript.
 
 | Herramienta | Versión usada | Notas |
 |---|---|---|
-| **Godot 4.6.1 – Mono/.NET** | 4.6.1-stable_mono | El editor con soporte C# |
+| **Godot 4.7.2 – Mono/.NET** | 4.7.2-stable_mono | El editor con soporte C# |
 | **JDK 17** (Temurin) | 17.x | Godot usa JDK 17 para el build de Gradle (el 21 rompe) |
-| **Android SDK** | platform-tools, build-tools **35.0.0**, platform **android-35** | |
-| **Android NDK** | **28.1.13356709** | Versión exacta que exige Godot 4.6.1 |
-| **Plantillas de exportación de Godot** | 4.6.1.stable.mono | Editor → *Administrar plantillas de exportación* → Descargar |
+| **Android SDK** | platform-tools, build-tools **36.1.0**, platform **android-36** | Godot 4.7.2 usa compile/target SDK 36 |
+| **Android NDK** | **29.0.14206865** | La que pide Godot 4.7.2. Solo es *necesaria* si compilas código nativo; una APK normal exporta sin ella (pero conviene tenerla para evitar avisos) |
+| **Plantillas de exportación de Godot** | 4.7.2.stable.mono | Editor → *Administrar plantillas de exportación* → Descargar |
 | **Workload .NET de Android** | `dotnet workload install android` | Necesario para C# en Android |
 | **Keystore de debug** | — | Para firmar la APK de prueba |
 
@@ -36,7 +42,7 @@ winget install -e --id EclipseAdoptium.Temurin.17.JDK
 # Android SDK (command-line tools -> sdkmanager) instalado en C:\Android\Sdk
 $env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-17...-hotspot"
 & "C:\Android\Sdk\cmdline-tools\latest\bin\sdkmanager.bat" --sdk_root="C:\Android\Sdk" `
-  "platform-tools" "build-tools;35.0.0" "platforms;android-35" "ndk;28.1.13356709"
+  "platform-tools" "build-tools;36.1.0" "platforms;android-36" "ndk;29.0.14206865"
 
 # Workload de .NET para Android
 dotnet workload install android
