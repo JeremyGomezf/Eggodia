@@ -105,6 +105,10 @@ public partial class MenuConstructor : Control
 
 	public override void _Ready()
 	{
+		// Si se llegó acá reintentando desde la pantalla de Derrota, la música global quedó
+		// detenida a propósito durante la batalla (ver Campo1.SilenciarOtrasMusicas).
+		GlobalAudioManager.Instance?.AsegurarReproduccion();
+
 		CargarTexturasPorDefecto();
 
 		if (_btnTabTropas != null) _btnTabTropas.Pressed += () => CambiarPestana("TROPAS");

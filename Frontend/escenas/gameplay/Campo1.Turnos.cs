@@ -11,19 +11,20 @@ public partial class Campo1 : Node2D
 		tiempoTotalPartida--;
 		if (tiempoTotalPartida <= 0) { DeterminarGanadorPorTiempo(); return; }
 		tiempoTurnoActual--;
-		if (tiempoTurnoActual <= 0) CambiarTurno();
+		if (tiempoTurnoActual <= 0 && !_turnoFinalizando) { _turnoFinalizando = true; CambiarTurno(); }
 		ActualizarInterfaz();
 	}
 
 	private void CambiarTurno()
 	{
+		_turnoFinalizando = false;
 		_turnosJugados++;
 
 		// Castigo por carril propio vacío al terminar el turno (antes de pasar al otro bando).
 		if (!_faseApertura) AplicarCastigoCarrilesVacios(esTurnoJugador);
 
 		esTurnoJugador    = !esTurnoJugador;
-		tiempoTurnoActual = 28;
+		tiempoTurnoActual = DURACION_TURNO_SEG;
 
 		// Energía fija: 3/3 en todos los turnos, sin escalado ni bonos.
 		movimientosRestantes = ENERGIA_MAXIMA;
@@ -50,11 +51,38 @@ public partial class Campo1 : Node2D
 			// Avanzar cooldowns de reaparición antes de robar la mano del turno.
 			AvanzarCooldownsJugador();
 			CompletarManoAlInicio();
+
+			// Asistente táctico: detecta, en el mismo momento en que se avanza el turno de cada
+			// tropa, si su habilidad acaba de desbloquearse (transición bloqueada→lista) y si su
+			// salud cruzó el umbral de "baja" por primera vez.
+			var avisosAsistente = new List<(string texto, Color color)>();
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
 			{
 				if (n.HasMethod("SetActivo")) n.Call("SetActivo", true);
-				if (n.HasMethod("AvanzarTurnoTropa")) n.Call("AvanzarTurnoTropa");
+				if (!(n is Node2D tropa) || !IsInstanceValid(tropa)) continue;
+
+				bool bloqueadaAntes = false;
+				try { bloqueadaAntes = (bool)tropa.Call("HabilidadBloqueada"); } catch { }
+				if (tropa.HasMethod("AvanzarTurnoTropa")) tropa.Call("AvanzarTurnoTropa");
+
+				bool tieneHabilidad = false;
+				try { tieneHabilidad = (bool)tropa.Call("TieneHabilidadEspecial"); } catch { }
+				if (tieneHabilidad && bloqueadaAntes)
+				{
+					bool sigueBloqueada = true;
+					try { sigueBloqueada = (bool)tropa.Call("HabilidadBloqueada"); } catch { }
+					if (!sigueBloqueada)
+						avisosAsistente.Add(($"¡{NombreCorto(tropa)} ya tiene su habilidad lista!", new Color(0.5f, 0.85f, 1f)));
+				}
+
+				int vida = Gi(tropa, "vidaActual"), vidaMax = Gi(tropa, "vidaMaxima");
+				if (vidaMax > 0 && vida > 0 && (float)vida / vidaMax <= 0.25f && !tropa.HasMeta("alerta_salud_baja"))
+				{
+					tropa.SetMeta("alerta_salud_baja", true);
+					avisosAsistente.Add(($"¡{NombreCorto(tropa)} tiene la salud baja!", new Color(1f, 0.45f, 0.4f)));
+				}
 			}
+			if (avisosAsistente.Count > 0) MostrarAvisosAsistente(avisosAsistente);
 		}
 		else
 		{
@@ -68,50 +96,47 @@ public partial class Campo1 : Node2D
 		ActualizarInterfaz();
 	}
 
+	// TurnoPanel/HBox/"turno o avisos": toast animado que vive fijo en el HUD (no se crea
+	// ni se destruye por turno). Cambia de texto/color y hace un rebote "gelatina" al cambiar
+	// de turno; el contador de segundos se refresca aparte, cada tick, en ActualizarContadorTurno.
+	private string _turnoBaseTexto = "";
 	private void AnunciarTurno()
 	{
-		if (juegoTerminado) return;
-		int turnoNum  = _turnosJugados / 2 + 1;
-		string texto = _faseApertura
-			? (esTurnoJugador ? "APERTURA — Coloca tus 3 tropas" : "APERTURA — La CPU prepara su formación")
-			: (esTurnoJugador ? $"TU TURNO · Turno {turnoNum}" : $"TURNO CPU · Turno {turnoNum}");
+		if (juegoTerminado || _lblTurnoAviso == null) return;
+
+		_turnoBaseTexto = esTurnoJugador ? "TU TURNO" : "TURNO DEL RIVAL";
 		Color color = esTurnoJugador ? new Color(0.5f, 1f, 0.6f) : new Color(1f, 0.55f, 0.4f);
+		_lblTurnoAviso.AddThemeColorOverride("font_color", color);
+		ActualizarContadorTurno();
 
-		var panel = new PanelContainer();
-		panel.ZIndex = 150;
-		panel.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
-		panel.OffsetTop   = 155;
-		panel.OffsetLeft  = -260;
-		panel.OffsetRight = 260;
+		// TurnoPanel = HBox.GetParent() (el TextureRect ya trasladado al CanvasLayer)
+		if (_lblTurnoAviso.GetParent()?.GetParent() is not Control panel) return;
+		panel.PivotOffset = panel.Size / 2f;
+		panel.Scale = _turnoPanelEscalaBase * 1.4f; // impacto inicial ("crece rápido")
+		Tween tw = panel.CreateTween();
+		tw.TweenProperty(panel, "scale", _turnoPanelEscalaBase, 0.55f)
+		  .SetTrans(Tween.TransitionType.Elastic).SetEase(Tween.EaseType.Out);
+	}
 
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.05f, 0.07f, 0.11f, 0.88f);
-		sb.BorderWidthLeft = sb.BorderWidthRight = 4;
-		sb.BorderColor = color;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 24;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 10;
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 4;
-		panel.AddThemeStyleboxOverride("panel", sb);
+	// Solo actualiza el "(Ns)" del texto de turno — se llama cada segundo desde ActualizarInterfaz,
+	// sin repetir la animación de gelatina (esa es exclusiva del cambio de turno real).
+	private void ActualizarContadorTurno()
+	{
+		if (juegoTerminado || _lblTurnoAviso == null || string.IsNullOrEmpty(_turnoBaseTexto)) return;
+		int segundos = Mathf.Max(0, tiempoTurnoActual);
+		_lblTurnoAviso.Text = $"{_turnoBaseTexto} ({segundos}s)";
+	}
 
-		var lbl = new Label();
-		lbl.Text = texto;
-		lbl.AddThemeColorOverride("font_color", color);
-		lbl.AddThemeFontSizeOverride("font_size", 26);
-		lbl.HorizontalAlignment = HorizontalAlignment.Center;
-		panel.AddChild(lbl);
-		AddChild(panel);
-
-		panel.PivotOffset = new Vector2(260, 26);
-		panel.Scale = new Vector2(0.9f, 0.9f);
-		panel.Modulate = new Color(1, 1, 1, 0);
-		Tween tw = CreateTween().SetParallel(true);
-		tw.TweenProperty(panel, "modulate:a", 1.0f, 0.18f);
-		tw.TweenProperty(panel, "scale", Vector2.One, 0.28f)
-		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-		tw.Chain().TweenInterval(0.9f);
-		tw.Chain().TweenProperty(panel, "modulate:a", 0.0f, 0.35f);
-		tw.Finished += () => { if (IsInstanceValid(panel)) panel.QueueFree(); };
+	// Muestra los avisos del asistente táctico uno tras otro (MostrarAviso solo permite uno a
+	// la vez): cada uno dura DURACION_TOAST antes de dar paso al siguiente.
+	private async void MostrarAvisosAsistente(List<(string texto, Color color)> avisos)
+	{
+		foreach (var (texto, color) in avisos)
+		{
+			if (juegoTerminado) return;
+			MostrarAviso(texto, color);
+			await ToSignal(GetTree().CreateTimer(DURACION_TOAST + 0.5f), "timeout");
+		}
 	}
 
 	// ── CASTIGO POR CARRIL VACÍO ────────────────────────────────────────────

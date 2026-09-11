@@ -91,7 +91,7 @@ public partial class Campo1 : Node2D
 		else if (vidaRival <= 0) FinalizarPartida("VICTORIA");
 	}
 
-	public void FinalizarPartida(string msg)
+	public async void FinalizarPartida(string msg)
 	{
 		if (juegoTerminado) return;
 		juegoTerminado = true;
@@ -101,6 +101,22 @@ public partial class Campo1 : Node2D
 		// Actualizar historial de dificultad
 		if (msg.Contains("VICTORIA")) _victoriasJugador++;
 		else if (msg.Contains("DERROTA")) _derrotasJugador++;
+
+		// ── Secuencia de cierre: 4s en el propio campo de batalla, con frase burlona/celebratoria
+		// y el TiempoPanel mostrando una carita en vez del reloj, ANTES de abrir la pantalla final.
+		if (msg.Contains("VICTORIA") || msg.Contains("DERROTA"))
+		{
+			bool esVictoria = msg.Contains("VICTORIA");
+			string[] frases = esVictoria ? FRASES_VICTORIA : FRASES_DERROTA;
+			string[] caras  = esVictoria ? CARAS_VICTORIA  : CARAS_DERROTA;
+			Color colorFrase = esVictoria ? new Color(1f, 0.85f, 0.25f) : new Color(1f, 0.42f, 0.38f);
+
+			MostrarFraseFinPartida(frases[random.Next(frases.Length)], colorFrase);
+			if (_lblTiempo != null) _lblTiempo.Text = caras[random.Next(caras.Length)];
+
+			await ToSignal(GetTree().CreateTimer(4.0), "timeout");
+			if (!IsInstanceValid(this)) return;
+		}
 
 		if (msg.Contains("DERROTA"))
 		{
@@ -261,38 +277,6 @@ public partial class Campo1 : Node2D
 		GD.Print($"[Campo1] Resultado → backend: {resultado}");
 	}
 
-	// ── IDENTIDAD VISUAL POR ERA ─────────────────────────────────────────
-	private void AplicarIdentidadEra()
-	{
-		if (SesionJuego.Instance == null || !SesionJuego.Instance.TieneMazo) return;
-
-		var escenas = SesionJuego.Instance.MazoSeleccionado;
-		int era1 = 0, era2 = 0, era3 = 0;
-		foreach (string e in escenas)
-		{
-			if (e.Contains("TRex") || e.Contains("Tiburon") || e.Contains("CalamarG")) era1++;
-			else if (e.Contains("Torre") || e.Contains("Caballo") || e.Contains("Dama") ||
-					 e.Contains("SoldadoReal") || e.Contains("Peon") || e.Contains("Encebollado")) era2++;
-			else era3++;
-		}
-
-		string nombreEra = era1 >= era2 && era1 >= era3 ? "Era Primordial"
-						 : era2 >= era1 && era2 >= era3 ? "Era Medieval"
-														: "Era Mística";
-
-		// Mostrar nombre de la era al inicio
-		var aviso = new Label();
-		aviso.Text = nombreEra;
-		aviso.AddThemeFontSizeOverride("font_size", 28);
-		aviso.AddThemeColorOverride("font_color", Colors.Gold);
-		aviso.Position = new Vector2(450, 250);
-		aviso.ZIndex   = 100;
-		AddChild(aviso);
-		Tween tw = CreateTween();
-		tw.TweenInterval(1.5f);
-		tw.TweenProperty(aviso, "modulate:a", 0.0f, 0.8f);
-		tw.Finished += () => { if (IsInstanceValid(aviso)) aviso.QueueFree(); };
-	}
 
 	// ── CPU HECHIZOS ─────────────────────────────────────────────────────
 	private void CPUUsarHechizo()

@@ -1,6 +1,23 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://8w8cdfg6deus"]
 
-[ext_resource type="Script" path="res://escenas/gameplay/PantallaDerrota.cs" id="1_pderr"]
+[ext_resource type="Script" uid="uid://cgg6oa0so3ilp" path="res://escenas/gameplay/PantallaDerrota.cs" id="1_pderr"]
+[ext_resource type="Texture2D" uid="uid://danvroclfrlpl" path="res://imagenes/botonescampo1/huevoroto.png" id="2_huevo"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_statspanel"]
+content_margin_left = 30.0
+content_margin_top = 22.0
+content_margin_right = 30.0
+content_margin_bottom = 22.0
+bg_color = Color(0.08, 0.05, 0.06, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.25, 0.25, 0.6)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn1"]
 bg_color = Color(0.2, 0.25, 0.35, 1)
@@ -30,28 +47,12 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_statspanel"]
-bg_color = Color(0.08, 0.05, 0.06, 0.85)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.6, 0.25, 0.25, 0.6)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
-content_margin_left = 22.0
-content_margin_top = 16.0
-content_margin_right = 22.0
-content_margin_bottom = 16.0
-
-[node name="PantallaDerrota" type="CanvasLayer"]
+[node name="PantallaDerrota" type="CanvasLayer" unique_id=1402676936]
 process_mode = 3
 layer = 150
 script = ExtResource("1_pderr")
 
-[node name="Overlay" type="ColorRect" parent="."]
+[node name="Overlay" type="ColorRect" parent="." unique_id=156826570]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -59,7 +60,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.02, 0.02, 0.05, 0.9)
 
-[node name="Lluvia" type="CPUParticles2D" parent="Overlay"]
+[node name="Lluvia" type="CPUParticles2D" parent="Overlay" unique_id=2115279219]
 position = Vector2(640, -50)
 amount = 150
 lifetime = 2.5
@@ -70,127 +71,140 @@ spread = 5.0
 gravity = Vector2(0, 500)
 initial_velocity_min = 200.0
 initial_velocity_max = 300.0
-scale_amount_min = 1.0
 scale_amount_max = 3.0
 color = Color(0.4, 0.5, 0.6, 0.5)
 
-[node name="VBox" type="VBoxContainer" parent="Overlay"]
+[node name="HuevoRoto" type="TextureRect" parent="Overlay" unique_id=1120923035]
+custom_minimum_size = Vector2(240, 240)
+layout_mode = 0
+offset_left = 847.0
+offset_top = 56.0
+offset_right = 1087.0
+offset_bottom = 296.0
+scale = Vector2(1.6, 1.6)
+size_flags_horizontal = 4
+texture = ExtResource("2_huevo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBox" type="VBoxContainer" parent="Overlay" unique_id=485170082]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -280.0
-offset_top = -260.0
-offset_right = 280.0
-offset_bottom = 260.0
+offset_left = -320.0
+offset_top = -127.0
+offset_right = 320.0
+offset_bottom = 673.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 22
 
-[node name="Titulo" type="Label" parent="Overlay/VBox"]
+[node name="Titulo" type="Label" parent="Overlay/VBox" unique_id=732231540]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.2, 0.2, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_y = 5
-theme_override_font_sizes/font_size = 60
+theme_override_font_sizes/font_size = 80
 text = "HAS PERDIDO"
 horizontal_alignment = 1
 
-[node name="Mensaje" type="Label" parent="Overlay/VBox"]
+[node name="Mensaje" type="Label" parent="Overlay/VBox" unique_id=2073801853]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 24
 text = "Tu ejército ha caído.
 Modifica tu estrategia e inténtalo de nuevo."
 horizontal_alignment = 1
+autowrap_mode = 2
 
-[node name="PanelStats" type="PanelContainer" parent="Overlay/VBox"]
+[node name="PanelStats" type="PanelContainer" parent="Overlay/VBox" unique_id=870196723]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_statspanel")
 
-[node name="StatsGrid" type="GridContainer" parent="Overlay/VBox/PanelStats"]
+[node name="StatsGrid" type="GridContainer" parent="Overlay/VBox/PanelStats" unique_id=491989652]
 layout_mode = 2
+theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 12
 columns = 2
-theme_override_constants/h_separation = 30
-theme_override_constants/v_separation = 8
 
-[node name="LblDañoK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblDañoK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid" unique_id=1208475685]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.68, 0.68, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 19
 text = "Daño Causado Total"
 
-[node name="LblDañoV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblDañoV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid" unique_id=538355267]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.8, 0.8, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 22
 text = "0"
 
-[node name="LblElimK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblElimK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid" unique_id=1863165562]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.68, 0.68, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 19
 text = "Bajas Enemigas"
 
-[node name="LblElimV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblElimV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid" unique_id=159819127]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.8, 0.8, 1)
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 22
 text = "0"
 
-[node name="PanelMVT" type="PanelContainer" parent="Overlay/VBox"]
+[node name="PanelMVT" type="PanelContainer" parent="Overlay/VBox" unique_id=1600560321]
 visible = false
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_statspanel")
 
-[node name="MVTBox" type="HBoxContainer" parent="Overlay/VBox/PanelMVT"]
+[node name="MVTBox" type="HBoxContainer" parent="Overlay/VBox/PanelMVT" unique_id=568539736]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="MVTFoto" type="TextureRect" parent="Overlay/VBox/PanelMVT/MVTBox"]
-custom_minimum_size = Vector2(64, 64)
+[node name="MVTFoto" type="TextureRect" parent="Overlay/VBox/PanelMVT/MVTBox" unique_id=2115437642]
+custom_minimum_size = Vector2(84, 84)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="MVTInfo" type="VBoxContainer" parent="Overlay/VBox/PanelMVT/MVTBox"]
+[node name="MVTInfo" type="VBoxContainer" parent="Overlay/VBox/PanelMVT/MVTBox" unique_id=1947500207]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="MVTTitulo" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+[node name="MVTTitulo" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo" unique_id=953621401]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.4, 0.35, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 16
 text = "TROPA DESTACADA RIVAL (MVT)"
 
-[node name="MVTNombre" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+[node name="MVTNombre" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo" unique_id=453903728]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 24
 text = "-"
 
-[node name="MVTStat" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+[node name="MVTStat" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo" unique_id=579935433]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.75, 0.75, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 17
 text = "-"
 
-[node name="BtnReintentar" type="Button" parent="Overlay/VBox"]
-custom_minimum_size = Vector2(0, 60)
+[node name="BtnReintentar" type="Button" parent="Overlay/VBox" unique_id=1320399388]
+custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn1")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn1_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn1_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn1_hover")
 text = "REINTENTAR"
 
-[node name="BtnMenu" type="Button" parent="Overlay/VBox"]
-custom_minimum_size = Vector2(0, 60)
+[node name="BtnMenu" type="Button" parent="Overlay/VBox" unique_id=1610751621]
+custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn2")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn2_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn2_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn2_hover")
 text = "MENÚ PRINCIPAL"

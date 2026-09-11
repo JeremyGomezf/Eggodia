@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://bu8uf2y0b3slb"]
+
+[ext_resource type="Texture2D" uid="uid://kf7oiropv673" path="res://imagenes/Escenarios/medievalFONDO.png" id="1_du0r6"]
+[ext_resource type="Texture2D" uid="uid://dw12iugljdasy" path="res://imagenes/Escenarios/medieval-escenario.png" id="2_ueuvk"]
+
+[node name="Control" type="Control" unique_id=2097088987]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MedievalFondo" type="Sprite2D" parent="." unique_id=1146555742]
+position = Vector2(1152, 648)
+texture = ExtResource("1_du0r6")
+
+[node name="MedievalEscenario" type="Sprite2D" parent="." unique_id=628092754]
+position = Vector2(1152, 648)
+texture = ExtResource("2_ueuvk")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1268659556]
+position = Vector2(1152, 648)

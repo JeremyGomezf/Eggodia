@@ -27,34 +27,6 @@ public partial class Campo1 : Node2D
 		return libres;
 	}
 
-	private async void MostrarAvisoApertura()
-	{
-		await ToSignal(GetTree().CreateTimer(0.5f), "timeout");
-		if (juegoTerminado) return;
-
-		var host = new CenterContainer();
-		host.SetAnchorsPreset(Control.LayoutPreset.VcenterWide);
-		host.OffsetTop = -60; host.OffsetBottom = 60;
-		host.MouseFilter = Control.MouseFilterEnum.Ignore;
-		host.ZIndex = 160;
-
-		var lbl = new Label();
-		lbl.Text = "FASE DE APERTURA\nColoca tus 3 tropas para iniciar la batalla";
-		lbl.AddThemeColorOverride("font_color", Colors.Gold);
-		lbl.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.9f));
-		lbl.AddThemeConstantOverride("shadow_offset_y", 2);
-		lbl.AddThemeConstantOverride("outline_size", 5);
-		lbl.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.9f));
-		lbl.AddThemeFontSizeOverride("font_size", 24);
-		lbl.HorizontalAlignment = HorizontalAlignment.Center;
-		host.AddChild(lbl);
-		CapaHUD().AddChild(host);
-
-		Tween tw = CreateTween().SetParallel(true);
-		tw.TweenProperty(host, "modulate:a", 0.0f, 0.8f).SetDelay(2.8f);
-		tw.Finished += () => { if (IsInstanceValid(host)) host.QueueFree(); };
-	}
-
 	// ── MENÚ TROPA ────────────────────────────────────────────────────────
 	public void MostrarMenuTropa(Node2D tropa)
 	{
@@ -401,27 +373,6 @@ public partial class Campo1 : Node2D
 	{
 		// Mano de apertura: 2 tácticos + 2 asesinos (turno 1 no es de coloso).
 		RellenarManoObjetivo();
-		MostrarTutorialInicio();
-	}
-
-	private async void MostrarTutorialInicio()
-	{
-		if (_turnosJugados > 0) return;
-
-		await ToSignal(GetTree().CreateTimer(1.0f), "timeout");
-
-		string[] pasos = {
-			"Bienvenido a Eggodia",
-			"Arrastra una carta al campo para invocar tu tropa",
-			"Haz clic en tu tropa para atacar o defender",
-			"Usa hechizos para potenciar tus tropas o dañar al rival"
-		};
-
-		for (int i = 0; i < pasos.Length; i++)
-		{
-			MostrarAviso(pasos[i], Colors.White);
-			await ToSignal(GetTree().CreateTimer(2.5f), "timeout");
-		}
 	}
 
 	// Roba UNA carta elegible a un spot concreto (usado por el hechizo "Robar carta").
@@ -490,25 +441,47 @@ public partial class Campo1 : Node2D
 	{
 		if (btnBarajar != null)    { bool b = !esTurnoJugador || usosBarajar >= MAX_BARAJAR || movimientosRestantes <= 0; btnBarajar.Disabled = b; btnBarajar.Modulate = b ? new Color(1, 1, 1, 0.4f) : Colors.White; }
 		if (btnSacrificio != null) { bool s = !esTurnoJugador || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500 || movimientosRestantes <= 0; btnSacrificio.Disabled = s; btnSacrificio.Modulate = s ? new Color(1, 1, 1, 0.4f) : Colors.White; }
-		if (_lblVida1 != null) _lblVida1.Text = $"HP {vidaJugador}/{vidaMaxJugador}";
-		if (_lblVida2 != null) _lblVida2.Text = $"HP {vidaRival}/{vidaMaxJugador}";
+
 		if (_barraHPJugador != null) _barraHPJugador.Value = (float)vidaJugador / vidaMaxJugador * 100;
 		if (_barraHPRival   != null) _barraHPRival.Value   = (float)vidaRival   / vidaMaxJugador * 100;
-		if (_lblTiempo != null) { int m = tiempoTotalPartida / 60, s = tiempoTotalPartida % 60; _lblTiempo.Text = $"Tiempo {m}:{s:00}"; }
-		if (_lblTurnoInfo != null)
+
+		if (!juegoTerminado && _lblTiempo != null) { int m = tiempoTotalPartida / 60, s = tiempoTotalPartida % 60; _lblTiempo.Text = $"{m}:{s:00}"; }
+
+		ActualizarContadorTurno();
+		ActualizarEnergiaHUD();
+	}
+
+	// ── PANEL DE ENERGÍA (EnergiaPanel dentro de TextureProgressBar_User/_Rival) ──────
+	// Turno activo: verde → blanco a medida que se gasta la energía (al llegar a EP:0/3 el
+	// panel sigue "activo"/blanco durante los 2s de gracia de RegistrarGastoMovimiento, porque
+	// esTurnoJugador recién cambia cuando CambiarTurno() se ejecuta de verdad). Turno rival:
+	// el panel del jugador (y viceversa) se atenúa, simulando bloqueo.
+	//
+	// `movimientosRestantes` es un contador COMPARTIDO — en realidad representa "energía del
+	// que tiene el turno ahora". _epMostradoJugador/_epMostradoRival lo aíslan por bando: cada
+	// uno solo se actualiza durante SU PROPIO turno y conserva su último valor real el resto
+	// del tiempo, para que el bando inactivo no se vea bajar a 0 por el gasto del otro.
+	private static readonly Color ENERGIA_COLOR_LLENA = new Color(0.4285f, 0.99f, 0.1683f);
+	private void ActualizarEnergiaHUD()
+	{
+		if (esTurnoJugador) _epMostradoJugador = movimientosRestantes;
+		else                _epMostradoRival   = movimientosRestantes;
+
+		AplicarPanelEnergia(_lblEnergiaUsuario, _panelEnergiaUsuario, _epMostradoJugador, esTurnoJugador);
+		AplicarPanelEnergia(_lblEnergiaRival,   _panelEnergiaRival,   _epMostradoRival,   !esTurnoJugador);
+	}
+
+	private void AplicarPanelEnergia(Label lbl, Control panel, int epMostrado, bool activo)
+	{
+		float pct = ENERGIA_MAXIMA > 0 ? (float)epMostrado / ENERGIA_MAXIMA : 0f;
+		Color colorSegunGasto = ENERGIA_COLOR_LLENA.Lerp(Colors.White, 1f - pct);
+
+		if (lbl != null)
 		{
-			var l = _lblTurnoInfo;
-			string dif     = _dificultadCPU == 0 ? "Fácil" : _dificultadCPU == 1 ? "Normal" : "Difícil";
-			bool urgente   = esTurnoJugador && tiempoTurnoActual <= 8;
-			string timer   = urgente ? $"{tiempoTurnoActual}s!" : $"{tiempoTurnoActual}s";
-			int maxEnergy  = ENERGIA_MAXIMA;
-			int turnoNum   = _turnosJugados / 2 + 1;
-			l.Text = $"Turno {turnoNum}  ·  {dif}\nEnergía {movimientosRestantes}/{maxEnergy}\n{(esTurnoJugador ? "TU TURNO" : "TURNO CPU")}  {timer}";
-			l.Modulate = Colors.White;
-			Color acento = urgente         ? new Color(1f, 0.4f, 0.35f)
-						 : esTurnoJugador ? new Color(0.5f, 1f, 0.6f)
-						 :                  new Color(1f, 0.55f, 0.5f);
-			l.AddThemeColorOverride("font_color", acento);
+			lbl.Text = $"EP: {epMostrado}/{ENERGIA_MAXIMA}";
+			lbl.AddThemeColorOverride("font_color", activo ? colorSegunGasto : Colors.White);
 		}
+		if (panel != null)
+			panel.Modulate = activo ? Colors.White : new Color(0.5f, 0.5f, 0.5f, 0.6f);
 	}
 }

@@ -54,26 +54,37 @@ public partial class Campo1 : Node2D
 	}
 
 	private Control _avisoActual;
+	private const float DURACION_TOAST = 2.5f; // exigido: exactamente 2.5s visible antes de desaparecer
 
 	private void MostrarAviso(string texto, Color color)
 	{
-		// y=175: debajo del bloque de info de turno (que ocupa ~78-150)
-		MostrarAvisoCentrado(ConstruirToast(texto, color, 16), 175f, 2.0f);
+		// y=300: debajo de todo el bloque superior (barras HP, Tiempo, Turno) ya agrandado para móvil.
+		MostrarAvisoCentrado(ConstruirToast(texto, color, 26), 300f, DURACION_TOAST);
 	}
 
 	private void MostrarAvisoFase(string msg)
 	{
-		MostrarAvisoCentrado(ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), 16), 175f, 2.0f);
+		MostrarAvisoCentrado(ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), 26), 300f, DURACION_TOAST);
 	}
 
-	// Muestra un aviso centrado en la parte superior. Solo uno a la vez (evita solapamiento).
+	// Frase burlona/celebratoria de fin de partida — mismo toast "gelatina", más grande y más
+	// centrada. La secuencia completa de cierre dura 4s (ver FinalizarPartida), pero el toast
+	// debe alcanzar a desvanecerse ANTES de que aparezca la pantalla de Victoria/Derrota: con
+	// ~0.45s de pop + 3.0s de espera + 0.35s de fade queda completamente invisible a los 3.8s.
+	private void MostrarFraseFinPartida(string frase, Color acento)
+	{
+		MostrarAvisoCentrado(ConstruirToast(frase, acento, 40), 400f, 3.0f);
+	}
+
+	// Muestra un aviso centrado, más abajo para no tapar el HUD superior. Efecto "gelatina"
+	// (pop elástico) al aparecer. Solo uno a la vez (evita solapamiento).
 	private void MostrarAvisoCentrado(PanelContainer panel, float top, float duracion)
 	{
 		if (_avisoActual != null && IsInstanceValid(_avisoActual)) _avisoActual.QueueFree();
 
 		var host = new CenterContainer();
 		host.SetAnchorsPreset(Control.LayoutPreset.TopWide);
-		host.OffsetTop = top; host.OffsetBottom = top + 60;
+		host.OffsetTop = top; host.OffsetBottom = top + 130;
 		host.MouseFilter = Control.MouseFilterEnum.Ignore;
 		host.ZIndex = 200;
 		panel.ZIndex = 200;
@@ -81,31 +92,37 @@ public partial class Campo1 : Node2D
 		CapaHUD().AddChild(host);
 		_avisoActual = host;
 
+		host.PivotOffset = host.Size / 2f;
 		host.Modulate = new Color(1, 1, 1, 0);
-		Tween tw = host.CreateTween();
-		tw.TweenProperty(host, "modulate:a", 1.0f, 0.22f);
-		tw.TweenInterval(duracion);
-		tw.TweenProperty(host, "modulate:a", 0.0f, 0.4f);
+		host.Scale = new Vector2(0.55f, 0.55f);
+
+		Tween tw = host.CreateTween().SetParallel(true);
+		tw.TweenProperty(host, "modulate:a", 1.0f, 0.15f);
+		tw.TweenProperty(host, "scale", Vector2.One, 0.45f)
+		  .SetTrans(Tween.TransitionType.Elastic).SetEase(Tween.EaseType.Out);
+		tw.Chain().TweenInterval(duracion);
+		tw.Chain().TweenProperty(host, "modulate:a", 0.0f, 0.35f);
 		tw.Finished += () => { if (IsInstanceValid(host)) host.QueueFree(); };
 	}
 
+	// Panel/texto agrandados para lectura cómoda en móvil.
 	private PanelContainer ConstruirToast(string texto, Color acento, int fontSize, string badge = null)
 	{
 		var panel = new PanelContainer();
 		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.06f, 0.08f, 0.13f, 0.92f);
-		sb.BorderWidthLeft = 3;
+		sb.BgColor = new Color(0.06f, 0.08f, 0.13f, 0.94f);
+		sb.BorderWidthLeft = 5;
 		sb.BorderColor = acento;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 16;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 8;
+		sb.ContentMarginLeft = sb.ContentMarginRight = 26;
+		sb.ContentMarginTop  = sb.ContentMarginBottom = 14;
 		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 6;
-		sb.ShadowColor = new Color(0, 0, 0, 0.35f);
-		sb.ShadowSize = 4;
+		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
+		sb.ShadowColor = new Color(0, 0, 0, 0.4f);
+		sb.ShadowSize = 6;
 		panel.AddThemeStyleboxOverride("panel", sb);
 
 		var hb = new HBoxContainer();
-		hb.AddThemeConstantOverride("separation", 8);
+		hb.AddThemeConstantOverride("separation", 12);
 		panel.AddChild(hb);
 
 		if (badge != null)
@@ -113,14 +130,22 @@ public partial class Campo1 : Node2D
 			var b = new Label();
 			b.Text = badge;
 			b.AddThemeColorOverride("font_color", acento);
-			b.AddThemeFontSizeOverride("font_size", fontSize + 4);
+			b.AddThemeFontSizeOverride("font_size", fontSize + 6);
 			b.VerticalAlignment = VerticalAlignment.Center;
 			hb.AddChild(b);
 		}
 
 		var lbl = new Label();
 		lbl.Text = texto;
-		lbl.AddThemeColorOverride("font_color", new Color(0.95f, 0.96f, 1f));
+		// Texto blanco + borde negro grueso + sombra oscura difuminada por detrás (legibilidad
+		// total sobre cualquier fondo del campo de batalla).
+		lbl.AddThemeColorOverride("font_color", Colors.White);
+		lbl.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
+		lbl.AddThemeConstantOverride("outline_size", 8);
+		lbl.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.6f));
+		lbl.AddThemeConstantOverride("shadow_offset_x", 3);
+		lbl.AddThemeConstantOverride("shadow_offset_y", 4);
+		lbl.AddThemeConstantOverride("shadow_outline_size", 6);
 		lbl.AddThemeFontSizeOverride("font_size", fontSize);
 		lbl.VerticalAlignment = VerticalAlignment.Center;
 		hb.AddChild(lbl);
@@ -142,7 +167,13 @@ public partial class Campo1 : Node2D
 	public void RegistrarGastoMovimiento()
 	{
 		movimientosRestantes--; ActualizarInterfaz();
-		if (movimientosRestantes <= 0 && !juegoTerminado) CambiarTurno();
+		// Al llegar a EP:0/3 no se cambia de turno de inmediato: el panel de energía se queda
+		// en blanco (ya "gastado") 2s antes de que el turno realmente pase al rival.
+		if (movimientosRestantes <= 0 && !juegoTerminado && !_turnoFinalizando)
+		{
+			_turnoFinalizando = true;
+			GetTree().CreateTimer(2.0).Timeout += () => { if (!juegoTerminado) CambiarTurno(); };
+		}
 	}
 
 	public void AplicarVenenoMeta(Node2D t, int daño, int turnos)
@@ -276,91 +307,139 @@ public partial class Campo1 : Node2D
 		mano.OffsetTop    += delta;
 		mano.OffsetBottom += delta;
 
-		// La mano y los botones de mazo nunca deben quedar tapados por el campo de batalla
-		// (no están en un CanvasLayer, así que se aseguran con un Z-Index muy por encima de él).
-		mano.ZIndex = 150;
-		if (btnBarajar    != null) btnBarajar.ZIndex    = 150;
-		if (btnSacrificio != null) btnSacrificio.ZIndex = 150;
 	}
 
-	// ── ESTILO GLOBAL PARA LABELS DEL HUD ────────────────────────────────
-	private void EstilizarLabelsHUD()
-	{
-		_lblVida1     = GetNodeOrNull<Label>("Vida1");
-		_lblVida2     = GetNodeOrNull<Label>("Vida2");
-		_lblTiempo    = GetNodeOrNull<Label>("Tiempo");
-		_lblTurnoInfo = GetNodeOrNull<Label>("LabelTurnoInfo");
-
-		EstilizarLabel(_lblVida1,     new Color(0.5f, 1f, 0.6f), 14);
-		EstilizarLabel(_lblVida2,     new Color(1f, 0.55f, 0.5f), 14);
-		EstilizarLabel(_lblTiempo,    new Color(0.85f, 0.90f, 1f), 14);
-		EstilizarLabel(_lblTurnoInfo, new Color(0.95f, 0.96f, 1f), 13);
-
-		// Reparentar labels a CanvasLayer y anclar a bordes de pantalla (independiente de escala)
-		var capa = CapaHUD();
-		ReparentAnclado(_lblVida1,     capa, Control.LayoutPreset.TopLeft,   new Vector2(30, 20),   new Vector2(210, 20));
-		ReparentAnclado(_lblVida2,     capa, Control.LayoutPreset.TopRight,  new Vector2(-210, 20), new Vector2(-30, 20));
-		ReparentAnclado(_lblTiempo,    capa, Control.LayoutPreset.TopWide,   new Vector2(0, 20),    new Vector2(0, 55));
-		ReparentAnclado(_lblTurnoInfo, capa, Control.LayoutPreset.TopWide,   new Vector2(0, 78),    new Vector2(0, 145));
-		if (_lblTiempo != null)    { _lblTiempo.Scale = Vector2.One; _lblTiempo.HorizontalAlignment = HorizontalAlignment.Center; }
-		if (_lblTurnoInfo != null) _lblTurnoInfo.HorizontalAlignment = HorizontalAlignment.Center;
-	}
-
-	private void ReparentAnclado(Control c, CanvasLayer capa, Control.LayoutPreset preset, Vector2 tl, Vector2 br)
+	// ── NUEVA INTERFAZ (TextureProgressBar_User/_Rival, TiempoPanel, TurnoPanel, botones) ──
+	// Reemplaza por completo el HUD anterior de labels planos + ProgressBar genérico.
+	//
+	// Estos 8 nodos siguen ubicados a mano en el editor exactamente donde los dejaste (hijos
+	// de la raíz, junto a la Camera2D) — así se editan/arrastran con normalidad en la vista 2D.
+	// Al entrar en juego, MoverACanvasInmune() los traslada al CanvasLayer capturando su
+	// posición/escala YA RESUELTAS por el motor (Control.GetGlobalTransformWithCanvas, que
+	// incluye el efecto de la cámara activa), no recalculadas a mano por mí. El resultado
+	// visual queda idéntico al de la cámara, pero desde ese momento son inmunes a cualquier
+	// cambio futuro de Position/Zoom en la Camera2D.
+	private void MoverACanvasInmune(Control c, CanvasLayer capa)
 	{
 		if (c == null || capa == null) return;
+		Transform2D t = c.GetGlobalTransformWithCanvas();
+
 		c.GetParent()?.RemoveChild(c);
 		capa.AddChild(c);
-		c.SetAnchorsPreset(preset);
-		c.OffsetLeft = tl.X; c.OffsetTop = tl.Y;
-		c.OffsetRight = br.X; c.OffsetBottom = br.Y;
+
+		c.AnchorLeft = c.AnchorTop = c.AnchorRight = c.AnchorBottom = 0f;
+		c.PivotOffset = Vector2.Zero;
+		c.Position = t.Origin;
+		c.Rotation = t.Rotation;
+		c.Scale    = t.Scale;
 	}
 
-	private void EstilizarLabel(Label l, Color acento, int fontSize)
+	private void ConfigurarInterfazNueva()
 	{
-		if (l == null) return;
-		l.Modulate = Colors.White;    // el .tscn los tenía en negro
-		l.AddThemeFontSizeOverride("font_size", fontSize);
-		l.AddThemeColorOverride("font_color", new Color(0.98f, 0.99f, 1f));
-		l.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.95f));
-		l.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.9f));
-		l.AddThemeConstantOverride("shadow_offset_x", 1);
-		l.AddThemeConstantOverride("shadow_offset_y", 2);
-		l.AddThemeConstantOverride("outline_size", 4);
+		var capa = CapaHUD();
+
+		MoverACanvasInmune(GetNodeOrNull<Control>("SacrificioButton"), capa);
+		MoverACanvasInmune(GetNodeOrNull<Control>("BarajarButton"), capa);
+		MoverACanvasInmune(GetNodeOrNull<Control>("ArdidBarButton"), capa);
+		MoverACanvasInmune(GetNodeOrNull<Control>("PausaButton"), capa);
+		MoverACanvasInmune(GetNodeOrNull<Control>("TiempoPanel"), capa);
+		MoverACanvasInmune(GetNodeOrNull<Control>("TurnoPanel"), capa);
+		MoverACanvasInmune(GetNodeOrNull<Control>("TextureProgressBar_User"), capa);
+		MoverACanvasInmune(GetNodeOrNull<Control>("TextureProgressBar_Rival"), capa);
+
+		_barraHPJugador = capa.GetNodeOrNull<TextureProgressBar>("TextureProgressBar_User");
+		_barraHPRival   = capa.GetNodeOrNull<TextureProgressBar>("TextureProgressBar_Rival");
+
+		_lblUsuario = _barraHPJugador?.GetNodeOrNull<Label>("usuariolabel");
+		_lblCPU     = _barraHPRival?.GetNodeOrNull<Label>("CPUlabel");
+		if (_lblUsuario != null) _lblUsuario.Text = SesionJuego.Instance?.NombreJugador ?? "Invitado";
+		if (_lblCPU     != null) _lblCPU.Text     = NOMBRES_CPU[random.Next(NOMBRES_CPU.Length)];
+
+		_panelEnergiaUsuario = _barraHPJugador?.GetNodeOrNull<Control>("EnergiaPanel");
+		_lblEnergiaUsuario   = _panelEnergiaUsuario?.GetNodeOrNull<Label>("HBox/energialabel");
+		_panelEnergiaRival   = _barraHPRival?.GetNodeOrNull<Control>("EnergiaPanel");
+		_lblEnergiaRival     = _panelEnergiaRival?.GetNodeOrNull<Label>("HBox/energialabel");
+
+		_lblTiempo     = capa.GetNodeOrNull<Label>("TiempoPanel/HBox/tiempolabel");
+		_lblTurnoAviso = capa.GetNodeOrNull<Label>("TurnoPanel/HBox/turno o avisos");
+		// Escala real ya calculada por MoverACanvasInmune (incluye el factor de la cámara):
+		// el "rebote" de AnunciarTurno debe volver a ESTA escala, no a la del .tscn original.
+		if (_lblTurnoAviso?.GetParent()?.GetParent() is Control turnoPanel)
+			_turnoPanelEscalaBase = turnoPanel.Scale;
+
+		// Botones con textura nueva: se conectan por código, igual que el resto del HUD dinámico.
+		btnBarajar    = capa.GetNodeOrNull<TextureButton>("BarajarButton");
+		btnSacrificio = capa.GetNodeOrNull<TextureButton>("SacrificioButton");
+		if (btnBarajar    != null) btnBarajar.Pressed    += _on_barajar_pressed;
+		if (btnSacrificio != null) btnSacrificio.Pressed += _on_sacrificar_pressed;
+
+		_btnCambiarHechizo = capa.GetNodeOrNull<TextureButton>("ArdidBarButton");
+		if (_btnCambiarHechizo != null) _btnCambiarHechizo.Pressed += ActivarModoCambio;
+
+		var btnPausa = capa.GetNodeOrNull<TextureButton>("PausaButton");
+		if (btnPausa != null) btnPausa.Pressed += () => GetNodeOrNull<MenuPausa>("MenuPausa")?.Pausar();
+
+		// Juice de botones (hover: agranda + aura blanca / press: encoge y oscurece). Se agrega
+		// DESPUÉS de MoverACanvasInmune para partir de la escala final ya calculada con la cámara.
+		AgregarJuiceBoton(btnSacrificio);
+		AgregarJuiceBoton(btnBarajar);
+		AgregarJuiceBoton(_btnCambiarHechizo);
+		AgregarJuiceBoton(btnPausa);
 	}
 
-	// ── BARRAS DE VIDA BASE ──────────────────────────────────────────────
-	private void CrearBarrasHPBase()
+	// ── JUICE DE BOTONES (hover / press) ──────────────────────────────────
+	private void AgregarJuiceBoton(TextureButton btn)
 	{
-		var lblV1 = GetNodeOrNull<Label>("Vida1");
-		var lblV2 = GetNodeOrNull<Label>("Vida2");
-		_barraHPJugador = CrearBarraHP(lblV1, new Color(0.2f, 0.75f, 0.25f));
-		_barraHPRival   = CrearBarraHP(lblV2, new Color(0.8f, 0.2f, 0.2f));
-	}
+		if (btn == null) return;
+		Vector2 escalaBase = btn.Scale;
+		btn.PivotOffset = btn.Size / 2f;
 
-	private ProgressBar CrearBarraHP(Label lblRef, Color color)
-	{
-		var bar = new ProgressBar();
-		bar.CustomMinimumSize = new Vector2(190, 12);
-		bar.MinValue = 0; bar.MaxValue = 100; bar.Value = 100;
-		bar.ShowPercentage = false;
-		bar.ZIndex = 50;
-		var bg = new StyleBoxFlat();
-		bg.BgColor = new Color(0.1f, 0.1f, 0.1f, 0.7f);
-		bg.CornerRadiusTopLeft = bg.CornerRadiusTopRight =
-		bg.CornerRadiusBottomLeft = bg.CornerRadiusBottomRight = 3;
-		bar.AddThemeStyleboxOverride("background", bg);
-		var fill = new StyleBoxFlat();
-		fill.BgColor = color;
-		fill.CornerRadiusTopLeft = fill.CornerRadiusTopRight =
-		fill.CornerRadiusBottomLeft = fill.CornerRadiusBottomRight = 3;
-		bar.AddThemeStyleboxOverride("fill", fill);
-		if (lblRef != null)
+		// Aura blanca sutil detrás del botón: mismo sprite en blanco con mezcla aditiva.
+		var aura = new TextureRect();
+		aura.Texture = btn.TextureNormal;
+		aura.Size = btn.Size;
+		aura.Position = btn.Position;
+		aura.Rotation = btn.Rotation;
+		aura.Scale = escalaBase;
+		aura.PivotOffset = btn.Size / 2f;
+		aura.SelfModulate = new Color(1f, 1f, 1f, 0f);
+		aura.MouseFilter = Control.MouseFilterEnum.Ignore;
+		var mat = new CanvasItemMaterial();
+		mat.BlendMode = CanvasItemMaterial.BlendModeEnum.Add;
+		aura.Material = mat;
+		btn.GetParent().AddChild(aura);
+		aura.GetParent().MoveChild(aura, btn.GetIndex()); // justo detrás del botón
+
+		btn.MouseEntered += () =>
 		{
-			bar.Position = new Vector2(0, 22);
-			lblRef.AddChild(bar);
-		}
-		return bar;
+			// Bloqueado/desactivado: no reacciona al mouse ni crece.
+			if (btn.Disabled) return;
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase * 1.08f, 0.15f)
+				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+			aura.Scale = escalaBase * 1.1f;
+			aura.CreateTween().TweenProperty(aura, "self_modulate:a", 0.55f, 0.18f);
+		};
+		btn.MouseExited += () =>
+		{
+			// Siempre revierte (por si quedó agrandado/con aura justo antes de bloquearse).
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase, 0.15f)
+				.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+			aura.CreateTween().TweenProperty(aura, "self_modulate:a", 0.0f, 0.2f);
+		};
+		btn.ButtonDown += () =>
+		{
+			if (btn.Disabled) return;
+			Tween tw = btn.CreateTween().SetParallel(true);
+			tw.TweenProperty(btn, "scale", escalaBase * 0.92f, 0.06f);
+			tw.TweenProperty(btn, "modulate", new Color(0.7f, 0.7f, 0.7f), 0.06f);
+		};
+		btn.ButtonUp += () =>
+		{
+			Tween tw = btn.CreateTween().SetParallel(true);
+			tw.TweenProperty(btn, "scale", escalaBase, 0.12f)
+				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+			tw.TweenProperty(btn, "modulate", Colors.White, 0.12f);
+		};
 	}
 
 	private int  Gi(Node2D n, string p) { try { return (int)n.Get(p); } catch { return 0; } }
@@ -379,150 +458,4 @@ public partial class Campo1 : Node2D
 		return false;
 	}
 
-	// ── PANEL DE AYUDA: TABLA DE TIPOS ───────────────────────────────────
-	private Control _panelTipos;
-
-	private void CrearBotonAyudaTipos()
-	{
-		var btn = new Button();
-		btn.Text = "?";
-		btn.TooltipText = "Ver tabla de tipos elementales";
-		btn.CustomMinimumSize = new Vector2(48, 48);
-		btn.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
-		btn.OffsetLeft = -68; btn.OffsetTop = -75;
-		btn.OffsetRight = -20; btn.OffsetBottom = -27;
-		btn.ZIndex = 90;
-		btn.AddThemeFontSizeOverride("font_size", 22);
-		btn.AddThemeColorOverride("font_color", new Color(0.9f, 0.95f, 1f));
-
-		var sbN = new StyleBoxFlat();
-		sbN.BgColor = new Color(0.10f, 0.15f, 0.25f, 0.92f);
-		sbN.BorderWidthLeft = sbN.BorderWidthTop = sbN.BorderWidthRight = sbN.BorderWidthBottom = 2;
-		sbN.BorderColor = new Color(0.4f, 0.6f, 0.9f, 0.75f);
-		sbN.CornerRadiusTopLeft = sbN.CornerRadiusTopRight =
-		sbN.CornerRadiusBottomLeft = sbN.CornerRadiusBottomRight = 26;
-		btn.AddThemeStyleboxOverride("normal", sbN);
-
-		var sbH = new StyleBoxFlat();
-		sbH.BgColor = new Color(0.20f, 0.35f, 0.55f, 0.95f);
-		sbH.BorderWidthLeft = sbH.BorderWidthTop = sbH.BorderWidthRight = sbH.BorderWidthBottom = 2;
-		sbH.BorderColor = new Color(0.65f, 0.85f, 1f, 1f);
-		sbH.CornerRadiusTopLeft = sbH.CornerRadiusTopRight =
-		sbH.CornerRadiusBottomLeft = sbH.CornerRadiusBottomRight = 26;
-		btn.AddThemeStyleboxOverride("hover", sbH);
-		btn.AddThemeStyleboxOverride("pressed", sbH);
-
-		btn.Pressed += ToggleAyudaTipos;
-		CapaHUD().AddChild(btn);
-	}
-
-	private void ToggleAyudaTipos()
-	{
-		if (_panelTipos != null && IsInstanceValid(_panelTipos))
-		{
-			_panelTipos.QueueFree();
-			_panelTipos = null;
-			return;
-		}
-		_panelTipos = ConstruirPanelTipos();
-		AddChild(_panelTipos);
-	}
-
-	private Control ConstruirPanelTipos()
-	{
-		var panel = new PanelContainer();
-		panel.Position = new Vector2(780, 70);
-		panel.CustomMinimumSize = new Vector2(440, 380);
-		panel.ZIndex = 200;
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.08f, 0.10f, 0.15f, 0.96f);
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
-		sb.BorderColor = new Color(0.4f, 0.6f, 0.9f, 0.7f);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 14;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 18;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 14;
-		panel.AddThemeStyleboxOverride("panel", sb);
-
-		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 8);
-		panel.AddChild(vbox);
-
-		var titulo = new Label();
-		titulo.Text = "TABLA DE TIPOS";
-		titulo.AddThemeFontSizeOverride("font_size", 20);
-		titulo.AddThemeColorOverride("font_color", new Color(0.9f, 0.95f, 1f));
-		titulo.HorizontalAlignment = HorizontalAlignment.Center;
-		vbox.AddChild(titulo);
-
-		var sub = new Label();
-		sub.Text = "Ventaja: +25% daño   ·   Desventaja: -20% daño";
-		sub.AddThemeFontSizeOverride("font_size", 12);
-		sub.AddThemeColorOverride("font_color", new Color(0.7f, 0.75f, 0.85f));
-		sub.HorizontalAlignment = HorizontalAlignment.Center;
-		vbox.AddChild(sub);
-
-		var sep = new HSeparator();
-		vbox.AddChild(sep);
-
-		string[] tipos    = { Tipos.FUEGO, Tipos.NATURALEZA, Tipos.METAL, Tipos.SOMBRA, Tipos.AGUA };
-		string[] gana     = { Tipos.NATURALEZA, Tipos.METAL, Tipos.SOMBRA, Tipos.AGUA, Tipos.FUEGO };
-		string[] pierde   = { Tipos.AGUA, Tipos.FUEGO, Tipos.NATURALEZA, Tipos.METAL, Tipos.SOMBRA };
-
-		for (int i = 0; i < tipos.Length; i++)
-		{
-			var hb = new HBoxContainer();
-			hb.AddThemeConstantOverride("separation", 10);
-			hb.AddChild(ChipTipo(tipos[i]));
-			hb.AddChild(TextoLbl("fuerte contra", new Color(0.7f, 0.75f, 0.8f), 13));
-			hb.AddChild(ChipTipo(gana[i]));
-			hb.AddChild(TextoLbl("·  débil contra", new Color(0.7f, 0.75f, 0.8f), 13));
-			hb.AddChild(ChipTipo(pierde[i]));
-			vbox.AddChild(hb);
-		}
-
-		var sep2 = new HSeparator();
-		vbox.AddChild(sep2);
-
-		var btnCerrar = new Button();
-		btnCerrar.Text = "CERRAR";
-		btnCerrar.CustomMinimumSize = new Vector2(0, 36);
-		btnCerrar.Pressed += ToggleAyudaTipos;
-		vbox.AddChild(btnCerrar);
-
-		return panel;
-	}
-
-	private Control ChipTipo(string tipo)
-	{
-		var chip = new PanelContainer();
-		chip.CustomMinimumSize = new Vector2(110, 28);
-		var sb = new StyleBoxFlat();
-		sb.BgColor = Tipos.Color(tipo);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 8;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 8;
-		chip.AddThemeStyleboxOverride("panel", sb);
-		var lbl = new Label();
-		lbl.Text = Tipos.Etiqueta(tipo);
-		lbl.AddThemeColorOverride("font_color", Colors.White);
-		lbl.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.6f));
-		lbl.AddThemeConstantOverride("shadow_offset_x", 1);
-		lbl.AddThemeConstantOverride("shadow_offset_y", 1);
-		lbl.AddThemeFontSizeOverride("font_size", 13);
-		lbl.HorizontalAlignment = HorizontalAlignment.Center;
-		lbl.VerticalAlignment   = VerticalAlignment.Center;
-		chip.AddChild(lbl);
-		return chip;
-	}
-
-	private Label TextoLbl(string t, Color c, int size)
-	{
-		var l = new Label();
-		l.Text = t;
-		l.AddThemeColorOverride("font_color", c);
-		l.AddThemeFontSizeOverride("font_size", size);
-		l.VerticalAlignment = VerticalAlignment.Center;
-		return l;
-	}
 }

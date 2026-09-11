@@ -4,98 +4,10 @@ using System.Collections.Generic;
 
 public partial class Campo1 : Node2D
 {
-	// ── HISTORIAL DE BATALLA ─────────────────────────────────────────────
+	// ── REGISTRO DE COMBATE (sin UI propia: el botón/panel HISTORIAL del HUD viejo se
+	// eliminó; Campo1.Combate.cs sigue llamando a RegistrarEvento, que ahora no hace nada
+	// visible ya que _historialContenido nunca se asigna) ──────────────────────────────
 	private VBoxContainer _historialContenido;
-	private PanelContainer _cardHistorial;
-	private Button _btnToggleHistorial;
-	private bool _historialAbierto = false;
-	private readonly System.Collections.Generic.Queue<string> _eventos = new(9);
-
-	private void CrearBotonHistorial()
-	{
-		_btnToggleHistorial = new Button();
-		_btnToggleHistorial.Text = "☰  HISTORIAL";
-		_btnToggleHistorial.CustomMinimumSize = new Vector2(155, 48);
-		_btnToggleHistorial.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
-		_btnToggleHistorial.OffsetLeft = -240; _btnToggleHistorial.OffsetTop = -75;
-		_btnToggleHistorial.OffsetRight = -85; _btnToggleHistorial.OffsetBottom = -27;
-		_btnToggleHistorial.AddThemeFontSizeOverride("font_size", 15);
-		_btnToggleHistorial.AddThemeColorOverride("font_color", new Color(0.95f, 0.97f, 1f));
-
-		var n = new StyleBoxFlat();
-		n.BgColor = new Color(0.10f, 0.15f, 0.25f, 0.95f);
-		n.BorderWidthLeft = 4;
-		n.BorderColor = new Color(0.35f, 0.75f, 0.55f);
-		n.CornerRadiusTopLeft = n.CornerRadiusTopRight =
-		n.CornerRadiusBottomLeft = n.CornerRadiusBottomRight = 10;
-		n.ShadowColor = new Color(0, 0, 0, 0.4f); n.ShadowSize = 4;
-		_btnToggleHistorial.AddThemeStyleboxOverride("normal", n);
-
-		var h = new StyleBoxFlat();
-		h.BgColor = new Color(0.20f, 0.32f, 0.28f, 1f);
-		h.BorderWidthLeft = 4;
-		h.BorderColor = new Color(0.55f, 1f, 0.75f);
-		h.CornerRadiusTopLeft = h.CornerRadiusTopRight =
-		h.CornerRadiusBottomLeft = h.CornerRadiusBottomRight = 10;
-		_btnToggleHistorial.AddThemeStyleboxOverride("hover", h);
-		_btnToggleHistorial.AddThemeStyleboxOverride("pressed", h);
-
-		_btnToggleHistorial.Pressed += ToggleHistorial;
-		CapaHUD().AddChild(_btnToggleHistorial);
-
-		// Panel del historial — oculto por defecto
-		_cardHistorial = new PanelContainer();
-		_cardHistorial.CustomMinimumSize = new Vector2(320, 360);
-		_cardHistorial.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
-		_cardHistorial.OffsetLeft = -340; _cardHistorial.OffsetTop = -450;
-		_cardHistorial.OffsetRight = -20; _cardHistorial.OffsetBottom = -90;
-		_cardHistorial.Visible = false;
-
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.06f, 0.09f, 0.14f, 0.94f);
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
-		sb.BorderColor = new Color(0.30f, 0.75f, 0.55f, 0.6f);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 12;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 12;
-		sb.ShadowColor = new Color(0, 0, 0, 0.4f); sb.ShadowSize = 6;
-		_cardHistorial.AddThemeStyleboxOverride("panel", sb);
-
-		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 6);
-		_cardHistorial.AddChild(vbox);
-
-		var head = new HBoxContainer();
-		var titulo = new Label();
-		titulo.Text = "HISTORIAL";
-		titulo.AddThemeColorOverride("font_color", new Color(0.85f, 0.95f, 0.88f));
-		titulo.AddThemeFontSizeOverride("font_size", 15);
-		titulo.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		head.AddChild(titulo);
-		var btnX = new Button();
-		btnX.Text = "×";
-		btnX.CustomMinimumSize = new Vector2(30, 30);
-		btnX.AddThemeFontSizeOverride("font_size", 20);
-		btnX.Pressed += ToggleHistorial;
-		head.AddChild(btnX);
-		vbox.AddChild(head);
-		vbox.AddChild(new HSeparator());
-
-		var scroll = new ScrollContainer();
-		scroll.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
-		scroll.CustomMinimumSize = new Vector2(0, 260);
-		vbox.AddChild(scroll);
-
-		_historialContenido = new VBoxContainer();
-		_historialContenido.AddThemeConstantOverride("separation", 4);
-		_historialContenido.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		scroll.AddChild(_historialContenido);
-
-		CapaHUD().AddChild(_cardHistorial);
-		RegistrarEvento("Partida iniciada", new Color(0.6f, 0.8f, 1f));
-	}
 
 	public void RegistrarEvento(string texto, Color acento)
 	{
@@ -122,20 +34,6 @@ public partial class Campo1 : Node2D
 		{
 			var last = _historialContenido.GetChild(_historialContenido.GetChildCount() - 1);
 			last.QueueFree();
-		}
-	}
-
-	private void ToggleHistorial()
-	{
-		if (_cardHistorial == null) return;
-		_historialAbierto = !_historialAbierto;
-		_cardHistorial.Visible = _historialAbierto;
-		_btnToggleHistorial.Text = _historialAbierto ? "☰  CERRAR" : "☰  HISTORIAL";
-		if (_historialAbierto)
-		{
-			_cardHistorial.Modulate = new Color(1, 1, 1, 0);
-			var tw = _cardHistorial.CreateTween();
-			tw.TweenProperty(_cardHistorial, "modulate:a", 1f, 0.18f);
 		}
 	}
 
@@ -184,18 +82,8 @@ public partial class Campo1 : Node2D
 		_lblInstruccion.AddThemeFontSizeOverride("font_size", 12);
 		CapaHUD().AddChild(_lblInstruccion);
 
-		// Botón CAMBIAR
-		_btnCambiarHechizo = new Button();
-		_btnCambiarHechizo.Text = $"↺ CAMBIAR ({MAX_CAMBIO_HECHIZO})";
-		_btnCambiarHechizo.Position = new Vector2(HECHIZO_X, HECHIZO_Y + HECHIZO_H + 50);
-		_btnCambiarHechizo.Size     = new Vector2(HECHIZO_W * 2 + HECHIZO_GAP, 40);
-		_btnCambiarHechizo.AddThemeFontSizeOverride("font_size", 12);
-		_btnCambiarHechizo.AddThemeColorOverride("font_color", Colors.White);
-		_btnCambiarHechizo.AddThemeStyleboxOverride("normal",  HudEstilo(new Color(0.22f,0.15f,0.40f,0.95f), new Color(0.65f,0.45f,1f)));
-		_btnCambiarHechizo.AddThemeStyleboxOverride("hover",   HudEstilo(new Color(0.38f,0.25f,0.65f),      new Color(0.88f,0.68f,1f)));
-		_btnCambiarHechizo.AddThemeStyleboxOverride("pressed", HudEstilo(new Color(0.38f,0.25f,0.65f),      new Color(0.88f,0.68f,1f)));
-		_btnCambiarHechizo.Pressed += ActivarModoCambio;
-		CapaHUD().AddChild(_btnCambiarHechizo);
+		// El botón "CAMBIAR" morado creado por código se reemplazó por el nodo
+		// "ArdidBarButton" del .tscn — se cablea en ConfigurarInterfazNueva().
 	}
 
 	// Reemplaza automáticamente la carta usada con la siguiente del pool
@@ -310,21 +198,6 @@ public partial class Campo1 : Node2D
 		return panel;
 	}
 
-	// Helper de estilo compartido
-	private static StyleBoxFlat HudEstilo(Color bg, Color border, int cornerR = 8, int borderW = 2, Color shadowColor = default)
-	{
-		var sb = new StyleBoxFlat();
-		sb.BgColor = bg;
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = borderW;
-		sb.BorderColor = border;
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = cornerR;
-		sb.ContentMarginLeft = sb.ContentMarginRight =
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 5;
-		if (shadowColor != default) { sb.ShadowColor = shadowColor; sb.ShadowSize = 4; }
-		return sb;
-	}
-
 	private void EjecutarHechizo(int slotIdx)
 	{
 		if (_modoCambioHechizo) { EjecutarCambioHechizo(slotIdx); return; }
@@ -375,7 +248,7 @@ public partial class Campo1 : Node2D
 	{
 		if (_usosCambioHechizo >= MAX_CAMBIO_HECHIZO) return;
 		_modoCambioHechizo = !_modoCambioHechizo;
-		_btnCambiarHechizo.Text = _modoCambioHechizo ? "Elige un hechizo..." : $"↺  CAMBIAR ({MAX_CAMBIO_HECHIZO - _usosCambioHechizo})";
+		if (_btnCambiarHechizo != null) _btnCambiarHechizo.Modulate = _modoCambioHechizo ? new Color(1.25f, 1.25f, 0.45f) : Colors.White;
 		for (int i = 0; i < 2; i++)
 			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
 				_tarjetasHechizo[i].Modulate = _modoCambioHechizo && !EsHechizoUsado(i)
@@ -390,9 +263,11 @@ public partial class Campo1 : Node2D
 		AutoReemplazarHechizo(slotIdx);
 
 		bool agotado = _usosCambioHechizo >= MAX_CAMBIO_HECHIZO;
-		_btnCambiarHechizo.Text     = agotado ? "↺  CAMBIAR (usado)" : $"↺  CAMBIAR ({MAX_CAMBIO_HECHIZO - _usosCambioHechizo})";
-		_btnCambiarHechizo.Disabled = agotado;
-		_btnCambiarHechizo.Modulate = agotado ? new Color(0.55f, 0.55f, 0.55f) : Colors.White;
+		if (_btnCambiarHechizo != null)
+		{
+			_btnCambiarHechizo.Disabled = agotado;
+			_btnCambiarHechizo.Modulate = agotado ? new Color(0.55f, 0.55f, 0.55f) : Colors.White;
+		}
 		for (int i = 0; i < 2; i++)
 			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
 				_tarjetasHechizo[i].Modulate = Colors.White;
@@ -417,42 +292,8 @@ public partial class Campo1 : Node2D
 		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
 	}
 
-	private void CrearBotonPausa()
-	{
-		var btn = new Button();
-		btn.Text = "⚙";
-		btn.CustomMinimumSize = new Vector2(58, 58);
-		btn.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
-		btn.OffsetLeft = 8; btn.OffsetTop = 8;
-		btn.OffsetRight = 66; btn.OffsetBottom = 66;
-		btn.AddThemeFontSizeOverride("font_size", 26);
-		btn.AddThemeColorOverride("font_color", Colors.White);
-		btn.ZIndex = 100;
-
-		var n = new StyleBoxFlat();
-		n.BgColor = new Color(0.08f, 0.08f, 0.14f, 0.88f);
-		n.BorderWidthLeft = n.BorderWidthTop = n.BorderWidthRight = n.BorderWidthBottom = 2;
-		n.BorderColor = new Color(0.55f, 0.55f, 0.80f, 0.8f);
-		n.CornerRadiusTopLeft = n.CornerRadiusTopRight =
-		n.CornerRadiusBottomLeft = n.CornerRadiusBottomRight = 12;
-		n.ShadowColor = new Color(0, 0, 0, 0.5f); n.ShadowSize = 5;
-		btn.AddThemeStyleboxOverride("normal", n);
-
-		var h = new StyleBoxFlat();
-		h.BgColor = new Color(0.20f, 0.20f, 0.35f, 0.96f);
-		h.BorderWidthLeft = h.BorderWidthTop = h.BorderWidthRight = h.BorderWidthBottom = 2;
-		h.BorderColor = new Color(0.75f, 0.75f, 1f);
-		h.CornerRadiusTopLeft = h.CornerRadiusTopRight =
-		h.CornerRadiusBottomLeft = h.CornerRadiusBottomRight = 12;
-		btn.AddThemeStyleboxOverride("hover", h);
-		btn.AddThemeStyleboxOverride("pressed", h);
-
-		btn.Pressed += () => {
-			var pausa = GetNodeOrNull<MenuPausa>("MenuPausa");
-			pausa?.Pausar();
-		};
-		CapaHUD().AddChild(btn);
-	}
+	// El gear (⚙) creado por código se reemplazó por el nodo "PausaButton" del .tscn,
+	// cableado en Campo1.Extra.cs → ConfigurarInterfazNueva().
 
 	private CanvasLayer _capaHUD;
 	private CanvasLayer CapaHUD()

@@ -180,7 +180,7 @@ scale = Vector2(0.513, 0.513)
 pivot_offset = Vector2(199.5, 135.5)
 texture_normal = ExtResource("6_btn_cartas")
 texture_pressed = ExtResource("7_btn_cartas_neg")
-texture_hover = ExtResource("7_btn_cartas_neg")
+texture_hover = ExtResource("6_btn_cartas")
 stretch_mode = 3
 
 [node name="TIENDA" type="TextureButton" parent="IslaContainer" unique_id=311225293]
@@ -193,7 +193,7 @@ scale = Vector2(0.513, 0.513)
 pivot_offset = Vector2(199.5, 135.5)
 texture_normal = ExtResource("8_btn_tienda")
 texture_pressed = ExtResource("9_btn_tienda_neg")
-texture_hover = ExtResource("9_btn_tienda_neg")
+texture_hover = ExtResource("8_btn_tienda")
 stretch_mode = 3
 
 [node name="TopHUD" type="HBoxContainer" parent="." unique_id=972495174]
@@ -315,7 +315,6 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="SecondaryButtons" type="VBoxContainer" parent="." unique_id=1123693990]
-visible = false
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -436,3 +435,7 @@ size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_popup_btn")
 text = "ENTENDIDO"
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=670170101]
+position = Vector2(964, 540)
+zoom = Vector2(1.2, 1.2)

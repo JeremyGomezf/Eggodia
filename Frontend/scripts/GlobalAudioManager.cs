@@ -160,6 +160,14 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 		return stream;
 	}
 
+	/// <summary>Reanuda la música global si quedó detenida (p. ej. al volver de una partida en
+	/// Campo1, que la pausa explícitamente vía SilenciarOtrasMusicas). Llamar en el _Ready de
+	/// cualquier pantalla de menú a la que se pueda volver tras una batalla.</summary>
+	public void AsegurarReproduccion()
+	{
+		if (Stream != null && !Playing) Play();
+	}
+
 	public void CambiarVolumen(float valor)
 	{
 		_lastVolume = valor;

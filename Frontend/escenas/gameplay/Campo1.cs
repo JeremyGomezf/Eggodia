@@ -6,7 +6,9 @@ public partial class Campo1 : Node2D
 {
 	// ── MÚSICA Y AUDIO ───────────────────────────────────────────────────
 	[Export] private AudioStream _musicaPartida = GD.Load<AudioStream>("res://musica/DECISIVE BATTLE.mp3");
-	[Export] private float _volumenMusicaDb = -17.0f;
+	// 0dB: misma intensidad relativa que la música del menú (GlobalAudioManager no aplica
+	// ningún offset propio); ambas quedan afectadas por igual por el volumen/mute del Bus Master.
+	[Export] private float _volumenMusicaDb = 0.0f;
 	private AudioStreamPlayer _reproductorMusica;
 
 	// ── VIDA ──────────────────────────────────────────────────────────────
@@ -17,11 +19,19 @@ public partial class Campo1 : Node2D
 	public  bool juegoTerminado       = false;
 
 	// ── TURNOS ────────────────────────────────────────────────────────────
-	public  const int ENERGIA_MAXIMA  = 3; // fija, sin escalado por turno
-	public  bool esTurnoJugador       = true;
-	public  int  movimientosRestantes = ENERGIA_MAXIMA;
-	private int  tiempoTurnoActual    = 20;
+	public  const int ENERGIA_MAXIMA   = 3; // fija, sin escalado por turno
+	public  bool esTurnoJugador        = true;
+	public  int  movimientosRestantes  = ENERGIA_MAXIMA;
+	public  const int DURACION_TURNO_SEG = 30;
+	private int  tiempoTurnoActual     = DURACION_TURNO_SEG;
+	private bool _turnoFinalizando     = false; // evita doble CambiarTurno (energía agotada + reloj a la vez)
 	private Timer timerReloj;
+
+	// EP mostrado por bando: se aísla del contador compartido `movimientosRestantes` (que en
+	// realidad representa "energía del que tiene el turno ahora"), para que el panel del bando
+	// inactivo conserve su último valor real en vez de reflejar el gasto del otro bando.
+	private int _epMostradoJugador = ENERGIA_MAXIMA;
+	private int _epMostradoRival   = ENERGIA_MAXIMA;
 
 	// Fase de turno: primero invocar, luego atacar
 	public  bool faseInvocacion       = true;
@@ -52,12 +62,12 @@ public partial class Campo1 : Node2D
 	private const int MAX_SACRIFICIO  = 2;
 
 	// ── UI ────────────────────────────────────────────────────────────────
-	private Control  menuAcciones;
-	private Node2D   tropaSeleccionada;
-	private Button   btnBarajar;
-	private Button   btnSacrificio;
-	private Button   btnHabilidad;
-	private Control  panelPausa;
+	private Control       menuAcciones;
+	private Node2D        tropaSeleccionada;
+	private TextureButton btnBarajar;
+	private TextureButton btnSacrificio;
+	private Button        btnHabilidad;
+	private Control       panelPausa;
 
 	[Export] private Texture2D   iconoCursorSacrificio;
 	[Export] private PackedScene escenaCartaBase;
@@ -95,7 +105,7 @@ public partial class Campo1 : Node2D
 	private const int MAX_CAMBIO_HECHIZO = 3; // hasta 3 cambios de hechizo por partida (jugador e IA)
 	private int     _usosCambioHechizo  = 0;
 	private bool    _modoCambioHechizo  = false;
-	private Button  _btnCambiarHechizo;
+	private TextureButton _btnCambiarHechizo;
 	private System.Collections.Generic.List<int> _poolHechizos = new();
 	private int     _slotPendiente = -1;
 
@@ -114,9 +124,25 @@ public partial class Campo1 : Node2D
 	// ── MANO DE HECHIZOS (contenedor en espacio de mundo) ────────────────────
 	public Control _contenedorHechizos;
 
-	// ── BARRAS HP BASE ────────────────────────────────────────────────────
-	private ProgressBar _barraHPJugador, _barraHPRival;
-	private Label _lblVida1, _lblVida2, _lblTiempo, _lblTurnoInfo;
+	// ── BARRAS HP Y HUD NUEVO (TextureProgressBar_User / _Rival dentro de InterfazMenu) ──
+	private TextureProgressBar _barraHPJugador, _barraHPRival;
+	private Label _lblTiempo, _lblTurnoAviso;
+	private Vector2 _turnoPanelEscalaBase = Vector2.One;
+	private Label _lblUsuario, _lblCPU;
+	private Control _panelEnergiaUsuario, _panelEnergiaRival;
+	private Label _lblEnergiaUsuario, _lblEnergiaRival;
+
+	private static readonly string[] NOMBRES_CPU = {
+		"Bot 67", "botcito", "Carlos", "Gonzalo", "Jeremy", "Mclovin", "Ec0tec_ec2",
+		"CPU xd", "Hola", "Guayaco", "Campo1", "Bot 1", "Bot 2", "Bot 3", "Maestro",
+		"6 a 1", "Rival malo"
+	};
+
+	// ── SECUENCIA DE FIN DE PARTIDA ─────────────────────────────────────────
+	private static readonly string[] FRASES_VICTORIA = { "GG EZ", "BYE BYE", "HUEVO ROTO", "VAMOOOOS SIII", "OSIOSIOSI" };
+	private static readonly string[] FRASES_DERROTA   = { "VALISTE OE", "YA TE FUISTE MANO", "GG BRO", "ÑIÑIÑIÑI", "XDDDDxdxd :V", "TE MURISTE ÑAÑO" };
+	private static readonly string[] CARAS_VICTORIA   = { "B)", ":)", "🥚", ":D" };
+	private static readonly string[] CARAS_DERROTA    = { "XD", ":v", ":(", "🍳" };
 
 	// ── MAZO ──────────────────────────────────────────────────────────────
 	private List<int> mazoIndices       = new List<int>();
@@ -155,6 +181,10 @@ public partial class Campo1 : Node2D
 	// ══════════════════════════════════════════════════════════════════════
 	public override void _Ready()
 	{
+		// La cámara manual (posición/zoom/rotación fijados en el editor) debe quedar
+		// activa siempre: el motor no la respeta si no se declara "current" en runtime.
+		GetNodeOrNull<Camera2D>("Camera2D")?.MakeCurrent();
+
 		// Silencia el menú e inicia la canción de combate (de tu script)
 		SilenciarOtrasMusicas();
 		IniciarMusicaPartida();
@@ -166,8 +196,6 @@ public partial class Campo1 : Node2D
 		timerReloj.Start();
 
 		menuAcciones  = GetNodeOrNull<Control>("InterfazMenu/MenuAcciones");
-		btnBarajar    = GetNodeOrNull<Button>("Barajar");
-		btnSacrificio = GetNodeOrNull<Button>("Sacrificar");
 
 		if (menuAcciones != null)
 		{
@@ -209,7 +237,6 @@ public partial class Campo1 : Node2D
 			GD.Print($"[Campo1] Mazo personalizado: {escenasTropas.Length} cartas");
 		}
 
-		AplicarIdentidadEra();
 		PrepararMazoSinRepetir();
 		InicializarClasificacionMazo();
 		InicializarMazoCPU();
@@ -217,14 +244,10 @@ public partial class Campo1 : Node2D
 		BarajarMazoInicial();
 		_faseApertura  = true;
 		faseInvocacion = true;
-		CrearBarrasHPBase();
-		CrearBotonAyudaTipos();
-		CrearBotonHistorial();
-		CrearBotonPausa();
-		EstilizarLabelsHUD();
+		ConfigurarInterfazNueva();
 		BajarManoManual();
 		ActualizarInterfaz();
-		MostrarAvisoApertura();
+		AnunciarTurno(); // muestra "TU TURNO" desde el primer instante, no solo al cambiar de turno
 
 		// Mejora estética integrada de zonas de invocación (del amigo)
 		EstilizarIndicadoresInvocacion();

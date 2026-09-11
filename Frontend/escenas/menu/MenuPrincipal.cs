@@ -28,6 +28,10 @@ public partial class MenuPrincipal : Control
 
 	public override void _Ready()
 	{
+		// Si venimos de una partida en Campo1 (victoria/derrota/pausa), la música global quedó
+		// detenida a propósito durante la batalla — se reanuda acá, sea cual sea el camino de vuelta.
+		GlobalAudioManager.Instance?.AsegurarReproduccion();
+
 		// 1. Obtener referencias del escenario, portal y huevo coronado
 		_islaContainer     = GetNodeOrNull<Control>("IslaContainer");
 		_portalNode        = GetNodeOrNull<TextureRect>("IslaContainer/Portal");
@@ -103,12 +107,11 @@ public partial class MenuPrincipal : Control
 			AgregarAnimacionHover(btnVsBot);
 		}
 
-		// 4. Panel de desarrollador con los botones secundarios (Bestiario, Cómo Jugar, Pruebas)
+		// 4. Panel con los botones secundarios (Bestiario, Cómo Jugar, Pruebas) — visible de forma
+		// permanente en su posición de siempre; ya no depende de BtnDev (ver más abajo).
 		var secundarios = GetNodeOrNull<Control>("SecondaryButtons");
 		if (secundarios != null)
 		{
-			secundarios.Visible = false;
-
 			var btnBestiario = secundarios.GetNodeOrNull<Button>("BtnBestiario");
 			if (btnBestiario != null)
 			{
@@ -131,39 +134,11 @@ public partial class MenuPrincipal : Control
 			}
 		}
 
-		// 4b. BtnDev: al hacer clic, alterna la visualización de los botones secundarios con animación suave
+		// 4b. BtnDev: salto directo al campo de pruebas (ya no alterna el panel secundario).
 		var btnDev = GetNodeOrNull<BaseButton>("BtnDev");
 		if (btnDev != null)
 		{
-			btnDev.Pressed += () =>
-			{
-				if (secundarios != null)
-				{
-					bool mostrar = !secundarios.Visible;
-					secundarios.Visible = mostrar;
-					GlobalAudioManager.Instance?.PlayClickSound();
-
-					var btnControl = btnDev as Control;
-					if (btnControl != null)
-					{
-						btnControl.PivotOffset = btnControl.Size / 2f;
-						var twBtn = btnControl.CreateTween();
-						twBtn.TweenProperty(btnControl, "rotation_degrees", 25f, 0.08f);
-						twBtn.TweenProperty(btnControl, "rotation_degrees", 0f, 0.12f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-					}
-
-					if (mostrar)
-					{
-						secundarios.Modulate = new Color(1, 1, 1, 0);
-						secundarios.Scale = new Vector2(0.92f, 0.92f);
-						secundarios.PivotOffset = new Vector2(secundarios.Size.X, 0);
-						var tw = secundarios.CreateTween().SetParallel(true);
-						tw.TweenProperty(secundarios, "modulate:a", 1.0f, 0.16f);
-						tw.TweenProperty(secundarios, "scale", Vector2.One, 0.16f)
-							.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-					}
-				}
-			};
+			btnDev.Pressed += () => GetTree().ChangeSceneToFile(RutaCampoPruebas);
 			AgregarAnimacionHover(btnDev);
 		}
 
