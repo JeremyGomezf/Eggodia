@@ -8,7 +8,6 @@
 [ext_resource type="PackedScene" uid="uid://mpausa123" path="res://escenas/gameplay/MenuPausa.tscn" id="3_mpausa"]
 [ext_resource type="Texture2D" uid="uid://dw12iugljdasy" path="res://imagenes/Escenarios/medieval-escenario.png" id="4_hdudg"]
 [ext_resource type="Texture2D" uid="uid://dct0ngd2aqcg2" path="res://imagenes/mano_cartas.png" id="4_mano"]
-[ext_resource type="Texture2D" uid="uid://c44dqpje7p5fk" path="res://imagenes/Escenarios/guia-campo1.png" id="5_hdudg"]
 [ext_resource type="Texture2D" uid="uid://c8ccxlebsbf1i" path="res://imagenes/botonescampo1/BotonSacrificio.png" id="10_hbhjk"]
 [ext_resource type="FontFile" uid="uid://duwyhi2s8cphn" path="res://Cinzel.ttf" id="11_qyt1l"]
 [ext_resource type="Texture2D" uid="uid://din5j31n0hxcg" path="res://imagenes/botonescampo1/BotonBaranjar.png" id="12_7c5g7"]
@@ -25,21 +24,15 @@ script = ExtResource("1_ar4p3")
 iconoCursorSacrificio = ExtResource("2_5fmnn")
 escenaCartaBase = ExtResource("2_qk0di")
 
-[node name="MedievalFondo" type="Sprite2D" parent="." unique_id=591859094]
+[node name="FONDO" type="Sprite2D" parent="." unique_id=591859094]
 position = Vector2(806.4, 453.6)
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("3_g8sj5")
 
-[node name="MedievalEscenario" type="Sprite2D" parent="." unique_id=1181126171]
+[node name="ESCENARIO" type="Sprite2D" parent="." unique_id=1181126171]
 position = Vector2(806.4, 453.6)
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("4_hdudg")
-
-[node name="GuiaCampo1" type="Sprite2D" parent="." unique_id=1642529770]
-visible = false
-position = Vector2(1146, 609.00006)
-scale = Vector2(0.735, 0.735)
-texture = ExtResource("5_hdudg")
 
 [node name="jeremy mi hijo" type="Sprite2D" parent="." unique_id=1640264118]
 visible = false
@@ -57,10 +50,10 @@ offset_right = 93.0
 offset_bottom = 64.0
 
 [node name="SpawnTrono1" type="Marker2D" parent="." unique_id=1533911167]
-position = Vector2(217, 473)
+position = Vector2(190, 473)
 
 [node name="SpawnTrono2" type="Marker2D" parent="." unique_id=1433017232]
-position = Vector2(1381, 470)
+position = Vector2(1426, 470)
 
 [node name="PantallaFinal" type="ColorRect" parent="." unique_id=1712408150]
 anchors_preset = 15
@@ -94,21 +87,21 @@ scale = Vector2(0.6, 0.6)
 texture = ExtResource("4_mano")
 
 [node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
-position = Vector2(-125, -165)
+position = Vector2(-158, -11.999981)
 rotation = -0.22
 
 [node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
-position = Vector2(0, -188)
+position = Vector2(-34, -49)
 
 [node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
-position = Vector2(125, -165)
+position = Vector2(89, -47.999985)
 rotation = 0.22
 
 [node name="Spot4" type="Marker2D" parent="ManoManual" unique_id=184729106]
-position = Vector2(9999, 9999)
+position = Vector2(234, -36)
 
 [node name="Mod1" type="Marker2D" parent="." unique_id=698830398 groups=["zonas_invocacion"]]
-position = Vector2(579, 389)
+position = Vector2(569, 344)
 
 [node name="Indicador" type="ColorRect" parent="Mod1" unique_id=2126922730]
 offset_left = -8.0
@@ -119,7 +112,7 @@ scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
 [node name="ModRival1" type="Marker2D" parent="." unique_id=1028389189 groups=["zonas_invocacion_rival"]]
-position = Vector2(1049, 392)
+position = Vector2(1049, 344)
 
 [node name="Indicador" type="ColorRect" parent="ModRival1" unique_id=1987297612]
 offset_left = -7.0
@@ -130,7 +123,7 @@ scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
 [node name="Mod2" type="Marker2D" parent="." unique_id=801882136 groups=["zonas_invocacion"]]
-position = Vector2(500, 524)
+position = Vector2(438, 491)
 
 [node name="Indicador" type="ColorRect" parent="Mod2" unique_id=1577266458]
 offset_left = -8.0
@@ -141,7 +134,7 @@ scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
 [node name="ModRival2" type="Marker2D" parent="." unique_id=1202636240 groups=["zonas_invocacion_rival"]]
-position = Vector2(1147, 527)
+position = Vector2(1168, 491)
 
 [node name="Indicador" type="ColorRect" parent="ModRival2" unique_id=2020004028]
 offset_left = -6.0
@@ -152,7 +145,7 @@ scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
 [node name="Mod3" type="Marker2D" parent="." unique_id=31331561 groups=["zonas_invocacion"]]
-position = Vector2(582, 655)
+position = Vector2(539, 654)
 
 [node name="Indicador" type="ColorRect" parent="Mod3" unique_id=1001165050]
 offset_left = -8.0
@@ -163,7 +156,7 @@ scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
 [node name="ModRival3" type="Marker2D" parent="." unique_id=281382111 groups=["zonas_invocacion_rival"]]
-position = Vector2(1047, 659)
+position = Vector2(1077, 650)
 
 [node name="Indicador" type="ColorRect" parent="ModRival3" unique_id=581110044]
 offset_left = -7.0
@@ -182,15 +175,11 @@ offset_right = 1245.0
 offset_bottom = 696.0
 
 [node name="SpotH1" type="Marker2D" parent="ManoHechizos" unique_id=550129385]
-position = Vector2(-90, -110)
+position = Vector2(59.628784, -4)
 rotation = -0.18
 
 [node name="SpotH2" type="Marker2D" parent="ManoHechizos" unique_id=550129386]
-position = Vector2(0, -130)
-
-[node name="SpotH3" type="Marker2D" parent="ManoHechizos" unique_id=550129387]
-position = Vector2(90, -110)
-rotation = 0.18
+position = Vector2(150, -14)
 
 [node name="InterfazMenu" type="CanvasLayer" parent="." unique_id=916174861]
 
@@ -215,11 +204,11 @@ layout_mode = 2
 text = "DEFENSA"
 
 [node name="SacrificioButton" type="TextureButton" parent="." unique_id=582472426]
-offset_left = 376.0
-offset_top = 655.00006
-offset_right = 772.0
-offset_bottom = 934.00006
-scale = Vector2(0.65, 0.65)
+offset_left = 271.0
+offset_top = 660.0
+offset_right = 667.0
+offset_bottom = 939.0
+scale = Vector2(0.62, 0.62)
 texture_normal = ExtResource("10_hbhjk")
 texture_hover = ExtResource("10_hbhjk")
 
@@ -249,11 +238,11 @@ theme_override_font_sizes/font_size = 40
 text = "S A C R I F I C A R"
 
 [node name="BarajarButton" type="TextureButton" parent="." unique_id=52418190]
-offset_left = 115.0
-offset_top = 657.0
-offset_right = 511.0
-offset_bottom = 936.0
-scale = Vector2(0.65, 0.65)
+offset_left = 25.0
+offset_top = 660.0
+offset_right = 421.0
+offset_bottom = 939.0
+scale = Vector2(0.62, 0.62)
 texture_normal = ExtResource("12_7c5g7")
 texture_hover = ExtResource("12_7c5g7")
 
@@ -282,21 +271,21 @@ theme_override_font_sizes/font_size = 39
 text = "B A R A J A R"
 
 [node name="ArdidBarButton" type="TextureButton" parent="." unique_id=1608527857]
-offset_left = 1383.0
-offset_top = 702.0
-offset_right = 1587.0
-offset_bottom = 917.0
+offset_left = 1448.0
+offset_top = 646.0
+offset_right = 1652.0
+offset_bottom = 861.0
 scale = Vector2(0.49, 0.49)
 texture_normal = ExtResource("13_3o1sx")
 texture_hover = ExtResource("13_3o1sx")
 ignore_texture_size = true
 
 [node name="PausaButton" type="TextureButton" parent="." unique_id=81058142]
-offset_left = 615.0
-offset_top = 57.0
-offset_right = 819.0
-offset_bottom = 272.0
-scale = Vector2(0.305, 0.305)
+offset_left = 654.0
+offset_top = 88.0
+offset_right = 858.0
+offset_bottom = 303.0
+scale = Vector2(0.25, 0.25)
 texture_normal = ExtResource("14_m7a3u")
 texture_hover = ExtResource("14_m7a3u")
 ignore_texture_size = true
@@ -308,13 +297,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = 724.0
-offset_top = 96.0
-offset_right = 1204.0
-offset_bottom = 241.0
+offset_left = 751.0
+offset_top = 123.0
+offset_right = 1231.0
+offset_bottom = 268.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.357, 0.448)
+scale = Vector2(0.197, 0.4)
 texture = ExtResource("14_2lnyw")
 expand_mode = 1
 
@@ -323,16 +312,15 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 30.812263
-offset_top = -2.232143
-offset_right = -29.187744
-offset_bottom = -2.2321472
+offset_left = -127.38853
+offset_right = -187.38852
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.7643311, 1)
 theme_override_constants/separation = 22
 alignment = 1
 
-[node name="tiempolabel" type="Label" parent="TiempoPanel/HBox" unique_id=78279146]
+[node name="tiempolabel" type="Label" parent="TiempoPanel/HBox" unique_id=1673255084]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9313763, 0.9303067, 0.9579267, 1)
 theme_override_fonts/font = ExtResource("15_gg5bv")
@@ -348,9 +336,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = 640.0
-offset_top = 145.99998
+offset_top = 153.99998
 offset_right = 1120.0
-offset_bottom = 291.0
+offset_bottom = 299.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.357, 0.448)
@@ -380,10 +368,10 @@ text = "tostal banner"
 vertical_alignment = 1
 
 [node name="TextureProgressBar_User" type="TextureProgressBar" parent="." unique_id=456251343]
-offset_left = 114.0
-offset_top = 132.0
-offset_right = 512.0
-offset_bottom = 230.0
+offset_left = 63.0
+offset_top = 167.0
+offset_right = 461.0
+offset_bottom = 265.0
 scale = Vector2(0.68, 0.68)
 texture_under = ExtResource("16_y1kbq")
 texture_over = ExtResource("17_m7a3u")
@@ -444,10 +432,10 @@ text = "USUARIO"
 horizontal_alignment = 1
 
 [node name="TextureProgressBar_Rival" type="TextureProgressBar" parent="." unique_id=2006015222]
-offset_left = 1228.0
-offset_top = 132.0
-offset_right = 1626.0
-offset_bottom = 230.0
+offset_left = 1278.0
+offset_top = 167.0
+offset_right = 1676.0
+offset_bottom = 265.0
 scale = Vector2(0.68, 0.68)
 fill_mode = 1
 texture_under = ExtResource("16_y1kbq")
@@ -513,8 +501,8 @@ horizontal_alignment = 1
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1921821545]
 position = Vector2(806.4, 453.6)
 rotation = -3.1415925
-scale = Vector2(0.735, 0.735)
-zoom = Vector2(1.344, 1.444)
+scale = Vector2(0.83, 0.735)
+zoom = Vector2(1.51, 1.618)
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
 [connection signal="pressed" from="Pasar_Turno" to="." method="_on_pasar_turno_pressed"]

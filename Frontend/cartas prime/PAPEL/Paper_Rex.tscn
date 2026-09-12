@@ -333,7 +333,7 @@ position = Vector2(-7, -50)
 script = ExtResource("1_56jbl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=704329438]
-position = Vector2(38, -24.5)
+position = Vector2(13, -24)
 shape = SubResource("RectangleShape2D_wjcmm")
 
 [node name="efecto_secundario_slot" type="Marker2D" parent="." unique_id=1821712135]
@@ -343,8 +343,8 @@ position = Vector2(-7, 46)
 position = Vector2(134, 45)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1032052819]
-position = Vector2(5, -22)
-scale = Vector2(0.15, 0.15)
+position = Vector2(4, -22)
+scale = Vector2(0.13, 0.13)
 sprite_frames = SubResource("SpriteFrames_ebqfj")
 animation = &"ataque"
 frame = 4
@@ -353,10 +353,10 @@ frame_progress = 1.0
 [node name="StatsTropa" type="Control" parent="." unique_id=1023355261]
 layout_mode = 3
 anchors_preset = 0
-offset_left = -150.00005
-offset_top = -78.0
-offset_right = -110.000046
-offset_bottom = -38.0
+offset_left = -131.0
+offset_top = -22.0
+offset_right = -91.0
+offset_bottom = 18.0
 scale = Vector2(0.91999876, 0.7599994)
 metadata/_edit_use_anchors_ = true
 

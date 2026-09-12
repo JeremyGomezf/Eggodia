@@ -134,13 +134,13 @@ public partial class Campo1 : Node2D
 
 	private static readonly string[] NOMBRES_CPU = {
 		"Bot 67", "botcito", "Carlos", "Gonzalo", "Jeremy", "Mclovin", "Ec0tec_ec2",
-		"CPU xd", "Hola", "Guayaco", "Campo1", "Bot 1", "Bot 2", "Bot 3", "Maestro",
-		"6 a 1", "Rival malo"
+		"CPU xd", "Hola k ase", "Guayaco", "Campo1", "Bot 1", "Bot 2", "Bot 3", "Maestro",
+		"6 a 1", "Rival malo", "KanKox", "KromaNexus", "juegocards"
 	};
 
 	// ── SECUENCIA DE FIN DE PARTIDA ─────────────────────────────────────────
-	private static readonly string[] FRASES_VICTORIA = { "GG BRO", "BYE BYE", "HUEVO ROTO", "VAMOOOOS SIII", "OSIOSIOSI" };
-	private static readonly string[] FRASES_DERROTA   = { "VALISTE OE", "YA TE FUISTE MANO", "GG EZ", "ÑIÑIÑIÑI", "XDDDDxdxd :V", "TE MURISTE ÑAÑO" };
+	private static readonly string[] FRASES_VICTORIA = { "GG BRO", "GANADOR", "BIEN HECHO", "VAMOOOOS SIII", "OSIOSIOSI" };
+	private static readonly string[] FRASES_DERROTA   = { "VALISTE OE", "YA TE FUISTE XD", "GG EZ", "ÑIÑIÑIÑI", "XDDDDxdxd :V", "TE MURISTE ÑAÑO","BYE BYE", "HUEVO ROTO" };
 	private static readonly string[] CARAS_VICTORIA   = { "B)", ":)", "🥚", ":D" };
 	private static readonly string[] CARAS_DERROTA    = { "XD", ":v", ":(", "🍳" };
 

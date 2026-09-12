@@ -2,6 +2,43 @@
 
 [ext_resource type="Script" uid="uid://cgg6oa0so3ilp" path="res://escenas/gameplay/PantallaDerrota.cs" id="1_pderr"]
 [ext_resource type="Texture2D" uid="uid://danvroclfrlpl" path="res://imagenes/botonescampo1/huevoroto.png" id="2_huevo"]
+[ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="4_i4n64"]
+
+[sub_resource type="FontFile" id="FontFile_jaoas"]
+cache/0/variation_coordinates = {}
+cache/0/face_index = 0
+cache/0/embolden = 0.0
+cache/0/transform = Transform2D(1, 0, 0, 1, 0, 0)
+cache/0/spacing_top = 0
+cache/0/spacing_bottom = 0
+cache/0/spacing_space = 0
+cache/0/spacing_glyph = 0
+cache/0/baseline_offset = 0.0
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/89/0/ascent = 0.0
+cache/0/89/0/descent = 0.0
+cache/0/89/0/underline_position = 0.0
+cache/0/89/0/underline_thickness = 0.0
+cache/0/89/0/scale = 1.0
+cache/0/90/0/ascent = 0.0
+cache/0/90/0/descent = 0.0
+cache/0/90/0/underline_position = 0.0
+cache/0/90/0/underline_thickness = 0.0
+cache/0/90/0/scale = 1.0
+cache/0/91/0/ascent = 0.0
+cache/0/91/0/descent = 0.0
+cache/0/91/0/underline_position = 0.0
+cache/0/91/0/underline_thickness = 0.0
+cache/0/91/0/scale = 1.0
+cache/0/92/0/ascent = 0.0
+cache/0/92/0/descent = 0.0
+cache/0/92/0/underline_position = 0.0
+cache/0/92/0/underline_thickness = 0.0
+cache/0/92/0/scale = 1.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_statspanel"]
 content_margin_left = 30.0
@@ -77,11 +114,11 @@ color = Color(0.4, 0.5, 0.6, 0.5)
 [node name="HuevoRoto" type="TextureRect" parent="Overlay" unique_id=1120923035]
 custom_minimum_size = Vector2(240, 240)
 layout_mode = 0
-offset_left = 847.0
-offset_top = 56.0
-offset_right = 1087.0
-offset_bottom = 296.0
-scale = Vector2(1.6, 1.6)
+offset_left = 975.00006
+offset_top = 10.0
+offset_right = 1215.0
+offset_bottom = 250.0
+scale = Vector2(1.91, 1.91)
 size_flags_horizontal = 4
 texture = ExtResource("2_huevo")
 expand_mode = 1
@@ -95,9 +132,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -320.0
-offset_top = -90.0
+offset_top = -137.5
 offset_right = 320.0
-offset_bottom = 490.0
+offset_bottom = 445.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 22
@@ -107,14 +144,15 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.2, 0.2, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_y = 5
-theme_override_font_sizes/font_size = 80
+theme_override_fonts/font = SubResource("FontFile_jaoas")
+theme_override_font_sizes/font_size = 92
 text = "HAS PERDIDO"
 horizontal_alignment = 1
 
 [node name="Mensaje" type="Label" parent="Overlay/VBox" unique_id=2073801853]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 27
 text = "Tu ejército ha caído.
 Modifica tu estrategia e inténtalo de nuevo."
 horizontal_alignment = 1
@@ -133,25 +171,25 @@ columns = 2
 [node name="LblDañoK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid" unique_id=1208475685]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.68, 0.68, 1)
-theme_override_font_sizes/font_size = 19
+theme_override_font_sizes/font_size = 25
 text = "Daño Causado Total"
 
 [node name="LblDañoV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid" unique_id=538355267]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.8, 0.8, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 25
 text = "0"
 
 [node name="LblElimK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid" unique_id=1863165562]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.68, 0.68, 1)
-theme_override_font_sizes/font_size = 19
+theme_override_font_sizes/font_size = 25
 text = "Bajas Enemigas"
 
 [node name="LblElimV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid" unique_id=159819127]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.8, 0.8, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 25
 text = "0"
 
 [node name="PanelMVT" type="PanelContainer" parent="Overlay/VBox" unique_id=1600560321]
@@ -194,7 +232,8 @@ text = "-"
 [node name="BtnReintentar" type="Button" parent="Overlay/VBox" unique_id=1320399388]
 custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_fonts/font = ExtResource("4_i4n64")
+theme_override_font_sizes/font_size = 34
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn1")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn1_hover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn1_hover")
@@ -203,7 +242,8 @@ text = "REINTENTAR"
 [node name="BtnMenu" type="Button" parent="Overlay/VBox" unique_id=1610751621]
 custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_fonts/font = ExtResource("4_i4n64")
+theme_override_font_sizes/font_size = 33
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn2")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn2_hover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn2_hover")
