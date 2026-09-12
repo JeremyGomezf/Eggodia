@@ -94,10 +94,21 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_kni6g")
 
-[node name="FondoMenu" type="Sprite2D" parent="." unique_id=1298234289]
-position = Vector2(923, 568)
-scale = Vector2(0.8, 0.8)
+[node name="Fondo" type="TextureRect" parent="." unique_id=100454452]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 194.00003
+offset_top = 152.00002
+offset_right = 194.0
+offset_bottom = 152.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.81, 0.81)
 texture = ExtResource("2_fondo")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="IslaContainer" type="Control" parent="." unique_id=1096408613]
 layout_mode = 1
@@ -194,12 +205,12 @@ stretch_mode = 3
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_left = 330.0
+offset_left = 415.115
 offset_top = 185.0
-offset_right = 100.0
+offset_right = 22.619995
 offset_bottom = 330.0
 grow_horizontal = 2
-scale = Vector2(0.72, 0.805)
+scale = Vector2(0.765, 0.855)
 theme_override_constants/separation = 40
 alignment = 1
 
@@ -282,10 +293,10 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -454.0
-offset_top = 204.0
-offset_right = -334.0
-offset_bottom = 324.0
+offset_left = -570.19495
+offset_top = 186.0
+offset_right = -450.19495
+offset_bottom = 306.0
 grow_horizontal = 0
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("10_btn_conf")
@@ -297,10 +308,10 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -454.0
-offset_top = 334.0
-offset_right = -334.0
-offset_bottom = 454.0
+offset_left = -1978.57
+offset_top = 186.0
+offset_right = -1858.57
+offset_bottom = 306.0
 grow_horizontal = 0
 tooltip_text = "Panel de Desarrollador / Pruebas"
 mouse_default_cursor_shape = 2
@@ -313,10 +324,9 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -260.0
-offset_top = 280.0
-offset_right = -25.0
-offset_bottom = 520.0
+offset_top = 313.0
+offset_right = 235.0
+offset_bottom = 553.0
 grow_horizontal = 0
 theme_override_constants/separation = 15
 
@@ -431,5 +441,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_popup_btn")
 text = "ENTENDIDO"
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=670170101]
-position = Vector2(961, 554)
+position = Vector2(1197.035, 540)
+scale = Vector2(0.75, 1)
 zoom = Vector2(1.405, 1.405)
