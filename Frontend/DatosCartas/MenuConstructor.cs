@@ -148,7 +148,11 @@ public partial class MenuConstructor : Control
 		}
 		if (_btnVolver != null) _btnVolver.Pressed += VolverAlMenu;
 
-		if (_btnDuda != null) _btnDuda.Pressed += AbrirAyuda;
+		if (_btnDuda != null)
+		{
+			_btnDuda.Pressed += AbrirAyuda;
+			AgregarJuiceBotonDuda(_btnDuda);
+		}
 		if (_btnCerrarAyuda != null) _btnCerrarAyuda.Pressed += CerrarAyuda;
 
 		if (_containerSpriteCenter != null)
@@ -1006,6 +1010,35 @@ public partial class MenuConstructor : Control
 	// Pantalla semi oscura + texto grande blanco con borde negro grueso (ej. "Tipo Colosos ya
 	// lleno. Prueba otro tipo.") — reemplaza el texto amarillo anterior, que quedaba arriba
 	// y era poco legible.
+	// Juice del botón de ayuda: crece al pasar el mouse cerca (hover) y se achica/aplasta al
+	// presionarlo — mismo lenguaje visual que ya usamos en otros botones del juego.
+	private void AgregarJuiceBotonDuda(BaseButton btn)
+	{
+		Vector2 escalaBase = btn.Scale;
+		btn.PivotOffset = btn.Size / 2f;
+
+		btn.MouseEntered += () =>
+		{
+			if (btn.Disabled) return;
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase * 1.12f, 0.15f)
+				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		};
+		btn.MouseExited += () =>
+		{
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase, 0.15f)
+				.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+		};
+		btn.ButtonDown += () =>
+		{
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase * 0.88f, 0.06f);
+		};
+		btn.ButtonUp += () =>
+		{
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase, 0.12f)
+				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		};
+	}
+
 	private void MostrarMensajeAviso(string mensaje)
 	{
 		if (_avisoBloqueoActual != null && IsInstanceValid(_avisoBloqueoActual)) _avisoBloqueoActual.QueueFree();
@@ -1014,7 +1047,10 @@ public partial class MenuConstructor : Control
 		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		overlay.MouseFilter = Control.MouseFilterEnum.Ignore;
 		overlay.ZIndex = 300;
-		AddChild(overlay);
+		// Dentro del CanvasLayer "CapaUI": la escena tiene una Camera2D, y cualquier Control
+		// agregado directo a "this" queda sujeto a su transform (se ve corrido/no centrado).
+		Node capaUI = GetNodeOrNull<CanvasLayer>("CapaUI") ?? (Node)this;
+		capaUI.AddChild(overlay);
 		_avisoBloqueoActual = overlay;
 
 		var fondo = new ColorRect();
@@ -1030,13 +1066,13 @@ public partial class MenuConstructor : Control
 
 		var lbl = new Label();
 		lbl.Text = mensaje;
-		lbl.CustomMinimumSize = new Vector2(720, 0);
+		lbl.CustomMinimumSize = new Vector2(1000, 0);
 		lbl.HorizontalAlignment = HorizontalAlignment.Center;
 		lbl.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		lbl.AddThemeFontSizeOverride("font_size", 34);
+		lbl.AddThemeFontSizeOverride("font_size", 52);
 		lbl.AddThemeColorOverride("font_color", Colors.White);
 		lbl.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.95f));
-		lbl.AddThemeConstantOverride("outline_size", 9);
+		lbl.AddThemeConstantOverride("outline_size", 13);
 		lbl.AddThemeColorOverride("font_shadow_color", new Color(0, 0, 0, 0.6f));
 		lbl.AddThemeConstantOverride("shadow_offset_x", 3);
 		lbl.AddThemeConstantOverride("shadow_offset_y", 4);

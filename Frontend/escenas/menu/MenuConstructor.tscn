@@ -11,6 +11,12 @@
 [ext_resource type="Texture2D" uid="uid://di0wdn57b0rvo" path="res://imagenes/MenuConstructor/Ardid_Mazo.png" id="9_ardidmazo"]
 [ext_resource type="Texture2D" uid="uid://be6si2whi2bqn" path="res://imagenes/MenuConstructor/Info_Cart.png" id="10_infocart"]
 [ext_resource type="Texture2D" uid="uid://cyt6mtx53bv6" path="res://imagenes/MenuConstructor/NombreTropa_interfaz.png" id="11_nombretropa"]
+[ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="12_048dh"]
+
+[sub_resource type="Gradient" id="Gradient_e0nei"]
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_8kwib"]
+gradient = SubResource("Gradient_e0nei")
 
 [sub_resource type="FontVariation" id="FontVariation_bold"]
 variation_embolden = 1.2
@@ -154,28 +160,43 @@ _lblDetalleCosto = NodePath("InfoContainer/StatsBox/Margin/VBoxStats/LblCosto")
 _lblDetalleElemento = NodePath("InfoContainer/StatsBox/Margin/VBoxStats/LblElemento")
 _lblDetalleHabilidad = NodePath("InfoContainer/HabilidadBox/Margin/VBoxHabilidad/LblHabilidad")
 _lblDetalleExtra = NodePath("InfoContainer/HabilidadBox/Margin/VBoxHabilidad/LblExtra")
-_btnDuda = NodePath("TopRightContainer/BotonDuda")
-_modalAyuda = NodePath("ModalAyuda")
-_btnCerrarAyuda = NodePath("ModalAyuda/CenterContainer/Panel/Margin/VBox/BtnCerrarAyuda")
+_btnDuda = NodePath("Boton_Duda")
+_modalAyuda = NodePath("CapaUI/ModalAyuda")
+_btnCerrarAyuda = NodePath("CapaUI/ModalAyuda/CenterContainer/Panel/Margin/VBox/BtnCerrarAyuda")
 
 [node name="Fondo" type="TextureRect" parent="." unique_id=663336646]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -396.0
+offset_top = -210.00002
+offset_right = -396.0
+offset_bottom = -210.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.44, 1.44)
 texture = ExtResource("3_fondo")
 expand_mode = 1
 stretch_mode = 6
 
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1195499337]
+visible = false
+layout_mode = 0
+offset_left = -205.99998
+offset_right = 238.76204
+offset_bottom = 207.597
+scale = Vector2(5.265, 5.265)
+texture = SubResource("GradientTexture1D_8kwib")
+
 [node name="BuscadorContainer" type="Control" parent="." unique_id=819066872]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 34.0
-offset_top = 47.0
-offset_right = 524.0
-offset_bottom = 157.0
+offset_left = -77.0
+offset_top = 23.0
+offset_right = 413.0
+offset_bottom = 133.0
+scale = Vector2(1.06, 1.06)
 
 [node name="BuscadorBg" type="TextureRect" parent="BuscadorContainer" unique_id=1623015032]
 layout_mode = 1
@@ -202,41 +223,14 @@ placeholder_text = "Buscar carta..."
 clear_button_enabled = true
 flat = true
 
-[node name="TopRightContainer" type="Control" parent="." unique_id=296998725]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -176.0
-offset_top = 93.0
-offset_right = -86.0
-offset_bottom = 183.0
-grow_horizontal = 0
-
-[node name="BotonDuda" type="TextureButton" parent="TopRightContainer" unique_id=1937270629]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -188.00003
-offset_top = -11.999998
-offset_right = -188.00003
-offset_bottom = -12.0
-grow_horizontal = 2
-grow_vertical = 2
-scale = Vector2(1.44, 1.44)
-mouse_default_cursor_shape = 2
-texture_normal = ExtResource("5_botonduda")
-ignore_texture_size = true
-stretch_mode = 5
-
 [node name="SelectorContainer" type="Control" parent="." unique_id=671258125]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 20.0
-offset_top = 135.0
-offset_right = 585.0
-offset_bottom = 1055.0
+offset_left = -68.0
+offset_top = 145.0
+offset_right = 497.0
+offset_bottom = 1065.0
+scale = Vector2(1.01, 1.01)
 
 [node name="SelectorBg" type="TextureRect" parent="SelectorContainer" unique_id=1553454345]
 layout_mode = 1
@@ -282,6 +276,7 @@ vertical_scroll_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+offset_transform_enabled = true
 theme_override_constants/h_separation = 14
 theme_override_constants/v_separation = 14
 columns = 3
@@ -289,9 +284,9 @@ columns = 3
 [node name="ShowcaseContainer" type="Control" parent="." unique_id=95860427]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 616.0
+offset_left = 591.0
 offset_top = 20.0
-offset_right = 1346.0
+offset_right = 1321.0
 offset_bottom = 485.0
 
 [node name="BannerNombre" type="NinePatchRect" parent="ShowcaseContainer" unique_id=744594248]
@@ -304,6 +299,7 @@ offset_top = 6.0
 offset_right = 204.0
 offset_bottom = 128.0
 grow_horizontal = 2
+scale = Vector2(1, 1.1600006)
 texture = ExtResource("11_nombretropa")
 patch_margin_left = 75
 patch_margin_top = 24
@@ -325,8 +321,8 @@ theme_override_colors/font_color = Color(1, 0.94, 0.76, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 25
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 33
 text = "SOLDADO REAL"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -339,9 +335,9 @@ position = Vector2(361, 400)
 [node name="MazoContainer" type="Control" parent="." unique_id=1567517415]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 616.0
+offset_left = 591.0
 offset_top = 465.0
-offset_right = 1346.0
+offset_right = 1321.0
 offset_bottom = 920.0
 
 [node name="MazoBg" type="TextureRect" parent="MazoContainer" unique_id=577048957]
@@ -349,8 +345,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -65.0
+offset_top = -10.999996
+offset_right = -65.0
+offset_bottom = -11.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.16, 1.16)
 texture = ExtResource("8_tropamazo")
 expand_mode = 1
 
@@ -365,6 +366,7 @@ offset_top = 110.0
 offset_right = 180.0
 offset_bottom = 168.0
 grow_horizontal = 2
+scale = Vector2(1.16, 1.16)
 theme_override_styles/panel = SubResource("StyleBoxFlat_banner_white")
 
 [node name="LblTituloMazo" type="Label" parent="MazoContainer/BannerTituloMazo" unique_id=1818182682]
@@ -383,12 +385,14 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -330.0
-offset_top = -50.0
-offset_right = 330.0
-offset_bottom = 50.0
+offset_left = -401.0
+offset_top = -62.5
+offset_right = 259.0
+offset_bottom = 37.5
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.16, 1.16)
+pivot_offset = Vector2(330, 50)
 theme_override_constants/h_separation = 7
 theme_override_constants/v_separation = 6
 columns = 8
@@ -400,12 +404,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -330.0
-offset_top = 18.0
-offset_right = 330.0
-offset_bottom = 73.0
+offset_left = -423.0
+offset_top = 57.0
+offset_right = 237.0
+offset_bottom = 112.0
 grow_horizontal = 2
 grow_vertical = 0
+scale = Vector2(1.245, 1.245)
 theme_override_constants/separation = 16
 
 [node name="BtnVolver" type="Button" parent="MazoContainer/BarraAccionesMazo" unique_id=152220832]
@@ -413,8 +418,8 @@ custom_minimum_size = Vector2(170, 50)
 layout_mode = 2
 mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.92, 0.95, 1, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 18
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_volver")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_volver_hover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_volver_hover")
@@ -431,8 +436,8 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_banner_white")
 [node name="LblContadorMazo" type="Label" parent="MazoContainer/BarraAccionesMazo/ContadorBox" unique_id=1495382196]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.08, 0.12, 0.18, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 20
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 36
 text = " 0/8 "
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -446,8 +451,8 @@ custom_minimum_size = Vector2(210, 50)
 layout_mode = 2
 mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 20
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 29
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_batallar")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_batallar_hover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_batallar_hover")
@@ -456,10 +461,11 @@ text = "SELECCIONAR"
 [node name="InfoContainer" type="Control" parent="." unique_id=692689363]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 1365.0
-offset_top = 175.0
-offset_right = 1930.0
-offset_bottom = 1095.0
+offset_left = 1356.0
+offset_top = 10.0
+offset_right = 1921.0
+offset_bottom = 930.0
+scale = Vector2(1.225, 1.225)
 
 [node name="InfoBg" type="TextureRect" parent="InfoContainer" unique_id=153545499]
 layout_mode = 1
@@ -483,13 +489,15 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -6.0
-offset_right = -6.0
+offset_left = -6.3061223
+offset_top = -0.12245645
+offset_right = -6.306122
+offset_bottom = -0.1224556
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.1, 0.12, 0.16, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 23
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 40
 text = "Datos"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -506,6 +514,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -0.08161272
+offset_top = -3.6938848
+offset_right = -0.081604004
+offset_bottom = -3.6938782
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
@@ -521,29 +533,26 @@ alignment = 1
 [node name="LblHp" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1029601990]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.1, 0.12, 0.18, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 22
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 34
 text = "HP: 200"
 horizontal_alignment = 1
 
 [node name="LblAtk" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1865172839]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.1, 0.12, 0.18, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 22
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 34
 text = "ATK: 250"
 horizontal_alignment = 1
 
 [node name="LblDef" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=107636715]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.1, 0.12, 0.18, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 22
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 34
 text = "DEF: 340"
 horizontal_alignment = 1
-
-[node name="HSeparator" type="HSeparator" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1297508467]
-layout_mode = 2
 
 [node name="LblCosto" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1657969010]
 layout_mode = 2
@@ -556,8 +565,8 @@ horizontal_alignment = 1
 [node name="LblElemento" type="Label" parent="InfoContainer/StatsBox/Margin/VBoxStats" unique_id=1893528408]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.12, 0.55, 0.25, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 19
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 24
 text = "Elemento: Metal"
 horizontal_alignment = 1
 
@@ -573,10 +582,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -3.0
-offset_right = -3.0
+offset_left = 8.898019
+offset_top = -7.1632843
+offset_right = 8.89801
+offset_bottom = -7.163269
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.925, 0.925)
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 10
@@ -588,9 +600,9 @@ theme_override_constants/separation = 6
 
 [node name="LblHabilidadTitulo" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad" unique_id=1718749025]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.12, 0.18, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.07333326, 0, 0.55, 1)
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 24
 text = "Habilidad"
 horizontal_alignment = 1
 
@@ -599,7 +611,8 @@ custom_minimum_size = Vector2(260, 130)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 20
 text = "Te hace parry osea se cubrirá 
 pero cuando lo ataques 
 te pegara el doble"
@@ -609,25 +622,37 @@ autowrap_mode = 3
 
 [node name="LblExtra" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad" unique_id=1967802788]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.25, 0.35, 1)
-theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 14
-text = "Ventaja: Fuego  
-
-Desventaja: Metal
+theme_override_colors/font_color = Color(0.091199994, 0.114133336, 0.16, 1)
+theme_override_fonts/font = ExtResource("12_048dh")
+theme_override_font_sizes/font_size = 23
+text = "Desventaja: Metal
 "
 horizontal_alignment = 1
 
-[node name="ModalAyuda" type="Control" parent="." unique_id=341276553]
+[node name="Boton_Duda" type="TextureButton" parent="." unique_id=804686458]
+layout_mode = 0
+offset_left = 1248.0
+offset_top = 3.0
+offset_right = 1452.0
+offset_bottom = 218.0
+scale = Vector2(0.53, 0.53)
+texture_normal = ExtResource("5_botonduda")
+texture_hover = ExtResource("5_botonduda")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="CapaUI" type="CanvasLayer" parent="." unique_id=1950572810]
+
+[node name="ModalAyuda" type="Control" parent="CapaUI" unique_id=341276553]
 visible = false
-layout_mode = 1
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Overlay" type="ColorRect" parent="ModalAyuda" unique_id=1220347203]
+[node name="Overlay" type="ColorRect" parent="CapaUI/ModalAyuda" unique_id=1220347203]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -636,7 +661,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.02, 0.04, 0.08, 0.75)
 
-[node name="CenterContainer" type="CenterContainer" parent="ModalAyuda" unique_id=2097053506]
+[node name="CenterContainer" type="CenterContainer" parent="CapaUI/ModalAyuda" unique_id=2097053506]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -644,35 +669,35 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="PanelContainer" parent="ModalAyuda/CenterContainer" unique_id=496712826]
-custom_minimum_size = Vector2(680, 480)
+[node name="Panel" type="PanelContainer" parent="CapaUI/ModalAyuda/CenterContainer" unique_id=496712826]
+custom_minimum_size = Vector2(1100, 420)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_modal_bg")
 
-[node name="Margin" type="MarginContainer" parent="ModalAyuda/CenterContainer/Panel" unique_id=224597823]
+[node name="Margin" type="MarginContainer" parent="CapaUI/ModalAyuda/CenterContainer/Panel" unique_id=224597823]
 layout_mode = 2
 theme_override_constants/margin_left = 36
 theme_override_constants/margin_top = 32
 theme_override_constants/margin_right = 36
 theme_override_constants/margin_bottom = 32
 
-[node name="VBox" type="VBoxContainer" parent="ModalAyuda/CenterContainer/Panel/Margin" unique_id=427149128]
+[node name="VBox" type="VBoxContainer" parent="CapaUI/ModalAyuda/CenterContainer/Panel/Margin" unique_id=427149128]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="TituloAyuda" type="Label" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1137496643]
+[node name="TituloAyuda" type="Label" parent="CapaUI/ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1137496643]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 38
 text = "¿CÓMO CONSTRUIR TU MAZO?"
 horizontal_alignment = 1
 
-[node name="TextoAyuda" type="RichTextLabel" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1481088334]
+[node name="TextoAyuda" type="RichTextLabel" parent="CapaUI/ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1481088334]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.9, 0.94, 1, 1)
-theme_override_font_sizes/normal_font_size = 18
+theme_override_font_sizes/normal_font_size = 22
 bbcode_enabled = true
 text = "[b]1. Selector Izquierdo:[/b] Explora tus cartas por pestañas ([color=#4cb5ff]Tropas[/color] y [color=#ff5555]Ardid[/color]) o escribe en la lupa superior para buscar rápidamente.
 
@@ -684,7 +709,7 @@ text = "[b]1. Selector Izquierdo:[/b] Explora tus cartas por pestañas ([color=#
 
 [b]5. ¡A Batallar!:[/b] Cuando tu mazo tenga 8 cartas válidas, presiona el botón [color=#00e5ff]BATALLAR[/color] para iniciar el duelo."
 
-[node name="BtnCerrarAyuda" type="Button" parent="ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1922394009]
+[node name="BtnCerrarAyuda" type="Button" parent="CapaUI/ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1922394009]
 custom_minimum_size = Vector2(200, 48)
 layout_mode = 2
 size_flags_horizontal = 4
