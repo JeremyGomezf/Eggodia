@@ -431,5 +431,5 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_popup_btn")
 text = "ENTENDIDO"
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=670170101]
-position = Vector2(1050, 554)
+position = Vector2(961, 554)
 zoom = Vector2(1.405, 1.405)

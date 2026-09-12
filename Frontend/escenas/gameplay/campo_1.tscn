@@ -514,7 +514,7 @@ horizontal_alignment = 1
 position = Vector2(806.4, 453.6)
 rotation = -3.1415925
 scale = Vector2(0.735, 0.735)
-zoom = Vector2(1.389, 1.49)
+zoom = Vector2(1.344, 1.444)
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
 [connection signal="pressed" from="Pasar_Turno" to="." method="_on_pasar_turno_pressed"]

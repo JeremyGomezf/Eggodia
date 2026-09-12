@@ -697,5 +697,5 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_batallar_hover")
 text = "ENTENDIDO"
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1168142099]
-position = Vector2(967, 518)
-zoom = Vector2(1.1, 1.06)
+position = Vector2(961, 534)
+zoom = Vector2(1.03, 1.029)
