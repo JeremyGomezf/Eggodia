@@ -245,11 +245,11 @@ public partial class Campo1 : Node2D
 	}
 
 	// ── CREACIÓN DE CARTA CON ÍNDICE ──────────────────────────────────────
-	private void CrearCartaConIndice(string id, int idx, float escalaBase = ESCALA_MANO_NORMAL)
+	private Carta CrearCartaConIndice(string id, int idx, float escalaBase = ESCALA_MANO_NORMAL)
 	{
-		if (juegoTerminado || escenaCartaBase == null || contenedorMano == null) return;
-		if (idx < 0 || idx >= escenasTropas.Length) return;
-		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return;
+		if (juegoTerminado || escenaCartaBase == null || contenedorMano == null) return null;
+		if (idx < 0 || idx >= escenasTropas.Length) return null;
+		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return null;
 		Carta n = (Carta)escenaCartaBase.Instantiate(); n.NombreSpot = id; contenedorMano.AddChild(n);
 		n.Rotation = spot.Rotation;
 		Vector2 esc = new Vector2(escalaBase, escalaBase); n.Scale = esc;
@@ -260,6 +260,7 @@ public partial class Campo1 : Node2D
 		// Cartas especiales: fijar su cadencia de reaparición al ofrecerse.
 		if (_esEspecialIndice != null && idx < _esEspecialIndice.Length && _esEspecialIndice[idx])
 			_cooldownIndice[idx] = COOLDOWN_ESPECIAL;
+		return n;
 	}
 
 	// ── HOOKS DE TURNO / MUERTE ───────────────────────────────────────────
@@ -299,7 +300,7 @@ public partial class Campo1 : Node2D
 	// se juega cualquiera de las 4 (sin importar cuál) y quedan 3, TODAS vuelven a la disposición
 	// y tamaño normales — nunca se queda "como 4 pegadas pareciendo 3".
 	private static readonly Vector2[] LAYOUT_4_CENTROS = {
-		new Vector2(-190, -8), new Vector2(-85, -34), new Vector2(15, -34), new Vector2(120, -8)
+		new Vector2(-190, -30), new Vector2(-85, -56), new Vector2(15, -56), new Vector2(120, -30)
 	};
 	private static readonly float[] LAYOUT_4_ROT = { -0.16f, -0.05f, 0.05f, 0.16f };
 	private const float ESCALA_MANO_COMPACTA = 0.78f;
@@ -324,13 +325,24 @@ public partial class Campo1 : Node2D
 		}
 		else if (_enModoManoCompacta)
 		{
-			// Solo reacomoda a la disposición normal si ANTES estábamos en modo compacto (por la
-			// carta robada) — así una mano normal de 2/3 cartas nunca se toca sin necesidad.
+			// Volvemos a la disposición normal de 3 slots. La carta robada (si sigue en mano) se
+			// coloca SIEMPRE de última ("mía, mía, robada") y TODAS recuperan un NombreSpot real de
+			// Spot1/2/3 — clave para que RellenarManoObjetivo las cuente bien y no duplique ni deje
+			// huecos. La robada se sigue rastreando por referencia (_cartaRobada), no por el spot,
+			// así "Robar Carta" sigue bloqueada hasta que esa carta se juegue de verdad.
+			if (_cartaRobada != null && (!IsInstanceValid(_cartaRobada) || !_cartaRobada.EstaEnMano || _cartaRobada.IsQueuedForDeletion()))
+				_cartaRobada = null;
+			if (_cartaRobada != null && cartas.Contains(_cartaRobada))
+			{
+				cartas.Remove(_cartaRobada);
+				cartas.Add(_cartaRobada); // robada al final
+			}
 			Vector2 esc = new Vector2(ESCALA_MANO_NORMAL, ESCALA_MANO_NORMAL);
 			for (int i = 0; i < cartas.Count && i < SPOTS_MANO.Length; i++)
 			{
 				Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(SPOTS_MANO[i]);
 				if (spot == null) continue;
+				cartas[i].NombreSpot = SPOTS_MANO[i]; // reasigna el spot real
 				Vector2 localPos = spot.Position - (cartas[i].Size * esc / 2f);
 				cartas[i].ReubicarEnMano(localPos, esc, spot.Rotation);
 			}

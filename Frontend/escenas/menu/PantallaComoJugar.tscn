@@ -123,7 +123,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="BtnVolver" type="Button" parent="Root/Header/HBox"]
-custom_minimum_size = Vector2(140, 44)
+custom_minimum_size = Vector2(220, 84)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_font_sizes/font_size = 16
@@ -154,7 +154,7 @@ theme_override_constants/separation = 20
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.95, 1)
 theme_override_font_sizes/font_size = 17
-text = "Eggodia es un juego de batallas por turnos donde invocas tropas, atacas y usas habilidades para reducir el HP del rival a cero. Cada turno tienes energía limitada — úsala con cabeza."
+text = "Eggodia es un juego de cartas por turnos: invocas tropas en 3 carriles, atacas y usas habilidades para bajar a cero el HP del huevo rival. Hay 17 tropas repartidas en 5 series, y cada carta tiene su propia habilidad. Cada turno tienes energía limitada — úsala con cabeza."
 autowrap_mode = 2
 
 [node name="Grid" type="GridContainer" parent="Root/Scroll/Margin/Contenido"]
@@ -248,7 +248,7 @@ text = "4 · Hechizos"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
 theme_override_font_sizes/font_size = 15
-text = "Cinco hechizos por partida: Curación, Robar Carta, Veneno, Bloqueo y Encebollado. Cada uno se usa una sola vez."
+text = "Cinco hechizos/ardides, uno por partida cada uno: Curación (cura hasta 200 HP a una tropa tuya), Robar Carta (te llevas una carta de la mano rival), Veneno (50 de daño por turno durante 3 turnos a una tropa rival), Bloqueo (una tropa rival no puede actuar 2 turnos) y Encebollado (+100 de ataque y +100 de escudo a una tropa tuya)."
 autowrap_mode = 2
 
 [node name="Card5" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
@@ -292,7 +292,7 @@ text = "6 · Golpes críticos"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
 theme_override_font_sizes/font_size = 15
-text = "Cada ataque tiene 10% de probabilidad de ser un golpe crítico que hace 1.5× de daño. Se combina con el bonus de tipo."
+text = "Cada ataque tiene 10% de probabilidad de ser crítico y hacer 1.5× de daño. Además, según la Era de cada tropa (Primordial, Medieval, Moderna, Mística) un ataque puede salir con ▲VENTAJA (pega más) o ▼DESVENTAJA (pega menos); lo verás sobre la tropa al golpear."
 autowrap_mode = 2
 
 [node name="Card7" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
@@ -405,10 +405,76 @@ theme_override_font_sizes/font_size = 15
 text = "Puedes retirar una tropa propia del campo hasta 2 veces por partida (no disponible si tu HP ya está en 500 o menos) — útil para reordenar tus carriles cuando lo necesites."
 autowrap_mode = 2
 
+[node name="Card12" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card12"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card12/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "12 · Roles de carta"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card12/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Cada tropa tiene un rol: Táctico (equilibrado y versátil), Asesino (mucho daño pero poca vida: golpea fuerte y cae rápido) y Coloso (mucha vida/escudo: aguanta y protege el carril). Tu mano se completa mezclando roles cada turno."
+autowrap_mode = 2
+
+[node name="Card13" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card13"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card13/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "13 · Las 5 series"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card13/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "Las 17 tropas pertenecen a 5 series temáticas: Ajedrez, Medieval, Pacífico, Toons y Papeleo. En el Constructor de mazo eliges cuáles llevar; cada carta trae su habilidad única (por ejemplo el Enroque de la Torre, la Transmutación del Maguín o los Tentáculos del Calamar)."
+autowrap_mode = 2
+
+[node name="Card14" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Scroll/Margin/Contenido/Grid/Card14"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="T" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card14/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "14 · Skins"
+
+[node name="D" type="Label" parent="Root/Scroll/Margin/Contenido/Grid/Card14/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
+theme_override_font_sizes/font_size = 15
+text = "En la Tienda compras con monedas skins de Huevo (cambian el aspecto de tu trono) y skins de cartas — son puramente cosméticas, no afectan las estadísticas. Eliges tu skin activa en el menú; el rival usa una al azar."
+autowrap_mode = 2
+
 [node name="Tip" type="Label" parent="Root/Scroll/Margin/Contenido"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.75, 0.35, 1)
 theme_override_font_sizes/font_size = 14
-text = "Consejo: dentro de la partida, pulsa el botón «?» arriba a la derecha para ver la tabla completa de tipos."
+text = "Consejo: combina roles y series en el Constructor de mazo, y aprovecha la ventaja de Era y los hechizos en el momento justo."
 horizontal_alignment = 1
 autowrap_mode = 2

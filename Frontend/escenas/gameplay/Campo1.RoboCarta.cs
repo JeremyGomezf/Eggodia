@@ -192,7 +192,7 @@ public partial class Campo1 : Node2D
 	private void ResolverRobo(int idxTropa)
 	{
 		_manoVisualCPU.Remove(idxTropa);
-		CrearCartaConIndice("Spot4", idxTropa, ESCALA_MANO_ROBADA);
+		_cartaRobada = CrearCartaConIndice("Spot4", idxTropa, ESCALA_MANO_ROBADA);
 		_cartaRobadaPendiente = true; // "Robar Carta" no vuelve a estar disponible hasta jugar esta
 		ReacomodarManoTropas();       // ahora hay 4: se acomodan juntas y un poco más chicas
 		MostrarAviso("¡Le robaste una carta al rival!", new Color(1f, 0.85f, 0.3f));
@@ -204,11 +204,11 @@ public partial class Campo1 : Node2D
 	private void ActualizarEstadoCartaRobada()
 	{
 		if (!_cartaRobadaPendiente) return;
-		bool sigueSpot4 = false;
-		if (contenedorMano != null)
-			foreach (Node n in contenedorMano.GetChildren())
-				if (n is Carta c && c.NombreSpot == "Spot4" && c.EstaEnMano && !c.IsQueuedForDeletion()) { sigueSpot4 = true; break; }
-		if (!sigueSpot4) _cartaRobadaPendiente = false;
+		// Se rastrea por REFERENCIA (no por NombreSpot), porque al volver a 3 la robada se reasigna a
+		// un slot normal (Spot1/2/3). Sigue pendiente mientras esa carta siga en la mano.
+		bool sigue = _cartaRobada != null && IsInstanceValid(_cartaRobada)
+			&& _cartaRobada.EstaEnMano && !_cartaRobada.IsQueuedForDeletion();
+		if (!sigue) { _cartaRobadaPendiente = false; _cartaRobada = null; }
 	}
 
 	// Cierra y libera la pantalla de robo de forma robusta: la referencia se limpia ANTES de

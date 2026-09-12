@@ -65,6 +65,32 @@ public abstract partial class TropaBase : Area2D
 		if (_contenedorStats != null) _contenedorStats.Visible = false;
 		// El juego no tiene sistema de elementos visible al jugador: sin círculo de tipo.
 		ReproducirIdle();
+		CrearAreaClicCuerpo();
+	}
+
+	/// <summary>Añade un CollisionShape2D grande ("ClickBody") que cubre TODO el sprite del
+	/// personaje, para que la UI de la tropa (vida/defensa/botones) se abra al tocar cualquier parte
+	/// del personaje y no solo el punto/colisión chica original. El combate es por carril (no usa
+	/// overlap de áreas), así que agrandar el área clicable no afecta la jugabilidad. En tropas
+	/// rivales su posición se espeja junto con el sprite (ver Campo1.AsegurarOrientacionRival).</summary>
+	private void CrearAreaClicCuerpo()
+	{
+		if (_anim?.SpriteFrames == null) return;
+		if (GetNodeOrNull<CollisionShape2D>("ClickBody") != null) return;
+		string anim = _anim.Animation;
+		if (string.IsNullOrEmpty(anim))
+		{
+			var nombres = _anim.SpriteFrames.GetAnimationNames();
+			if (nombres.Length == 0) return;
+			anim = nombres[0];
+		}
+		var tex = _anim.SpriteFrames.GetFrameTexture(anim, 0);
+		if (tex == null) return;
+		var cuerpo = new CollisionShape2D { Name = "ClickBody" };
+		var rect = new RectangleShape2D { Size = tex.GetSize() * _anim.Scale.Abs() * 0.9f };
+		cuerpo.Shape = rect;
+		cuerpo.Position = _anim.Position;
+		AddChild(cuerpo);
 	}
 
 	/// <summary>Si false, Campo1 oculta/deshabilita el botón de defensa para esta tropa.</summary>

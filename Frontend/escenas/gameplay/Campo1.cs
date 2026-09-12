@@ -138,6 +138,7 @@ public partial class Campo1 : Node2D
 	// "Robar Carta" además exige que la carta robada anterior (Spot4) ya se haya jugado.
 	private int[] _cooldownHechizo = new int[5];
 	private bool  _cartaRobadaPendiente = false;
+	private Carta _cartaRobada = null; // referencia a la carta robada al rival (antes se rastreaba por NombreSpot=="Spot4")
 	private Label  _lblInstruccion; // usada por Campo1.Enroque.cs ("Elige el carril de destino")
 	private bool   _hechizoUsadoEsteTurno = false; // 1 hechizo/trampa por turno (jugador e IA)
 	private System.Collections.Generic.List<Node> _resaltadosHechizoActivos = new();
@@ -344,6 +345,24 @@ public partial class Campo1 : Node2D
 		// Voltea únicamente la textura de la tropa con FlipH
 		var animSprite = tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
 		var sprite2D   = tropa.GetNodeOrNull<Sprite2D>("Sprite2D");
+
+		// FlipH espeja la textura EN SU SITIO, sin mover el sprite. Pero el arte de cada tropa está
+		// dibujado descentrado dentro de su frame (AnimatedSprite2D.Position.X), y en las piezas de
+		// ajedrez ese offset es grande (Caballo=72, Peón=29). Sin espejar también esa posición, la
+		// tropa rival queda ~2× ese offset hacia el lado equivocado del punto rojo. Espejamos la X
+		// del sprite alrededor del ancla real (efecto_secundario_slot) para que quede simétrica a la
+		// del jugador sobre el círculo del carril. Idempotente (meta) para no revertirse si se llama 2 veces.
+		if (!tropa.HasMeta("orientacion_rival_aplicada"))
+		{
+			var ancla = tropa.GetNodeOrNull<Marker2D>("efecto_secundario_slot");
+			float ejeX = ancla != null ? ancla.Position.X : 0f;
+			if (animSprite != null) animSprite.Position = new Vector2(2f * ejeX - animSprite.Position.X, animSprite.Position.Y);
+			if (sprite2D != null)   sprite2D.Position   = new Vector2(2f * ejeX - sprite2D.Position.X,   sprite2D.Position.Y);
+			// El área clicable del cuerpo (ver TropaBase.CrearAreaClicCuerpo) sigue al sprite espejado.
+			var clickBody = tropa.GetNodeOrNull<CollisionShape2D>("ClickBody");
+			if (clickBody != null && animSprite != null) clickBody.Position = animSprite.Position;
+			tropa.SetMeta("orientacion_rival_aplicada", true);
+		}
 
 		if (animSprite != null) animSprite.FlipH = true;
 		if (sprite2D != null)   sprite2D.FlipH = true;
