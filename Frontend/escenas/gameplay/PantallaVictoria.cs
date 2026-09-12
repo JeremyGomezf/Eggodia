@@ -14,10 +14,10 @@ public partial class PantallaVictoria : CanvasLayer
 
 	public override void _Ready()
 	{
-		var lblD  = GetNodeOrNull<Label>("Overlay/VBox/PanelStats/StatsGrid/LblDañoV");
-		var lblE  = GetNodeOrNull<Label>("Overlay/VBox/PanelStats/StatsGrid/LblElimV");
-		var lblT  = GetNodeOrNull<Label>("Overlay/VBox/PanelStats/StatsGrid/LblTurnosV");
-		var lblR  = GetNodeOrNull<Label>("Overlay/VBox/PanelStats/StatsGrid/LblRachaV");
+		var lblD  = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelStats/StatsGrid/LblDañoV");
+		var lblE  = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelStats/StatsGrid/LblElimV");
+		var lblT  = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelStats/StatsGrid/LblTurnosV");
+		var lblR  = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelStats/StatsGrid/LblRachaV");
 		if (lblD != null) lblD.Text = DañoInfligido.ToString();
 		if (lblE != null) lblE.Text = TropasEliminadas.ToString();
 		if (lblT != null) lblT.Text = TurnosJugados.ToString();
@@ -25,8 +25,8 @@ public partial class PantallaVictoria : CanvasLayer
 
 		MostrarMVT();
 
-		var btnJugar = GetNodeOrNull<Button>("Overlay/VBox/BtnJugarDeNuevo");
-		var btnMenu  = GetNodeOrNull<Button>("Overlay/VBox/BtnMenu");
+		var btnJugar = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnJugarDeNuevo");
+		var btnMenu  = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnMenu");
 		if (btnJugar != null) btnJugar.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ReloadCurrentScene(); };
 		if (btnMenu  != null) btnMenu.Pressed  += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn"); };
 
@@ -36,8 +36,8 @@ public partial class PantallaVictoria : CanvasLayer
 
 	private void MostrarRecompensa()
 	{
-		var vbox = GetNodeOrNull<Control>("Overlay/VBox");
-		var panelStats = GetNodeOrNull<Control>("Overlay/VBox/PanelStats");
+		var vbox = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox");
+		var panelStats = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox/PanelStats");
 		if (vbox == null || MonedasGanadas <= 0) return;
 
 		var chip = new PanelContainer();
@@ -66,13 +66,13 @@ public partial class PantallaVictoria : CanvasLayer
 	private void MostrarMVT()
 	{
 		if (string.IsNullOrEmpty(MvtNombre)) return;
-		var panel = GetNodeOrNull<Control>("Overlay/VBox/PanelMVT");
+		var panel = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox/PanelMVT");
 		if (panel == null) return;
 		panel.Visible = true;
 
-		var lblNombre = GetNodeOrNull<Label>("Overlay/VBox/PanelMVT/MVTBox/MVTInfo/MVTNombre");
-		var lblStat   = GetNodeOrNull<Label>("Overlay/VBox/PanelMVT/MVTBox/MVTInfo/MVTStat");
-		var foto      = GetNodeOrNull<TextureRect>("Overlay/VBox/PanelMVT/MVTBox/MVTFoto");
+		var lblNombre = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelMVT/MVTBox/MVTInfo/MVTNombre");
+		var lblStat   = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelMVT/MVTBox/MVTInfo/MVTStat");
+		var foto      = GetNodeOrNull<TextureRect>("Overlay/CentroVBox/VBox/PanelMVT/MVTBox/MVTFoto");
 		if (lblNombre != null) lblNombre.Text = MvtNombre;
 		if (lblStat   != null) lblStat.Text   = $"{MvtDaño} de daño causado";
 		if (foto != null && MvtIlustracion != null) foto.Texture = MvtIlustracion;
@@ -80,7 +80,7 @@ public partial class PantallaVictoria : CanvasLayer
 
 	private void AnimarEntrada()
 	{
-		var vbox = GetNodeOrNull<Control>("Overlay/VBox");
+		var vbox = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox");
 		if (vbox == null) return;
 		vbox.Modulate = new Color(1, 1, 1, 0);
 		vbox.Scale    = new Vector2(0.85f, 0.85f);

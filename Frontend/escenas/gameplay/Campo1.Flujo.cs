@@ -215,6 +215,7 @@ public partial class Campo1 : Node2D
 
 		tropasInvocadasTurno++;
 		faseInvocacion = false;
+		ReacomodarManoTropas(); // por si se jugó la carta robada (Spot4) y hay que volver a 3
 
 		// Fase de apertura: pasar turno automáticamente al llenar los 3 carriles
 		if (_faseApertura && TodosSpotsOcupados())
@@ -232,9 +233,9 @@ public partial class Campo1 : Node2D
 		if (escenaTropa == null || puntoMod == null) return;
 		Node2D t = (Node2D)escenaTropa.Instantiate();
 		AddChild(t);
+		t.AddToGroup("tropas_rival"); // antes del centrado: OffsetCentroColision() espeja X según este grupo
 		if (t is TropaBase tbRival) tbRival.ColocarPorCentroColision(puntoMod.GlobalPosition);
 		else                        t.GlobalPosition = puntoMod.GlobalPosition;
-		t.AddToGroup("tropas_rival");
 		t.SetMeta("carril", puntoMod.Name);
 		t.ZIndex = (string)puntoMod.Name switch { "ModRival3" => 100, "ModRival2" => 50, _ => 10 };
 

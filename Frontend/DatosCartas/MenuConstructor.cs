@@ -123,11 +123,16 @@ public partial class MenuConstructor : Control
 	private Sprite2D _overlayTextureCenter = null;
 	private bool _estaAtacando = false;
 
+	// Efecto "1930s Cartoon Aesthetic" (blanco y negro/sepia) al elegir una carta de Serie: Toon.
+	private ColorRect _rectVintage;
+
 	public override void _Ready()
 	{
 		// Si se llegó acá reintentando desde la pantalla de Derrota, la música global quedó
 		// detenida a propósito durante la batalla (ver Campo1.SilenciarOtrasMusicas).
 		GlobalAudioManager.Instance?.AsegurarReproduccion();
+
+		_rectVintage = EfectoVintageToons.Instalar(this);
 
 		CargarTexturasPorDefecto();
 
@@ -507,6 +512,11 @@ public partial class MenuConstructor : Control
 	{
 		if (datos == null) return;
 		_cartaSeleccionada = datos;
+
+		// "1930s Cartoon Aesthetic": blanco y negro/sepia mientras se tiene seleccionada una
+		// carta de Serie: Toon; al elegir cualquier otra, todo vuelve a color normal.
+		bool esToon = ClasificacionCartas.SerieDe(datos.RutaEscena, datos.Nombre) == SerieTropa.Toon;
+		EfectoVintageToons.AplicarIntensidad(_rectVintage, esToon ? 0.9f : 0.0f);
 
 		if (_lblShowcaseNombre != null)
 		{
@@ -967,6 +977,7 @@ public partial class MenuConstructor : Control
 		GlobalAudioManager.Instance?.PlayClickSound();
 
 		GD.Print($"[MenuConstructor] Mazo de {_cartasEnMazo.Count} cartas seleccionado y guardado → Volviendo al Menú Principal");
+		EfectoVintageToons.AplicarIntensidad(_rectVintage, 0f, 0.15f);
 		GetTree().ChangeSceneToFile(RutaMenu);
 	}
 
@@ -979,6 +990,7 @@ public partial class MenuConstructor : Control
 		{
 			_cartasEnMazo.AddRange(_mazoInicial);
 		}
+		EfectoVintageToons.AplicarIntensidad(_rectVintage, 0f, 0.15f);
 		GetTree().ChangeSceneToFile(RutaMenu);
 	}
 

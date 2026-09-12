@@ -89,22 +89,21 @@ scale_amount_max = 4.0
 color = Color(1, 0.85, 0.3, 1)
 color_ramp = null
 
-[node name="VBox" type="VBoxContainer" parent="Overlay"]
+[node name="CentroVBox" type="CenterContainer" parent="Overlay"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -340.0
-offset_top = -330.0
-offset_right = 340.0
-offset_bottom = 330.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBox" type="VBoxContainer" parent="Overlay/CentroVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(680, 0)
 theme_override_constants/separation = 24
 
-[node name="Titulo" type="Label" parent="Overlay/VBox"]
+[node name="Titulo" type="Label" parent="Overlay/CentroVBox/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1.0, 0.85, 0.3, 1)
 theme_override_colors/font_shadow_color = Color(0.5, 0.35, 0, 1)
@@ -114,7 +113,7 @@ theme_override_font_sizes/font_size = 84
 text = "¡VICTORIA!"
 horizontal_alignment = 1
 
-[node name="Subtitulo" type="Label" parent="Overlay/VBox"]
+[node name="Subtitulo" type="Label" parent="Overlay/CentroVBox/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
 theme_override_font_sizes/font_size = 24
@@ -122,102 +121,102 @@ text = "Tu ejército se alza triunfante en el campo de batalla."
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="PanelStats" type="PanelContainer" parent="Overlay/VBox"]
+[node name="PanelStats" type="PanelContainer" parent="Overlay/CentroVBox/VBox"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_statspanel")
 
-[node name="StatsGrid" type="GridContainer" parent="Overlay/VBox/PanelStats"]
+[node name="StatsGrid" type="GridContainer" parent="Overlay/CentroVBox/VBox/PanelStats"]
 layout_mode = 2
 columns = 2
 theme_override_constants/h_separation = 40
 theme_override_constants/v_separation = 12
 
-[node name="LblDañoK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblDañoK" type="Label" parent="Overlay/CentroVBox/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
 theme_override_font_sizes/font_size = 19
 text = "Daño Causado Total"
 
-[node name="LblDañoV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblDañoV" type="Label" parent="Overlay/CentroVBox/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1.0, 0.9, 0.5, 1)
 theme_override_font_sizes/font_size = 22
 text = "0"
 
-[node name="LblElimK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblElimK" type="Label" parent="Overlay/CentroVBox/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
 theme_override_font_sizes/font_size = 19
 text = "Bajas Enemigas"
 
-[node name="LblElimV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblElimV" type="Label" parent="Overlay/CentroVBox/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1.0, 0.9, 0.5, 1)
 theme_override_font_sizes/font_size = 22
 text = "0"
 
-[node name="LblTurnosK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblTurnosK" type="Label" parent="Overlay/CentroVBox/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
 theme_override_font_sizes/font_size = 19
 text = "Turnos jugados"
 
-[node name="LblTurnosV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblTurnosV" type="Label" parent="Overlay/CentroVBox/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1.0, 0.9, 0.5, 1)
 theme_override_font_sizes/font_size = 22
 text = "0"
 
-[node name="LblRachaK" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblRachaK" type="Label" parent="Overlay/CentroVBox/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
 theme_override_font_sizes/font_size = 19
 text = "Racha actual"
 
-[node name="LblRachaV" type="Label" parent="Overlay/VBox/PanelStats/StatsGrid"]
+[node name="LblRachaV" type="Label" parent="Overlay/CentroVBox/VBox/PanelStats/StatsGrid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1.0, 0.75, 0.3, 1)
 theme_override_font_sizes/font_size = 22
 text = "0"
 
-[node name="PanelMVT" type="PanelContainer" parent="Overlay/VBox"]
+[node name="PanelMVT" type="PanelContainer" parent="Overlay/CentroVBox/VBox"]
 visible = false
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_statspanel")
 
-[node name="MVTBox" type="HBoxContainer" parent="Overlay/VBox/PanelMVT"]
+[node name="MVTBox" type="HBoxContainer" parent="Overlay/CentroVBox/VBox/PanelMVT"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="MVTFoto" type="TextureRect" parent="Overlay/VBox/PanelMVT/MVTBox"]
+[node name="MVTFoto" type="TextureRect" parent="Overlay/CentroVBox/VBox/PanelMVT/MVTBox"]
 custom_minimum_size = Vector2(84, 84)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="MVTInfo" type="VBoxContainer" parent="Overlay/VBox/PanelMVT/MVTBox"]
+[node name="MVTInfo" type="VBoxContainer" parent="Overlay/CentroVBox/VBox/PanelMVT/MVTBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="MVTTitulo" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+[node name="MVTTitulo" type="Label" parent="Overlay/CentroVBox/VBox/PanelMVT/MVTBox/MVTInfo"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.78, 0.25, 1)
 theme_override_font_sizes/font_size = 16
 text = "TROPA DESTACADA (MVT)"
 
-[node name="MVTNombre" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+[node name="MVTNombre" type="Label" parent="Overlay/CentroVBox/VBox/PanelMVT/MVTBox/MVTInfo"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
 text = "-"
 
-[node name="MVTStat" type="Label" parent="Overlay/VBox/PanelMVT/MVTBox/MVTInfo"]
+[node name="MVTStat" type="Label" parent="Overlay/CentroVBox/VBox/PanelMVT/MVTBox/MVTInfo"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.8, 0.9, 1)
 theme_override_font_sizes/font_size = 17
 text = "-"
 
-[node name="BtnJugarDeNuevo" type="Button" parent="Overlay/VBox"]
+[node name="BtnJugarDeNuevo" type="Button" parent="Overlay/CentroVBox/VBox"]
 custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.15, 0.1, 0.02, 1)
@@ -227,7 +226,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn1_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn1_hover")
 text = "JUGAR DE NUEVO"
 
-[node name="BtnMenu" type="Button" parent="Overlay/VBox"]
+[node name="BtnMenu" type="Button" parent="Overlay/CentroVBox/VBox"]
 custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28

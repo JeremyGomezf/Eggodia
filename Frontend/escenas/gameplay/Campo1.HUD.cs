@@ -37,230 +37,210 @@ public partial class Campo1 : Node2D
 		}
 	}
 
-	// ── PANEL DE HECHIZOS — 2 tarjetas en HUD, ancladas a la esquina inferior derecha
-	private const float HECHIZO_W = 100f;
-	private const float HECHIZO_H = 140f;
-	private const float HECHIZO_GAP = 112f;
-	private const float HECHIZO_MARGEN = 20f;
-	private float HECHIZO_X;
-	private float HECHIZO_Y;
+	// ── MANO DE HECHIZOS — ahora son cartas reales (Carta.cs, EsHechizo=true), con el MISMO
+	// tamaño y las MISMAS reglas visuales de hover/arrastre/achicado que las cartas de tropa, en
+	// vez de una interfaz de HUD "pegada". Se instancian en el contenedor "ManoHechizos" del
+	// .tscn, sobre los Marker2D "SpotH1"/"SpotH2" (igual que ManoManual/Spot1-3 con las tropas).
+	private const float HECHIZO_W = 160f; // tamaño de referencia: igual a carta_base.tscn
+	private const float HECHIZO_H = 224f;
 
 	private void CrearPanelHechizos()
 	{
-		Vector2 vp = GetViewport().GetVisibleRect().Size;
-		float anchoBloque = HECHIZO_W * 2 + HECHIZO_GAP;
-		float altoBloque  = HECHIZO_H + 6f + 40f + 44f; // cartas + instrucción + botón CAMBIAR
-		HECHIZO_X = vp.X - anchoBloque - HECHIZO_MARGEN;
-		HECHIZO_Y = vp.Y - altoBloque - HECHIZO_MARGEN;
-
-		// Barajar pool [0..4] y sacar 2 para la mano inicial
-		_poolHechizos = new System.Collections.Generic.List<int> { 0, 1, 2, 3, 4 };
-		for (int i = 0; i < _poolHechizos.Count; i++)
-		{
-			int r = random.Next(i, _poolHechizos.Count);
-			(_poolHechizos[i], _poolHechizos[r]) = (_poolHechizos[r], _poolHechizos[i]);
-		}
-		for (int i = 0; i < 2; i++) { _hechizosMano[i] = _poolHechizos[0]; _poolHechizos.RemoveAt(0); }
-
-		// Colocar 2 cartas en HUD
-		for (int i = 0; i < 2; i++)
-		{
-			var card = CrearTarjetaHechizo(i);
-			card.Position = new Vector2(HECHIZO_X + i * HECHIZO_GAP, HECHIZO_Y);
-			card.Size     = new Vector2(HECHIZO_W, HECHIZO_H);
-			CapaHUD().AddChild(card);
-		}
-
-		// Instrucción (oculta por defecto)
-		_lblInstruccion = new Label();
-		_lblInstruccion.Text    = "Toca una tropa\nenemiga";
-		_lblInstruccion.Visible = false;
-		_lblInstruccion.Position = new Vector2(HECHIZO_X, HECHIZO_Y + HECHIZO_H + 6);
-		_lblInstruccion.Size     = new Vector2(HECHIZO_W * 2 + HECHIZO_GAP, 40);
-		_lblInstruccion.HorizontalAlignment = HorizontalAlignment.Center;
-		_lblInstruccion.AddThemeColorOverride("font_color", new Color(1f, 0.55f, 0.4f));
-		_lblInstruccion.AddThemeFontSizeOverride("font_size", 12);
-		CapaHUD().AddChild(_lblInstruccion);
+		_hechizosMano[0] = ElegirHechizoElegible();
+		_hechizosMano[1] = ElegirHechizoElegible(_hechizosMano[0]);
+		for (int i = 0; i < 2; i++) CrearCartaHechizo(i);
 
 		// El botón "CAMBIAR" morado creado por código se reemplazó por el nodo
 		// "ArdidBarButton" del .tscn — se cablea en ConfigurarInterfazNueva().
+
+		// Instrucción genérica (oculta por defecto) — hoy solo la usa el Enroque de la Torre
+		// ("Elige el carril de destino"); los hechizos ya no la necesitan porque se arrastran.
+		Vector2 vp = GetViewport().GetVisibleRect().Size;
+		_lblInstruccion = new Label();
+		_lblInstruccion.Visible = false;
+		_lblInstruccion.Position = new Vector2(vp.X / 2f - 170f, 130f);
+		_lblInstruccion.Size     = new Vector2(340, 34);
+		_lblInstruccion.HorizontalAlignment = HorizontalAlignment.Center;
+		_lblInstruccion.AddThemeColorOverride("font_color", new Color(1f, 0.55f, 0.4f));
+		_lblInstruccion.AddThemeFontSizeOverride("font_size", 13);
+		CapaHUD().AddChild(_lblInstruccion);
 	}
 
-	// Reemplaza automáticamente la carta usada con la siguiente del pool
+	// Crea la carta del slot 0/1 en su Marker2D (SpotH1/SpotH2) dentro de "ManoHechizos". El
+	// slot 0 (la que se elige primero) queda al frente a tamaño normal; el slot 1 queda detrás,
+	// recta también (sin el volteo/rotación del abanico de tropas) pero un poco más chica, dando
+	// la sensación de mazo apilado en vez de dos cartas sueltas idénticas.
+	private void CrearCartaHechizo(int slotIdx)
+	{
+		if (juegoTerminado || escenaCartaBase == null) return;
+		var contenedor = GetNodeOrNull<Control>("ManoHechizos");
+		if (contenedor == null) return;
+		string nombreSpot = slotIdx == 0 ? "SpotH1" : "SpotH2";
+		Marker2D spot = contenedor.GetNodeOrNull<Marker2D>(nombreSpot);
+		if (spot == null) return;
+
+		int pi = _hechizosMano[slotIdx];
+		Carta n = (Carta)escenaCartaBase.Instantiate();
+		n.NombreSpot = nombreSpot;
+		contenedor.AddChild(n);
+		n.Rotation = 0f; // rectas, no "volteadas" como el abanico de la mano de tropas
+		Vector2 esc = slotIdx == 0 ? new Vector2(0.95f, 0.95f) : new Vector2(0.85f, 0.85f);
+		n.Scale  = esc;
+		n.ZIndex = slotIdx == 0 ? 2 : 1;
+		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2f);
+		n.GuardarEstadoOriginal();
+		n.AsignarDatosHechizo(POOL_HECHIZO_RUTA[pi], pi, slotIdx);
+		_tarjetasHechizoCarta[slotIdx] = n;
+	}
+
+	// Reemplaza automáticamente la carta usada con otro hechizo elegible (cooldown en 0, y para
+	// "Robar Carta" sin una carta robada pendiente de jugar) — o deja el slot vacío si por ahora
+	// no hay ninguno disponible; se reintenta solo al empezar cada turno del jugador (ver
+	// CambiarTurno). Siempre nace en el Marker2D correcto — nunca en la posición donde se soltó
+	// la anterior, así jamás queda "pegada" junto al objetivo.
 	private void AutoReemplazarHechizo(int slotIdx)
 	{
 		if (slotIdx < 0 || slotIdx >= 2) return;
-		if (_poolHechizos.Count == 0)
-		{
-			if (_tarjetasHechizo[slotIdx] != null && IsInstanceValid(_tarjetasHechizo[slotIdx]))
-				_tarjetasHechizo[slotIdx].QueueFree();
-			_tarjetasHechizo[slotIdx] = null;
-			return;
-		}
-		_hechizosMano[slotIdx] = _poolHechizos[0];
-		_poolHechizos.RemoveAt(0);
+		var actual = _tarjetasHechizoCarta[slotIdx];
+		if (actual != null && IsInstanceValid(actual)) actual.QueueFree();
+		_tarjetasHechizoCarta[slotIdx] = null;
 
-		var padre = _tarjetasHechizo[slotIdx]?.GetParent();
-		if (padre != null && IsInstanceValid(_tarjetasHechizo[slotIdx]))
-		{
-			int   pos     = _tarjetasHechizo[slotIdx].GetIndex();
-			Vector2 cardPos = _tarjetasHechizo[slotIdx].Position;
-			_tarjetasHechizo[slotIdx].QueueFree();
-			var nueva = CrearTarjetaHechizo(slotIdx);
-			nueva.Position = cardPos;
-			nueva.Size     = new Vector2(HECHIZO_W, HECHIZO_H);
-			padre.AddChild(nueva);
-			padre.MoveChild(nueva, pos);
-		}
+		int otro = slotIdx == 0 ? 1 : 0;
+		int excluir = (_tarjetasHechizoCarta[otro] != null && IsInstanceValid(_tarjetasHechizoCarta[otro])) ? _hechizosMano[otro] : -1;
+		int nuevoPi = ElegirHechizoElegible(excluir);
+		if (nuevoPi < 0) return; // nada elegible todavía: el slot queda vacío
+
+		_hechizosMano[slotIdx] = nuevoPi;
+		CrearCartaHechizo(slotIdx);
 	}
 
-	private Panel CrearTarjetaHechizo(int slotIdx)
+	// Un hechizo (0..4) es elegible si su cooldown ya llegó a 0 y, para "Robar Carta" (1), si no
+	// hay una carta robada anterior todavía sin jugar. "excluirPi" evita repetir el mismo hechizo
+	// que ya se ve en el otro slot. Devuelve -1 si no hay ninguno disponible.
+	private int ElegirHechizoElegible(int excluirPi = -1)
 	{
-		int   pi    = _hechizosMano[slotIdx];
-		Color color = POOL_HECHIZO_COLOR[pi];
+		var candidatos = new System.Collections.Generic.List<int>();
+		for (int pi = 0; pi < 5; pi++)
+		{
+			if (pi == excluirPi) continue;
+			if (_cooldownHechizo[pi] > 0) continue;
+			if (pi == 1 && _cartaRobadaPendiente) continue;
+			candidatos.Add(pi);
+		}
+		return candidatos.Count == 0 ? -1 : candidatos[random.Next(candidatos.Count)];
+	}
 
+	// Pone en cooldown (5 turnos, contando jugador y rival) el hechizo pi recién usado.
+	private void MarcarHechizoUsado(int pi)
+	{
+		if (pi < 0 || pi >= 5) return;
+		_cooldownHechizo[pi] = 5;
+	}
+
+	// ── Puente entre Carta.cs (EsHechizo=true) y la lógica de hechizos ────────────────────────
+	public bool IntentarIniciarArrastreHechizo(int slotIdx)
+	{
+		if (!ValidarHechizo() || EsHechizoUsado(slotIdx)) return false;
+		if (_hechizoUsadoEsteTurno) { MostrarAvisoHechizoLimite(); return false; }
+		MostrarResaltadoObjetivosHechizo(_hechizosMano[slotIdx]);
+		return true;
+	}
+
+	public void FinalizarArrastreHechizo() => LimpiarResaltadoObjetivosHechizo();
+
+	// Resuelve el soltado de una carta de hechizo sobre el tablero. "Robar Carta" (pi=1) tiene
+	// su propio flujo (ResolverSueltaRoboDesdeCarta, en Campo1.RoboCarta.cs) porque no aplica un
+	// efecto directo sino que abre la mini-pantalla de robo.
+	public bool ResolverSueltaHechizoDesdeCarta(int slotIdx, int pi)
+	{
+		if (pi == 1) return ResolverSueltaRoboDesdeCarta(slotIdx);
+
+		Vector2 mouseMundo = GetGlobalMousePosition();
+		bool aliados = pi == 0 || pi == 4;
+		string grupo = aliados ? "tropas_jugador" : "tropas_rival";
+		Node2D objetivo = null; float mejor = 110f;
+		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+			if (n is Node2D t && IsInstanceValid(t))
+			{
+				float d = t.GlobalPosition.DistanceTo(mouseMundo);
+				if (d < mejor) { mejor = d; objetivo = t; }
+			}
+
+		if (objetivo == null || !AplicarHechizoADestino(pi, objetivo)) return false;
+
+		string[] nombresHechizo = { "Curación", "Robar Carta", "Veneno", "Bloqueo", "Encebollado" };
+		Preferencias.RegistrarUsoHechizo(nombresHechizo[pi]);
+		_hechizoUsadoEsteTurno = true;
+		AutoReemplazarHechizo(slotIdx);
+		RegistrarGastoMovimiento();
+		return true;
+	}
+
+	// Aros brillantes sobre los objetivos válidos mientras se arrastra un hechizo — mismo
+	// tratamiento visual (aro redondeado con brillo pulsante) que los carriles de invocación de
+	// tropas, pero a un tamaño discreto (parecido al círculo de slot de los Mod), no gigante.
+	// "Robar Carta" resalta SOLO el huevo rival (tronoRival), nunca las 3 tropas.
+	private void MostrarResaltadoObjetivosHechizo(int pi)
+	{
+		LimpiarResaltadoObjetivosHechizo();
+		if (pi == 1)
+		{
+			if (tronoRival != null && IsInstanceValid(tronoRival))
+				_resaltadosHechizoActivos.Add(CrearAroResaltadoHechizo(tronoRival, new Color(1f, 0.82f, 0.3f, 0.9f), 90f));
+			return;
+		}
+		bool aliados = pi == 0 || pi == 4;
+		string grupo = aliados ? "tropas_jugador" : "tropas_rival";
+		Color colorAro = aliados ? new Color(0.35f, 1f, 0.5f, 0.9f) : new Color(1f, 0.35f, 0.3f, 0.9f);
+		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+			if (n is Node2D t && IsInstanceValid(t)) _resaltadosHechizoActivos.Add(CrearAroResaltadoHechizo(t, colorAro, 48f));
+	}
+
+	private Node CrearAroResaltadoHechizo(Node2D objetivo, Color color, float diametro = 48f)
+	{
 		var panel = new Panel();
-		panel.CustomMinimumSize = new Vector2(100, 140);
-		panel.Size              = new Vector2(100, 140);
-		panel.MouseFilter = Control.MouseFilterEnum.Stop;
-		panel.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.07f, 0.05f, 0.14f, 0.96f);
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
-		sb.BorderColor = color;
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 8;
-		sb.ShadowColor = color * new Color(1,1,1,0.4f); sb.ShadowSize = 5;
-		sb.ContentMarginLeft = sb.ContentMarginRight =
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 4;
-		panel.AddThemeStyleboxOverride("panel", sb);
-
-		var vbox = new VBoxContainer();
-		vbox.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		vbox.OffsetLeft = 4; vbox.OffsetRight = -4; vbox.OffsetTop = 4; vbox.OffsetBottom = -4;
-		vbox.AddThemeConstantOverride("separation", 2);
-
-		var tex = new TextureRect();
-		tex.CustomMinimumSize = new Vector2(90, 88);
-		tex.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		tex.SizeFlagsVertical   = Control.SizeFlags.ExpandFill;
-		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-		var t = GD.Load<Texture2D>(POOL_HECHIZO_RUTA[pi]);
-		if (t != null) tex.Texture = t;
-		vbox.AddChild(tex);
-
-		var lblN = new Label();
-		lblN.Text = POOL_HECHIZO_NOMBRE[pi];
-		lblN.AddThemeColorOverride("font_color", color);
-		lblN.AddThemeFontSizeOverride("font_size", 10);
-		lblN.HorizontalAlignment = HorizontalAlignment.Center;
-		lblN.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		vbox.AddChild(lblN);
-
-		var lblE = new Label();
-		lblE.Text = "DISPONIBLE";
-		lblE.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.55f));
-		lblE.AddThemeFontSizeOverride("font_size", 9);
-		lblE.HorizontalAlignment = HorizontalAlignment.Center;
-		_lblEstadoHechizo[slotIdx] = lblE;
-		vbox.AddChild(lblE);
-
-		panel.AddChild(vbox);
-
-		// Overlay "USADO"
-		var ov = new Panel();
-		ov.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		ov.Visible = false;
-		var sbOv = new StyleBoxFlat();
-		sbOv.BgColor = new Color(0,0,0,0.68f);
-		sbOv.CornerRadiusTopLeft = sbOv.CornerRadiusTopRight =
-		sbOv.CornerRadiusBottomLeft = sbOv.CornerRadiusBottomRight = 8;
-		ov.AddThemeStyleboxOverride("panel", sbOv);
-		var lblUs = new Label();
-		lblUs.Text = "USADO";
-		lblUs.AddThemeColorOverride("font_color", new Color(1f,0.38f,0.38f));
-		lblUs.AddThemeFontSizeOverride("font_size", 15);
-		lblUs.SetAnchorsPreset(Control.LayoutPreset.Center);
-		lblUs.OffsetLeft = -32; lblUs.OffsetRight = 32;
-		lblUs.OffsetTop  = -13; lblUs.OffsetBottom = 13;
-		ov.AddChild(lblUs);
-		panel.AddChild(ov);
-		_overlayHechizo[slotIdx]   = ov;
-		_tarjetasHechizo[slotIdx]  = panel;
-
-		int captured = slotIdx;
-		panel.GuiInput += (@event) => {
-			if (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
-				EjecutarHechizo(captured);
-		};
+		panel.Name = "AroHechizo";
+		panel.CustomMinimumSize = new Vector2(diametro, diametro);
+		panel.Size = new Vector2(diametro, diametro);
+		panel.Position = new Vector2(-diametro / 2f, -diametro / 2f);
+		panel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		var style = new StyleBoxFlat();
+		style.BgColor = new Color(0, 0, 0, 0);
+		style.BorderWidthLeft = style.BorderWidthRight = style.BorderWidthTop = style.BorderWidthBottom = 3;
+		style.BorderColor = color;
+		style.CornerRadiusTopLeft = style.CornerRadiusTopRight =
+		style.CornerRadiusBottomLeft = style.CornerRadiusBottomRight = (int)(diametro / 2f);
+		style.ShadowColor = color; style.ShadowSize = 6;
+		panel.AddThemeStyleboxOverride("panel", style);
+		objetivo.AddChild(panel);
+		Tween tw = panel.CreateTween().SetLoops();
+		tw.TweenProperty(panel, "modulate:a", 0.4f, 0.5f);
+		tw.TweenProperty(panel, "modulate:a", 1.0f, 0.5f);
 		return panel;
 	}
 
-	private void EjecutarHechizo(int slotIdx)
+	private void LimpiarResaltadoObjetivosHechizo()
 	{
-		if (_modoCambioHechizo) { EjecutarCambioHechizo(slotIdx); return; }
-		if (!ValidarHechizo() || EsHechizoUsado(slotIdx)) return;
-		if (_hechizoUsadoEsteTurno) { MostrarAvisoHechizoLimite(); return; }
-		_hechizoUsadoEsteTurno = true; // se compromete al usar este hechizo, aunque falte elegir objetivo
-		int pi = _hechizosMano[slotIdx];
-		string[] nombresHechizo = { "Curación", "Robar Carta", "Veneno", "Bloqueo", "Encebollado" };
-		if (pi >= 0 && pi < nombresHechizo.Length) Preferencias.RegistrarUsoHechizo(nombresHechizo[pi]);
-		switch (pi)
-		{
-			case 0: IniciarSeleccion("curacion",    slotIdx); break;
-			case 1: UsarRobo(); AutoReemplazarHechizo(slotIdx); break;
-			case 2: IniciarSeleccion("veneno",      slotIdx); break;
-			case 3: IniciarSeleccion("bloqueo",     slotIdx); break;
-			case 4: IniciarSeleccion("encebollado", slotIdx); break;
-		}
-		if (pi == 1) ActualizarVisualesHechizos();
+		foreach (var n in _resaltadosHechizoActivos) if (IsInstanceValid(n)) n.QueueFree();
+		_resaltadosHechizoActivos.Clear();
 	}
 
 	public bool EsHechizoUsado(int slotIdx)
 	{
-		if (slotIdx < 0 || slotIdx >= 2 || _tarjetasHechizo[slotIdx] == null) return false;
-		return _hechizosMano[slotIdx] switch
-		{
-			0 => usadoCuracion, 1 => usadoRobo,
-			2 => usadoVeneno,   3 => usadoBloqueo,  4 => usadoEncebollado,  _ => false
-		};
+		if (slotIdx < 0 || slotIdx >= 2 || _tarjetasHechizoCarta[slotIdx] == null) return false;
+		int pi = _hechizosMano[slotIdx];
+		if (pi == 1 && _cartaRobadaPendiente) return true;
+		return _cooldownHechizo[pi] > 0;
 	}
 
-	public void ActualizarVisualesHechizos()
-	{
-		for (int i = 0; i < 2; i++)
-		{
-			if (_overlayHechizo[i] == null || !IsInstanceValid(_overlayHechizo[i])) continue;
-			bool usado = EsHechizoUsado(i);
-			_overlayHechizo[i].Visible = usado;
-			if (_lblEstadoHechizo[i] != null && IsInstanceValid(_lblEstadoHechizo[i]))
-			{
-				_lblEstadoHechizo[i].Text = usado ? "USADO" : "DISPONIBLE";
-				_lblEstadoHechizo[i].AddThemeColorOverride("font_color",
-					usado ? new Color(1f,0.4f,0.4f) : new Color(0.4f,1f,0.55f));
-			}
-		}
-	}
-
+	// Botón "Ardid/Barajar": cambia las DOS cartas de hechizo de una sola vez (se van y vienen
+	// las nuevas), sin pasos intermedios — antes había que activar un "modo cambio" y después
+	// tocar una carta específica.
 	private void ActivarModoCambio()
 	{
-		if (_usosCambioHechizo >= MAX_CAMBIO_HECHIZO) return;
-		_modoCambioHechizo = !_modoCambioHechizo;
-		if (_btnCambiarHechizo != null) _btnCambiarHechizo.Modulate = _modoCambioHechizo ? new Color(1.25f, 1.25f, 0.45f) : Colors.White;
-		for (int i = 0; i < 2; i++)
-			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
-				_tarjetasHechizo[i].Modulate = _modoCambioHechizo && !EsHechizoUsado(i)
-					? new Color(1.25f, 1.25f, 0.45f) : Colors.White;
-	}
-
-	private void EjecutarCambioHechizo(int slotIdx)
-	{
-		if (slotIdx < 0 || slotIdx >= 2) { _modoCambioHechizo = false; return; }
+		if (_usosCambioHechizo >= MAX_CAMBIO_HECHIZO || !ValidarHechizo()) return;
 		_usosCambioHechizo++;
-		_modoCambioHechizo = false;
-		AutoReemplazarHechizo(slotIdx);
+		for (int i = 0; i < 2; i++) AutoReemplazarHechizo(i);
 
 		bool agotado = _usosCambioHechizo >= MAX_CAMBIO_HECHIZO;
 		if (_btnCambiarHechizo != null)
@@ -268,29 +248,10 @@ public partial class Campo1 : Node2D
 			_btnCambiarHechizo.Disabled = agotado;
 			_btnCambiarHechizo.Modulate = agotado ? new Color(0.55f, 0.55f, 0.55f) : Colors.White;
 		}
-		for (int i = 0; i < 2; i++)
-			if (_tarjetasHechizo[i] != null && IsInstanceValid(_tarjetasHechizo[i]))
-				_tarjetasHechizo[i].Modulate = Colors.White;
 	}
 
-	/// <summary>Texto flotante sobre el panel de hechizos: solo se permite 1 por turno.</summary>
-	private void MostrarAvisoHechizoLimite()
-	{
-		var lbl = new Label();
-		lbl.Text = "Solo 1 Hechizo\npor turno";
-		lbl.AddThemeColorOverride("font_color", new Color(1f, 0.4f, 0.35f));
-		lbl.AddThemeFontSizeOverride("font_size", 13);
-		lbl.HorizontalAlignment = HorizontalAlignment.Center;
-		lbl.Position = new Vector2(HECHIZO_X, HECHIZO_Y - 34);
-		lbl.Size     = new Vector2(HECHIZO_W * 2 + HECHIZO_GAP, 30);
-		lbl.ZIndex   = 200;
-		CapaHUD().AddChild(lbl);
-
-		Tween tw = CreateTween().SetParallel(true);
-		tw.TweenProperty(lbl, "position:y", lbl.Position.Y - 25f, 1.0f);
-		tw.TweenProperty(lbl, "modulate:a", 0f, 1.0f);
-		tw.Finished += () => { if (IsInstanceValid(lbl)) lbl.QueueFree(); };
-	}
+	/// <summary>Aviso de "solo 1 hechizo por turno": reutiliza el mismo toast general del HUD.</summary>
+	private void MostrarAvisoHechizoLimite() => MostrarAviso("Solo 1 Hechizo por turno", new Color(1f, 0.4f, 0.35f));
 
 	// El gear (⚙) creado por código se reemplazó por el nodo "PausaButton" del .tscn,
 	// cableado en Campo1.Extra.cs → ConfigurarInterfazNueva().

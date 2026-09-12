@@ -5,11 +5,69 @@ using System.Collections.Generic;
 public partial class Campo1 : Node2D
 {
 	// ── MÚSICA Y AUDIO ───────────────────────────────────────────────────
-	[Export] private AudioStream _musicaPartida = GD.Load<AudioStream>("res://musica/DECISIVE BATTLE.mp3");
+	// Ya no hay una única canción fija: ElegirEscenarioBatalla() asigna la música según el
+	// escenario sorteado para esta partida (ver más abajo).
+	private AudioStream _musicaPartida;
 	// -6dB respecto a la música del menú (que suena a 0dB propio): a 0dB quedaba muy fuerte en
 	// batalla. Ambas siguen afectadas por igual por el volumen/mute del Bus Master.
 	[Export] private float _volumenMusicaDb = -6.0f;
 	private AudioStreamPlayer _reproductorMusica;
+
+	// ── ESCENARIOS DE BATALLA (4 mapas visuales+musicales, sorteados por partida) ─────────
+	// Medieval tiene 50% de probabilidad; Ajedrez, Papeleo y Toon se reparten el 50% restante
+	// en partes iguales. Cada escenario trae su propio FONDO/ESCENARIO (los dos Sprite2D ya
+	// existentes en la escena) y su propia música — y, al perder, un segundo específico desde
+	// donde arrancar esa música (sin loop, se apaga sola al terminar).
+	private struct EscenarioBatalla
+	{
+		public string Fondo, Escenario, Musica, Nombre;
+		public float SegundoDerrota;
+		public float Peso;
+	}
+	private static readonly EscenarioBatalla[] ESCENARIOS_BATALLA =
+	{
+		new EscenarioBatalla { Nombre = "medieval", Peso = 35f,
+			Fondo = "res://imagenes/Escenarios/medievalFONDO.png", Escenario = "res://imagenes/Escenarios/medieval-escenario.png",
+			Musica = "res://efectos/musica/MUSICA MEDIEVAL.mp3", SegundoDerrota = 2 * 60 + 53 },
+		new EscenarioBatalla { Nombre = "ajedrez", Peso = 20f,
+			Fondo = "res://imagenes/Escenarios/ajedrezlFONDO.png", Escenario = "res://imagenes/Escenarios/ajedrez-escenario.png",
+			Musica = "res://efectos/musica/MUSICA AJEDREZ.mp3", SegundoDerrota = 3 * 60 + 26 },
+		new EscenarioBatalla { Nombre = "toon", Peso = 25f,
+			Fondo = "res://imagenes/Escenarios/toonslFONDO.png", Escenario = "res://imagenes/Escenarios/toons-escenario.png",
+			Musica = "res://efectos/musica/MUSICA TOON.mp3", SegundoDerrota = 3 * 60 + 5 },
+		new EscenarioBatalla { Nombre = "papeleo", Peso = 25f,
+			Fondo = "res://imagenes/Escenarios/papeleolFONDO.png", Escenario = "res://imagenes/Escenarios/papeleo-escenario.png",
+			Musica = "res://efectos/musica/MUSICA PAPELEO.mp3", SegundoDerrota = 4 * 60 + 42 },
+	};
+	private int   _idxEscenarioActual   = 0;
+	private float _segundoDerrotaMusica = 0f;
+	private ColorRect _rectVintage;
+	public  bool  EscenarioEsToon => ESCENARIOS_BATALLA[_idxEscenarioActual].Nombre == "toon";
+
+	private void ElegirEscenarioBatalla()
+	{
+		float total = 0f;
+		foreach (var e in ESCENARIOS_BATALLA) total += e.Peso;
+		float r = (float)random.NextDouble() * total;
+		float acumulado = 0f;
+		int elegido = ESCENARIOS_BATALLA.Length - 1;
+		for (int i = 0; i < ESCENARIOS_BATALLA.Length; i++)
+		{
+			acumulado += ESCENARIOS_BATALLA[i].Peso;
+			if (r <= acumulado) { elegido = i; break; }
+		}
+		_idxEscenarioActual = elegido;
+		var esc = ESCENARIOS_BATALLA[elegido];
+		_segundoDerrotaMusica = esc.SegundoDerrota;
+
+		var fondoNode     = GetNodeOrNull<Sprite2D>("FONDO");
+		var escenarioNode = GetNodeOrNull<Sprite2D>("ESCENARIO");
+		if (fondoNode != null && ResourceLoader.Exists(esc.Fondo))         fondoNode.Texture     = GD.Load<Texture2D>(esc.Fondo);
+		if (escenarioNode != null && ResourceLoader.Exists(esc.Escenario)) escenarioNode.Texture = GD.Load<Texture2D>(esc.Escenario);
+		if (ResourceLoader.Exists(esc.Musica)) _musicaPartida = GD.Load<AudioStream>(esc.Musica);
+
+		GD.Print($"[Campo1] Escenario de batalla: {esc.Nombre}");
+	}
 
 	// ── VIDA ──────────────────────────────────────────────────────────────
 	[Export] public int vidaJugador   = 2000;
@@ -74,15 +132,15 @@ public partial class Campo1 : Node2D
 	[Export] private Control     contenedorMano;
 
 	// ── HECHIZOS ──────────────────────────────────────────────────────────
-	private bool usadoEncebollado = false;
-	private bool usadoCuracion    = false;
-	private bool usadoRobo        = false;
-	private bool usadoVeneno      = false;
-	private bool usadoBloqueo     = false;
-	private bool _modoSeleccionObjetivo = false;
-	private string _hechizoPendiente    = "";
-	private Label  _lblInstruccion;
+	// Antes cada hechizo se gastaba UNA sola vez por partida entera (usadoVeneno=true para
+	// siempre). Ahora vuelven a estar disponibles pasados 5 turnos "en general" (cuentan los del
+	// jugador y los del rival) — índice 0=curación,1=robar,2=veneno,3=bloqueo,4=encebollado.
+	// "Robar Carta" además exige que la carta robada anterior (Spot4) ya se haya jugado.
+	private int[] _cooldownHechizo = new int[5];
+	private bool  _cartaRobadaPendiente = false;
+	private Label  _lblInstruccion; // usada por Campo1.Enroque.cs ("Elige el carril de destino")
 	private bool   _hechizoUsadoEsteTurno = false; // 1 hechizo/trampa por turno (jugador e IA)
+	private System.Collections.Generic.List<Node> _resaltadosHechizoActivos = new();
 
 	// Pool visual de hechizos — mano de 3 cartas aleatorias de 5 posibles
 	private static readonly string[] POOL_HECHIZO_NOMBRE = { "Curación", "Robar Carta", "Veneno", "Bloqueo", "Encebollado" };
@@ -93,21 +151,11 @@ public partial class Campo1 : Node2D
 		"res://imagenes/HechizosPng/Bloqueo_hechizo.png",
 		"res://imagenes/HechizosPng/Encebo_hechizo.png"
 	};
-	private static readonly Color[] POOL_HECHIZO_COLOR = {
-		new Color(0.25f,0.80f,0.35f),
-		new Color(0.30f,0.65f,1f), new Color(0.60f,0.30f,0.75f), new Color(0.25f,0.55f,0.90f),
-		new Color(1f,0.65f,0.15f)
-	};
-	private int[]    _hechizosMano     = new int[2];
-	private Panel[] _tarjetasHechizo  = new Panel[2];
-	private Panel[] _overlayHechizo   = new Panel[2];
-	private Label[] _lblEstadoHechizo = new Label[2];
+	private int[]   _hechizosMano        = new int[2];
+	private Carta[] _tarjetasHechizoCarta = new Carta[2];
 	private const int MAX_CAMBIO_HECHIZO = 3; // hasta 3 cambios de hechizo por partida (jugador e IA)
 	private int     _usosCambioHechizo  = 0;
-	private bool    _modoCambioHechizo  = false;
 	private TextureButton _btnCambiarHechizo;
-	private System.Collections.Generic.List<int> _poolHechizos = new();
-	private int     _slotPendiente = -1;
 
 	// ── CPU ADAPTATIVA ────────────────────────────────────────────────────
 	private int  _dificultadCPU       = 1; // 0=fácil, 1=medio, 2=difícil
@@ -185,9 +233,16 @@ public partial class Campo1 : Node2D
 		// activa siempre: el motor no la respeta si no se declara "current" en runtime.
 		GetNodeOrNull<Camera2D>("Camera2D")?.MakeCurrent();
 
-		// Silencia el menú e inicia la canción de combate (de tu script)
+		// Sortea el escenario visual+musical de esta partida, silencia el menú e inicia su música
+		ElegirEscenarioBatalla();
 		SilenciarOtrasMusicas();
 		IniciarMusicaPartida();
+
+		// Escenario "toon": mismo filtro "1930s Cartoon Aesthetic" de MenuConstructor. Se queda
+		// activo TODA la partida (incluida la frase y pantalla de Victoria/Derrota) y solo se
+		// apaga al abandonar Campo1 (ver los botones de esas pantallas), nunca antes.
+		_rectVintage = EfectoVintageToons.Instalar(this);
+		if (EscenarioEsToon) EfectoVintageToons.AplicarIntensidad(_rectVintage, 0.7f, 0.6f);
 
 		timerReloj = new Timer();
 		timerReloj.WaitTime = 1.0f;
@@ -207,18 +262,29 @@ public partial class Campo1 : Node2D
 				btnHabilidad         = new Button();
 				btnHabilidad.Text     = "HABILIDAD";
 				btnHabilidad.Visible  = false;
+				btnHabilidad.CustomMinimumSize = new Vector2(190, 74);
+				btnHabilidad.AddThemeFontSizeOverride("font_size", 28);
+				var fuenteBotones = GD.Load<Font>("res://Almendra-Bold.ttf");
+				if (fuenteBotones != null) btnHabilidad.AddThemeFontOverride("font", fuenteBotones);
 				btnHabilidad.Pressed += _on_btn_habilidad_pressed;
 				hbox.AddChild(btnHabilidad);
 			}
 		}
 
 		_contenedorHechizos = GetNodeOrNull<Control>("ManoHechizos");
+		// Las cartas de mano deben verse SIEMPRE por encima de las tropas invocadas (el mayor
+		// ZIndex de una tropa es 100, en Mod3/ModRival3) — si no, en el carril 3 las tropas tapan
+		// la mano. Como ZAsRelative es true por defecto, esto se suma al ZIndex propio de cada
+		// Carta (hover/arrastre), quedando siempre por delante de cualquier tropa.
+		if (_contenedorHechizos != null) _contenedorHechizos.ZIndex = 150;
 		CrearPanelHechizos();
 
 		if (contenedorMano == null)
 			contenedorMano = GetNodeOrNull<Control>("ManoManual");
 		if (contenedorMano == null)
 			GD.PrintErr("[Campo1] ¡contenedorMano no encontrado! Asígnalo en el Inspector o crea un nodo ManoManual.");
+		else
+			contenedorMano.ZIndex = 150;
 
 		// Mazo desde sesión del jugador
 		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
@@ -240,6 +306,7 @@ public partial class Campo1 : Node2D
 		PrepararMazoSinRepetir();
 		InicializarClasificacionMazo();
 		InicializarMazoCPU();
+		InicializarManoVisualCPU();
 		CrearEscenaDeBatalla();
 		BarajarMazoInicial();
 		_faseApertura  = true;
@@ -254,6 +321,13 @@ public partial class Campo1 : Node2D
 
 		if (SesionJuego.Instance != null)
 			_rachaVictorias = SesionJuego.Instance.RachaActual;
+
+		// Aviso inicial único: el bot ya está listo para pelear. Con un pequeño retraso para no
+		// pisar el toast "TU TURNO" que AnunciarTurno() acaba de mostrar en el mismo instante.
+		GetTree().CreateTimer(1.2f).Timeout += () =>
+		{
+			if (!juegoTerminado) MostrarAviso("¡El rival está listo para la batalla!", new Color(1f, 0.75f, 0.35f));
+		};
 	}
 
 	// ── CORRECCIÓN DE ORIENTACIÓN PARA TROPAS RIVALES ────────────────────
@@ -304,18 +378,18 @@ public partial class Campo1 : Node2D
 	{
 		if (_musicaPartida == null)
 		{
-			GD.PrintErr("⚠ No se encontró el archivo de música res://musica/DECISIVE BATTLE.mp3");
+			GD.PrintErr("⚠ No se pudo cargar la música del escenario de batalla sorteado.");
 			return;
 		}
 
 		_reproductorMusica = new AudioStreamPlayer();
 		_reproductorMusica.Stream = _musicaPartida;
-		_reproductorMusica.Name = "MusicaDecisiveBattle";
+		_reproductorMusica.Name = "MusicaBatalla";
 		_reproductorMusica.VolumeDb = _volumenMusicaDb;
-		
+
 		AddChild(_reproductorMusica);
 		_reproductorMusica.Play();
-		GD.Print("🎵 Canción DECISIVE BATTLE.mp3 sonando en Campo1.");
+		GD.Print("🎵 Música del escenario sonando en Campo1.");
 	}
 
 	// ── MODO DEMO: IA vs IA ───────────────────────────────────────────────

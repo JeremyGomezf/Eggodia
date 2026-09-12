@@ -22,7 +22,12 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 				if (stream is AudioStreamMP3 mp3) mp3.Loop = true;
 				Stream = stream;
 				Autoplay = true;
+				// Antes saltaba de golpe a volumen normal; ahora entra bajito y sube a lo largo de
+				// 2.5s — solo la música del menú principal, nada más.
+				VolumeDb = -40f;
 				Play();
+				Tween twFadeIn = CreateTween();
+				twFadeIn.TweenProperty(this, "volume_db", 0f, 2.5f);
 			}
 
 			// Aplicar volumen inicial al bus Master para que afecte todo el audio

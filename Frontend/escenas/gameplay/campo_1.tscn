@@ -73,33 +73,6 @@ offset_top = -3.0
 offset_right = 46.0
 offset_bottom = 20.0
 
-[node name="ManoManual" type="Control" parent="." unique_id=145652396]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 842.0
-offset_top = 795.0
-offset_right = 882.0
-offset_bottom = 833.0
-
-[node name="ManoVisual" type="Sprite2D" parent="ManoManual" unique_id=38472910]
-visible = false
-scale = Vector2(0.6, 0.6)
-texture = ExtResource("4_mano")
-
-[node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
-position = Vector2(-158, -11.999981)
-rotation = -0.22
-
-[node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
-position = Vector2(-34, -49)
-
-[node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
-position = Vector2(89, -47.999985)
-rotation = 0.22
-
-[node name="Spot4" type="Marker2D" parent="ManoManual" unique_id=184729106]
-position = Vector2(234, -36)
-
 [node name="Mod1" type="Marker2D" parent="." unique_id=698830398 groups=["zonas_invocacion"]]
 position = Vector2(569, 344)
 
@@ -166,13 +139,40 @@ offset_bottom = 34.0
 scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8838381, 0.1367881, 0.2436428, 1)
 
+[node name="ManoManual" type="Control" parent="." unique_id=145652396]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 842.0
+offset_top = 795.0
+offset_right = 882.0
+offset_bottom = 833.0
+
+[node name="ManoVisual" type="Sprite2D" parent="ManoManual" unique_id=38472910]
+visible = false
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("4_mano")
+
+[node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
+position = Vector2(-158, -11.999981)
+rotation = -0.22
+
+[node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
+position = Vector2(-34, -49)
+
+[node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
+position = Vector2(89, -47.999985)
+rotation = 0.22
+
+[node name="Spot4" type="Marker2D" parent="ManoManual" unique_id=184729106]
+position = Vector2(234, -36)
+
 [node name="ManoHechizos" type="Control" parent="." unique_id=550129384]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 1205.0
-offset_top = 656.0
-offset_right = 1245.0
-offset_bottom = 696.0
+offset_left = 1230.0
+offset_top = 742.0
+offset_right = 1270.0
+offset_bottom = 782.0
 
 [node name="SpotH1" type="Marker2D" parent="ManoHechizos" unique_id=550129385]
 position = Vector2(59.628784, -4)
@@ -194,13 +194,20 @@ offset_bottom = 40.0
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
+theme_override_constants/separation = 18
 
 [node name="BtnAtaque" type="Button" parent="InterfazMenu/MenuAcciones/HBoxContainer" unique_id=2043477391]
+custom_minimum_size = Vector2(190, 74)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 28
 text = "ATACAR"
 
 [node name="BtnDefensa" type="Button" parent="InterfazMenu/MenuAcciones/HBoxContainer" unique_id=1630369539]
+custom_minimum_size = Vector2(190, 74)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 28
 text = "DEFENSA"
 
 [node name="SacrificioButton" type="TextureButton" parent="." unique_id=582472426]

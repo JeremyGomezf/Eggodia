@@ -232,7 +232,12 @@ public abstract partial class TropaBase : Area2D
 	public Vector2 OffsetCentroColision()
 	{
 		var slot = GetNodeOrNull<Marker2D>("efecto_secundario_slot");
-		return slot != null ? slot.Position : Vector2.Zero;
+		if (slot == null) return Vector2.Zero;
+		// Las tropas rivales se dibujan volteadas (FlipH) pero el Marker2D del slot conserva su
+		// offset "de fábrica" (pensado para el lado del jugador) — sin espejar aquí, tropas con
+		// offset X grande (ajedrez: Peón, Torre, Caballo, Dama, Alfil) quedan visualmente lejos
+		// de su círculo ModRival aunque el cálculo sea "correcto" para el lado jugador.
+		return IsInGroup("tropas_rival") ? new Vector2(-slot.Position.X, slot.Position.Y) : slot.Position;
 	}
 
 	/// <summary>Posición global real del centro de colisión de esta tropa — el punto que de

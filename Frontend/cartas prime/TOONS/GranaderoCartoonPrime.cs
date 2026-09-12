@@ -244,7 +244,10 @@ public partial class GranaderoCartoonPrime : TropaBase
 		// Utiliza la posición exacta de SpotMortero, orientado al lado del rival si aplica
 		Vector2 origenLocal = _spotMortero != null ? ObtenerSpotOrientado(_spotMortero)
 												   : GlobalPosition + new Vector2(0f, -80f);
-		Vector2 cima = new Vector2(origenLocal.X, -220f);
+		// Muy por encima del tablero visible, para que el misil no tape la vista del jugador
+		// mientras espera arriba (antes -220f, apenas fuera de cámara y aún interrumpía).
+		const float ALTURA_MORTERO = -900f;
+		Vector2 cima = new Vector2(origenLocal.X, ALTURA_MORTERO);
 
 		Node2D misil = (Node2D)_escenaMisil.Instantiate();
 		GetTree().Root.AddChild(misil);
@@ -265,13 +268,17 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			if (!IsInstanceValid(mRef)) { campoBloqueoMortero?.Call("FinalizarBloqueoTablero"); return; }
 
-			// Reposicionar sobre la cabeza del objetivo y voltear la punta hacia abajo (+90°)
+			// Reposicionar sobre la cabeza del objetivo y voltear la punta hacia abajo (+90°).
+			// Animado (no asignación instantánea) para evitar el "teletransporte" visible que
+			// se notaba al saltar de golpe de una columna X a otra estando tan arriba.
 			Vector2 arribaObj = new Vector2(
 				oRef != null && IsInstanceValid(oRef) ? oRef.GlobalPosition.X : mRef.GlobalPosition.X,
-				-220f
+				ALTURA_MORTERO
 			);
-			mRef.GlobalPosition  = arribaObj;
 			mRef.RotationDegrees = 90f; // Punta apuntando directamente a la cabeza del rival
+			Tween twReposiciona = mRef.CreateTween();
+			twReposiciona.TweenProperty(mRef, "global_position", arribaObj, 0.18f)
+						 .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
 
 			float pausa = GD.Randf() * 0.15f + 0.5f;
 			GetTree().CreateTimer(pausa).Timeout += () =>

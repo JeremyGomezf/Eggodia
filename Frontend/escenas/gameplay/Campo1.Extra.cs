@@ -58,13 +58,14 @@ public partial class Campo1 : Node2D
 
 	private void MostrarAviso(string texto, Color color)
 	{
-		// y=300: debajo de todo el bloque superior (barras HP, Tiempo, Turno) ya agrandado para móvil.
-		MostrarAvisoCentrado(ConstruirToast(texto, color, 26), 300f, DURACION_TOAST);
+		// y=230: un poco más arriba que antes (300), pidiendo seguir debajo del bloque superior
+		// (barras HP, Tiempo, Turno) pero sin quedar tan abajo en el tablero.
+		MostrarAvisoCentrado(ConstruirToast(texto, color, 26), 230f, DURACION_TOAST);
 	}
 
 	private void MostrarAvisoFase(string msg)
 	{
-		MostrarAvisoCentrado(ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), 26), 300f, DURACION_TOAST);
+		MostrarAvisoCentrado(ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), 26), 230f, DURACION_TOAST);
 	}
 
 	// Frase burlona/celebratoria de fin de partida — SIN panel/caja de fondo, solo la letra:
@@ -74,7 +75,9 @@ public partial class Campo1 : Node2D
 	// ~0.45s de pop + 3.0s de espera + 0.35s de fade queda completamente invisible a los 3.8s.
 	private void MostrarFraseFinPartida(string frase, Color acento)
 	{
-		MostrarAvisoCentrado(ConstruirTextoGrande(frase, 90), 350f, 3.0f);
+		// Centrado real en X e Y (null = FullRect), no un "top" fijo — así queda bien centrado
+		// respecto a la Camera2D y su zoom sin importar la resolución/aspecto del dispositivo.
+		MostrarAvisoCentrado(ConstruirTextoGrande(frase, 90), null, 3.0f);
 	}
 
 	// Solo texto, sin panel de fondo: blanco, borde negro grueso, sombra difuminada detrás.
@@ -95,15 +98,24 @@ public partial class Campo1 : Node2D
 		return lbl;
 	}
 
-	// Muestra un aviso centrado, más abajo para no tapar el HUD superior. Efecto "gelatina"
-	// (pop elástico) al aparecer. Solo uno a la vez (evita solapamiento).
-	private void MostrarAvisoCentrado(Control panel, float top, float duracion)
+	// Muestra un aviso centrado. Con "top" fijo queda pegado bajo el HUD superior (toasts); con
+	// top=null queda centrado en TODA la pantalla (X e Y) — usado por la frase de fin de partida,
+	// que debe verse centrada respecto a la Camera2D/zoom sin importar la resolución del
+	// dispositivo. Efecto "gelatina" (pop elástico) al aparecer. Solo uno a la vez.
+	private void MostrarAvisoCentrado(Control panel, float? top, float duracion)
 	{
 		if (_avisoActual != null && IsInstanceValid(_avisoActual)) _avisoActual.QueueFree();
 
 		var host = new CenterContainer();
-		host.SetAnchorsPreset(Control.LayoutPreset.TopWide);
-		host.OffsetTop = top; host.OffsetBottom = top + 130;
+		if (top.HasValue)
+		{
+			host.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+			host.OffsetTop = top.Value; host.OffsetBottom = top.Value + 130;
+		}
+		else
+		{
+			host.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		}
 		host.MouseFilter = Control.MouseFilterEnum.Ignore;
 		host.ZIndex = 200;
 		panel.ZIndex = 200;

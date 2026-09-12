@@ -92,7 +92,7 @@ public partial class CampoPruebas : Node2D
 		panelIzq.AddChild(scroll);
 
 		var vbox = new VBoxContainer();
-		vbox.CustomMinimumSize = new Vector2(255, 0);
+		vbox.CustomMinimumSize = new Vector2(360, 0);
 		vbox.AddThemeConstantOverride("separation", 4);
 		scroll.AddChild(vbox);
 
@@ -132,14 +132,14 @@ public partial class CampoPruebas : Node2D
 
 		vbox.AddChild(MkLabel("Atacante:", Colors.LightGreen, 11));
 		_optAtacante = new OptionButton();
-		_optAtacante.CustomMinimumSize = new Vector2(255, 26);
+		_optAtacante.CustomMinimumSize = new Vector2(360, 46);
 		foreach (string s in new[] { "Aliado 1", "Aliado 2", "Aliado 3", "Enemigo 1", "Enemigo 2", "Enemigo 3" })
 			_optAtacante.AddItem(s);
 		vbox.AddChild(_optAtacante);
 
 		vbox.AddChild(MkLabel("Objetivo:", Colors.OrangeRed, 11));
 		_optObjetivo = new OptionButton();
-		_optObjetivo.CustomMinimumSize = new Vector2(255, 26);
+		_optObjetivo.CustomMinimumSize = new Vector2(360, 46);
 		foreach (string s in new[] { "Aliado 1", "Aliado 2", "Aliado 3", "Enemigo 1", "Enemigo 2", "Enemigo 3" })
 			_optObjetivo.AddItem(s);
 		_optObjetivo.Selected = 3;
@@ -171,7 +171,7 @@ public partial class CampoPruebas : Node2D
 
 		vbox.AddChild(MkLabel("Objetivo del hechizo:", Colors.Cyan, 11));
 		_optHechizo = new OptionButton();
-		_optHechizo.CustomMinimumSize = new Vector2(255, 26);
+		_optHechizo.CustomMinimumSize = new Vector2(360, 46);
 		foreach (string s in new[] { "Aliado 1", "Aliado 2", "Aliado 3", "Enemigo 1", "Enemigo 2", "Enemigo 3" })
 			_optHechizo.AddItem(s);
 		vbox.AddChild(_optHechizo);
@@ -198,7 +198,7 @@ public partial class CampoPruebas : Node2D
 		_lblStats.Position          = new Vector2(6, 4);
 		_lblStats.Size              = new Vector2(1003, 116);
 		_lblStats.AddThemeColorOverride("font_color", Colors.White);
-		_lblStats.AddThemeFontSizeOverride("font_size", 12);
+		_lblStats.AddThemeFontSizeOverride("font_size", 18);
 		_lblStats.AutowrapMode      = TextServer.AutowrapMode.Off;
 		_lblStats.VerticalAlignment = VerticalAlignment.Top;
 		panelStats.AddChild(_lblStats);
@@ -208,7 +208,7 @@ public partial class CampoPruebas : Node2D
 		_lblLog.Position  = new Vector2(270, 8);
 		_lblLog.Size      = new Vector2(730, 32);
 		_lblLog.AddThemeColorOverride("font_color", Colors.Yellow);
-		_lblLog.AddThemeFontSizeOverride("font_size", 15);
+		_lblLog.AddThemeFontSizeOverride("font_size", 21);
 		canvas.AddChild(_lblLog);
 	}
 
@@ -541,7 +541,7 @@ public partial class CampoPruebas : Node2D
 		var lbl = new Label();
 		lbl.Text = curacion ? $"+{cantidad}" : $"-{cantidad}";
 		lbl.AddThemeColorOverride("font_color", curacion ? Colors.LightGreen : Colors.Red);
-		lbl.AddThemeFontSizeOverride("font_size", 22);
+		lbl.AddThemeFontSizeOverride("font_size", 30);
 		lbl.ZIndex          = 300;
 		lbl.GlobalPosition  = pos + new Vector2(-20, -60);
 		AddChild(lbl);
@@ -590,8 +590,8 @@ public partial class CampoPruebas : Node2D
 	{
 		var b = new Button();
 		b.Text = texto;
-		b.CustomMinimumSize = new Vector2(0, 26);
-		b.AddThemeFontSizeOverride("font_size", 11);
+		b.CustomMinimumSize = new Vector2(0, 52);
+		b.AddThemeFontSizeOverride("font_size", 17);
 		if (color.HasValue) b.AddThemeColorOverride("font_color", color.Value);
 		b.Pressed += () => onPress();
 		return b;
@@ -608,8 +608,8 @@ public partial class CampoPruebas : Node2D
 	private OptionButton CrearOptionTropas()
 	{
 		var opt = new OptionButton();
-		opt.CustomMinimumSize = new Vector2(255, 26);
-		opt.AddThemeFontSizeOverride("font_size", 11);
+		opt.CustomMinimumSize = new Vector2(360, 46);
+		opt.AddThemeFontSizeOverride("font_size", 17);
 		for (int i = 0; i < NombresTropas.Length; i++)
 			opt.AddItem(NombresTropas[i]);
 		return opt;

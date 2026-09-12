@@ -34,100 +34,65 @@ public partial class Campo1 : Node2D
 		tw.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
 	}
 
-	private void UsarRobo()
+	private bool ValidarHechizo() => esTurnoJugador && movimientosRestantes > 0 && !juegoTerminado && !_faseApertura;
+
+	// Aplica el efecto del hechizo pi (0=curación,2=veneno,3=bloqueo,4=encebollado) sobre
+	// objetivo, validando que sea del bando correcto. "Robar Carta" (pi=1) no pasa por aquí:
+	// tiene su propio flujo en Campo1.RoboCarta.cs porque no aplica un efecto directo sino que
+	// abre la mini-pantalla de robo. Devuelve false si el objetivo no era válido (para que quien
+	// llama pueda hacer que la carta regrese a la mano en vez de gastarse).
+	private bool AplicarHechizoADestino(int pi, Node2D objetivo)
 	{
-		if (!ValidarHechizo() || usadoRobo) return;
-		foreach (string s in new[]{"Spot1","Spot2","Spot3"})
+		bool aliados = pi == 0 || pi == 4;
+		string grupoEsperado = aliados ? "tropas_jugador" : "tropas_rival";
+		if (!IsInstanceValid(objetivo) || !objetivo.IsInGroup(grupoEsperado)) return false;
+
+		switch (pi)
 		{
-			bool ok = false;
-			foreach (Node n in contenedorMano.GetChildren())
-				if (n is Carta c && c.NombreSpot == s && !c.IsQueuedForDeletion()) ok = true;
-			if (!ok) { CrearNuevaCartaEnSpot(s); break; }
-		}
-		usadoRobo = true;
-		RegistrarGastoMovimiento();
-	}
-
-	private static bool HechizoApuntaAliados(string hechizo) => hechizo == "curacion" || hechizo == "encebollado";
-
-	private void IniciarSeleccion(string hechizo, int slotIdx = -1)
-	{
-		if (!ValidarHechizo()) return;
-		if (hechizo == "veneno"      && usadoVeneno)      return;
-		if (hechizo == "bloqueo"     && usadoBloqueo)     return;
-		if (hechizo == "curacion"    && usadoCuracion)    return;
-		if (hechizo == "encebollado" && usadoEncebollado) return;
-		_modoSeleccionObjetivo = true;
-		_hechizoPendiente      = hechizo;
-		_slotPendiente         = slotIdx;
-		if (_lblInstruccion != null)
-		{
-			_lblInstruccion.Text = HechizoApuntaAliados(hechizo) ? "Toca una tropa\naliada" : "Toca una tropa\nenemiga";
-			_lblInstruccion.Visible = true;
-		}
-	}
-
-	private void AplicarHechizoEnObjetivo(Node2D objetivo)
-	{
-		string grupoEsperado = HechizoApuntaAliados(_hechizoPendiente) ? "tropas_jugador" : "tropas_rival";
-		if (!IsInstanceValid(objetivo) || !objetivo.IsInGroup(grupoEsperado)) return;
-
-		switch (_hechizoPendiente)
-		{
-			case "veneno":
+			case 2:
 				objetivo.SetMeta("envenenado",   true);
 				objetivo.SetMeta("danoVeneno",   50);
 				objetivo.SetMeta("turnosVeneno", 3);
 				objetivo.Modulate = new Color(0.6f,1f,0.4f);
-				usadoVeneno = true;
+				MarcarHechizoUsado(2);
 				ActualizarIconosEstado(objetivo);
+				MostrarAviso($"¡Envenenaste a {NombreCorto(objetivo)} del rival!", new Color(0.6f,1f,0.4f));
 				break;
-			case "bloqueo":
+			case 3:
 				objetivo.SetMeta("bloqueado",     true);
 				objetivo.SetMeta("turnosBloqueo", 2);
 				objetivo.Modulate = new Color(0.4f,0.6f,1.4f);
-				usadoBloqueo = true;
+				MarcarHechizoUsado(3);
 				ActualizarIconosEstado(objetivo);
+				MostrarAviso($"¡Bloqueaste a {NombreCorto(objetivo)} del rival!", new Color(0.4f,0.7f,1f));
 				break;
-			case "curacion":
+			case 0:
 				AplicarCuracion(objetivo);
-				usadoCuracion = true;
+				MarcarHechizoUsado(0);
+				MostrarAviso($"¡{NombreCorto(objetivo)} fue curado!", new Color(0.4f,1f,0.55f));
 				break;
-			case "encebollado":
+			case 4:
 				AplicarEncebollado(objetivo);
-				usadoEncebollado = true;
+				MarcarHechizoUsado(4);
+				MostrarAviso($"¡{NombreCorto(objetivo)} recibió Encebollado!", new Color(1f,0.75f,0.25f));
 				break;
+			default:
+				return false;
 		}
-
-		_modoSeleccionObjetivo = false;
-		_hechizoPendiente      = "";
-		if (_lblInstruccion != null) _lblInstruccion.Visible = false;
-		AutoReemplazarHechizo(_slotPendiente);
-		_slotPendiente = -1;
-		ActualizarVisualesHechizos();
-		RegistrarGastoMovimiento();
+		return true;
 	}
 
-	private bool ValidarHechizo() => esTurnoJugador && movimientosRestantes > 0 && !juegoTerminado && !_faseApertura;
-
 	// ── INPUT ─────────────────────────────────────────────────────────────
+	// Los hechizos ya no se activan por toque (ver Campo1.HUD.cs: ahora se arrastran igual que
+	// las cartas de tropa). Aquí solo queda el input de Enroque y Sacrificio, que siguen siendo
+	// por clic en el tablero.
 	public override void _Input(InputEvent @event)
 	{
-
 		if (juegoTerminado || !esTurnoJugador) return;
 
 		if (_torreEnroque != null && @event is InputEventMouseButton mbE && mbE.Pressed && mbE.ButtonIndex == MouseButton.Left)
 		{
 			if (IntentarClicEnroque(GetGlobalMousePosition())) return;
-		}
-
-		if (_modoSeleccionObjetivo && @event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
-		{
-			Vector2 mouse = GetGlobalMousePosition();
-			string grupo = HechizoApuntaAliados(_hechizoPendiente) ? "tropas_jugador" : "tropas_rival";
-			foreach (Node n in GetTree().GetNodesInGroup(grupo))
-				if (n is Node2D t && IsInstanceValid(t) && t.GlobalPosition.DistanceTo(mouse) < 90f)
-				{ AplicarHechizoEnObjetivo(t); return; }
 		}
 
 		if (modoSacrificioActivo && @event is InputEventMouseButton mb2 && mb2.Pressed && mb2.ButtonIndex == MouseButton.Left)

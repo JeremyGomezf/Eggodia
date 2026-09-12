@@ -188,6 +188,11 @@ public partial class Campo1 : Node2D
 	// Nombres de los 3 spots visibles de la mano (solicitado: 3 cartas en partida).
 	private static readonly string[] SPOTS_MANO = { "Spot1", "Spot2", "Spot3" };
 
+	// Tamaño base de las cartas de mano (antes 1.05, se pidió bajarlo un poco). La carta robada
+	// (Spot4, ver Campo1.RoboCarta.cs) usa un valor algo menor para distinguirse del resto.
+	private const float ESCALA_MANO_NORMAL = 0.92f;
+	private const float ESCALA_MANO_ROBADA = 0.8f;
+
 	private void RellenarManoObjetivo()
 	{
 		if (contenedorMano == null || _tipoIndice == null) return;
@@ -240,14 +245,14 @@ public partial class Campo1 : Node2D
 	}
 
 	// ── CREACIÓN DE CARTA CON ÍNDICE ──────────────────────────────────────
-	private void CrearCartaConIndice(string id, int idx)
+	private void CrearCartaConIndice(string id, int idx, float escalaBase = ESCALA_MANO_NORMAL)
 	{
 		if (juegoTerminado || escenaCartaBase == null || contenedorMano == null) return;
 		if (idx < 0 || idx >= escenasTropas.Length) return;
 		Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(id); if (spot == null) return;
 		Carta n = (Carta)escenaCartaBase.Instantiate(); n.NombreSpot = id; contenedorMano.AddChild(n);
 		n.Rotation = spot.Rotation;
-		Vector2 esc = new Vector2(1.05f, 1.05f); n.Scale = esc;
+		Vector2 esc = new Vector2(escalaBase, escalaBase); n.Scale = esc;
 		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2);
 		n.GuardarEstadoOriginal();
 		n.AsignarDatos(imagenesCartas[idx], escenasTropas[idx], idx);
@@ -286,6 +291,51 @@ public partial class Campo1 : Node2D
 		var packed = GD.Load<PackedScene>(fuente[random.Next(fuente.Count)]);
 		if (packed != null) return packed;
 		return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length)]);
+	}
+
+	// ── REACOMODO DE LA MANO (3 ↔ 4 cartas) ───────────────────────────────
+	// Al robar una carta al rival (Spot4, ver Campo1.RoboCarta.cs) hay momentáneamente 4 cartas
+	// en mano: las 4 se ven un poco más juntas y chicas para no tapar nada en pantalla. En cuanto
+	// se juega cualquiera de las 4 (sin importar cuál) y quedan 3, TODAS vuelven a la disposición
+	// y tamaño normales — nunca se queda "como 4 pegadas pareciendo 3".
+	private static readonly Vector2[] LAYOUT_4_CENTROS = {
+		new Vector2(-190, -8), new Vector2(-85, -34), new Vector2(15, -34), new Vector2(120, -8)
+	};
+	private static readonly float[] LAYOUT_4_ROT = { -0.16f, -0.05f, 0.05f, 0.16f };
+	private const float ESCALA_MANO_COMPACTA = 0.78f;
+	private bool _enModoManoCompacta = false;
+
+	private void ReacomodarManoTropas()
+	{
+		if (contenedorMano == null) return;
+		var cartas = new List<Carta>();
+		foreach (Node n in contenedorMano.GetChildren())
+			if (n is Carta c && c.EstaEnMano && !c.IsQueuedForDeletion()) cartas.Add(c);
+
+		if (cartas.Count >= 4)
+		{
+			Vector2 escCompacta = new Vector2(ESCALA_MANO_COMPACTA, ESCALA_MANO_COMPACTA);
+			for (int i = 0; i < cartas.Count && i < 4; i++)
+			{
+				Vector2 localPos = LAYOUT_4_CENTROS[i] - (cartas[i].Size * escCompacta / 2f);
+				cartas[i].ReubicarEnMano(localPos, escCompacta, LAYOUT_4_ROT[i]);
+			}
+			_enModoManoCompacta = true;
+		}
+		else if (_enModoManoCompacta)
+		{
+			// Solo reacomoda a la disposición normal si ANTES estábamos en modo compacto (por la
+			// carta robada) — así una mano normal de 2/3 cartas nunca se toca sin necesidad.
+			Vector2 esc = new Vector2(ESCALA_MANO_NORMAL, ESCALA_MANO_NORMAL);
+			for (int i = 0; i < cartas.Count && i < SPOTS_MANO.Length; i++)
+			{
+				Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(SPOTS_MANO[i]);
+				if (spot == null) continue;
+				Vector2 localPos = spot.Position - (cartas[i].Size * esc / 2f);
+				cartas[i].ReubicarEnMano(localPos, esc, spot.Rotation);
+			}
+			_enModoManoCompacta = false;
+		}
 	}
 
 	// ── LIMPIEZA DE CARRILES FANTASMA ─────────────────────────────────────

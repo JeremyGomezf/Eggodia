@@ -129,6 +129,9 @@ public partial class Campo1 : Node2D
 		juegoTerminado = true;
 		timerReloj.Stop();
 		GetTree().Paused = false;
+		CerrarPantallaRobo(); // por seguridad: nunca dejar la pantalla de robo abierta si la partida termina
+		// El filtro "toon" (si aplica) NO se apaga acá: debe verse también en la frase de cierre y
+		// en Victoria/Derrota. Solo se va al abandonar Campo1 (los botones de esas pantallas).
 
 		// Actualizar historial de dificultad
 		if (msg.Contains("VICTORIA")) _victoriasJugador++;
@@ -146,14 +149,22 @@ public partial class Campo1 : Node2D
 			MostrarFraseFinPartida(frases[random.Next(frases.Length)], colorFrase);
 			if (_lblTiempo != null) _lblTiempo.Text = caras[random.Next(caras.Length)];
 
-			// Salta a los últimos 10s de la canción como cierre — victoria o derrota. En victoria
-			// esos 10s quedan en loop (sigue sonando en la pantalla de Victoria); en derrota NO
-			// se repiten, termina y se queda en silencio.
+			// En victoria: salta a los últimos 10s de la canción y quedan en loop (sigue sonando
+			// en la pantalla de Victoria). En derrota: arranca desde el minuto específico de ESE
+			// escenario (ver ESCENARIOS_BATALLA) y NO se repite — termina y se queda en silencio.
 			if (_reproductorMusica != null && _reproductorMusica.Stream != null)
 			{
 				if (_reproductorMusica.Stream is AudioStreamMP3 mp3) mp3.Loop = esVictoria;
 				float duracion = (float)_reproductorMusica.Stream.GetLength();
-				if (duracion > 10f) _reproductorMusica.Seek(duracion - 10f);
+				if (esVictoria)
+				{
+					if (duracion > 10f) _reproductorMusica.Seek(duracion - 10f);
+				}
+				else
+				{
+					float destino = Mathf.Clamp(_segundoDerrotaMusica, 0f, Mathf.Max(0f, duracion - 0.1f));
+					_reproductorMusica.Seek(destino);
+				}
 			}
 
 			await ToSignal(GetTree().CreateTimer(4.0), "timeout");

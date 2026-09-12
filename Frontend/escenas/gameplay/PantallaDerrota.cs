@@ -13,8 +13,8 @@ public partial class PantallaDerrota : CanvasLayer
 
 	public override void _Ready()
 	{
-		var btnReintentar = GetNodeOrNull<Button>("Overlay/VBox/BtnReintentar");
-		var btnMenu       = GetNodeOrNull<Button>("Overlay/VBox/BtnMenu");
+		var btnReintentar = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnReintentar");
+		var btnMenu       = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnMenu");
 
 		MostrarRecompensa();
 		MostrarStats();
@@ -45,8 +45,8 @@ public partial class PantallaDerrota : CanvasLayer
 
 	private void MostrarStats()
 	{
-		var lblD = GetNodeOrNull<Label>("Overlay/VBox/PanelStats/StatsGrid/LblDañoV");
-		var lblE = GetNodeOrNull<Label>("Overlay/VBox/PanelStats/StatsGrid/LblElimV");
+		var lblD = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelStats/StatsGrid/LblDañoV");
+		var lblE = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelStats/StatsGrid/LblElimV");
 		if (lblD != null) lblD.Text = DañoInfligido.ToString();
 		if (lblE != null) lblE.Text = BajasEnemigas.ToString();
 	}
@@ -54,13 +54,13 @@ public partial class PantallaDerrota : CanvasLayer
 	private void MostrarMVT()
 	{
 		if (string.IsNullOrEmpty(MvtNombre)) return;
-		var panel = GetNodeOrNull<Control>("Overlay/VBox/PanelMVT");
+		var panel = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox/PanelMVT");
 		if (panel == null) return;
 		panel.Visible = true;
 
-		var lblNombre = GetNodeOrNull<Label>("Overlay/VBox/PanelMVT/MVTBox/MVTInfo/MVTNombre");
-		var lblStat   = GetNodeOrNull<Label>("Overlay/VBox/PanelMVT/MVTBox/MVTInfo/MVTStat");
-		var foto      = GetNodeOrNull<TextureRect>("Overlay/VBox/PanelMVT/MVTBox/MVTFoto");
+		var lblNombre = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelMVT/MVTBox/MVTInfo/MVTNombre");
+		var lblStat   = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelMVT/MVTBox/MVTInfo/MVTStat");
+		var foto      = GetNodeOrNull<TextureRect>("Overlay/CentroVBox/VBox/PanelMVT/MVTBox/MVTFoto");
 		if (lblNombre != null) lblNombre.Text = MvtNombre;
 		if (lblStat   != null) lblStat.Text   = $"{MvtDaño} de daño causado";
 		if (foto != null && MvtIlustracion != null) foto.Texture = MvtIlustracion;
@@ -69,8 +69,8 @@ public partial class PantallaDerrota : CanvasLayer
 	private void MostrarRecompensa()
 	{
 		if (MonedasGanadas <= 0) return;
-		var vbox = GetNodeOrNull<Control>("Overlay/VBox");
-		var mensaje = GetNodeOrNull<Control>("Overlay/VBox/Mensaje");
+		var vbox = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox");
+		var mensaje = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox/Mensaje");
 		if (vbox == null) return;
 
 		var chip = new PanelContainer();

@@ -35,9 +35,12 @@ public partial class Campo1 : Node2D
 		faseInvocacion = esTurnoJugador ? !TodosSpotsOcupados() : false;
 		_comboTurno    = 0;
 		_hechizoUsadoEsteTurno = false;
-		_modoSeleccionObjetivo = false;
-		_hechizoPendiente      = "";
-		if (_lblInstruccion != null) _lblInstruccion.Visible = false;
+
+		// Cooldown de hechizos: 5 turnos "en general" (cuentan los del jugador y los del rival) —
+		// se descuenta en cada cambio de turno, no solo en el propio.
+		for (int i = 0; i < _cooldownHechizo.Length; i++) if (_cooldownHechizo[i] > 0) _cooldownHechizo[i]--;
+		ActualizarEstadoCartaRobada(); // libera "Robar Carta" en cuanto se juegue la carta del Spot4
+
 		if (modoSacrificioActivo) CancelarSacrificio();
 		if (menuAcciones != null) menuAcciones.Visible = false;
 
@@ -52,9 +55,13 @@ public partial class Campo1 : Node2D
 			AvanzarCooldownsJugador();
 			CompletarManoAlInicio();
 
-			// Asistente táctico: detecta, en el mismo momento en que se avanza el turno de cada
-			// tropa, si su habilidad acaba de desbloquearse (transición bloqueada→lista) y si su
-			// salud cruzó el umbral de "baja" por primera vez.
+			// Si algún slot de hechizo quedó vacío (nada elegible cuando se gastó), reintentar
+			// ahora que los cooldowns recién bajaron.
+			for (int i = 0; i < 2; i++) if (_tarjetasHechizoCarta[i] == null) AutoReemplazarHechizo(i);
+
+			// Asistente táctico: SOLO avisa cuando la habilidad de una tropa PROPIA acaba de
+			// desbloquearse (transición bloqueada→lista). Sin alertas de vida baja ni de tropas
+			// rivales — alcance reducido a pedido explícito del usuario.
 			var avisosAsistente = new List<(string texto, Color color)>();
 			foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
 			{
@@ -74,13 +81,6 @@ public partial class Campo1 : Node2D
 					if (!sigueBloqueada)
 						avisosAsistente.Add(($"¡{NombreCorto(tropa)} ya tiene su habilidad lista!", new Color(0.5f, 0.85f, 1f)));
 				}
-
-				int vida = Gi(tropa, "vidaActual"), vidaMax = Gi(tropa, "vidaMaxima");
-				if (vidaMax > 0 && vida > 0 && (float)vida / vidaMax <= 0.25f && !tropa.HasMeta("alerta_salud_baja"))
-				{
-					tropa.SetMeta("alerta_salud_baja", true);
-					avisosAsistente.Add(($"¡{NombreCorto(tropa)} tiene la salud baja!", new Color(1f, 0.45f, 0.4f)));
-				}
 			}
 			if (avisosAsistente.Count > 0) MostrarAvisosAsistente(avisosAsistente);
 		}
@@ -89,6 +89,7 @@ public partial class Campo1 : Node2D
 			// Programar aparición de coloso del CPU cada 3 turnos.
 			int turnoNum = _turnosJugados / 2 + 1;
 			_cpuColosoPendiente = (turnoNum % 3 == 0);
+			RellenarManoVisualCPUSiFalta(); // repone hasta 3 lo que el hechizo "Robar Carta" le haya quitado
 			EjecutarTurnoCPU();
 		}
 

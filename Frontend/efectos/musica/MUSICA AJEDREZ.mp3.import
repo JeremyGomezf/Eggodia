@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dp3ahsr2qlohb"
+path="res://.godot/imported/MUSICA AJEDREZ.mp3-15adc86bb2e4075afbf056c51442a182.mp3str"
+
+[deps]
+
+source_file="res://efectos/musica/MUSICA AJEDREZ.mp3"
+dest_files=["res://.godot/imported/MUSICA AJEDREZ.mp3-15adc86bb2e4075afbf056c51442a182.mp3str"]
+
+[params]
+
+loop=true
+loop_offset=0.0
+bpm=0.0
+beat_count=0
+bar_beats=4
