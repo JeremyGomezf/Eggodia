@@ -47,8 +47,14 @@ public partial class PanelLogin : Control
 
 	[Export] public string RutaMenuPrincipal = "res://escenas/menu/menu_principal.tscn";
 
+	// Factor para agrandar TODAS las letras del login (es una pantalla de teléfono).
+	[Export] public float EscalaFuenteMovil = 1.35f;
+
 	public override void _Ready()
 	{
+		// Agrandar las letras para que se lean bien en el celular
+		EscalarFuentes(this);
+
 		_http = new Godot.HttpRequest();
 		AddChild(_http);
 		_http.RequestCompleted += OnRespuestaHTTP;
@@ -152,6 +158,20 @@ public partial class PanelLogin : Control
 			campo.Secret = !campo.Secret;
 			btn.TextureNormal = campo.Secret ? _ojoVer : _ojoOcultar;
 		};
+	}
+
+	// ── Agranda las letras de todos los controles del login (para teléfono) ──
+	private void EscalarFuentes(Node nodo)
+	{
+		if (nodo is Label || nodo is Button || nodo is LineEdit || nodo is TabContainer)
+		{
+			var c = (Control)nodo;
+			int actual = c.GetThemeFontSize("font_size");
+			if (actual > 0)
+				c.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(actual * EscalaFuenteMovil));
+		}
+		foreach (var hijo in nodo.GetChildren())
+			EscalarFuentes(hijo);
 	}
 
 	// ── RESPUESTA HTTP ────────────────────────────────────────────────────
