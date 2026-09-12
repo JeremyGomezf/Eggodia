@@ -38,6 +38,10 @@ public partial class PanelLogin : Control
 	// ── INVITADO ──────────────────────────────────────────────────────────
 	private Button _btnInvitado;
 
+	// ── OJO MOSTRAR/OCULTAR CONTRASEÑA ────────────────────────────────────
+	private Texture2D _ojoVer;      // icono cuando la contraseña está oculta
+	private Texture2D _ojoOcultar;  // icono cuando la contraseña está visible
+
 	private Godot.HttpRequest _http;
 	private string _accionPendiente = ""; // "login" o "registro"
 
@@ -73,6 +77,12 @@ public partial class PanelLogin : Control
 		if (_btnLogin    != null) _btnLogin.Pressed    += IntentarLogin;
 		if (_btnRegistro != null) _btnRegistro.Pressed += IntentarRegistro;
 		if (_btnInvitado != null) _btnInvitado.Pressed += JugarComoInvitado;
+
+		// Botón de ojo para mostrar/ocultar contraseña
+		_ojoVer     = GD.Load<Texture2D>("res://imagenes/login/icono_ojo.png");
+		_ojoOcultar = GD.Load<Texture2D>("res://imagenes/login/icono_ojo_off.png");
+		ConfigurarOjo(_passLogin);
+		ConfigurarOjo(_passReg);
 
 		// Ocultar errores al inicio
 		if (_lblErrorLogin    != null) _lblErrorLogin.Visible    = false;
@@ -127,6 +137,21 @@ public partial class PanelLogin : Control
 			SesionJuego.Instance.NombreJugador = "Invitado";
 		}
 		IrAlMenu();
+	}
+
+	// ── OJO: alterna mostrar/ocultar la contraseña del campo ──────────────
+	private void ConfigurarOjo(LineEdit campo)
+	{
+		if (campo == null) return;
+		var btn = campo.GetNodeOrNull<TextureButton>("EyeToggle");
+		if (btn == null) return;
+
+		btn.TextureNormal = _ojoVer; // arranca oculta (secret = true)
+		btn.Pressed += () =>
+		{
+			campo.Secret = !campo.Secret;
+			btn.TextureNormal = campo.Secret ? _ojoVer : _ojoOcultar;
+		};
 	}
 
 	// ── RESPUESTA HTTP ────────────────────────────────────────────────────

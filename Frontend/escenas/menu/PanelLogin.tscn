@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://chxcuh23rcsxs"]
+[gd_scene load_steps=29 format=3 uid="uid://chxcuh23rcsxs"]
 
 [ext_resource type="Script" uid="uid://cmw3sg1x14hqv" path="res://escenas/menu/PanelLogin.cs" id="1_login"]
 [ext_resource type="Texture2D" uid="uid://doc6gflxrbb2r" path="res://imagenes/login/login_fondo.png" id="2_fondo"]
@@ -11,6 +11,11 @@
 [ext_resource type="Texture2D" uid="uid://j547wo1s5d6j" path="res://imagenes/login/btn_teal_normal.png" id="10_tn"]
 [ext_resource type="Texture2D" uid="uid://cmyk5fb741hgs" path="res://imagenes/login/btn_teal_hover.png" id="11_th"]
 [ext_resource type="Texture2D" uid="uid://c4vi51ybohr6i" path="res://imagenes/login/btn_teal_pressed.png" id="12_tp"]
+[ext_resource type="Texture2D" uid="uid://dx533vokyoxug" path="res://imagenes/login/icono_email.png" id="13_email"]
+[ext_resource type="Texture2D" uid="uid://dxy2g7m8uvhyw" path="res://imagenes/login/icono_candado.png" id="14_lock"]
+[ext_resource type="Texture2D" uid="uid://btp8tu2fqdk28" path="res://imagenes/login/icono_usuario.png" id="15_user"]
+[ext_resource type="Texture2D" uid="uid://cpmch6cp5x1g" path="res://imagenes/login/icono_invitado.png" id="16_guest"]
+[ext_resource type="Texture2D" uid="uid://bnke0qgcbj3py" path="res://imagenes/login/icono_ojo.png" id="17_eye"]
 
 [sub_resource type="StyleBoxFlat" id="SB_input"]
 content_margin_left = 24.0
@@ -244,6 +249,7 @@ theme_override_font_sizes/font_size = 20
 [node name="EmailLogin" type="LineEdit" parent="TabContainer/Login"]
 custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
+right_icon = ExtResource("13_email")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -261,6 +267,7 @@ theme_override_font_sizes/font_size = 20
 [node name="PasswordLogin" type="LineEdit" parent="TabContainer/Login"]
 custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
+right_icon = ExtResource("14_lock")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -269,6 +276,20 @@ theme_override_styles/normal = SubResource("SB_input")
 theme_override_styles/focus = SubResource("SB_input_focus")
 placeholder_text = "Tu contraseña"
 secret = true
+
+[node name="EyeToggle" type="TextureButton" parent="TabContainer/Login/PasswordLogin"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -104.0
+offset_top = -22.0
+offset_right = -60.0
+offset_bottom = 22.0
+ignore_texture_size = true
+stretch_mode = 5
+texture_normal = ExtResource("17_eye")
 
 [node name="BtnLogin" type="Button" parent="TabContainer/Login"]
 custom_minimum_size = Vector2(0, 84)
@@ -306,6 +327,7 @@ theme_override_font_sizes/font_size = 20
 [node name="NombreReg" type="LineEdit" parent="TabContainer/Registro"]
 custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
+right_icon = ExtResource("15_user")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -323,6 +345,7 @@ theme_override_font_sizes/font_size = 20
 [node name="EmailReg" type="LineEdit" parent="TabContainer/Registro"]
 custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
+right_icon = ExtResource("13_email")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -340,6 +363,7 @@ theme_override_font_sizes/font_size = 20
 [node name="PasswordReg" type="LineEdit" parent="TabContainer/Registro"]
 custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
+right_icon = ExtResource("14_lock")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -348,6 +372,20 @@ theme_override_styles/normal = SubResource("SB_input")
 theme_override_styles/focus = SubResource("SB_input_focus")
 placeholder_text = "Crea una contraseña"
 secret = true
+
+[node name="EyeToggle" type="TextureButton" parent="TabContainer/Registro/PasswordReg"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -104.0
+offset_top = -20.0
+offset_right = -60.0
+offset_bottom = 20.0
+ignore_texture_size = true
+stretch_mode = 5
+texture_normal = ExtResource("17_eye")
 
 [node name="BtnRegistro" type="Button" parent="TabContainer/Registro"]
 custom_minimum_size = Vector2(0, 80)
@@ -372,6 +410,8 @@ autowrap_mode = 2
 theme_override_font_sizes/font_size = 17
 
 [node name="BtnContinuarSinLogin" type="Button" parent="."]
+icon = ExtResource("16_guest")
+expand_icon = true
 layout_mode = 1
 anchor_left = 0.5
 anchor_top = 0.5
