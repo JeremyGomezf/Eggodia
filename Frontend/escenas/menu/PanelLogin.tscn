@@ -1,6 +1,136 @@
-[gd_scene format=3 uid="uid://chxcuh23rcsxs"]
+[gd_scene load_steps=24 format=3 uid="uid://chxcuh23rcsxs"]
 
 [ext_resource type="Script" uid="uid://cmw3sg1x14hqv" path="res://escenas/menu/PanelLogin.cs" id="1_login"]
+[ext_resource type="Texture2D" uid="uid://doc6gflxrbb2r" path="res://imagenes/login/login_fondo.png" id="2_fondo"]
+[ext_resource type="Texture2D" uid="uid://dhuekduyh8l5m" path="res://imagenes/login/login_panel.png" id="3_panel"]
+[ext_resource type="Texture2D" uid="uid://cmqfw65eqikcm" path="res://imagenes/login/logo_eggodia.png" id="4_logo"]
+[ext_resource type="Texture2D" uid="uid://dtw8us0o4wyjd" path="res://imagenes/login/login_mascota.png" id="5_masco"]
+[ext_resource type="Texture2D" uid="uid://b1crmccl6nvvb" path="res://imagenes/login/btn_gold_normal.png" id="7_gn"]
+[ext_resource type="Texture2D" uid="uid://bauhfhxwjkfg5" path="res://imagenes/login/btn_gold_hover.png" id="8_gh"]
+[ext_resource type="Texture2D" uid="uid://jmirxmvedj6p" path="res://imagenes/login/btn_gold_pressed.png" id="9_gp"]
+[ext_resource type="Texture2D" uid="uid://j547wo1s5d6j" path="res://imagenes/login/btn_teal_normal.png" id="10_tn"]
+[ext_resource type="Texture2D" uid="uid://cmyk5fb741hgs" path="res://imagenes/login/btn_teal_hover.png" id="11_th"]
+[ext_resource type="Texture2D" uid="uid://c4vi51ybohr6i" path="res://imagenes/login/btn_teal_pressed.png" id="12_tp"]
+
+[sub_resource type="StyleBoxFlat" id="SB_input"]
+content_margin_left = 24.0
+content_margin_top = 10.0
+content_margin_right = 24.0
+content_margin_bottom = 10.0
+bg_color = Color(0.055, 0.09, 0.16, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.82, 0.62, 0.24, 0.9)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="SB_input_focus"]
+content_margin_left = 24.0
+content_margin_top = 10.0
+content_margin_right = 24.0
+content_margin_bottom = 10.0
+bg_color = Color(0.08, 0.12, 0.2, 0.98)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.98, 0.8, 0.35, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.98, 0.8, 0.35, 0.3)
+shadow_size = 5
+
+[sub_resource type="StyleBoxTexture" id="SB_gold_n"]
+content_margin_left = 38.0
+content_margin_top = 14.0
+content_margin_right = 38.0
+content_margin_bottom = 14.0
+texture = ExtResource("7_gn")
+texture_margin_left = 95.0
+texture_margin_top = 30.0
+texture_margin_right = 95.0
+texture_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxTexture" id="SB_gold_h"]
+content_margin_left = 38.0
+content_margin_top = 14.0
+content_margin_right = 38.0
+content_margin_bottom = 14.0
+texture = ExtResource("8_gh")
+texture_margin_left = 95.0
+texture_margin_top = 30.0
+texture_margin_right = 95.0
+texture_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxTexture" id="SB_gold_p"]
+content_margin_left = 38.0
+content_margin_top = 14.0
+content_margin_right = 38.0
+content_margin_bottom = 14.0
+texture = ExtResource("9_gp")
+texture_margin_left = 95.0
+texture_margin_top = 30.0
+texture_margin_right = 95.0
+texture_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxTexture" id="SB_teal_n"]
+content_margin_left = 34.0
+content_margin_top = 12.0
+content_margin_right = 34.0
+content_margin_bottom = 12.0
+texture = ExtResource("10_tn")
+texture_margin_left = 95.0
+texture_margin_top = 30.0
+texture_margin_right = 95.0
+texture_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxTexture" id="SB_teal_h"]
+content_margin_left = 34.0
+content_margin_top = 12.0
+content_margin_right = 34.0
+content_margin_bottom = 12.0
+texture = ExtResource("11_th")
+texture_margin_left = 95.0
+texture_margin_top = 30.0
+texture_margin_right = 95.0
+texture_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxTexture" id="SB_teal_p"]
+content_margin_left = 34.0
+content_margin_top = 12.0
+content_margin_right = 34.0
+content_margin_bottom = 12.0
+texture = ExtResource("12_tp")
+texture_margin_left = 95.0
+texture_margin_top = 30.0
+texture_margin_right = 95.0
+texture_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxEmpty" id="SB_empty"]
+
+[sub_resource type="StyleBoxFlat" id="SB_tab_sel"]
+content_margin_left = 24.0
+content_margin_top = 8.0
+content_margin_right = 24.0
+content_margin_bottom = 8.0
+bg_color = Color(0.95, 0.76, 0.3, 0.92)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+
+[sub_resource type="StyleBoxFlat" id="SB_tab_un"]
+content_margin_left = 24.0
+content_margin_top = 8.0
+content_margin_right = 24.0
+content_margin_bottom = 8.0
+bg_color = Color(0.09, 0.12, 0.2, 0.55)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
 
 [node name="PanelLogin" type="Control"]
 layout_mode = 3
@@ -9,38 +139,74 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_login")
 
-[node name="Fondo" type="ColorRect" parent="."]
+[node name="Fondo" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.05, 0.07, 0.12, 1)
+mouse_filter = 2
+texture = ExtResource("2_fondo")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="Titulo" type="Label" parent="."]
+[node name="Mascota" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -370.0
+offset_top = -480.0
+offset_right = -20.0
+offset_bottom = -20.0
+mouse_filter = 2
+texture = ExtResource("5_masco")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PanelBG" type="TextureRect" parent="."]
 layout_mode = 1
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -330.0
-offset_top = -361.0
-offset_right = 330.0
-offset_bottom = -297.0
-text = "EGGODIA"
-horizontal_alignment = 1
-theme_override_font_sizes/font_size = 54
+offset_left = -380.0
+offset_top = -430.0
+offset_right = 380.0
+offset_bottom = 470.0
+mouse_filter = 2
+texture = ExtResource("3_panel")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="Logo" type="TextureRect" parent="."]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -405.0
+offset_right = 300.0
+offset_bottom = -250.0
+mouse_filter = 2
+texture = ExtResource("4_logo")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Subtitulo" type="Label" parent="."]
-modulate = Color(0.7, 0.78, 0.9, 1)
+modulate = Color(0.78, 0.85, 0.97, 1)
 layout_mode = 1
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -330.0
-offset_top = -289.0
-offset_right = 330.0
-offset_bottom = -253.0
+offset_left = -300.0
+offset_top = -238.0
+offset_right = 300.0
+offset_bottom = -198.0
+mouse_filter = 2
 text = "Inicia sesión o regístrate para guardar tu progreso"
 horizontal_alignment = 1
 autowrap_mode = 2
@@ -52,44 +218,71 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -330.0
-offset_top = -235.0
-offset_right = 330.0
-offset_bottom = 241.0
+offset_left = -320.0
+offset_top = -175.0
+offset_right = 320.0
+offset_bottom = 250.0
+theme_override_colors/font_selected_color = Color(0.17, 0.12, 0.04, 1)
+theme_override_colors/font_unselected_color = Color(0.76, 0.83, 0.96, 1)
 theme_override_font_sizes/font_size = 20
+theme_override_styles/tab_selected = SubResource("SB_tab_sel")
+theme_override_styles/tab_unselected = SubResource("SB_tab_un")
+theme_override_styles/tab_hovered = SubResource("SB_tab_un")
+theme_override_styles/panel = SubResource("SB_empty")
+theme_override_styles/tabbar_background = SubResource("SB_empty")
 
 [node name="Login" type="VBoxContainer" parent="TabContainer"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 14
 
 [node name="LblEmail" type="Label" parent="TabContainer/Login"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
 text = "Email"
 theme_override_font_sizes/font_size = 20
 
 [node name="EmailLogin" type="LineEdit" parent="TabContainer/Login"]
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
-placeholder_text = "tucorreo@ejemplo.com"
+theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
+theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
+theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
 theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("SB_input")
+theme_override_styles/focus = SubResource("SB_input_focus")
+placeholder_text = "tucorreo@ejemplo.com"
 
 [node name="LblPass" type="Label" parent="TabContainer/Login"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
 text = "Contraseña"
 theme_override_font_sizes/font_size = 20
 
 [node name="PasswordLogin" type="LineEdit" parent="TabContainer/Login"]
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
+theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
+theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("SB_input")
+theme_override_styles/focus = SubResource("SB_input_focus")
 placeholder_text = "Tu contraseña"
 secret = true
-theme_override_font_sizes/font_size = 22
 
 [node name="BtnLogin" type="Button" parent="TabContainer/Login"]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
-text = "Iniciar Sesión"
+theme_override_colors/font_color = Color(0.18, 0.13, 0.04, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.09, 0.02, 1)
+theme_override_colors/font_pressed_color = Color(0.1, 0.07, 0.02, 1)
 theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("SB_gold_n")
+theme_override_styles/hover = SubResource("SB_gold_h")
+theme_override_styles/pressed = SubResource("SB_gold_p")
+theme_override_styles/focus = SubResource("SB_empty")
+theme_override_styles/disabled = SubResource("SB_gold_p")
+text = "Iniciar Sesión"
 
 [node name="LblErrorLogin" type="Label" parent="TabContainer/Login"]
 modulate = Color(1, 0.45, 0.4, 1)
@@ -102,47 +295,73 @@ theme_override_font_sizes/font_size = 17
 [node name="Registro" type="VBoxContainer" parent="TabContainer"]
 visible = false
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="LblNombre" type="Label" parent="TabContainer/Registro"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
 text = "Nombre de jugador"
 theme_override_font_sizes/font_size = 20
 
 [node name="NombreReg" type="LineEdit" parent="TabContainer/Registro"]
-custom_minimum_size = Vector2(0, 52)
+custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
-placeholder_text = "Tu nombre"
+theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
+theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
+theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
 theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("SB_input")
+theme_override_styles/focus = SubResource("SB_input_focus")
+placeholder_text = "Tu nombre"
 
 [node name="LblEmailReg" type="Label" parent="TabContainer/Registro"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
 text = "Email"
 theme_override_font_sizes/font_size = 20
 
 [node name="EmailReg" type="LineEdit" parent="TabContainer/Registro"]
-custom_minimum_size = Vector2(0, 52)
+custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
-placeholder_text = "tucorreo@ejemplo.com"
+theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
+theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
+theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
 theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("SB_input")
+theme_override_styles/focus = SubResource("SB_input_focus")
+placeholder_text = "tucorreo@ejemplo.com"
 
 [node name="LblPassReg" type="Label" parent="TabContainer/Registro"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
 text = "Contraseña"
 theme_override_font_sizes/font_size = 20
 
 [node name="PasswordReg" type="LineEdit" parent="TabContainer/Registro"]
-custom_minimum_size = Vector2(0, 52)
+custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
+theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
+theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("SB_input")
+theme_override_styles/focus = SubResource("SB_input_focus")
 placeholder_text = "Crea una contraseña"
 secret = true
-theme_override_font_sizes/font_size = 22
 
 [node name="BtnRegistro" type="Button" parent="TabContainer/Registro"]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
-text = "Registrarse"
+theme_override_colors/font_color = Color(0.18, 0.13, 0.04, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.09, 0.02, 1)
+theme_override_colors/font_pressed_color = Color(0.1, 0.07, 0.02, 1)
 theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("SB_gold_n")
+theme_override_styles/hover = SubResource("SB_gold_h")
+theme_override_styles/pressed = SubResource("SB_gold_p")
+theme_override_styles/focus = SubResource("SB_empty")
+theme_override_styles/disabled = SubResource("SB_gold_p")
+text = "Registrarse"
 
 [node name="LblErrorRegistro" type="Label" parent="TabContainer/Registro"]
 modulate = Color(1, 0.45, 0.4, 1)
@@ -158,9 +377,16 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -330.0
-offset_top = 260.0
-offset_right = 330.0
-offset_bottom = 308.0
-text = "Jugar como invitado"
+offset_left = -260.0
+offset_top = 292.0
+offset_right = 260.0
+offset_bottom = 376.0
+theme_override_colors/font_color = Color(0.93, 0.97, 0.96, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.8, 0.9, 0.9, 1)
 theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("SB_teal_n")
+theme_override_styles/hover = SubResource("SB_teal_h")
+theme_override_styles/pressed = SubResource("SB_teal_p")
+theme_override_styles/focus = SubResource("SB_empty")
+text = "Jugar como invitado"
