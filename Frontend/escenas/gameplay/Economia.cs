@@ -28,7 +28,7 @@ public partial class Economia : Node
 	// ── Recompensas base por resultado (ajustables) ──────────────────────
 	public const int RECOMPENSA_VICTORIA = 100;
 	public const int RECOMPENSA_EMPATE   = 40;
-	public const int RECOMPENSA_DERROTA  = 15;
+	public const int RECOMPENSA_DERROTA  = 0;   // perder o rendirse no da oro
 	public const int BONO_POR_RACHA      = 25;   // extra por cada victoria en racha
 
 	public override void _Ready()
