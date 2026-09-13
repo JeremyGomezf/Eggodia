@@ -13,25 +13,23 @@ public partial class Campo1 : Node2D
 		EsOnline = ContextoOnline.Activo;
 		if (!EsOnline) return;
 
-		// Banner superior con el nombre del rival.
+		// Placa discreta con el nombre del rival en su lado (arriba a la derecha). Sin banner grande.
 		var capa = new CanvasLayer { Layer = 90 };
 		AddChild(capa);
 
 		var lbl = new Label
 		{
-			Text = $"🌐 EN LÍNEA — vs {ContextoOnline.RivalNombre}",
-			HorizontalAlignment = HorizontalAlignment.Center,
+			Text = ContextoOnline.RivalNombre,
+			HorizontalAlignment = HorizontalAlignment.Right,
 			MouseFilter = Control.MouseFilterEnum.Ignore
 		};
-		lbl.AddThemeFontSizeOverride("font_size", 34);
-		lbl.AddThemeColorOverride("font_color", new Color(0.6f, 0.9f, 1f));
+		lbl.AddThemeFontSizeOverride("font_size", 26);
+		lbl.AddThemeColorOverride("font_color", new Color(0.85f, 0.9f, 0.98f));
 		lbl.AddThemeColorOverride("font_outline_color", Colors.Black);
-		lbl.AddThemeConstantOverride("outline_size", 6);
-		lbl.SetAnchorsPreset(Control.LayoutPreset.TopWide);
-		lbl.OffsetTop = 12; lbl.OffsetBottom = 60;
+		lbl.AddThemeConstantOverride("outline_size", 5);
+		lbl.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+		lbl.OffsetLeft = -420; lbl.OffsetRight = -24; lbl.OffsetTop = 16; lbl.OffsetBottom = 52;
 		capa.AddChild(lbl);
-
-		MostrarAviso($"Partida en línea contra {ContextoOnline.RivalNombre}", new Color(0.6f, 0.9f, 1f));
 	}
 
 	// La CPU está apagada en online (ver el gate en EjecutarTurnoCPU). En el Milestone A el turno del

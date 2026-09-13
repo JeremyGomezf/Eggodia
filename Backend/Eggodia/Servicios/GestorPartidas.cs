@@ -20,6 +20,11 @@ public class GestorPartidas
         public string Estado { get; set; } = "esperando"; // esperando | emparejado
         public string Semilla { get; set; } = new Random().Next(1, int.MaxValue).ToString(); // RNG compartido (Fase 2)
         public DateTime ActualizadaUtc { get; set; } = DateTime.UtcNow;
+
+        // Sincronización de turnos (Fase 2 Milestone B): el jugador activo sube el snapshot del
+        // tablero con un número de turno creciente; el otro lo baja sondeando.
+        public int TurnoActual { get; set; } = 0;
+        public string EstadoJson { get; set; } = "";
     }
 
     private readonly object _lock = new();
@@ -74,9 +79,26 @@ public class GestorPartidas
         }
     }
 
+    // ── Sincronización de turnos (snapshot del tablero) ──────────────────
+    public bool GuardarTurno(string id, int turno, string estadoJson)
+    {
+        if (!_partidas.TryGetValue(id, out var p)) return false;
+        if (turno > p.TurnoActual) { p.TurnoActual = turno; p.EstadoJson = estadoJson ?? ""; }
+        p.ActualizadaUtc = DateTime.UtcNow;
+        return true;
+    }
+
+    public (int turno, string estado)? ObtenerTurno(string id)
+    {
+        if (!_partidas.TryGetValue(id, out var p)) return null;
+        p.ActualizadaUtc = DateTime.UtcNow; // el sondeo mantiene viva la partida durante el juego
+        return (p.TurnoActual, p.EstadoJson);
+    }
+
     private void LimpiarViejas()
     {
-        var limite = DateTime.UtcNow.AddSeconds(-30);
+        // 90s: tolera turnos largos (el sondeo del rival mantiene viva la partida igual).
+        var limite = DateTime.UtcNow.AddSeconds(-90);
         foreach (var kv in _partidas)
             if (kv.Value.ActualizadaUtc < limite) _partidas.TryRemove(kv.Key, out _);
     }

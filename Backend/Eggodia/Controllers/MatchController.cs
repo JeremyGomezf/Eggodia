@@ -55,6 +55,33 @@ public class MatchController : ControllerBase
         return Ok(new { ok = true });
     }
 
+    public class TurnoRequest
+    {
+        public string JugadorId { get; set; } = "";
+        public int Turno { get; set; }
+        public string Estado { get; set; } = ""; // snapshot del tablero (JSON serializado)
+    }
+
+    // El jugador activo sube el snapshot del tablero al terminar su turno.
+    [HttpPost("{id}/turno")]
+    public IActionResult SubirTurno(string id, [FromBody] TurnoRequest req)
+    {
+        if (req == null) return BadRequest(new { mensaje = "cuerpo requerido" });
+        if (!_gestor.GuardarTurno(id, req.Turno, req.Estado))
+            return NotFound(new { mensaje = "partida no existe" });
+        return Ok(new { ok = true, turno = req.Turno });
+    }
+
+    // El jugador en espera sondea el último snapshot. Si turno <= desde, no hay nada nuevo.
+    [HttpGet("{id}/turno")]
+    public IActionResult BajarTurno(string id, [FromQuery] int desde = 0)
+    {
+        var t = _gestor.ObtenerTurno(id);
+        if (t == null) return NotFound(new { mensaje = "partida no existe" });
+        bool hayNuevo = t.Value.turno > desde;
+        return Ok(new { turno = t.Value.turno, estado = hayNuevo ? t.Value.estado : "" });
+    }
+
     private static object Serializar(GestorPartidas.Partida p, string jugadorId)
     {
         string asiento = p.JugadorAId == jugadorId ? "A" : (p.JugadorBId == jugadorId ? "B" : "");
