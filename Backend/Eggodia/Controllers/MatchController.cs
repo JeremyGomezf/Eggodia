@@ -31,6 +31,11 @@ public class MatchController : ControllerBase
         if (req == null || string.IsNullOrWhiteSpace(req.JugadorId))
             return BadRequest(new { mensaje = "jugadorId requerido" });
 
+        // El multijugador es solo para cuentas registradas. El cliente usa el prefijo "u" para
+        // usuarios logueados (u{UsuarioId}) y "g" para invitados; aquí se rechaza a los invitados.
+        if (!req.JugadorId.StartsWith("u"))
+            return StatusCode(403, new { mensaje = "Solo las cuentas registradas pueden jugar en línea." });
+
         var p = _gestor.EntrarACola(req.JugadorId, string.IsNullOrWhiteSpace(req.Nombre) ? "Jugador" : req.Nombre);
         return Ok(Serializar(p, req.JugadorId));
     }
