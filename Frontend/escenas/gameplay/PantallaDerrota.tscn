@@ -128,7 +128,6 @@ size_flags_horizontal = 4
 texture = ExtResource("2_huevo")
 expand_mode = 1
 stretch_mode = 5
-metadata/_edit_lock_ = true
 
 [node name="CentroVBox" type="CenterContainer" parent="Overlay" unique_id=485170083]
 layout_mode = 1

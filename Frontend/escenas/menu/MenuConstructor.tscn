@@ -12,6 +12,12 @@
 [ext_resource type="Texture2D" uid="uid://be6si2whi2bqn" path="res://imagenes/MenuConstructor/Info_Cart.png" id="10_infocart"]
 [ext_resource type="Texture2D" uid="uid://cyt6mtx53bv6" path="res://imagenes/MenuConstructor/NombreTropa_interfaz.png" id="11_nombretropa"]
 [ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="12_048dh"]
+[ext_resource type="Shader" uid="uid://b4oj04low5esi" path="res://escenas/menu/borroso.gdshader" id="13_sys8m"]
+[ext_resource type="Texture2D" uid="uid://dcahc0gsvlx17" path="res://imagenes/Escenarios/nube1.png" id="14_guxwj"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ib6j1"]
+shader = ExtResource("13_sys8m")
+shader_parameter/blur_amount = 2.0
 
 [sub_resource type="Gradient" id="Gradient_e0nei"]
 
@@ -179,6 +185,54 @@ scale = Vector2(1.44, 1.44)
 texture = ExtResource("3_fondo")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Nube5" type="Sprite2D" parent="." unique_id=2067243857]
+material = SubResource("ShaderMaterial_ib6j1")
+position = Vector2(-407.00006, -1.9998779)
+rotation = 0.2047816
+scale = Vector2(0.9908681, 1.1378068)
+texture = ExtResource("14_guxwj")
+flip_v = true
+
+[node name="Nube3" type="Sprite2D" parent="." unique_id=1112471334]
+material = SubResource("ShaderMaterial_ib6j1")
+position = Vector2(-338, 484)
+rotation = -1.5717262
+scale = Vector2(0.9908681, 1.1378068)
+texture = ExtResource("14_guxwj")
+
+[node name="Nube1" type="Sprite2D" parent="." unique_id=817820667]
+material = SubResource("ShaderMaterial_ib6j1")
+position = Vector2(-524, 871)
+rotation = 0.2047816
+scale = Vector2(0.9908681, 1.1378068)
+texture = ExtResource("14_guxwj")
+
+[node name="Nube4" type="Sprite2D" parent="." unique_id=862762181]
+material = SubResource("ShaderMaterial_ib6j1")
+position = Vector2(2287.7004, 546.0447)
+rotation = -1.5717262
+scale = Vector2(0.9908681, 1.1378068)
+texture = ExtResource("14_guxwj")
+flip_h = true
+flip_v = true
+
+[node name="Nube2" type="Sprite2D" parent="." unique_id=867418633]
+material = SubResource("ShaderMaterial_ib6j1")
+position = Vector2(2339, 912.99994)
+rotation = -0.12829496
+scale = Vector2(0.9908681, 1.1378068)
+texture = ExtResource("14_guxwj")
+flip_h = true
+
+[node name="Nube6" type="Sprite2D" parent="." unique_id=1930870937]
+material = SubResource("ShaderMaterial_ib6j1")
+position = Vector2(2226.3472, 30.84095)
+rotation = 0.2047816
+scale = Vector2(0.9908681, 1.1378068)
+texture = ExtResource("14_guxwj")
+flip_h = true
+flip_v = true
 
 [node name="TextureRect" type="TextureRect" parent="." unique_id=1195499337]
 visible = false
@@ -458,6 +512,31 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_batallar_hover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_batallar_hover")
 text = "SELECCIONAR"
 
+[node name="ArdidSlots" type="Control" parent="MazoContainer" unique_id=1031212502]
+anchors_preset = 0
+offset_left = -591.0
+offset_top = -465.0
+offset_right = -551.0
+offset_bottom = -425.0
+
+[node name="Slot1H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=1402510082]
+position = Vector2(669, 526)
+
+[node name="Slot2H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=229293966]
+position = Vector2(938, 530)
+
+[node name="Slot3H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=785798888]
+position = Vector2(1214, 534)
+
+[node name="Slot4H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=1790026231]
+position = Vector2(669, 758)
+
+[node name="Slot5H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=2011154523]
+position = Vector2(938, 762)
+
+[node name="Slot6H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=896544129]
+position = Vector2(1214, 768)
+
 [node name="InfoContainer" type="Control" parent="." unique_id=692689363]
 layout_mode = 1
 anchors_preset = 0
@@ -582,13 +661,12 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 8.898019
-offset_top = -7.1632843
-offset_right = 8.89801
-offset_bottom = -7.163269
+offset_left = -4.9795313
+offset_top = -16.142876
+offset_right = -4.9795227
+offset_bottom = -16.142883
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.925, 0.925)
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 10

@@ -17,11 +17,19 @@
 [ext_resource type="Texture2D" uid="uid://c3isse6qikajh" path="res://imagenes/MenuNuevo/Moneda_icon.png" id="15_moneda_icon"]
 [ext_resource type="Texture2D" uid="uid://ybkgcvcc4xxa" path="res://imagenes/MenuNuevo/cuadro_nombre.png" id="16_cuadro_nombre"]
 [ext_resource type="Texture2D" uid="uid://cpds0afalmvq6" path="res://imagenes/MenuNuevo/BotonONLINE1.png" id="17_btn_online1"]
+[ext_resource type="Texture2D" uid="uid://dcahc0gsvlx17" path="res://imagenes/Escenarios/nube1.png" id="18_23nfl"]
 [ext_resource type="Texture2D" uid="uid://dy5v6oqwlxtb4" path="res://imagenes/MenuNuevo/BotonONLINE2.png" id="18_btn_online2"]
+[ext_resource type="Shader" uid="uid://b4oj04low5esi" path="res://escenas/menu/borroso.gdshader" id="19_4jhn6"]
 [ext_resource type="Texture2D" uid="uid://cnplxiu02xy2a" path="res://imagenes/MenuNuevo/BotonVSBOT1.png" id="19_btn_vsbot1"]
+[ext_resource type="Texture2D" uid="uid://dto0pvxl322de" path="res://imagenes/Escenarios/nube2.png" id="19_ommwj"]
+[ext_resource type="Texture2D" uid="uid://c5a0xobqk16s3" path="res://imagenes/MenuNuevo/BotonTrofeo.png" id="20_4jhn6"]
 [ext_resource type="Texture2D" uid="uid://blf7mrqw63uf7" path="res://imagenes/MenuNuevo/BotonVSBOT2.png" id="20_btn_vsbot2"]
 [ext_resource type="Texture2D" uid="uid://fpvvmkvxcnkr" path="res://imagenes/MenuNuevo/BotonDev.png" id="21_btn_dev"]
 [ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="22_font_almendra"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4jhn6"]
+shader = ExtResource("19_4jhn6")
+shader_parameter/blur_amount = 2.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sec_btn"]
 content_margin_left = 10.0
@@ -109,6 +117,19 @@ scale = Vector2(0.81, 0.81)
 texture = ExtResource("2_fondo")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Nube3" type="Sprite2D" parent="." unique_id=1799245822]
+material = SubResource("ShaderMaterial_4jhn6")
+position = Vector2(293.00003, 56.000004)
+rotation = 1.724222
+scale = Vector2(0.9908681, 1.1378068)
+texture = ExtResource("18_23nfl")
+
+[node name="Nube4" type="Sprite2D" parent="." unique_id=1977568552]
+material = SubResource("ShaderMaterial_4jhn6")
+position = Vector2(2350.9998, 260.99997)
+rotation = 3.4002883
+texture = ExtResource("19_ommwj")
 
 [node name="IslaContainer" type="Control" parent="." unique_id=1096408613]
 layout_mode = 1
@@ -354,6 +375,19 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_sec_btn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_sec_btn_hover")
 text = "PRUEBAS"
 
+[node name="Nube1" type="Sprite2D" parent="." unique_id=856902181]
+material = SubResource("ShaderMaterial_4jhn6")
+position = Vector2(2254, 855.99994)
+rotation = -0.20405045
+scale = Vector2(0.99086815, 1.1378068)
+texture = ExtResource("18_23nfl")
+
+[node name="Nube2" type="Sprite2D" parent="." unique_id=597123359]
+material = SubResource("ShaderMaterial_4jhn6")
+position = Vector2(35.999992, 796.00006)
+rotation = 0.14871174
+texture = ExtResource("19_ommwj")
+
 [node name="BottomButtons" type="HBoxContainer" parent="." unique_id=779704060]
 layout_mode = 1
 anchors_preset = 7
@@ -389,6 +423,21 @@ mouse_default_cursor_shape = 2
 texture_normal = ExtResource("19_btn_vsbot1")
 texture_pressed = ExtResource("20_btn_vsbot2")
 texture_hover = ExtResource("20_btn_vsbot2")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="BtnTrofeo" type="TextureButton" parent="." unique_id=63159176]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1279.0
+offset_top = 791.0
+offset_right = -1159.0
+offset_bottom = 911.0
+grow_horizontal = 0
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("20_4jhn6")
 ignore_texture_size = true
 stretch_mode = 5
 
