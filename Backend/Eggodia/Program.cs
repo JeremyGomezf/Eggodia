@@ -6,6 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. Configurar Servicios básicos
 builder.Services.AddControllers();
 
+// Matchmaking 1v1 en memoria (Fase 1 multijugador)
+builder.Services.AddSingleton<GestorPartidas>();
+
 // 2. Configurar Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

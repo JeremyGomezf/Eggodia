@@ -1,0 +1,227 @@
+using Godot;
+using System.Text;
+using System.Text.Json;
+
+/// <summary>
+/// Fase 1 del multijugador: emparejamiento por sondeo (polling REST) contra el backend.
+/// Entra a la cola (POST /api/match/cola), y mientras espera consulta el estado cada 1.5s
+/// (GET /api/match/{id}). Cuando el rival entra, muestra "¡RIVAL ENCONTRADO!".
+///
+/// Es un nodo autocontenido: crea su propia CanvasLayer con la UI y se libera al cancelar/volver.
+/// La Fase 2 (sincronizar la partida real) arrancará desde aquí cuando el estado sea "emparejado".
+/// </summary>
+public partial class MatchmakingOnline : Node
+{
+	private static string _idSesion = ""; // id de jugador estable durante toda la sesión
+
+	private HttpRequest _http;
+	private Timer _timerSondeo;
+	private bool _ocupado = false;
+
+	private string _jugadorId = "";
+	private string _nombre = "Jugador";
+	private string _matchId = "";
+	private string _estado = "";
+
+	// UI
+	private Label _lblEstado, _lblDetalle;
+	private Control _spinner;
+	private Button _btnCancelar, _btnVolver;
+
+	public override void _Ready()
+	{
+		// Id de jugador: si está logueado usa su id; si es invitado, un GUID estable por sesión.
+		var ses = SesionJuego.Instance;
+		if (ses != null && ses.UsuarioId > 0) { _jugadorId = $"u{ses.UsuarioId}"; _nombre = ses.NombreJugador; }
+		else
+		{
+			if (string.IsNullOrEmpty(_idSesion)) _idSesion = System.Guid.NewGuid().ToString("N").Substring(0, 10);
+			_jugadorId = $"g{_idSesion}";
+			_nombre = ses != null && !string.IsNullOrEmpty(ses.NombreJugador) ? ses.NombreJugador : "Invitado";
+		}
+
+		ConstruirUI();
+
+		_http = new HttpRequest();
+		AddChild(_http);
+		_http.RequestCompleted += OnRespuesta;
+
+		_timerSondeo = new Timer { WaitTime = 1.5, OneShot = false };
+		AddChild(_timerSondeo);
+		_timerSondeo.Timeout += Sondear;
+
+		EntrarACola();
+	}
+
+	private void EntrarACola()
+	{
+		if (_ocupado) return;
+		_ocupado = true;
+		string cuerpo = JsonSerializer.Serialize(new { jugadorId = _jugadorId, nombre = _nombre });
+		string[] headers = { "Content-Type: application/json" };
+		if (_http.Request($"{ApiConfig.Base}/api/match/cola", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
+		{
+			_ocupado = false;
+			MostrarError("No se pudo conectar al servidor");
+		}
+	}
+
+	private void Sondear()
+	{
+		if (_ocupado || string.IsNullOrEmpty(_matchId) || _estado == "emparejado") return;
+		_ocupado = true;
+		if (_http.Request($"{ApiConfig.Base}/api/match/{_matchId}?jugadorId={_jugadorId}") != Error.Ok)
+			_ocupado = false; // reintenta en el próximo tick
+	}
+
+	private void OnRespuesta(long result, long code, string[] headers, byte[] body)
+	{
+		_ocupado = false;
+		if (result != (long)HttpRequest.Result.Success || (code != 200 && code != 201))
+		{
+			// Un fallo puntual de sondeo no es fatal si ya estamos en cola; solo error si aún no hay match.
+			if (string.IsNullOrEmpty(_matchId)) MostrarError("No se pudo conectar al servidor");
+			return;
+		}
+		try
+		{
+			var doc = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(body));
+			_matchId = doc.GetProperty("matchId").GetString() ?? _matchId;
+			_estado  = doc.GetProperty("estado").GetString() ?? "";
+			string rival = doc.TryGetProperty("rival", out var r) ? (r.GetString() ?? "") : "";
+
+			if (_estado == "emparejado")
+			{
+				if (!_timerSondeo.IsStopped()) _timerSondeo.Stop();
+				MostrarEmparejado(rival);
+			}
+			else // esperando
+			{
+				if (_timerSondeo.IsStopped()) _timerSondeo.Start();
+			}
+		}
+		catch { if (string.IsNullOrEmpty(_matchId)) MostrarError("Respuesta inválida del servidor"); }
+	}
+
+	private void Cancelar()
+	{
+		if (!string.IsNullOrEmpty(_matchId) && _estado != "emparejado")
+		{
+			string cuerpo = JsonSerializer.Serialize(new { jugadorId = _jugadorId });
+			string[] headers = { "Content-Type: application/json" };
+			var h = new HttpRequest();
+			AddChild(h);
+			h.Request($"{ApiConfig.Base}/api/match/{_matchId}/cancelar", headers, HttpClient.Method.Post, cuerpo);
+		}
+		Cerrar();
+	}
+
+	private void Cerrar()
+	{
+		QueueFree(); // libera este nodo y su CanvasLayer hija
+	}
+
+	// ── UI ──────────────────────────────────────────────────────────────────
+	private void ConstruirUI()
+	{
+		var capa = new CanvasLayer { Layer = 300 };
+		AddChild(capa);
+
+		var fondo = new TextureRect();
+		fondo.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		fondo.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		fondo.StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered;
+		var tex = GD.Load<Texture2D>("res://imagenes/Fondo_de_pantalla_eggodia.png");
+		if (tex != null) fondo.Texture = tex;
+		capa.AddChild(fondo);
+
+		var oscurecer = new ColorRect();
+		oscurecer.Color = new Color(0, 0, 0, 0.65f);
+		oscurecer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		oscurecer.MouseFilter = Control.MouseFilterEnum.Stop;
+		fondo.AddChild(oscurecer);
+
+		var centro = new VBoxContainer();
+		centro.SetAnchorsPreset(Control.LayoutPreset.Center);
+		centro.OffsetLeft = -360; centro.OffsetRight = 360;
+		centro.OffsetTop = -250; centro.OffsetBottom = 250;
+		centro.Alignment = BoxContainer.AlignmentMode.Center;
+		centro.AddThemeConstantOverride("separation", 30);
+		oscurecer.AddChild(centro);
+
+		_spinner = new Control { CustomMinimumSize = new Vector2(130, 130) };
+		_spinner.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		centro.AddChild(_spinner);
+		const int nP = 8; const float radio = 52f, c = 65f;
+		for (int i = 0; i < nP; i++)
+		{
+			float ang = i * Mathf.Tau / nP;
+			var punto = new Panel { Size = new Vector2(20, 20) };
+			punto.Position = new Vector2(c + Mathf.Cos(ang) * radio - 10, c + Mathf.Sin(ang) * radio - 10);
+			var sb = new StyleBoxFlat { BgColor = new Color(0.95f, 0.76f, 0.25f) };
+			sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 10;
+			punto.AddThemeStyleboxOverride("panel", sb);
+			_spinner.AddChild(punto);
+			Tween tw = punto.CreateTween().SetLoops();
+			tw.TweenProperty(punto, "modulate:a", 0.15f, 0.5f).SetDelay(i * (0.9f / nP));
+			tw.TweenProperty(punto, "modulate:a", 1.0f, 0.5f);
+		}
+
+		_lblEstado = new Label { Text = "BUSCANDO RIVAL" };
+		_lblEstado.AddThemeColorOverride("font_color", Colors.White);
+		_lblEstado.AddThemeColorOverride("font_outline_color", Colors.Black);
+		_lblEstado.AddThemeConstantOverride("outline_size", 6);
+		_lblEstado.AddThemeFontSizeOverride("font_size", 56);
+		_lblEstado.HorizontalAlignment = HorizontalAlignment.Center;
+		centro.AddChild(_lblEstado);
+
+		_lblDetalle = new Label { Text = "conectando…" };
+		_lblDetalle.AddThemeColorOverride("font_color", new Color(0.85f, 0.88f, 0.95f));
+		_lblDetalle.AddThemeFontSizeOverride("font_size", 30);
+		_lblDetalle.HorizontalAlignment = HorizontalAlignment.Center;
+		centro.AddChild(_lblDetalle);
+
+		_btnCancelar = CrearBoton("CANCELAR", new Color(0.32f, 0.32f, 0.38f));
+		_btnCancelar.Pressed += Cancelar;
+		centro.AddChild(_btnCancelar);
+
+		_btnVolver = CrearBoton("VOLVER", new Color(0.62f, 0.16f, 0.16f));
+		_btnVolver.Visible = false;
+		_btnVolver.Pressed += Cerrar;
+		centro.AddChild(_btnVolver);
+	}
+
+	private static Button CrearBoton(string texto, Color color)
+	{
+		var b = new Button { Text = texto };
+		b.CustomMinimumSize = new Vector2(300, 84);
+		b.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		b.AddThemeFontSizeOverride("font_size", 32);
+		var sb = new StyleBoxFlat { BgColor = color };
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
+		b.AddThemeStyleboxOverride("normal", sb);
+		return b;
+	}
+
+	private void MostrarEmparejado(string rival)
+	{
+		if (_spinner != null) _spinner.Visible = false;
+		_lblEstado.Text = "¡RIVAL ENCONTRADO!";
+		_lblEstado.AddThemeColorOverride("font_color", new Color(0.5f, 1f, 0.55f));
+		_lblDetalle.Text = string.IsNullOrEmpty(rival) ? "Preparando la partida…" : $"vs {rival}\n(la partida en línea llega en la Fase 2)";
+		_lblDetalle.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		_btnCancelar.Visible = false;
+		_btnVolver.Visible = true;
+	}
+
+	private void MostrarError(string msg)
+	{
+		if (_timerSondeo != null && !_timerSondeo.IsStopped()) _timerSondeo.Stop();
+		if (_spinner != null) _spinner.Visible = false;
+		_lblEstado.Text = "SIN CONEXIÓN";
+		_lblEstado.AddThemeColorOverride("font_color", new Color(1f, 0.5f, 0.45f));
+		_lblDetalle.Text = msg;
+		_btnCancelar.Visible = false;
+		_btnVolver.Visible = true;
+	}
+}
