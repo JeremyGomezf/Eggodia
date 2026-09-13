@@ -383,10 +383,10 @@ public partial class MenuConstructor : Control
 				_gridMazoSlots.AnchorRight = 0.5f;
 				_gridMazoSlots.AnchorTop = 0.5f;
 				_gridMazoSlots.AnchorBottom = 0.5f;
-				_gridMazoSlots.OffsetLeft = -315.0f;
-				_gridMazoSlots.OffsetRight = 315.0f;
-				_gridMazoSlots.OffsetTop = -160.0f;
-				_gridMazoSlots.OffsetBottom = 160.0f;
+				_gridMazoSlots.OffsetLeft = -290.0f;
+				_gridMazoSlots.OffsetRight = 340.0f;
+				_gridMazoSlots.OffsetTop = -135.0f;
+				_gridMazoSlots.OffsetBottom = 185.0f;
 				_gridMazoSlots.AddThemeConstantOverride("h_separation", 22);
 				_gridMazoSlots.AddThemeConstantOverride("v_separation", 16);
 			}
