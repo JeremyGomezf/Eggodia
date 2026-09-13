@@ -31,7 +31,7 @@ public partial class MachiPrime : TropaBase
 
 	// ── CAPACIDADES ────────────────────────────────────────────────────────────
 	public override bool AutogestionaDañoAtaque() => true;
-	public override bool TieneHabilidadEspecial() => false; // Habilidad pendiente por implementar
+	public override bool TieneHabilidadEspecial() => true; // Curación en área (mitad de vida máxima) a todos los aliados
 
 	// ── ACCIONES ───────────────────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)
@@ -49,9 +49,42 @@ public partial class MachiPrime : TropaBase
 		base.EjecutarAccion(accion);
 	}
 
+	// HABILIDAD (1 vez por partida): Machi cura a TODOS los aliados vivos —incluida ella misma—
+	// la MITAD de su vida máxima. La curación se aplica en el frame 3 de la animación "habilidad"
+	// (ver OnFrameChanged) y cada tropa curada muestra el efecto verde.
 	protected override void UsarHabilidadPropia()
 	{
-		// Habilidad vacía por el momento
+		if (habilidadUsada || _estaMuerto || _anim == null) return;
+		habilidadUsada = true;
+		PausarFlotacion();
+		_yaActuo = true;
+		_anim.Play("habilidad");
+	}
+
+	private void CurarAliados()
+	{
+		string grupo = IsInGroup("tropas_rival") ? "tropas_rival" : "tropas_jugador";
+		var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
+
+		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+		{
+			if (n is not TropaBase aliado || !IsInstanceValid(aliado)) continue;
+			if (aliado.vidaActual <= 0) continue; // saltar tropas muertas / en proceso de morir
+
+			int cura       = aliado.vidaMaxima / 2;                       // mitad de la vida TOTAL
+			int nueva      = Mathf.Min(aliado.vidaMaxima, aliado.vidaActual + cura); // sin sobrecurar
+			int curadoReal = nueva - aliado.vidaActual;
+			if (curadoReal <= 0) continue;
+
+			aliado.vidaActual = nueva;
+			aliado.RefrescarBarras();
+
+			// Efecto verde: número flotante "+N" y flash verde sobre la tropa curada.
+			campo?.MostrarDañoFlotante(aliado.GlobalPosition, curadoReal, true);
+			Tween tw = aliado.CreateTween();
+			tw.TweenProperty(aliado, "modulate", new Color(0.3f, 1.6f, 0.5f), 0.2f);
+			tw.TweenProperty(aliado, "modulate", Colors.White, 0.5f);
+		}
 	}
 
 	// ── LEVITACIÓN CÍRCULO MINÚSCULO Y LENTO (SOLO VISUAL) ─────────────────────
@@ -116,6 +149,10 @@ public partial class MachiPrime : TropaBase
 				if (campo != null) campo.Call("RegistrarDañoTropa", this, danioFinal);
 			}
 		}
+
+		// Curación en área aplicada exactamente en el Frame 3 de la habilidad
+		if (anim == "habilidad" && _anim.Frame == 3)
+			CurarAliados();
 	}
 
 	// ── EVENTO: FIN DE ANIMACIÓN ───────────────────────────────────────────────
@@ -124,7 +161,7 @@ public partial class MachiPrime : TropaBase
 		if (_anim == null) return;
 		string anim = _anim.Animation.ToString();
 
-		if (anim == "ataque" || anim == "daño" || anim == "defensa")
+		if (anim == "ataque" || anim == "daño" || anim == "defensa" || anim == "habilidad")
 		{
 			if (!_estaMuerto)
 			{

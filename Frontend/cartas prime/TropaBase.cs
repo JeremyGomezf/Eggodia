@@ -484,4 +484,8 @@ public abstract partial class TropaBase : Area2D
 		if (bv != null) bv.Value = vidaMaxima  > 0 ? (float)vidaActual  / vidaMaxima  * 100 : 0;
 		if (be != null) be.Value = escudoMaximo > 0 ? (float)escudoActual / escudoMaximo * 100 : 0;
 	}
+
+	/// <summary>Permite que otra tropa/efecto (p. ej. la curación de Machi) refresque las barras
+	/// de esta tropa tras cambiarle la vida desde afuera.</summary>
+	public void RefrescarBarras() => ActualizarBarrasUI();
 }

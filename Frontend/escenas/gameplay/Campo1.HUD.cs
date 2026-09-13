@@ -272,7 +272,7 @@ public partial class Campo1 : Node2D
 	}
 
 	// ── NÚMEROS FLOTANTES DE DAÑO ─────────────────────────────────────────
-	private void MostrarDañoFlotante(Vector2 posGlobal, int cantidad, bool esCuracion = false)
+	public void MostrarDañoFlotante(Vector2 posGlobal, int cantidad, bool esCuracion = false)
 	{
 		var lbl = new Label();
 		lbl.Text = esCuracion ? $"+{cantidad}" : $"-{cantidad}";
