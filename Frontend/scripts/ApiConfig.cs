@@ -2,20 +2,25 @@ using Godot;
 
 /// <summary>
 /// Configuración central de la URL del backend Eggodia.
-/// En PC usa localhost; en móvil (Android/iOS) usa la IP de la PC en la red Wi-Fi
-/// — el celular DEBE estar en la MISMA red Wi-Fi que la PC, y el backend debe
-/// escuchar en la LAN (dotnet run --urls http://0.0.0.0:5289).
+///
+/// Por defecto el juego usa el SERVIDOR DE PRODUCCIÓN en la nube
+/// (https://enyooichat.cloud, backend .NET 8 detrás de Cloudflare Tunnel),
+/// así funciona desde cualquier lugar y en cualquier celular sin estar en una
+/// red Wi-Fi concreta.
+///
+/// Si estás DESARROLLANDO el backend en tu propia PC (dotnet run en localhost:5289),
+/// pon USAR_BACKEND_LOCAL = true para que el juego apunte a tu servidor local.
 /// </summary>
 public static class ApiConfig
 {
-	// ⚠️ IP de tu PC en la red local (Wi-Fi). Cámbiala si tu red cambia.
-	private const string HOST_LAN = "192.168.1.18";
-	private const int    PUERTO   = 5289;
+	// true SOLO para desarrollo local del backend en tu PC. Normal: false (usa producción).
+	private const bool USAR_BACKEND_LOCAL = false;
+
+	private const string SERVIDOR_PROD  = "https://enyooichat.cloud";
+	private const int    PUERTO_LOCAL   = 5289;
 
 	public static string Base =>
-		OS.HasFeature("mobile")
-			? $"http://{HOST_LAN}:{PUERTO}"
-			: $"http://localhost:{PUERTO}";
+		USAR_BACKEND_LOCAL ? $"http://localhost:{PUERTO_LOCAL}" : SERVIDOR_PROD;
 
 	public static string Usuarios  => $"{Base}/api/usuarios";
 	public static string Cartas    => $"{Base}/api/cartas";

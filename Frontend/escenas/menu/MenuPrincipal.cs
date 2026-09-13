@@ -200,6 +200,9 @@ public partial class MenuPrincipal : Control
 			Preferencias.TutorialVisto = true;
 			Callable.From(AbrirComoJugar).CallDeferred();
 		}
+
+		// 8. Chequear si hay una versión nueva del APK (avisa / obliga a actualizar)
+		AddChild(new ChequeoActualizacion());
 	}
 
 	public override void _ExitTree()
