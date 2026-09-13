@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c0vpdxtju8uck"]
 
 [ext_resource type="Script" uid="uid://bg3jnsbn37glq" path="res://escenas/menu/PantallaCarga.cs" id="1_carga"]
-[ext_resource type="Texture2D" uid="uid://dxw085jknxf1m" path="res://imagenes/pantalladecargaprueba.png" id="2_fondo"]
+[ext_resource type="Texture2D" uid="uid://dyn300j8hu1tg" path="res://imagenes/Fondo_de_pantalla_eggodia.png" id="2_5yn6h"]
 [ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="3_font"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_barra_bg"]
@@ -37,12 +37,11 @@ grow_vertical = 2
 script = ExtResource("1_carga")
 
 [node name="Fondo" type="TextureRect" parent="." unique_id=178607194]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("2_fondo")
+texture = ExtResource("2_5yn6h")
 expand_mode = 1
 stretch_mode = 6
 

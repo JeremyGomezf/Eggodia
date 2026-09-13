@@ -21,7 +21,7 @@ public partial class MenuPrincipal : Control
 		fondo.SetAnchorsPreset(LayoutPreset.FullRect);
 		fondo.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
 		fondo.StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered;
-		var texFondo = GD.Load<Texture2D>("res://imagenes/pantalladecargaprueba.png");
+		var texFondo = GD.Load<Texture2D>("res://imagenes/Fondo_de_pantalla_eggodia.png");
 		if (texFondo != null) fondo.Texture = texFondo;
 		capa.AddChild(fondo);
 

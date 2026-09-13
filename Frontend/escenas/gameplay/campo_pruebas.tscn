@@ -1,24 +1,24 @@
 [gd_scene format=3 uid="uid://pruebas00001"]
 
-[ext_resource type="Script" path="res://escenas/gameplay/CampoPruebas.cs" id="1_script"]
+[ext_resource type="Script" uid="uid://bpny1srg7y177" path="res://escenas/gameplay/CampoPruebas.cs" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://inps3xbcbpi4" path="res://imagenes/PersonajesPng/escenario1.png" id="2_bg"]
 
-[node name="CampoPruebas" type="Node2D"]
+[node name="CampoPruebas" type="Node2D" unique_id=1038069031]
 script = ExtResource("1_script")
 
-[node name="Escenario" type="Sprite2D" parent="."]
+[node name="Escenario" type="Sprite2D" parent="." unique_id=403156749]
 position = Vector2(612, 343)
 scale = Vector2(1.9368, 1.8398951)
 texture = ExtResource("2_bg")
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1951607491]
 position = Vector2(603, 350)
-zoom = Vector2(0.95, 0.93)
+zoom = Vector2(1.205, 1.183)
 
-[node name="Mod1" type="Marker2D" parent="." groups=["zonas_invocacion"]]
+[node name="Mod1" type="Marker2D" parent="." unique_id=482365744 groups=["zonas_invocacion"]]
 position = Vector2(388, 231)
 
-[node name="Indicador" type="ColorRect" parent="Mod1"]
+[node name="Indicador" type="ColorRect" parent="Mod1" unique_id=1167945446]
 offset_left = -8.0
 offset_top = -7.0
 offset_right = 32.0
@@ -26,10 +26,10 @@ offset_bottom = 33.0
 scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.2, 0.8, 0.3, 1)
 
-[node name="Mod2" type="Marker2D" parent="." groups=["zonas_invocacion"]]
+[node name="Mod2" type="Marker2D" parent="." unique_id=379325392 groups=["zonas_invocacion"]]
 position = Vector2(309, 366)
 
-[node name="Indicador" type="ColorRect" parent="Mod2"]
+[node name="Indicador" type="ColorRect" parent="Mod2" unique_id=1996923456]
 offset_left = -8.0
 offset_top = -7.0
 offset_right = 32.0
@@ -37,10 +37,10 @@ offset_bottom = 33.0
 scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.2, 0.8, 0.3, 1)
 
-[node name="Mod3" type="Marker2D" parent="." groups=["zonas_invocacion"]]
+[node name="Mod3" type="Marker2D" parent="." unique_id=1824168714 groups=["zonas_invocacion"]]
 position = Vector2(391, 497)
 
-[node name="Indicador" type="ColorRect" parent="Mod3"]
+[node name="Indicador" type="ColorRect" parent="Mod3" unique_id=1215414138]
 offset_left = -8.0
 offset_top = -7.0
 offset_right = 32.0
@@ -48,10 +48,10 @@ offset_bottom = 33.0
 scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.2, 0.8, 0.3, 1)
 
-[node name="ModRival1" type="Marker2D" parent="." groups=["zonas_invocacion_rival"]]
+[node name="ModRival1" type="Marker2D" parent="." unique_id=59791776 groups=["zonas_invocacion_rival"]]
 position = Vector2(807, 230)
 
-[node name="Indicador" type="ColorRect" parent="ModRival1"]
+[node name="Indicador" type="ColorRect" parent="ModRival1" unique_id=623092368]
 offset_left = -7.0
 offset_top = -7.0
 offset_right = 33.0
@@ -59,10 +59,10 @@ offset_bottom = 33.0
 scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8, 0.2, 0.2, 1)
 
-[node name="ModRival2" type="Marker2D" parent="." groups=["zonas_invocacion_rival"]]
+[node name="ModRival2" type="Marker2D" parent="." unique_id=1295131646 groups=["zonas_invocacion_rival"]]
 position = Vector2(905, 365)
 
-[node name="Indicador" type="ColorRect" parent="ModRival2"]
+[node name="Indicador" type="ColorRect" parent="ModRival2" unique_id=284484833]
 offset_left = -8.0
 offset_top = -7.0
 offset_right = 32.0
@@ -70,10 +70,10 @@ offset_bottom = 33.0
 scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8, 0.2, 0.2, 1)
 
-[node name="ModRival3" type="Marker2D" parent="." groups=["zonas_invocacion_rival"]]
+[node name="ModRival3" type="Marker2D" parent="." unique_id=701164474 groups=["zonas_invocacion_rival"]]
 position = Vector2(805, 497)
 
-[node name="Indicador" type="ColorRect" parent="ModRival3"]
+[node name="Indicador" type="ColorRect" parent="ModRival3" unique_id=72504301]
 offset_left = -7.0
 offset_top = -6.0
 offset_right = 33.0
@@ -81,20 +81,20 @@ offset_bottom = 34.0
 scale = Vector2(0.38723856, 0.37211406)
 color = Color(0.8, 0.2, 0.2, 1)
 
-[node name="LabelAliados" type="Label" parent="."]
+[node name="LabelAliados" type="Label" parent="." unique_id=970339560]
 modulate = Color(0.2, 0.9, 0.3, 1)
 offset_left = 275.0
 offset_top = 215.0
 offset_right = 375.0
 offset_bottom = 235.0
-text = "ALIADOS"
 theme_override_font_sizes/font_size = 11
+text = "ALIADOS"
 
-[node name="LabelEnemigos" type="Label" parent="."]
+[node name="LabelEnemigos" type="Label" parent="." unique_id=1840096914]
 modulate = Color(1, 0.3, 0.3, 1)
 offset_left = 770.0
 offset_top = 215.0
 offset_right = 880.0
 offset_bottom = 235.0
-text = "ENEMIGOS"
 theme_override_font_sizes/font_size = 11
+text = "ENEMIGOS"

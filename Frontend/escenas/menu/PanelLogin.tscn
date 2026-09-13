@@ -1,10 +1,9 @@
-[gd_scene load_steps=29 format=3 uid="uid://chxcuh23rcsxs"]
+[gd_scene format=3 uid="uid://chxcuh23rcsxs"]
 
 [ext_resource type="Script" uid="uid://cmw3sg1x14hqv" path="res://escenas/menu/PanelLogin.cs" id="1_login"]
-[ext_resource type="Texture2D" uid="uid://doc6gflxrbb2r" path="res://imagenes/login/login_fondo.png" id="2_fondo"]
+[ext_resource type="Texture2D" uid="uid://dyn300j8hu1tg" path="res://imagenes/Fondo_de_pantalla_eggodia.png" id="2_7emew"]
 [ext_resource type="Texture2D" uid="uid://dhuekduyh8l5m" path="res://imagenes/login/login_panel.png" id="3_panel"]
-[ext_resource type="Texture2D" uid="uid://cmqfw65eqikcm" path="res://imagenes/login/logo_eggodia.png" id="4_logo"]
-[ext_resource type="Texture2D" uid="uid://dtw8us0o4wyjd" path="res://imagenes/login/login_mascota.png" id="5_masco"]
+[ext_resource type="Texture2D" uid="uid://cdhmu0r70wneg" path="res://imagenes/LogoEggodia.png" id="5_7emew"]
 [ext_resource type="Texture2D" uid="uid://b1crmccl6nvvb" path="res://imagenes/login/btn_gold_normal.png" id="7_gn"]
 [ext_resource type="Texture2D" uid="uid://bauhfhxwjkfg5" path="res://imagenes/login/btn_gold_hover.png" id="8_gh"]
 [ext_resource type="Texture2D" uid="uid://jmirxmvedj6p" path="res://imagenes/login/btn_gold_pressed.png" id="9_gp"]
@@ -16,6 +15,26 @@
 [ext_resource type="Texture2D" uid="uid://btp8tu2fqdk28" path="res://imagenes/login/icono_usuario.png" id="15_user"]
 [ext_resource type="Texture2D" uid="uid://cpmch6cp5x1g" path="res://imagenes/login/icono_invitado.png" id="16_guest"]
 [ext_resource type="Texture2D" uid="uid://bnke0qgcbj3py" path="res://imagenes/login/icono_ojo.png" id="17_eye"]
+
+[sub_resource type="StyleBoxEmpty" id="SB_empty"]
+
+[sub_resource type="StyleBoxFlat" id="SB_tab_un"]
+content_margin_left = 24.0
+content_margin_top = 8.0
+content_margin_right = 24.0
+content_margin_bottom = 8.0
+bg_color = Color(0.09, 0.12, 0.2, 0.55)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+
+[sub_resource type="StyleBoxFlat" id="SB_tab_sel"]
+content_margin_left = 24.0
+content_margin_top = 8.0
+content_margin_right = 24.0
+content_margin_bottom = 8.0
+bg_color = Color(0.95, 0.76, 0.3, 0.92)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
 
 [sub_resource type="StyleBoxFlat" id="SB_input"]
 content_margin_left = 24.0
@@ -62,23 +81,23 @@ texture_margin_top = 30.0
 texture_margin_right = 95.0
 texture_margin_bottom = 30.0
 
-[sub_resource type="StyleBoxTexture" id="SB_gold_h"]
-content_margin_left = 38.0
-content_margin_top = 14.0
-content_margin_right = 38.0
-content_margin_bottom = 14.0
-texture = ExtResource("8_gh")
-texture_margin_left = 95.0
-texture_margin_top = 30.0
-texture_margin_right = 95.0
-texture_margin_bottom = 30.0
-
 [sub_resource type="StyleBoxTexture" id="SB_gold_p"]
 content_margin_left = 38.0
 content_margin_top = 14.0
 content_margin_right = 38.0
 content_margin_bottom = 14.0
 texture = ExtResource("9_gp")
+texture_margin_left = 95.0
+texture_margin_top = 30.0
+texture_margin_right = 95.0
+texture_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxTexture" id="SB_gold_h"]
+content_margin_left = 38.0
+content_margin_top = 14.0
+content_margin_right = 38.0
+content_margin_bottom = 14.0
+texture = ExtResource("8_gh")
 texture_margin_left = 95.0
 texture_margin_top = 30.0
 texture_margin_right = 95.0
@@ -95,17 +114,6 @@ texture_margin_top = 30.0
 texture_margin_right = 95.0
 texture_margin_bottom = 30.0
 
-[sub_resource type="StyleBoxTexture" id="SB_teal_h"]
-content_margin_left = 34.0
-content_margin_top = 12.0
-content_margin_right = 34.0
-content_margin_bottom = 12.0
-texture = ExtResource("11_th")
-texture_margin_left = 95.0
-texture_margin_top = 30.0
-texture_margin_right = 95.0
-texture_margin_bottom = 30.0
-
 [sub_resource type="StyleBoxTexture" id="SB_teal_p"]
 content_margin_left = 34.0
 content_margin_top = 12.0
@@ -117,61 +125,41 @@ texture_margin_top = 30.0
 texture_margin_right = 95.0
 texture_margin_bottom = 30.0
 
-[sub_resource type="StyleBoxEmpty" id="SB_empty"]
+[sub_resource type="StyleBoxTexture" id="SB_teal_h"]
+content_margin_left = 34.0
+content_margin_top = 12.0
+content_margin_right = 34.0
+content_margin_bottom = 12.0
+texture = ExtResource("11_th")
+texture_margin_left = 95.0
+texture_margin_top = 30.0
+texture_margin_right = 95.0
+texture_margin_bottom = 30.0
 
-[sub_resource type="StyleBoxFlat" id="SB_tab_sel"]
-content_margin_left = 24.0
-content_margin_top = 8.0
-content_margin_right = 24.0
-content_margin_bottom = 8.0
-bg_color = Color(0.95, 0.76, 0.3, 0.92)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-
-[sub_resource type="StyleBoxFlat" id="SB_tab_un"]
-content_margin_left = 24.0
-content_margin_top = 8.0
-content_margin_right = 24.0
-content_margin_bottom = 8.0
-bg_color = Color(0.09, 0.12, 0.2, 0.55)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-
-[node name="PanelLogin" type="Control"]
+[node name="PanelLogin" type="Control" unique_id=1534535616]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_login")
 
-[node name="Fondo" type="TextureRect" parent="."]
+[node name="Fondo" type="TextureRect" parent="." unique_id=1932081893]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_fondo")
+texture = ExtResource("2_7emew")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Mascota" type="TextureRect" parent="."]
+[node name="PanelBG" type="TextureRect" parent="." unique_id=1206795334]
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -370.0
-offset_top = -480.0
-offset_right = -20.0
-offset_bottom = -20.0
-mouse_filter = 2
-texture = ExtResource("5_masco")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="PanelBG" type="TextureRect" parent="."]
-layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -183,42 +171,48 @@ offset_bottom = 505.0
 mouse_filter = 2
 texture = ExtResource("3_panel")
 expand_mode = 1
-stretch_mode = 0
 
-[node name="Logo" type="TextureRect" parent="."]
+[node name="Logo" type="TextureRect" parent="." unique_id=1512548727]
 layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -440.0
-offset_right = 320.0
-offset_bottom = -290.0
+offset_left = -837.0
+offset_top = -562.0
+offset_right = -197.0
+offset_bottom = -412.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(2.6, 2.6)
 mouse_filter = 2
-texture = ExtResource("4_logo")
+texture = ExtResource("5_7emew")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Subtitulo" type="Label" parent="."]
+[node name="Subtitulo" type="Label" parent="." unique_id=794821860]
 modulate = Color(0.78, 0.85, 0.97, 1)
 layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -375.0
-offset_top = -278.0
+offset_top = 249.0
 offset_right = 375.0
-offset_bottom = -212.0
-mouse_filter = 2
+offset_bottom = 315.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 20
 text = "Inicia sesión o regístrate para guardar tu progreso"
 horizontal_alignment = 1
 autowrap_mode = 2
-theme_override_font_sizes/font_size = 19
 
-[node name="TabContainer" type="TabContainer" parent="."]
+[node name="TabContainer" type="TabContainer" parent="." unique_id=1617156489]
 layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -230,26 +224,27 @@ offset_bottom = 320.0
 theme_override_colors/font_selected_color = Color(0.17, 0.12, 0.04, 1)
 theme_override_colors/font_unselected_color = Color(0.76, 0.83, 0.96, 1)
 theme_override_font_sizes/font_size = 20
-theme_override_styles/tab_selected = SubResource("SB_tab_sel")
-theme_override_styles/tab_unselected = SubResource("SB_tab_un")
-theme_override_styles/tab_hovered = SubResource("SB_tab_un")
 theme_override_styles/panel = SubResource("SB_empty")
 theme_override_styles/tabbar_background = SubResource("SB_empty")
+theme_override_styles/tab_unselected = SubResource("SB_tab_un")
+theme_override_styles/tab_hovered = SubResource("SB_tab_un")
+theme_override_styles/tab_selected = SubResource("SB_tab_sel")
+current_tab = 0
 
-[node name="Login" type="VBoxContainer" parent="TabContainer"]
+[node name="Login" type="VBoxContainer" parent="TabContainer" unique_id=331141307]
 layout_mode = 2
 theme_override_constants/separation = 14
+metadata/_tab_index = 0
 
-[node name="LblEmail" type="Label" parent="TabContainer/Login"]
+[node name="LblEmail" type="Label" parent="TabContainer/Login" unique_id=1113912655]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
-text = "Email"
 theme_override_font_sizes/font_size = 20
+text = "Email"
 
-[node name="EmailLogin" type="LineEdit" parent="TabContainer/Login"]
+[node name="EmailLogin" type="LineEdit" parent="TabContainer/Login" unique_id=949253034]
 custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
-right_icon = ExtResource("13_email")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -257,17 +252,17 @@ theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("SB_input")
 theme_override_styles/focus = SubResource("SB_input_focus")
 placeholder_text = "tucorreo@ejemplo.com"
+right_icon = ExtResource("13_email")
 
-[node name="LblPass" type="Label" parent="TabContainer/Login"]
+[node name="LblPass" type="Label" parent="TabContainer/Login" unique_id=1482467891]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
-text = "Contraseña"
 theme_override_font_sizes/font_size = 20
+text = "Contraseña"
 
-[node name="PasswordLogin" type="LineEdit" parent="TabContainer/Login"]
+[node name="PasswordLogin" type="LineEdit" parent="TabContainer/Login" unique_id=1622584145]
 custom_minimum_size = Vector2(0, 68)
 layout_mode = 2
-right_icon = ExtResource("14_lock")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -276,9 +271,11 @@ theme_override_styles/normal = SubResource("SB_input")
 theme_override_styles/focus = SubResource("SB_input_focus")
 placeholder_text = "Tu contraseña"
 secret = true
+right_icon = ExtResource("14_lock")
 
-[node name="EyeToggle" type="TextureButton" parent="TabContainer/Login/PasswordLogin"]
+[node name="EyeToggle" type="TextureButton" parent="TabContainer/Login/PasswordLogin" unique_id=750805886]
 layout_mode = 1
+anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
@@ -287,47 +284,46 @@ offset_left = -104.0
 offset_top = -22.0
 offset_right = -60.0
 offset_bottom = 22.0
+texture_normal = ExtResource("17_eye")
 ignore_texture_size = true
 stretch_mode = 5
-texture_normal = ExtResource("17_eye")
 
-[node name="BtnLogin" type="Button" parent="TabContainer/Login"]
+[node name="BtnLogin" type="Button" parent="TabContainer/Login" unique_id=279277632]
 custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.13, 0.04, 1)
-theme_override_colors/font_hover_color = Color(0.12, 0.09, 0.02, 1)
 theme_override_colors/font_pressed_color = Color(0.1, 0.07, 0.02, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.09, 0.02, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("SB_gold_n")
-theme_override_styles/hover = SubResource("SB_gold_h")
 theme_override_styles/pressed = SubResource("SB_gold_p")
-theme_override_styles/focus = SubResource("SB_empty")
+theme_override_styles/hover = SubResource("SB_gold_h")
 theme_override_styles/disabled = SubResource("SB_gold_p")
+theme_override_styles/focus = SubResource("SB_empty")
 text = "Iniciar Sesión"
 
-[node name="LblErrorLogin" type="Label" parent="TabContainer/Login"]
+[node name="LblErrorLogin" type="Label" parent="TabContainer/Login" unique_id=2130788087]
 modulate = Color(1, 0.45, 0.4, 1)
 layout_mode = 2
-text = ""
+theme_override_font_sizes/font_size = 17
 horizontal_alignment = 1
 autowrap_mode = 2
-theme_override_font_sizes/font_size = 17
 
-[node name="Registro" type="VBoxContainer" parent="TabContainer"]
+[node name="Registro" type="VBoxContainer" parent="TabContainer" unique_id=1521878454]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
+metadata/_tab_index = 1
 
-[node name="LblNombre" type="Label" parent="TabContainer/Registro"]
+[node name="LblNombre" type="Label" parent="TabContainer/Registro" unique_id=1197948632]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
-text = "Nombre de jugador"
 theme_override_font_sizes/font_size = 20
+text = "Nombre de jugador"
 
-[node name="NombreReg" type="LineEdit" parent="TabContainer/Registro"]
+[node name="NombreReg" type="LineEdit" parent="TabContainer/Registro" unique_id=1311768970]
 custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
-right_icon = ExtResource("15_user")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -335,17 +331,17 @@ theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("SB_input")
 theme_override_styles/focus = SubResource("SB_input_focus")
 placeholder_text = "Tu nombre"
+right_icon = ExtResource("15_user")
 
-[node name="LblEmailReg" type="Label" parent="TabContainer/Registro"]
+[node name="LblEmailReg" type="Label" parent="TabContainer/Registro" unique_id=1675115605]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
-text = "Email"
 theme_override_font_sizes/font_size = 20
+text = "Email"
 
-[node name="EmailReg" type="LineEdit" parent="TabContainer/Registro"]
+[node name="EmailReg" type="LineEdit" parent="TabContainer/Registro" unique_id=326319698]
 custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
-right_icon = ExtResource("13_email")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -353,17 +349,17 @@ theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("SB_input")
 theme_override_styles/focus = SubResource("SB_input_focus")
 placeholder_text = "tucorreo@ejemplo.com"
+right_icon = ExtResource("13_email")
 
-[node name="LblPassReg" type="Label" parent="TabContainer/Registro"]
+[node name="LblPassReg" type="Label" parent="TabContainer/Registro" unique_id=718159811]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.93, 0.83, 1)
-text = "Contraseña"
 theme_override_font_sizes/font_size = 20
+text = "Contraseña"
 
-[node name="PasswordReg" type="LineEdit" parent="TabContainer/Registro"]
+[node name="PasswordReg" type="LineEdit" parent="TabContainer/Registro" unique_id=116993819]
 custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
-right_icon = ExtResource("14_lock")
 theme_override_colors/font_color = Color(0.97, 0.95, 0.87, 1)
 theme_override_colors/font_placeholder_color = Color(0.62, 0.68, 0.8, 0.65)
 theme_override_colors/caret_color = Color(0.96, 0.78, 0.32, 1)
@@ -372,9 +368,11 @@ theme_override_styles/normal = SubResource("SB_input")
 theme_override_styles/focus = SubResource("SB_input_focus")
 placeholder_text = "Crea una contraseña"
 secret = true
+right_icon = ExtResource("14_lock")
 
-[node name="EyeToggle" type="TextureButton" parent="TabContainer/Registro/PasswordReg"]
+[node name="EyeToggle" type="TextureButton" parent="TabContainer/Registro/PasswordReg" unique_id=1786664329]
 layout_mode = 1
+anchors_preset = 6
 anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
@@ -383,36 +381,34 @@ offset_left = -104.0
 offset_top = -20.0
 offset_right = -60.0
 offset_bottom = 20.0
+texture_normal = ExtResource("17_eye")
 ignore_texture_size = true
 stretch_mode = 5
-texture_normal = ExtResource("17_eye")
 
-[node name="BtnRegistro" type="Button" parent="TabContainer/Registro"]
+[node name="BtnRegistro" type="Button" parent="TabContainer/Registro" unique_id=757319639]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.18, 0.13, 0.04, 1)
-theme_override_colors/font_hover_color = Color(0.12, 0.09, 0.02, 1)
 theme_override_colors/font_pressed_color = Color(0.1, 0.07, 0.02, 1)
+theme_override_colors/font_hover_color = Color(0.12, 0.09, 0.02, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("SB_gold_n")
-theme_override_styles/hover = SubResource("SB_gold_h")
 theme_override_styles/pressed = SubResource("SB_gold_p")
-theme_override_styles/focus = SubResource("SB_empty")
+theme_override_styles/hover = SubResource("SB_gold_h")
 theme_override_styles/disabled = SubResource("SB_gold_p")
+theme_override_styles/focus = SubResource("SB_empty")
 text = "Registrarse"
 
-[node name="LblErrorRegistro" type="Label" parent="TabContainer/Registro"]
+[node name="LblErrorRegistro" type="Label" parent="TabContainer/Registro" unique_id=343192470]
 modulate = Color(1, 0.45, 0.4, 1)
 layout_mode = 2
-text = ""
+theme_override_font_sizes/font_size = 17
 horizontal_alignment = 1
 autowrap_mode = 2
-theme_override_font_sizes/font_size = 17
 
-[node name="BtnContinuarSinLogin" type="Button" parent="."]
-icon = ExtResource("16_guest")
-expand_icon = true
+[node name="BtnContinuarSinLogin" type="Button" parent="." unique_id=898615612]
 layout_mode = 1
+anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -422,11 +418,13 @@ offset_top = 350.0
 offset_right = 290.0
 offset_bottom = 452.0
 theme_override_colors/font_color = Color(0.93, 0.97, 0.96, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(0.8, 0.9, 0.9, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("SB_teal_n")
-theme_override_styles/hover = SubResource("SB_teal_h")
 theme_override_styles/pressed = SubResource("SB_teal_p")
+theme_override_styles/hover = SubResource("SB_teal_h")
 theme_override_styles/focus = SubResource("SB_empty")
 text = "Jugar como invitado"
+icon = ExtResource("16_guest")
+expand_icon = true
