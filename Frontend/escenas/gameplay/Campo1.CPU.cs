@@ -21,6 +21,9 @@ public partial class Campo1 : Node2D
 	{
 		if (juegoTerminado || esTurnoJugador) return;
 
+		// En partida en línea no hay CPU: el turno del rival lo maneja el jugador remoto.
+		if (EsOnline) { EsperarRivalOnline(); return; }
+
 		// Fase de apertura: la CPU llena sus 3 carriles sin atacar
 		if (_faseApertura)
 		{

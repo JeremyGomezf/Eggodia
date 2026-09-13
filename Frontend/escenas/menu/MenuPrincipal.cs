@@ -68,7 +68,7 @@ public partial class MenuPrincipal : Control
 		var btnJugar = GetNodeOrNull<Button>("VBoxContainer/JUGAR");
 		if (btnJugar != null)
 		{
-			btnJugar.Pressed += () => GetTree().ChangeSceneToFile(RutaEscenaJuego);
+			btnJugar.Pressed += () => { ContextoOnline.Limpiar(); GetTree().ChangeSceneToFile(RutaEscenaJuego); };
 			AgregarAnimacionHover(btnJugar);
 		}
 
@@ -113,7 +113,7 @@ public partial class MenuPrincipal : Control
 		var btnVsBot = GetNodeOrNull<BaseButton>("BottomButtons/BtnVsBot");
 		if (btnVsBot != null)
 		{
-			btnVsBot.Pressed += () => GetTree().ChangeSceneToFile(RutaEscenaJuego);
+			btnVsBot.Pressed += () => { ContextoOnline.Limpiar(); GetTree().ChangeSceneToFile(RutaEscenaJuego); };
 			AgregarAnimacionHover(btnVsBot);
 		}
 

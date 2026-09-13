@@ -82,6 +82,7 @@ public partial class Campo1 : Node2D
 	// ── TURNOS ────────────────────────────────────────────────────────────
 	public  const int ENERGIA_MAXIMA   = 3; // fija, sin escalado por turno
 	public  bool esTurnoJugador        = true;
+	public  bool EsOnline              = false; // partida en línea (rival humano en vez de CPU)
 	public  int  movimientosRestantes  = ENERGIA_MAXIMA;
 	public  const int DURACION_TURNO_SEG = 30;
 	private int  tiempoTurnoActual     = DURACION_TURNO_SEG;
@@ -321,6 +322,7 @@ public partial class Campo1 : Node2D
 		BajarManoManual();
 		ActualizarInterfaz();
 		AnunciarTurno(); // muestra "TU TURNO" desde el primer instante, no solo al cambiar de turno
+		ConfigurarModoOnline();
 
 		// Mejora estética integrada de zonas de invocación (del amigo)
 		EstilizarIndicadoresInvocacion();

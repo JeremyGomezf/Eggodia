@@ -22,6 +22,8 @@ public partial class MatchmakingOnline : Node
 	private string _nombre = "Jugador";
 	private string _matchId = "";
 	private string _estado = "";
+	private string _asiento = "A";
+	private string _semilla = "";
 
 	// UI
 	private Label _lblEstado, _lblDetalle;
@@ -89,6 +91,8 @@ public partial class MatchmakingOnline : Node
 			_matchId = doc.GetProperty("matchId").GetString() ?? _matchId;
 			_estado  = doc.GetProperty("estado").GetString() ?? "";
 			string rival = doc.TryGetProperty("rival", out var r) ? (r.GetString() ?? "") : "";
+			_asiento = doc.TryGetProperty("asiento", out var a) ? (a.GetString() ?? "A") : "A";
+			_semilla = doc.TryGetProperty("semilla", out var s) ? (s.GetString() ?? "") : "";
 
 			if (_estado == "emparejado")
 			{
@@ -208,10 +212,23 @@ public partial class MatchmakingOnline : Node
 		if (_spinner != null) _spinner.Visible = false;
 		_lblEstado.Text = "¡RIVAL ENCONTRADO!";
 		_lblEstado.AddThemeColorOverride("font_color", new Color(0.5f, 1f, 0.55f));
-		_lblDetalle.Text = string.IsNullOrEmpty(rival) ? "Preparando la partida…" : $"vs {rival}\n(la partida en línea llega en la Fase 2)";
+		_lblDetalle.Text = string.IsNullOrEmpty(rival) ? "Entrando a la partida…" : $"vs {rival}\nEntrando a la partida…";
 		_lblDetalle.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		_btnCancelar.Visible = false;
-		_btnVolver.Visible = true;
+		_btnVolver.Visible = false;
+
+		// Guardar el contexto de la partida en línea y entrar a Campo1 tras una breve pausa.
+		ContextoOnline.Activo      = true;
+		ContextoOnline.MatchId     = _matchId;
+		ContextoOnline.JugadorId   = _jugadorId;
+		ContextoOnline.Asiento     = _asiento;
+		ContextoOnline.Semilla     = _semilla;
+		ContextoOnline.RivalNombre = string.IsNullOrEmpty(rival) ? "Rival" : rival;
+
+		GetTree().CreateTimer(1.6).Timeout += () =>
+		{
+			if (IsInstanceValid(this)) GetTree().ChangeSceneToFile("res://escenas/gameplay/campo_1.tscn");
+		};
 	}
 
 	private void MostrarError(string msg)
