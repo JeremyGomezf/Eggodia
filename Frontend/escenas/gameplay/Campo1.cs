@@ -208,7 +208,8 @@ public partial class Campo1 : Node2D
 		"res://imagenes/CartasPng/Peon_Cart.png", "res://imagenes/CartasPng/Tanque_Cart.png", "res://imagenes/CartasPng/Calamar_Cart.png",
 		"res://imagenes/CartasPng/Caballo_Cart.png", "res://imagenes/CartasPng/Dama_Cart.png", "res://imagenes/CartasPng/Torre_Cart.png",
 		"res://imagenes/CartasPng/SoldCartoon_Cart.png", "res://imagenes/CartasPng/Campero_Cart.png", "res://imagenes/CartasPng/Arfil_Cart.png",
-		"res://imagenes/CartasPng/Kabar_Cart.png", "res://imagenes/CartasPng/Granadero_Cart.png"
+		"res://imagenes/CartasPng/Kabar_Cart.png", "res://imagenes/CartasPng/Granadero_Cart.png",
+		"res://imagenes/CartasPng/Machi_Cart.png"
 	};
 
 	private string[] escenasTropas = {
@@ -221,7 +222,8 @@ public partial class Campo1 : Node2D
 		"res://cartas prime/TOONS/Soldado_cartoon_prime.tscn",
 		"res://cartas prime/TOONS/Campero_cartoon_prime.tscn",
 		"res://cartas prime/AJEDREZ/Arfil_prime.tscn", "res://cartas prime/TOONS/Ka-Bar_cartoon_prime.tscn",
-		"res://cartas prime/TOONS/Granadero_cartoon_prime.tscn"
+		"res://cartas prime/TOONS/Granadero_cartoon_prime.tscn",
+		"res://cartas prime/MEDIEVAL/Machi_prime.tscn"
 	};
 
 	[Export] private PackedScene escenaTronoRef     = GD.Load<PackedScene>("res://escenas/gameplay/tronocampo.tscn");

@@ -17,6 +17,7 @@ public partial class PantallaCarga : Control
 		"res://cartas prime/MEDIEVAL/Dragon_prime.tscn",
 		"res://cartas prime/MEDIEVAL/Golem_prime.tscn",
 		"res://cartas prime/MEDIEVAL/Maguin_prime.tscn",
+		"res://cartas prime/MEDIEVAL/Machi_prime.tscn",
 		"res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn",
 		"res://cartas prime/MEDIEVAL/TortugaYPescado.tscn",
 		"res://cartas prime/PAPEL/Paper_Rex.tscn",

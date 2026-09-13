@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Texture2D" uid="uid://b4xyobn8m8cw" path="res://imagenes/RendersTropa/Machi_Menu.png" id="1_img"]
+[ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="2_scr"]
+
+[resource]
+script = ExtResource("2_scr")
+Nombre = "Machi"
+Elemento = "Metal"
+Era = "Era Medieval"
+Costo = 3
+Ataque = 180
+Defensa = 100
+Vida = 200
+Velocidad = "MEDIA"
+Rango = "LARGO"
+FuerteContra = "Sombra"
+DebilContra = "Naturaleza"
+Descripcion = "Hechicera de metal. Habilidad especial en desarrollo."
+RutaEscena = "res://cartas prime/MEDIEVAL/Machi_prime.tscn"
+Imagen = ExtResource("1_img")

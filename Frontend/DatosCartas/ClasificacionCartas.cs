@@ -45,6 +45,7 @@ public static class ClasificacionCartas
 		// ── MEDIEVAL ──
 		("soldadoreal",    TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/SoldReal_Cart.png"),
 		("maguin",         TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/Maguin_Cart.png"),
+		("machi",          TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/Machi_Cart.png"),
 		("dragon",         TipoTropa.Asesino, SerieTropa.Medieval, "res://imagenes/CartasPng/DragonFlama_Cart.png"),
 		("golem",          TipoTropa.Coloso,  SerieTropa.Medieval, "res://imagenes/CartasPng/GolemPedregal_Cart.png"),
 		// ── PACIFICO ──

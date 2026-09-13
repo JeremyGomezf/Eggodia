@@ -212,7 +212,7 @@ public partial class MenuConstructor : Control
 
 	private static readonly string[] OrdenTropas = new string[]
 	{
-		"Soldado Real", "Maguin", "Golem Pedregal",
+		"Soldado Real", "Maguin", "Machi", "Golem Pedregal",
 		"Dragon de Flama", "Tiburon", "Calamar Gigante",
 		"Peon", "Torre", "Caballo",
 		"Arfil", "Dama", "Paperex",
