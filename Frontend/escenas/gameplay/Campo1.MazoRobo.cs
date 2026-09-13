@@ -299,8 +299,10 @@ public partial class Campo1 : Node2D
 	// en mano: las 4 se ven un poco más juntas y chicas para no tapar nada en pantalla. En cuanto
 	// se juega cualquiera de las 4 (sin importar cuál) y quedan 3, TODAS vuelven a la disposición
 	// y tamaño normales — nunca se queda "como 4 pegadas pareciendo 3".
+	// Desplazado un poco arriba e izquierda respecto al centro de ManoManual, para que las 4
+	// cartas queden mejor centradas en pantalla (antes se veían corridas a la derecha/abajo).
 	private static readonly Vector2[] LAYOUT_4_CENTROS = {
-		new Vector2(-190, -30), new Vector2(-85, -56), new Vector2(15, -56), new Vector2(120, -30)
+		new Vector2(-220, -55), new Vector2(-115, -81), new Vector2(-15, -81), new Vector2(90, -55)
 	};
 	private static readonly float[] LAYOUT_4_ROT = { -0.16f, -0.05f, 0.05f, 0.16f };
 	private const float ESCALA_MANO_COMPACTA = 0.78f;

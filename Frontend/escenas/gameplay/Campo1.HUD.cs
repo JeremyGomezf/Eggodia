@@ -84,7 +84,7 @@ public partial class Campo1 : Node2D
 		n.NombreSpot = nombreSpot;
 		contenedor.AddChild(n);
 		n.Rotation = 0f; // rectas, no "volteadas" como el abanico de la mano de tropas
-		Vector2 esc = slotIdx == 0 ? new Vector2(0.95f, 0.95f) : new Vector2(0.85f, 0.85f);
+		Vector2 esc = slotIdx == 0 ? new Vector2(0.85f, 0.85f) : new Vector2(0.76f, 0.76f);
 		n.Scale  = esc;
 		n.ZIndex = slotIdx == 0 ? 2 : 1;
 		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2f);

@@ -189,12 +189,26 @@ public partial class Campo1 : Node2D
 		return panel;
 	}
 
+	// Si ya hay un slot libre en la mano (Spot1/2/3, porque jugaste una carta este turno y todavía
+	// no se rellenó), la carta robada ocupa ESE lugar y la mano se sigue viendo de 3. Solo cuando
+	// los 3 están ocupados de verdad se usa Spot4 y entra el modo compacto de 4 cartas.
 	private void ResolverRobo(int idxTropa)
 	{
 		_manoVisualCPU.Remove(idxTropa);
-		_cartaRobada = CrearCartaConIndice("Spot4", idxTropa, ESCALA_MANO_ROBADA);
+
+		string spotDestino = "Spot4";
+		float escalaDestino = ESCALA_MANO_ROBADA;
+		foreach (string s in SPOTS_MANO)
+		{
+			bool ocupado = false;
+			foreach (Node n in contenedorMano.GetChildren())
+				if (n is Carta c && c.NombreSpot == s && c.EstaEnMano && !c.IsQueuedForDeletion()) { ocupado = true; break; }
+			if (!ocupado) { spotDestino = s; escalaDestino = ESCALA_MANO_NORMAL; break; }
+		}
+
+		_cartaRobada = CrearCartaConIndice(spotDestino, idxTropa, escalaDestino);
 		_cartaRobadaPendiente = true; // "Robar Carta" no vuelve a estar disponible hasta jugar esta
-		ReacomodarManoTropas();       // ahora hay 4: se acomodan juntas y un poco más chicas
+		if (spotDestino == "Spot4") ReacomodarManoTropas(); // ahora sí hay 4: modo compacto
 		MostrarAviso("¡Le robaste una carta al rival!", new Color(1f, 0.85f, 0.3f));
 		CerrarPantallaRobo();
 	}

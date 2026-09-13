@@ -49,6 +49,17 @@ public static class Preferencias
 		set => EscribirIntEn(SECCION, "partidas_ganadas", Mathf.Max(0, value));
 	}
 
+	// ── TROFEOS HUEVO (tabla de líderes) ─────────────────────────────────────
+	// A propósito NO se suma al ganarle al bot — solo cuentan victorias ONLINE reales (5 por
+	// victoria). Hoy no hay matchmaking online todavía, así que este valor queda en 0 hasta que
+	// exista esa función; ver Campo1.FinPartida.cs / MenuPrincipal.Online.cs para el gancho.
+	public static int TrofeosHuevo
+	{
+		get => LeerIntEn(SECCION, "trofeos_huevo", 0);
+		private set => EscribirIntEn(SECCION, "trofeos_huevo", Mathf.Max(0, value));
+	}
+	public static void GanarTrofeos(int cantidad) => TrofeosHuevo += cantidad;
+
 	public static int PartidasPerdidas
 	{
 		get => LeerIntEn(SECCION, "partidas_perdidas", 0);
@@ -130,6 +141,11 @@ public static class Preferencias
 	{
 		EscribirBoolEn(SEC_SKINS, $"owned_{idx}", true);
 	}
+
+	// ── CÓDIGOS DE CANJE ──────────────────────────────────────────────────────
+	private const string SEC_CODIGOS = "codigos_canjeados";
+	public static bool CodigoYaCanjeado(string codigo) => LeerBoolEn(SEC_CODIGOS, codigo.ToUpperInvariant(), false);
+	public static void MarcarCodigoCanjeado(string codigo) => EscribirBoolEn(SEC_CODIGOS, codigo.ToUpperInvariant(), true);
 
 	// ── Internos ──────────────────────────────────────────────────────────────
 	private static bool LeerBool(string clave, bool porDefecto)

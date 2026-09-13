@@ -104,9 +104,11 @@ public partial class MenuPrincipal : Control
 		var btnOnline = GetNodeOrNull<BaseButton>("BottomButtons/BtnOnline");
 		if (btnOnline != null)
 		{
-			btnOnline.Pressed += () => MostrarPopup("MODO ONLINE", "El modo multijugador online estará disponible próximamente.");
+			btnOnline.Pressed += MostrarPantallaOnline;
 			AgregarAnimacionHover(btnOnline);
 		}
+
+		ConectarBtnTrofeo();
 
 		var btnVsBot = GetNodeOrNull<BaseButton>("BottomButtons/BtnVsBot");
 		if (btnVsBot != null)
@@ -142,11 +144,12 @@ public partial class MenuPrincipal : Control
 			}
 		}
 
-		// 4b. BtnDev: salto directo al campo de pruebas (ya no alterna el panel secundario).
+		// 4b. BtnDev: ahora abre "Ingresar Código" (ver MenuPrincipal.Codigos.cs) — ya no lleva al
+		// Campo de Pruebas (ese acceso sigue disponible solo desde BtnPruebas, en SecondaryButtons).
 		var btnDev = GetNodeOrNull<BaseButton>("BtnDev");
 		if (btnDev != null)
 		{
-			btnDev.Pressed += () => GetTree().ChangeSceneToFile(RutaCampoPruebas);
+			btnDev.Pressed += MostrarPantallaCodigos;
 			AgregarAnimacionHover(btnDev);
 		}
 

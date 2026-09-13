@@ -83,6 +83,10 @@ public partial class MenuConstructor : Control
 	[Export] private Label _lblTituloMazo;
 	[Export] private TextureRect _rectMazoBg;
 	[Export] private GridContainer _gridMazoSlots;
+	// Slots fijos (Marker2D) para las 6 cartas de Ardid — reemplaza la grilla genérica que usaba
+	// _gridMazoSlots para este tab. Se resuelve en _Ready() como hijo de MazoContainer.
+	private Control _ardidSlots;
+	private const float MINI_ARDID_ESCALA = 1.3f; // mediana — antes 1.7 se veía demasiado grande
 	[Export] private Button _btnBatallar;
 	[Export] private Button _btnVolver;
 	[Export] private Label _lblContadorMazo;
@@ -133,6 +137,7 @@ public partial class MenuConstructor : Control
 		GlobalAudioManager.Instance?.AsegurarReproduccion();
 
 		_rectVintage = EfectoVintageToons.Instalar(this);
+		_ardidSlots = _gridMazoSlots?.GetParent<Control>()?.GetNodeOrNull<Control>("ArdidSlots");
 
 		CargarTexturasPorDefecto();
 
@@ -186,6 +191,7 @@ public partial class MenuConstructor : Control
 
 		CargarCartasDesdeDisco();
 		InicializarMazoJugador();
+		InicializarMazoArdidJugador();
 		CambiarPestana("TROPAS");
 
 		if (_todasLasCartas.Count > 0)
@@ -252,12 +258,6 @@ public partial class MenuConstructor : Control
 					var recurso = ResourceLoader.Load(rutaCarpeta + real) as CartaData;
 					if (recurso != null)
 					{
-						// Encebollado queda excluido del selector de mazo (petición del diseño)
-						if (NormalizarTexto(recurso.Nombre).Contains("encebollado"))
-						{
-							archivo = dir.GetNext();
-							continue;
-						}
 						bool existe = false;
 						foreach (var c in _todasLasCartas)
 						{
@@ -306,6 +306,20 @@ public partial class MenuConstructor : Control
 		}
 
 		_mazoInicial = new List<CartaData>(_cartasEnMazo);
+	}
+
+	// Hoy solo hay 5 ardides/hechizos en total (Curación, Robar, Veneno, Bloqueo, Encebollado) —
+	// no alcanzan para llenar los 6 slots de ArdidSlots. Se precargan los 5 disponibles de
+	// entrada, igual que el mazo de tropas se autocompleta, en vez de arrancar vacío.
+	private void InicializarMazoArdidJugador()
+	{
+		_cartasArdidEnMazo.Clear();
+		foreach (var c in _todasLasCartas)
+		{
+			if (c.Categoria == CategoriaCarta.Unidad) continue;
+			if (_cartasArdidEnMazo.Count >= MAX_ARDIDES) break;
+			_cartasArdidEnMazo.Add(c);
+		}
 	}
 
 	private void AutoCompletarMazoValido()
@@ -359,6 +373,12 @@ public partial class MenuConstructor : Control
 		_pestanaActual = nuevaPestana.ToUpper();
 
 		if (_lblTituloMazo != null) _lblTituloMazo.Visible = false;
+
+		// Bug real: ArdidSlots es un nodo aparte de _gridMazoSlots y nunca se ocultaba — las
+		// cartas de Ardid se quedaban visibles encima del mazo aunque estuvieras en la pestaña
+		// Tropas. Ahora cada uno se muestra solo en su pestaña.
+		if (_ardidSlots != null) _ardidSlots.Visible = (_pestanaActual != "TROPAS");
+		if (_gridMazoSlots != null) _gridMazoSlots.Visible = (_pestanaActual == "TROPAS");
 
 		var mazoContainer = _gridMazoSlots?.GetParent<Control>();
 
@@ -479,6 +499,7 @@ public partial class MenuConstructor : Control
 
 			mini.Modulate = new Color(1, 1, 1, 0);
 			mini.Scale = new Vector2(0.7f, 0.7f);
+			mini.FijarEscalaBase(Vector2.One);
 			mini.PivotOffset = new Vector2(55f, 72f);
 
 			var tw = mini.CreateTween();
@@ -516,7 +537,9 @@ public partial class MenuConstructor : Control
 		// "1930s Cartoon Aesthetic": blanco y negro/sepia mientras se tiene seleccionada una
 		// carta de Serie: Toon; al elegir cualquier otra, todo vuelve a color normal.
 		bool esToon = ClasificacionCartas.SerieDe(datos.RutaEscena, datos.Nombre) == SerieTropa.Toon;
-		EfectoVintageToons.AplicarIntensidad(_rectVintage, esToon ? 0.9f : 0.0f);
+		// Misma opacidad que el efecto "toon" de Campo1 (0.7) — antes iba a 0.9 y el cambio de
+		// color tan brusco mareaba al elegir cartas rápido.
+		EfectoVintageToons.AplicarIntensidad(_rectVintage, esToon ? 0.7f : 0.0f);
 
 		if (_lblShowcaseNombre != null)
 		{
@@ -755,20 +778,8 @@ public partial class MenuConstructor : Control
 				_gridMazoSlots.AddChild(slot);
 			}
 		}
-		else
-		{
-			for (int i = 0; i < MAX_ARDIDES; i++)
-			{
-				var slot = new PanelContainer();
-				slot.Name = $"Slot_Ardid_{i}";
-				slot.CustomMinimumSize = new Vector2(175, 195);
-
-				var style = new StyleBoxEmpty();
-				slot.AddThemeStyleboxOverride("panel", style);
-
-				_gridMazoSlots.AddChild(slot);
-			}
-		}
+		// ARDID: ya no usa una grilla genérica — las 6 cartas se colocan directo sobre los
+		// Marker2D fijos de "ArdidSlots" (ver ActualizarMazoVisual).
 	}
 
 	public void AgregarAlMazo(CartaData datos)
@@ -869,44 +880,14 @@ public partial class MenuConstructor : Control
 
 	private void ActualizarMazoVisual()
 	{
-		if (_gridMazoSlots == null || _escenaCartaMini == null) return;
+		if (_escenaCartaMini == null) return;
 
 		bool esTropaTab = (_pestanaActual == "TROPAS");
 		var listaActiva = esTropaTab ? _cartasEnMazo : _cartasArdidEnMazo;
 		int maxActivo = esTropaTab ? MAX_CARTAS : MAX_ARDIDES;
 
-		var slots = _gridMazoSlots.GetChildren();
-		for (int i = 0; i < slots.Count; i++)
-		{
-			var slot = slots[i] as Control;
-			if (slot == null) continue;
-
-			foreach (Node h in slot.GetChildren())
-			{
-				slot.RemoveChild(h);
-				h.QueueFree();
-			}
-
-			if (i < listaActiva.Count)
-			{
-				var datos = listaActiva[i];
-				var mini = _escenaCartaMini.Instantiate<CartaMini>();
-				slot.AddChild(mini);
-				mini.CargarDatos(datos);
-				mini.SetModoMazo(true, !esTropaTab);
-
-				mini.PivotOffset = mini.Size / 2f;
-				mini.Scale = new Vector2(0.4f, 0.4f);
-				var tw = mini.CreateTween();
-				tw.TweenProperty(mini, "scale", Vector2.One, 0.18f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-
-				mini.OnClickeada += (c) =>
-				{
-					SeleccionarCarta(c.MisDatos);
-					RemoverDelMazo(c.MisDatos);
-				};
-			}
-		}
+		if (esTropaTab) ActualizarMazoVisualTropas(listaActiva);
+		else            ActualizarMazoVisualArdid(listaActiva);
 
 		int count = listaActiva.Count;
 		if (_lblContadorMazo != null)
@@ -921,6 +902,75 @@ public partial class MenuConstructor : Control
 			bool listo = (_cartasEnMazo.Count == MAX_CARTAS);
 			_btnBatallar.Disabled = !listo;
 			_btnBatallar.Modulate = listo ? Colors.White : new Color(0.75f, 0.75f, 0.75f, 0.8f);
+		}
+	}
+
+	// Grilla genérica de tropas (Slot_Tropa_i, creada en CrearRanurasMazo) — sin cambios.
+	private void ActualizarMazoVisualTropas(List<CartaData> listaActiva)
+	{
+		if (_gridMazoSlots == null) return;
+		var slots = _gridMazoSlots.GetChildren();
+		for (int i = 0; i < slots.Count; i++)
+		{
+			var slot = slots[i] as Control;
+			if (slot == null) continue;
+
+			foreach (Node h in slot.GetChildren()) { slot.RemoveChild(h); h.QueueFree(); }
+
+			if (i < listaActiva.Count)
+			{
+				var datos = listaActiva[i];
+				var mini = _escenaCartaMini.Instantiate<CartaMini>();
+				slot.AddChild(mini);
+				mini.CargarDatos(datos);
+				mini.SetModoMazo(true, false);
+
+				mini.PivotOffset = mini.Size / 2f;
+				mini.Scale = new Vector2(0.4f, 0.4f);
+				mini.FijarEscalaBase(Vector2.One);
+				var tw = mini.CreateTween();
+				tw.TweenProperty(mini, "scale", Vector2.One, 0.18f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+
+				mini.OnClickeada += (c) =>
+				{
+					SeleccionarCarta(c.MisDatos);
+					RemoverDelMazo(c.MisDatos);
+				};
+			}
+		}
+	}
+
+	// Ardid: 6 Marker2D fijos ("ArdidSlots" en el .tscn) en vez de la grilla genérica — el tamaño
+	// nativo de CartaMini (100x105) se ve chico, así que se escala a MINI_ARDID_ESCALA.
+	private void ActualizarMazoVisualArdid(List<CartaData> listaActiva)
+	{
+		if (_ardidSlots == null) return;
+		var marcadores = new List<Marker2D>();
+		foreach (Node n in _ardidSlots.GetChildren()) if (n is Marker2D m) marcadores.Add(m);
+
+		foreach (var m in marcadores)
+			foreach (Node h in m.GetChildren()) { m.RemoveChild(h); h.QueueFree(); }
+
+		Vector2 escFinal = new Vector2(MINI_ARDID_ESCALA, MINI_ARDID_ESCALA);
+		for (int i = 0; i < marcadores.Count && i < listaActiva.Count; i++)
+		{
+			var datos = listaActiva[i];
+			var mini = _escenaCartaMini.Instantiate<CartaMini>();
+			marcadores[i].AddChild(mini);
+			mini.CargarDatos(datos);
+			mini.SetModoMazo(true, true);
+
+			mini.Scale    = new Vector2(0.4f, 0.4f);
+			mini.Position = -(mini.Size * escFinal / 2f); // centrado sobre el Marker2D
+			mini.FijarEscalaBase(escFinal); // el click/hover deben animar relativo a ESTA escala, no a 1.0
+			var tw = mini.CreateTween();
+			tw.TweenProperty(mini, "scale", escFinal, 0.18f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+
+			mini.OnClickeada += (c) =>
+			{
+				SeleccionarCarta(c.MisDatos);
+				RemoverDelMazo(c.MisDatos);
+			};
 		}
 	}
 

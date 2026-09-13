@@ -14,7 +14,6 @@ public partial class PantallaBestiario : Control
 		new("T-Rex Z",          "Primordial", Tipos.NATURALEZA, 400, 400, 350, "Rugido primordial: -30% ataque enemigo 2 turnos"),
 		new("Tiburón",          "Primordial", Tipos.AGUA,       260, 320, 180, "Mordida feroz: siguiente ataque hace x2 daño"),
 		new("Peón",             "Medieval",   Tipos.NATURALEZA, 150, 100, 150, "Sacrificio heroico: cura al aliado más débil"),
-		new("Encebollado",      "Medieval",   Tipos.FUEGO,      500, 450, 550, "Furia de guiso: 150 AoE + veneno 2 turnos"),
 		new("Calamar Gigante",  "Primordial", Tipos.SOMBRA,     400, 370, 380, "Depredador acuático"),
 		new("Caballo",          "Medieval",   Tipos.METAL,      300, 250, 200, "Carga rápida"),
 		new("Dama",             "Medieval",   Tipos.SOMBRA,     220, 180, 200, "Inspiración real: +100 ATK aliados 2 turnos"),

@@ -9,7 +9,14 @@ public partial class CartaMini : Control
 	[Export] private TextureRect _pinIcon;
 
 	public CartaData MisDatos { get; private set; }
-	public event Action<CartaMini> OnClickeada; 
+	public event Action<CartaMini> OnClickeada;
+
+	// Escala "de reposo" real de esta carta — puede ser 1.0 (selector, mazo de tropas) o mayor
+	// (ardides, ver MenuConstructor.MINI_ARDID_ESCALA). Los efectos de click/hover escalan
+	// RELATIVO a este valor, nunca a un número fijo — antes tocarla la aplastaba a 1.0 sin
+	// importar qué tan grande hubiera nacido, viéndose "súper pequeña" en el mazo de ardides.
+	private Vector2 _escalaBase = Vector2.One;
+	public void FijarEscalaBase(Vector2 escala) => _escalaBase = escala;
 
 	public void CargarDatos(CartaData datos)
 	{
@@ -90,10 +97,10 @@ public partial class CartaMini : Control
 			{
 				PivotOffset = Size / 2;
 				var tween = CreateTween();
-				tween.TweenProperty(this, "scale", new Vector2(0.85f, 0.85f), 0.05f).SetTrans(Tween.TransitionType.Sine);
-				tween.TweenProperty(this, "scale", Vector2.One, 0.1f).SetTrans(Tween.TransitionType.Sine);
-				
-				OnClickeada?.Invoke(this); 
+				tween.TweenProperty(this, "scale", _escalaBase * 0.85f, 0.05f).SetTrans(Tween.TransitionType.Sine);
+				tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
+
+				OnClickeada?.Invoke(this);
 			}
 		}
 	}
@@ -105,14 +112,14 @@ public partial class CartaMini : Control
 			PivotOffset = Size / 2;
 			ZIndex = 10;
 			var tween = CreateTween();
-			tween.TweenProperty(this, "scale", new Vector2(1.08f, 1.08f), 0.1f).SetTrans(Tween.TransitionType.Sine);
+			tween.TweenProperty(this, "scale", _escalaBase * 1.08f, 0.1f).SetTrans(Tween.TransitionType.Sine);
 			Modulate = new Color(1.15f, 1.15f, 1.15f);
 		}
 		else if (what == NotificationMouseExit)
 		{
 			ZIndex = 0;
 			var tween = CreateTween();
-			tween.TweenProperty(this, "scale", Vector2.One, 0.1f).SetTrans(Tween.TransitionType.Sine);
+			tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
 			Modulate = Colors.White;
 		}
 	}

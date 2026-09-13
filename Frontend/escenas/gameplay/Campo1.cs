@@ -23,6 +23,7 @@ public partial class Campo1 : Node2D
 		public string Fondo, Escenario, Musica, Nombre;
 		public float SegundoDerrota;
 		public float Peso;
+		public float VolumenExtraDb; // encima del volumen base de batalla (_volumenMusicaDb)
 	}
 	private static readonly EscenarioBatalla[] ESCENARIOS_BATALLA =
 	{
@@ -37,10 +38,11 @@ public partial class Campo1 : Node2D
 			Musica = "res://efectos/musica/MUSICA TOON.mp3", SegundoDerrota = 3 * 60 + 5 },
 		new EscenarioBatalla { Nombre = "papeleo", Peso = 25f,
 			Fondo = "res://imagenes/Escenarios/papeleolFONDO.png", Escenario = "res://imagenes/Escenarios/papeleo-escenario.png",
-			Musica = "res://efectos/musica/MUSICA PAPELEO.mp3", SegundoDerrota = 4 * 60 + 42 },
+			Musica = "res://efectos/musica/MUSICA PAPELEO.mp3", SegundoDerrota = 4 * 60 + 42, VolumenExtraDb = 3f },
 	};
-	private int   _idxEscenarioActual   = 0;
-	private float _segundoDerrotaMusica = 0f;
+	private int   _idxEscenarioActual    = 0;
+	private float _segundoDerrotaMusica  = 0f;
+	private float _volumenExtraEscenario = 0f;
 	private ColorRect _rectVintage;
 	public  bool  EscenarioEsToon => ESCENARIOS_BATALLA[_idxEscenarioActual].Nombre == "toon";
 
@@ -58,7 +60,8 @@ public partial class Campo1 : Node2D
 		}
 		_idxEscenarioActual = elegido;
 		var esc = ESCENARIOS_BATALLA[elegido];
-		_segundoDerrotaMusica = esc.SegundoDerrota;
+		_segundoDerrotaMusica  = esc.SegundoDerrota;
+		_volumenExtraEscenario = esc.VolumenExtraDb;
 
 		var fondoNode     = GetNodeOrNull<Sprite2D>("FONDO");
 		var escenarioNode = GetNodeOrNull<Sprite2D>("ESCENARIO");
@@ -404,7 +407,7 @@ public partial class Campo1 : Node2D
 		_reproductorMusica = new AudioStreamPlayer();
 		_reproductorMusica.Stream = _musicaPartida;
 		_reproductorMusica.Name = "MusicaBatalla";
-		_reproductorMusica.VolumeDb = _volumenMusicaDb;
+		_reproductorMusica.VolumeDb = _volumenMusicaDb + _volumenExtraEscenario;
 
 		AddChild(_reproductorMusica);
 		_reproductorMusica.Play();
