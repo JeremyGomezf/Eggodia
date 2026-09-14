@@ -116,10 +116,12 @@ public partial class Campo1 : Node2D
 		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
 		if (EstaBlockeada(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
 
+		string carrilAtk = tropaSeleccionada.HasMeta("carril") ? (string)tropaSeleccionada.GetMeta("carril") : "";
 		ProcesarCombateFrontal(tropaSeleccionada, "tropas_rival");
 		tropaSeleccionada.Call("SetActivo", false);
 		menuAcciones.Visible = false;
 		RegistrarGastoMovimiento();
+		if (EsOnline) EmitirAccionOnline("atacar", new Godot.Collections.Dictionary { { "carrilAtacante", carrilAtk } });
 	}
 
 	public void _on_btn_defensa_pressed()
@@ -131,6 +133,7 @@ public partial class Campo1 : Node2D
 		tropaSeleccionada.Call("SetActivo", false);
 		menuAcciones.Visible = false;
 		RegistrarGastoMovimiento();
+		if (EsOnline) EmitirAccionOnline("sync");
 	}
 
 	public void _on_btn_habilidad_pressed()
@@ -140,10 +143,12 @@ public partial class Campo1 : Node2D
 		// Chequeo servidor-side independiente del estado visual del botón: ninguna tropa puede
 		// usar su habilidad antes de cumplir su turno propio de desbloqueo, sin excepciones.
 		if (HabilidadBloqueadaTurno(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
+		string carrilHab = tropaSeleccionada.HasMeta("carril") ? (string)tropaSeleccionada.GetMeta("carril") : "";
 		tropaSeleccionada.Call("EjecutarAccion", "usar_habilidad");
 		tropaSeleccionada.Call("SetActivo", false);
 		menuAcciones.Visible = false;
 		RegistrarGastoMovimiento();
+		if (EsOnline) EmitirAccionOnline("habilidad", new Godot.Collections.Dictionary { { "carrilHab", carrilHab } });
 	}
 
 	private bool HabilidadUsada(Node2D t) { try { return (bool)t.Get("habilidadUsada"); } catch { return false; } }
@@ -216,6 +221,9 @@ public partial class Campo1 : Node2D
 		tropasInvocadasTurno++;
 		faseInvocacion = false;
 		ReacomodarManoTropas(); // por si se jugó la carta robada (Spot4) y hay que volver a 3
+
+		// En línea: avisar al rival que invoqué esta tropa (la reproduce en su carril espejado).
+		if (EsOnline) EmitirAccionOnline("invocar", new Godot.Collections.Dictionary { { "carril", (string)puntoMod.Name } });
 
 		// Fase de apertura: pasar turno automáticamente al llenar los 3 carriles
 		if (_faseApertura && TodosSpotsOcupados())

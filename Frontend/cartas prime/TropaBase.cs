@@ -488,4 +488,24 @@ public abstract partial class TropaBase : Area2D
 	/// <summary>Permite que otra tropa/efecto (p. ej. la curación de Machi) refresque las barras
 	/// de esta tropa tras cambiarle la vida desde afuera.</summary>
 	public void RefrescarBarras() => ActualizarBarrasUI();
+
+	/// <summary>Reproduce una animación SIN ejecutar lógica de daño (para el multijugador: el rival
+	/// remoto solo replica el gesto visual; el daño real llega por la reconciliación del snapshot).
+	/// Vuelve a "idle" al terminar.</summary>
+	public void ReproducirSoloAnimacion(string anim)
+	{
+		if (_estaMuerto || _anim == null) return;
+		if (_anim.SpriteFrames == null || !_anim.SpriteFrames.HasAnimation(anim)) return;
+		_anim.Play(anim);
+	}
+
+	/// <summary>Fija los stats de esta tropa desde afuera (reconciliación online) y refresca barras.</summary>
+	public void FijarStats(int vida, int vidaMax, int escudo, int escudoMax, int turnoCarta, bool habUsada)
+	{
+		vidaMaxima = vidaMax; vidaActual = vida;
+		escudoMaximo = escudoMax; escudoActual = escudo;
+		turnoActualCarta = turnoCarta; habilidadUsada = habUsada;
+		if (vidaActual <= 0) { _estaMuerto = true; }
+		ActualizarBarrasUI();
+	}
 }

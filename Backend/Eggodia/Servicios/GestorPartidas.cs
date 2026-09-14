@@ -26,6 +26,9 @@ public class GestorPartidas
         public int TurnoActual { get; set; } = 0;
         public string EstadoJson { get; set; } = "";
 
+        // Fase 2 (acciones en vivo): lista ordenada de acciones (JSON) que el rival reproduce.
+        public List<string> Acciones { get; } = new();
+
         // Detección de desconexión (latido por asiento) y resultado por abandono/inactividad.
         public DateTime VistoA { get; set; } = DateTime.UtcNow;
         public DateTime VistoB { get; set; } = DateTime.UtcNow;
@@ -137,6 +140,32 @@ public class GestorPartidas
 
         bool rivalCaido = soyA ? caidoB : (soyB ? caidoA : false);
         return (rivalCaido, p.Resultado);
+    }
+
+    // ── Acciones en vivo (invocar/atacar/habilidad/hechizo/fin_turno) ─────
+    // Devuelve el índice (0-based) de la acción recién agregada.
+    public int AgregarAccion(string id, string accionJson)
+    {
+        if (!_partidas.TryGetValue(id, out var p)) return -1;
+        lock (_lock)
+        {
+            p.Acciones.Add(accionJson ?? "");
+            p.ActualizadaUtc = DateTime.UtcNow;
+            return p.Acciones.Count - 1;
+        }
+    }
+
+    // Devuelve las acciones con índice > desde (las que el rival aún no reprodujo).
+    public (int total, List<string> nuevas)? AccionesDesde(string id, int desde)
+    {
+        if (!_partidas.TryGetValue(id, out var p)) return null;
+        p.ActualizadaUtc = DateTime.UtcNow;
+        lock (_lock)
+        {
+            var nuevas = new List<string>();
+            for (int i = desde + 1; i < p.Acciones.Count; i++) nuevas.Add(p.Acciones[i]);
+            return (p.Acciones.Count, nuevas);
+        }
     }
 
     private void LimpiarViejas()

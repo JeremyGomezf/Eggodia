@@ -173,6 +173,7 @@ public partial class Campo1 : Node2D
 		_hechizoUsadoEsteTurno = true;
 		AutoReemplazarHechizo(slotIdx);
 		RegistrarGastoMovimiento();
+		if (EsOnline) EmitirAccionOnline("sync"); // el snapshot lleva el efecto del hechizo al rival
 		return true;
 	}
 

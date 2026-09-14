@@ -92,6 +92,32 @@ public class MatchController : ControllerBase
         return Ok(new { rivalCaido, resultado });
     }
 
+    // ── Acciones en vivo ──────────────────────────────────────────────────
+    public class AccionRequest
+    {
+        public string JugadorId { get; set; } = "";
+        public string Accion { get; set; } = ""; // JSON con {tipo, datos, snapshot}
+    }
+
+    // El jugador activo publica una acción (invocar/atacar/habilidad/hechizo/fin_turno).
+    [HttpPost("{id}/accion")]
+    public IActionResult PublicarAccion(string id, [FromBody] AccionRequest req)
+    {
+        if (req == null) return BadRequest(new { mensaje = "cuerpo requerido" });
+        int idx = _gestor.AgregarAccion(id, req.Accion);
+        if (idx < 0) return NotFound(new { mensaje = "partida no existe" });
+        return Ok(new { ok = true, indice = idx });
+    }
+
+    // El rival sondea las acciones que aún no reprodujo (índice > desde).
+    [HttpGet("{id}/acciones")]
+    public IActionResult BajarAcciones(string id, [FromQuery] int desde = -1)
+    {
+        var r = _gestor.AccionesDesde(id, desde);
+        if (r == null) return NotFound(new { mensaje = "partida no existe" });
+        return Ok(new { total = r.Value.total, acciones = r.Value.nuevas });
+    }
+
     private static object Serializar(GestorPartidas.Partida p, string jugadorId)
     {
         string asiento = p.JugadorAId == jugadorId ? "A" : (p.JugadorBId == jugadorId ? "B" : "");
