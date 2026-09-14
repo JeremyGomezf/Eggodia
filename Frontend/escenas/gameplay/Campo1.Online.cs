@@ -22,6 +22,11 @@ public partial class Campo1 : Node2D
 	private HttpRequest _httpAccion, _httpPollAcc;
 	private Timer _timerPollAcc;
 
+	// Cola de envío: HttpRequest solo procesa UNA petición a la vez, así que las acciones rápidas
+	// (p. ej. 3 invocaciones en la apertura) se encolan y se mandan de a una, sin perderse.
+	private readonly Queue<string> _colaAcciones = new();
+	private bool _enviandoAccion = false;
+
 	private HttpRequest _httpLatido;
 	private Timer _timerLatido;
 	private bool _ocupadoLatido = false;
@@ -32,6 +37,7 @@ public partial class Campo1 : Node2D
 		if (!EsOnline) return; // el nombre del rival ya sale sobre su barra (ver Campo1.Extra.cs)
 
 		_httpAccion  = new HttpRequest(); AddChild(_httpAccion);
+		_httpAccion.RequestCompleted += OnAccionEnviada; // vacía la cola de envío de a una
 		_httpPollAcc = new HttpRequest(); AddChild(_httpPollAcc);
 		_httpPollAcc.RequestCompleted += OnRespuestaAcciones;
 
@@ -65,13 +71,35 @@ public partial class Campo1 : Node2D
 		var dic = new Godot.Collections.Dictionary
 		{
 			{ "tipo", tipo },
+			{ "autor", ContextoOnline.Asiento }, // "A"/"B": para que el rival no reproduzca mis propias acciones
 			{ "datos", datos ?? new Godot.Collections.Dictionary() },
-			{ "snapshot", SerializarTablero() }
+			{ "snapshot", SerializarTablero() }   // foto del tablero JUSTO tras esta acción (verdad)
 		};
 		string accion = Json.Stringify(dic);
 		string cuerpo = JsonSerializer.Serialize(new { jugadorId = ContextoOnline.JugadorId, accion });
+		_colaAcciones.Enqueue(cuerpo);
+		BombearColaAcciones();
+	}
+
+	// Envía la siguiente acción encolada. Como HttpRequest es de una sola petición a la vez, solo
+	// se dispara si no hay otra en curso; el resto sale en OnAccionEnviada.
+	private void BombearColaAcciones()
+	{
+		if (_enviandoAccion || _colaAcciones.Count == 0 || _httpAccion == null) return;
+		string cuerpo = _colaAcciones.Peek(); // no se quita hasta confirmar el envío (preserva orden)
 		string[] headers = { "Content-Type: application/json" };
-		_httpAccion.Request($"{ApiConfig.Base}/api/match/{ContextoOnline.MatchId}/accion", headers, HttpClient.Method.Post, cuerpo);
+		if (_httpAccion.Request($"{ApiConfig.Base}/api/match/{ContextoOnline.MatchId}/accion", headers, HttpClient.Method.Post, cuerpo) == Error.Ok)
+			_enviandoAccion = true;
+		// Si falló el disparo, la acción queda en la cola y se reintenta (próximo Emitir o latido).
+	}
+
+	private void OnAccionEnviada(long result, long code, string[] headers, byte[] body)
+	{
+		_enviandoAccion = false;
+		bool ok = result == (long)HttpRequest.Result.Success && (code == 200 || code == 201);
+		if (ok && _colaAcciones.Count > 0) _colaAcciones.Dequeue(); // enviada: la sacamos de la cola
+		// Si falló, se mantiene al frente para reintentar en el siguiente bombeo.
+		BombearColaAcciones();
 	}
 
 	// Llamado cuando termina MI turno (la CPU está gateada en online, ver EjecutarTurnoCPU).
@@ -120,6 +148,11 @@ public partial class Campo1 : Node2D
 		if (string.IsNullOrEmpty(accionJson)) return;
 		JsonElement acc;
 		try { acc = JsonSerializer.Deserialize<JsonElement>(accionJson); } catch { return; }
+
+		// El log de acciones es COMPARTIDO: al empezar a sondear también me traigo las mías. Se saltan
+		// (el contador ya avanzó en OnRespuestaAcciones); solo reproduzco las del rival.
+		string autor = acc.TryGetProperty("autor", out var au) ? (au.GetString() ?? "") : "";
+		if (autor == ContextoOnline.Asiento) return;
 
 		string tipo = acc.TryGetProperty("tipo", out var t) ? (t.GetString() ?? "") : "";
 		JsonElement datos = acc.TryGetProperty("datos", out var d) ? d : default;
@@ -181,6 +214,7 @@ public partial class Campo1 : Node2D
 					td.GetProperty("vida").GetInt32(), td.GetProperty("vidaMax").GetInt32(),
 					td.GetProperty("escudo").GetInt32(), td.GetProperty("escudoMax").GetInt32(),
 					td.GetProperty("turnoCarta").GetInt32(), td.GetProperty("habUsada").GetBoolean());
+				if (td.TryGetProperty("ataque", out var atkTd)) actual.puntosAtaque = atkTd.GetInt32();
 			}
 			else
 			{
@@ -264,6 +298,7 @@ public partial class Campo1 : Node2D
 					{ "carril", z }, { "escena", tb.SceneFilePath },
 					{ "vida", tb.vidaActual }, { "vidaMax", tb.vidaMaxima },
 					{ "escudo", tb.escudoActual }, { "escudoMax", tb.escudoMaximo },
+					{ "ataque", tb.puntosAtaque }, // incluye buffs (p. ej. hechizo Fuerza)
 					{ "turnoCarta", tb.turnoActualCarta }, { "habUsada", tb.habilidadUsada }
 				});
 		}
@@ -278,7 +313,9 @@ public partial class Campo1 : Node2D
 	// ── LATIDO / DESCONEXIÓN ──────────────────────────────────────────────────
 	private void EnviarLatido()
 	{
-		if (!EsOnline || juegoTerminado || _ocupadoLatido) return;
+		if (!EsOnline || juegoTerminado) return;
+		BombearColaAcciones(); // red de seguridad: reintenta acciones que no hayan salido
+		if (_ocupadoLatido) return;
 		_ocupadoLatido = true;
 		string cuerpo = JsonSerializer.Serialize(new { jugadorId = ContextoOnline.JugadorId });
 		string[] headers = { "Content-Type: application/json" };
