@@ -110,8 +110,8 @@ public partial class Tienda : Control
 		hboxMonedas.AddChild(_lblMonedas);
 		topBar.AddChild(chipMonedas);
 
-		// Scroll container principal
-		var scroll = new ScrollContainer();
+		// Scroll container principal (táctil: se arrastra en cualquier parte, no solo la barra)
+		var scroll = new ScrollTactil();
 		scroll.SetAnchorsPreset(LayoutPreset.FullRect);
 		scroll.OffsetTop = 112; scroll.OffsetLeft = 24;
 		scroll.OffsetRight = -24; scroll.OffsetBottom = -16;
