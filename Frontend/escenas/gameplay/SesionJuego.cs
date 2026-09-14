@@ -59,7 +59,16 @@ public partial class SesionJuego : Node
 		{
 			UsuarioId     = idGuardado;
 			NombreJugador = Preferencias.SesionNombre;
+			// Traer el saldo de monedas de la cuenta desde el servidor (diferido: Economia se autocarga
+			// después que SesionJuego en el orden de AutoLoad). Así el saldo que el admin ajustó aparece
+			// al reabrir la app aunque no se vuelva a iniciar sesión.
+			CallDeferred(nameof(SincronizarMonedasCuenta));
 		}
+	}
+
+	private void SincronizarMonedasCuenta()
+	{
+		if (UsuarioId > 0) Economia.Instancia()?.SincronizarDesdeServidor(UsuarioId);
 	}
 
 	/// <summary>

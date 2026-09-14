@@ -208,7 +208,9 @@ public partial class PanelLogin : Control
 				SesionJuego.Instance.UsuarioId     = usuario.Id;
 				SesionJuego.Instance.NombreJugador  = usuario.Nombre;
 				Preferencias.GuardarSesion(usuario.Id, usuario.Nombre); // login persistente
-				GD.Print($"[Login] ¡Bienvenido, {usuario.Nombre}! (ID: {usuario.Id})");
+				// Adoptar el saldo de monedas de la CUENTA (lo que el admin haya ajustado en el server).
+				Economia.Instancia()?.AdoptarDeServidor(usuario.Id, usuario.Monedas);
+				GD.Print($"[Login] ¡Bienvenido, {usuario.Nombre}! (ID: {usuario.Id}, monedas: {usuario.Monedas})");
 				IrAlMenu();
 			}
 		}
@@ -243,6 +245,7 @@ public partial class PanelLogin : Control
 		public int    Id      { get; set; }
 		public string Nombre  { get; set; } = "";
 		public string Email   { get; set; } = "";
+		public int    Monedas   { get; set; }
 		public int    Victorias { get; set; }
 		public int    Derrotas  { get; set; }
 	}

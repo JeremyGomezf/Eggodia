@@ -1,4 +1,6 @@
 using Godot;
+using System.Text;
+using System.Text.Json;
 
 /// <summary>
 /// ECONOMÍA — Singleton persistente en disco (user://economia.cfg).
@@ -24,6 +26,10 @@ public partial class Economia : Node
 
 	private int _monedas = 0;
 	public int Monedas => _monedas;
+
+	// Cuenta a la que pertenece este saldo (>0 = logueado). Con cuenta, las monedas se sincronizan con
+	// el servidor (saldo por CUENTA, que el admin puede ajustar). Sin cuenta (invitado) quedan locales.
+	private int _usuarioId = -1;
 
 	// ── Recompensas según modo Online vs Bot ───────────────────────────
 	public const int RECOMPENSA_ONLINE_VICTORIA = 120;
@@ -58,6 +64,7 @@ public partial class Economia : Node
 		if (cantidad <= 0) return;
 		_monedas += cantidad;
 		Guardar();
+		EnviarSaldoAlServidor();
 		EmitSignal(SignalName.MonedasCambiaron, _monedas);
 	}
 
@@ -69,6 +76,7 @@ public partial class Economia : Node
 		if (costo <= 0 || _monedas < costo) return false;
 		_monedas -= costo;
 		Guardar();
+		EnviarSaldoAlServidor();
 		EmitSignal(SignalName.MonedasCambiaron, _monedas);
 		return true;
 	}
@@ -124,6 +132,65 @@ public partial class Economia : Node
 	{
 		_monedas = 0;
 		Guardar();
+		EnviarSaldoAlServidor();
 		EmitSignal(SignalName.MonedasCambiaron, _monedas);
+	}
+
+	// ── SINCRONIZACIÓN CON EL SERVIDOR (saldo por cuenta) ─────────────────────
+
+	/// <summary>Al iniciar sesión: adopta el saldo del servidor como verdad (viene en la respuesta de
+	/// login). Así las monedas que el admin dio/quitó se reflejan al entrar.</summary>
+	public void AdoptarDeServidor(int usuarioId, int monedasServidor)
+	{
+		_usuarioId = usuarioId;
+		_monedas   = Mathf.Max(0, monedasServidor);
+		Guardar();
+		EmitSignal(SignalName.MonedasCambiaron, _monedas);
+	}
+
+	/// <summary>Trae el saldo del servidor (para sesión persistente al reabrir la app). Si falla la
+	/// red, deja el saldo local como está — nunca borra monedas por un fallo de conexión.</summary>
+	public void SincronizarDesdeServidor(int usuarioId)
+	{
+		_usuarioId = usuarioId;
+		if (usuarioId <= 0) return;
+		var h = new HttpRequest();
+		AddChild(h);
+		h.RequestCompleted += (long result, long code, string[] headers, byte[] body) =>
+		{
+			if (result == (long)HttpRequest.Result.Success && code == 200)
+			{
+				try
+				{
+					var doc = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(body));
+					if (doc.TryGetProperty("monedas", out var m))
+					{
+						_monedas = Mathf.Max(0, m.GetInt32());
+						Guardar();
+						EmitSignal(SignalName.MonedasCambiaron, _monedas);
+					}
+				}
+				catch { }
+			}
+			if (IsInstanceValid(h)) h.QueueFree();
+		};
+		if (h.Request($"{ApiConfig.Usuarios}/{usuarioId}") != Error.Ok && IsInstanceValid(h)) h.QueueFree();
+	}
+
+	/// <summary>Sube el saldo actual al servidor (tras ganar/gastar). Fire-and-forget: si falla, el
+	/// próximo cambio o el próximo login vuelven a sincronizar. Solo para cuentas (invitado = local).</summary>
+	private void EnviarSaldoAlServidor()
+	{
+		if (_usuarioId <= 0) return;
+		var h = new HttpRequest();
+		AddChild(h);
+		h.RequestCompleted += (long result, long code, string[] headers, byte[] body) =>
+		{
+			if (IsInstanceValid(h)) h.QueueFree();
+		};
+		string cuerpo = JsonSerializer.Serialize(new { monedas = _monedas });
+		string[] hdr = { "Content-Type: application/json" };
+		if (h.Request($"{ApiConfig.Usuarios}/{_usuarioId}/monedas", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok && IsInstanceValid(h))
+			h.QueueFree();
 	}
 }

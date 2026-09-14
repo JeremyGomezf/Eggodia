@@ -153,11 +153,26 @@ public class UsuariosController : ControllerBase
         return Ok(top);
     }
 
+    // POST: api/usuarios/{id}/monedas   { monedas }
+    // El cliente sincroniza su saldo (tras ganar/gastar). El servidor guarda el valor absoluto.
+    public class MonedasSyncRequest { public int Monedas { get; set; } }
+
+    [HttpPost("{id}/monedas")]
+    public async Task<IActionResult> SincronizarMonedas(int id, [FromBody] MonedasSyncRequest req)
+    {
+        var u = await _db.Usuarios.FindAsync(id);
+        if (u == null) return NotFound(new { mensaje = "Usuario no encontrado." });
+        u.Monedas = Math.Max(0, req?.Monedas ?? 0);
+        await _db.SaveChangesAsync();
+        return Ok(new { u.Id, u.Monedas });
+    }
+
     private static UsuarioDto ToDto(Usuario u) => new()
     {
         Id        = u.Id,
         Nombre    = u.Nombre,
         Email     = u.Email,
+        Monedas   = u.Monedas,
         Victorias = u.Victorias,
         Derrotas  = u.Derrotas,
         Empates   = u.Empates,

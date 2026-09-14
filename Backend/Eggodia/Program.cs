@@ -47,6 +47,12 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+
+    // Migración ligera: EnsureCreated NO agrega columnas nuevas a una BD ya creada. Nos aseguramos de
+    // que la columna Monedas exista (necesaria para el saldo por cuenta y el panel de administración).
+    // SQLite lanza error si la columna ya existe → se ignora.
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN Monedas INTEGER NOT NULL DEFAULT 0;"); }
+    catch { /* la columna ya existía */ }
 }
 
 app.Run();

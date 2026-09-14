@@ -9,6 +9,10 @@ namespace Eggodia.API.model
         [Required] public string Email    { get; set; } = "";
         [Required] public string Password { get; set; } = ""; // hash en producción
 
+        // Monedas del jugador (saldo por CUENTA, guardado en el servidor). El cliente lo adopta al
+        // iniciar sesión y lo sincroniza al ganar/gastar; el admin puede darlas/quitarlas.
+        public int Monedas { get; set; } = 0;
+
         // Estadísticas para el ranking
         public int Victorias  { get; set; } = 0;
         public int Derrotas   { get; set; } = 0;
@@ -25,6 +29,7 @@ namespace Eggodia.API.model
         public int    Id       { get; set; }
         public string Nombre   { get; set; } = "";
         public string Email    { get; set; } = "";
+        public int    Monedas   { get; set; }
         public int    Victorias { get; set; }
         public int    Derrotas  { get; set; }
         public int    Empates   { get; set; }
