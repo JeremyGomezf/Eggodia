@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Script" path="res://DatosCartas/CartaData.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://67ifoyaaom7f" path="res://imagenes/HechizosPng/Fuerza_hechizo.png" id="2_img"]
+
+[resource]
+script = ExtResource("1_script")
+Nombre = "Fuerza"
+Categoria = 1
+Elemento = "Fuego"
+Era = "Era Medieval"
+Costo = 3
+Ataque = 100
+Defensa = 0
+Vida = 0
+Velocidad = "RÁPIDA"
+Rango = "GLOBAL"
+FuerteContra = "Naturaleza"
+DebilContra = "Agua"
+Descripcion = "Otorga +100 de daño a una tropa aliada durante 2 turnos."
+RutaEscena = ""
+Imagen = ExtResource("2_img")
+IdHechizo = "fuerza"

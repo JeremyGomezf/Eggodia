@@ -104,16 +104,22 @@ public static class Preferencias
 	public static string HechizoMasUsado() => MasUsadoEn(SEC_USO_HECHIZOS);
 
 	// ── SKINS DE HUEVO ────────────────────────────────────────────────────────
+	// Nota: los huevos "exclusivos" (Jeremi, Ecotec, Dorado, Gonza, Carlos) NO tienen entrada
+	// aquí a propósito — nunca deben aparecer en Tienda ni ser equipables/sorteables por el bot.
 	public static readonly string[] SKIN_ESCENAS = {
 		"res://escenas/personajes/reyhuevo1.tscn",
 		"res://escenas/personajes/capitanhuevo1.tscn",
 		"res://escenas/personajes/dinohuevo1.tscn",
 		"res://escenas/personajes/majestadhuevo1.tscn",
 		"res://escenas/personajes/paperdinohuevo1.tscn",
+		"res://escenas/personajes/coronelhuevo1.tscn",
+		"res://escenas/personajes/huevorosa1.tscn",
+		"res://escenas/personajes/majestadhuevo2_1.tscn",
 	};
-	public static readonly int[] SKIN_PRECIOS = { 0, 250, 250, 250, 350 };
+	public static readonly int[] SKIN_PRECIOS = { 0, 250, 250, 250, 350, 400, 400, 450 };
 	public static readonly string[] SKIN_NOMBRES = {
-		"Rey Huevo", "Capitán Huevo", "Dino Huevo", "Majestad Huevo", "Paper Dino Huevo"
+		"Rey Huevo", "Capitán Huevo", "Dino Huevo", "Majestad Huevo", "Paper Dino Huevo",
+		"Coronel Huevo", "Huevo Rosa", "Majestad Huevo II"
 	};
 	public static readonly string[] SKIN_IMAGENES = {
 		"res://imagenes/PersonajesPng/ReyHuevo.png",
@@ -121,6 +127,9 @@ public static class Preferencias
 		"res://imagenes/PersonajesPng/DinoHuevo.png",
 		"res://imagenes/PersonajesPng/MajestadHuevo.png",
 		"res://imagenes/PersonajesPng/PaperDinoHuevoIcon.tres",
+		"res://imagenes/PersonajesPng/CoronelHuevo.png",
+		"res://imagenes/PersonajesPng/HuevoRosa.png",
+		"res://imagenes/PersonajesPng/MajestadHuevo2.png",
 	};
 
 	public static int SkinActivaIdx
@@ -140,6 +149,44 @@ public static class Preferencias
 	public static void DesbloquearSkin(int idx)
 	{
 		EscribirBoolEn(SEC_SKINS, $"owned_{idx}", true);
+	}
+
+	// ── SKINS DE TRONO ────────────────────────────────────────────────────────
+	public static readonly string[] TRONO_TEXTURAS = {
+		"res://imagenes/Tronos/TronoReal.png",    // idx 0 = default, gratis
+		"res://imagenes/Tronos/TronoPapel.png",
+		"res://imagenes/Tronos/TronoPiedra.png",
+		"res://imagenes/Tronos/TronoRocoso.png",
+		"res://imagenes/Tronos/BombaTrono.png",
+		"res://imagenes/Tronos/TronoAjedrez.png",
+		"res://imagenes/Tronos/TronoCofre.png",
+		"res://imagenes/Tronos/TronoDado.png",
+	};
+	public static readonly int[] TRONO_PRECIOS = { 0, 200, 200, 200, 250, 250, 300, 300 };
+	public static readonly string[] TRONO_NOMBRES = {
+		"Trono Real", "Trono de Papel", "Trono de Piedra", "Trono Rocoso",
+		"Trono Bomba", "Trono Ajedrez", "Trono Cofre", "Trono Dado"
+	};
+
+	private const string SEC_TRONOS = "tronos";
+
+	public static int TronoActivoIdx
+	{
+		get => LeerIntEn(SEC_TRONOS, "activo", 0);
+		set => EscribirIntEn(SEC_TRONOS, "activo", Mathf.Clamp(value, 0, TRONO_TEXTURAS.Length - 1));
+	}
+
+	public static string RutaTronoActiva => TRONO_TEXTURAS[TronoActivoIdx];
+
+	public static bool TieneTrono(int idx)
+	{
+		if (idx == 0) return true;
+		return LeerBoolEn(SEC_TRONOS, $"owned_{idx}", false);
+	}
+
+	public static void DesbloquearTrono(int idx)
+	{
+		EscribirBoolEn(SEC_TRONOS, $"owned_{idx}", true);
 	}
 
 	// ── CÓDIGOS DE CANJE ──────────────────────────────────────────────────────

@@ -79,7 +79,7 @@ public partial class Tienda : Control
 		topBar.AddChild(lblTitulo);
 
 		var chipMonedas = new TextureRect();
-		chipMonedas.CustomMinimumSize = new Vector2(210, 74);
+		chipMonedas.CustomMinimumSize = new Vector2(270, 94);
 		chipMonedas.Texture = GD.Load<Texture2D>(RUTA_CUADRO_MONEDA);
 		chipMonedas.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 		chipMonedas.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
@@ -94,7 +94,7 @@ public partial class Tienda : Control
 		chipMonedas.AddChild(hboxMonedas);
 
 		var iconoMoneda = new TextureRect();
-		iconoMoneda.CustomMinimumSize = new Vector2(38, 28);
+		iconoMoneda.CustomMinimumSize = new Vector2(46, 34);
 		iconoMoneda.Texture = GD.Load<Texture2D>(RUTA_ICONO_MONEDA);
 		iconoMoneda.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 		iconoMoneda.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
@@ -105,7 +105,7 @@ public partial class Tienda : Control
 		_lblMonedas.Text = "0";
 		_lblMonedas.AddThemeColorOverride("font_color", new Color(1f, 0.92f, 0.45f));
 		if (fuenteAlmendra != null) _lblMonedas.AddThemeFontOverride("font", fuenteAlmendra);
-		_lblMonedas.AddThemeFontSizeOverride("font_size", 34);
+		_lblMonedas.AddThemeFontSizeOverride("font_size", 40);
 		_lblMonedas.VerticalAlignment = VerticalAlignment.Center;
 		hboxMonedas.AddChild(_lblMonedas);
 		topBar.AddChild(chipMonedas);
@@ -127,7 +127,11 @@ public partial class Tienda : Control
 		AgregarSeccion("SKINS DE HUEVO 🥚", new Color(1f, 0.65f, 0.25f));
 		AgregarGridSkins();
 
-		// Sección 2: Skins de cartas
+		// Sección 2: Tronos
+		AgregarSeccion("TRONOS 🪑", new Color(0.85f, 0.7f, 1f));
+		AgregarGridTronos();
+
+		// Sección 3: Skins de cartas
 		AgregarSeccion("SKINS DE CARTAS 🃏", new Color(0.55f, 0.85f, 1f));
 		AgregarGridSkinsCartas();
 	}
@@ -157,6 +161,18 @@ public partial class Tienda : Control
 
 		for (int i = 0; i < Preferencias.SKIN_NOMBRES.Length; i++)
 			flow.AddChild(CrearItemSkin(i));
+	}
+
+	private void AgregarGridTronos()
+	{
+		var flow = new HFlowContainer();
+		flow.AddThemeConstantOverride("h_separation", 20);
+		flow.AddThemeConstantOverride("v_separation", 20);
+		flow.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_contenidoScroll.AddChild(flow);
+
+		for (int i = 0; i < Preferencias.TRONO_NOMBRES.Length; i++)
+			flow.AddChild(CrearItemTrono(i));
 	}
 
 	private void AgregarGridSkinsCartas()
@@ -253,6 +269,7 @@ public partial class Tienda : Control
 			btnComprar.Text = precio.ToString();
 			btnComprar.Icon = GD.Load<Texture2D>(RUTA_ICONO_MONEDA);
 			btnComprar.ExpandIcon = false;
+			btnComprar.AddThemeConstantOverride("icon_max_width", 26);
 			btnComprar.CustomMinimumSize = new Vector2(0, 56);
 			btnComprar.AddThemeFontSizeOverride("font_size", 18);
 			int capIdx = idx;
@@ -275,6 +292,103 @@ public partial class Tienda : Control
 		Preferencias.DesbloquearSkin(idx);
 		Preferencias.SkinActivaIdx = idx;
 		MostrarMensaje($"¡{Preferencias.SKIN_NOMBRES[idx]} desbloqueada!", Colors.Gold);
+		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
+	}
+
+	private Control CrearItemTrono(int idx)
+	{
+		bool esDefault = idx == 0;
+		bool poseido   = Preferencias.TieneTrono(idx);
+		bool activo    = Preferencias.TronoActivoIdx == idx;
+
+		var panel = new PanelContainer();
+		panel.CustomMinimumSize = new Vector2(230, 320);
+
+		var sbNormal = new StyleBoxFlat();
+		sbNormal.BgColor = activo
+			? new Color(0.14f, 0.22f, 0.10f, 0.97f)
+			: new Color(0.09f, 0.11f, 0.22f, 0.96f);
+		sbNormal.BorderWidthLeft = sbNormal.BorderWidthTop = sbNormal.BorderWidthRight = sbNormal.BorderWidthBottom = 2;
+		sbNormal.BorderColor = activo ? new Color(0.4f, 1f, 0.4f) : new Color(0.70f, 0.55f, 0.25f);
+		sbNormal.CornerRadiusTopLeft = sbNormal.CornerRadiusTopRight =
+		sbNormal.CornerRadiusBottomLeft = sbNormal.CornerRadiusBottomRight = 12;
+		sbNormal.ContentMarginLeft = sbNormal.ContentMarginRight =
+		sbNormal.ContentMarginTop  = sbNormal.ContentMarginBottom = 14;
+		sbNormal.ShadowColor = new Color(0,0,0,0.4f); sbNormal.ShadowSize = 6;
+		panel.AddThemeStyleboxOverride("panel", sbNormal);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 10);
+
+		var tex = new TextureRect();
+		tex.CustomMinimumSize = new Vector2(180, 180);
+		tex.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		var textura = GD.Load<Texture2D>(Preferencias.TRONO_TEXTURAS[idx]);
+		if (textura != null) tex.Texture = textura;
+		vbox.AddChild(tex);
+
+		var lblNombre = new Label();
+		lblNombre.Text = Preferencias.TRONO_NOMBRES[idx];
+		lblNombre.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
+		lblNombre.AddThemeFontSizeOverride("font_size", 18);
+		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
+		lblNombre.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		vbox.AddChild(lblNombre);
+
+		if (activo)
+		{
+			var lblActivo = new Label();
+			lblActivo.Text = "✓ EQUIPADO";
+			lblActivo.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
+			lblActivo.AddThemeFontSizeOverride("font_size", 17);
+			lblActivo.HorizontalAlignment = HorizontalAlignment.Center;
+			vbox.AddChild(lblActivo);
+		}
+		else if (poseido || esDefault)
+		{
+			var btnEquipar = new Button();
+			btnEquipar.Text = "EQUIPAR";
+			btnEquipar.CustomMinimumSize = new Vector2(0, 56);
+			btnEquipar.AddThemeFontSizeOverride("font_size", 18);
+			int capIdx = idx;
+			btnEquipar.Pressed += () => {
+				Preferencias.TronoActivoIdx = capIdx;
+				GetTree().ReloadCurrentScene();
+			};
+			vbox.AddChild(btnEquipar);
+		}
+		else
+		{
+			int precio = Preferencias.TRONO_PRECIOS[idx];
+			var btnComprar = new Button();
+			btnComprar.Text = precio.ToString();
+			btnComprar.Icon = GD.Load<Texture2D>(RUTA_ICONO_MONEDA);
+			btnComprar.ExpandIcon = false;
+			btnComprar.AddThemeConstantOverride("icon_max_width", 26);
+			btnComprar.CustomMinimumSize = new Vector2(0, 56);
+			btnComprar.AddThemeFontSizeOverride("font_size", 18);
+			int capIdx = idx;
+			btnComprar.Pressed += () => IntentarComprarTrono(capIdx, btnComprar);
+			vbox.AddChild(btnComprar);
+		}
+
+		panel.AddChild(vbox);
+		return panel;
+	}
+
+	private void IntentarComprarTrono(int idx, Button btn)
+	{
+		var eco = Economia.Instancia();
+		if (eco == null) return;
+		int precio = Preferencias.TRONO_PRECIOS[idx];
+		if (!eco.Gastar(precio))
+		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); return; }
+
+		Preferencias.DesbloquearTrono(idx);
+		Preferencias.TronoActivoIdx = idx;
+		MostrarMensaje($"¡{Preferencias.TRONO_NOMBRES[idx]} desbloqueado!", Colors.Gold);
 		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
 	}
 

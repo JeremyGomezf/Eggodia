@@ -20,3 +20,4 @@ DebilContra = "Sombra"
 Descripcion = "Restaura 250 puntos de salud a una tropa aliada al instante."
 RutaEscena = ""
 Imagen = ExtResource("2_img")
+IdHechizo = "curacion"

@@ -222,6 +222,9 @@ texture_pressed = ExtResource("9_btn_tienda_neg")
 texture_hover = ExtResource("8_btn_tienda")
 stretch_mode = 3
 
+[node name="HUEVO" type="Marker2D" parent="IslaContainer" unique_id=912777585]
+position = Vector2(758.68854, 569.5082)
+
 [node name="TopHUD" type="HBoxContainer" parent="." unique_id=972495174]
 layout_mode = 1
 anchors_preset = 10

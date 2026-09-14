@@ -43,6 +43,17 @@ public partial class Campo1 : Node2D
 		for (int i = 0; i < _cooldownHechizo.Length; i++) if (_cooldownHechizo[i] > 0) _cooldownHechizo[i]--;
 		ActualizarEstadoCartaRobada(); // libera "Robar Carta" en cuanto se juegue la carta del Spot4
 
+		// Cooldown del botón de Ardid (2 rondas = 4 cambios de turno).
+		if (_cooldownBtnArdid > 0)
+		{
+			_cooldownBtnArdid--;
+			if (_cooldownBtnArdid == 0 && _btnCambiarHechizo != null)
+			{
+				_btnCambiarHechizo.Disabled = false;
+				_btnCambiarHechizo.Modulate = Colors.White;
+			}
+		}
+
 		if (modoSacrificioActivo) CancelarSacrificio();
 		if (menuAcciones != null) menuAcciones.Visible = false;
 
@@ -184,6 +195,7 @@ public partial class Campo1 : Node2D
 			{
 				TickVeneno(tropa);
 				TickBloqueo(tropa);
+				TickFuerza(tropa);
 				if (tropa.HasMethod("TickHabilidad")) tropa.Call("TickHabilidad");
 				if (tropa.HasMethod("TickTransformacion")) tropa.Call("TickTransformacion");
 				if (Gi(tropa, "vidaActual") <= 0) EjecutarMuerteTropaSacrificada(tropa);
@@ -217,5 +229,24 @@ public partial class Campo1 : Node2D
 		if (turnos <= 0) { t.SetMeta("bloqueado", false); t.Modulate = Colors.White; }
 		else             t.SetMeta("turnosBloqueo", turnos);
 		ActualizarIconosEstado(t);
+	}
+
+	// Fuerza: +100 de daño plano durante 2 turnos alternados (cuenta jugador y rival, igual que
+	// Bloqueo/Veneno) — al expirar, revierte el bono de puntosAtaque y el tinte naranja.
+	private void TickFuerza(Node2D t)
+	{
+		if (!t.HasMeta("fuerzaActiva")) return;
+		bool activo; try { activo = (bool)t.GetMeta("fuerzaActiva"); } catch { return; }
+		if (!activo) return;
+		int turnos = t.HasMeta("turnosFuerza") ? (int)t.GetMeta("turnosFuerza") : 1;
+		turnos--;
+		if (turnos <= 0)
+		{
+			t.SetMeta("fuerzaActiva", false);
+			int ata = 0; try { ata = (int)t.Get("puntosAtaque"); } catch { }
+			try { t.Set("puntosAtaque", Mathf.Max(0, ata - 100)); } catch { }
+			t.Modulate = Colors.White;
+		}
+		else t.SetMeta("turnosFuerza", turnos);
 	}
 }

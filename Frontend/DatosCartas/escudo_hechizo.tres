@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Script" path="res://DatosCartas/CartaData.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b5dxbb7htr5t8" path="res://imagenes/HechizosPng/Escudo_hechizo.png" id="2_img"]
+
+[resource]
+script = ExtResource("1_script")
+Nombre = "Escudo"
+Categoria = 1
+Elemento = "Metal"
+Era = "Era Medieval"
+Costo = 3
+Ataque = 0
+Defensa = 0
+Vida = 0
+Velocidad = "INSTANTÁNEA"
+Rango = "GLOBAL"
+FuerteContra = "Sombra"
+DebilContra = "Fuego"
+Descripcion = "Restaura el 50% del escudo máximo de una tropa aliada."
+RutaEscena = ""
+Imagen = ExtResource("2_img")
+IdHechizo = "escudo"

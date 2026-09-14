@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CartaData" format=3]
 
-[ext_resource type="Texture2D" uid="uid://b4xyobn8m8cw" path="res://imagenes/RendersTropa/Machi_Menu.png" id="1_img"]
+[ext_resource type="Texture2D" uid="uid://deaikctl6rp56" path="res://imagenes/iconos/Machi_icon.png" id="1_img"]
 [ext_resource type="Script" uid="uid://b0kjpa4bu8g5t" path="res://DatosCartas/CartaData.cs" id="2_scr"]
 
 [resource]

@@ -14,6 +14,7 @@
 [ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="12_048dh"]
 [ext_resource type="Shader" uid="uid://b4oj04low5esi" path="res://escenas/menu/borroso.gdshader" id="13_sys8m"]
 [ext_resource type="Texture2D" uid="uid://dcahc0gsvlx17" path="res://imagenes/Escenarios/nube1.png" id="14_guxwj"]
+[ext_resource type="Texture2D" uid="uid://b4oujcg3x4rua" path="res://imagenes/MenuConstructor/BotonNFC.png" id="15_sys8m"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ib6j1"]
 shader = ExtResource("13_sys8m")
@@ -354,6 +355,7 @@ offset_right = 204.0
 offset_bottom = 128.0
 grow_horizontal = 2
 scale = Vector2(1, 1.1600006)
+z_index = 5
 texture = ExtResource("11_nombretropa")
 patch_margin_left = 75
 patch_margin_top = 24
@@ -520,22 +522,22 @@ offset_right = -551.0
 offset_bottom = -425.0
 
 [node name="Slot1H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=1402510082]
-position = Vector2(669, 526)
+position = Vector2(648, 562)
 
 [node name="Slot2H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=229293966]
-position = Vector2(938, 530)
+position = Vector2(899, 566)
 
 [node name="Slot3H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=785798888]
-position = Vector2(1214, 534)
+position = Vector2(1149, 567)
 
 [node name="Slot4H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=1790026231]
-position = Vector2(669, 758)
+position = Vector2(648, 817)
 
 [node name="Slot5H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=2011154523]
-position = Vector2(938, 762)
+position = Vector2(899, 821)
 
 [node name="Slot6H" type="Marker2D" parent="MazoContainer/ArdidSlots" unique_id=896544129]
-position = Vector2(1214, 768)
+position = Vector2(1149, 824)
 
 [node name="InfoContainer" type="Control" parent="." unique_id=692689363]
 layout_mode = 1
@@ -687,7 +689,7 @@ horizontal_alignment = 1
 [node name="LblHabilidad" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad" unique_id=1307508624]
 custom_minimum_size = Vector2(260, 130)
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)
 theme_override_fonts/font = ExtResource("12_048dh")
 theme_override_font_sizes/font_size = 20
@@ -709,13 +711,25 @@ horizontal_alignment = 1
 
 [node name="Boton_Duda" type="TextureButton" parent="." unique_id=804686458]
 layout_mode = 0
-offset_left = 1248.0
-offset_top = 3.0
-offset_right = 1452.0
-offset_bottom = 218.0
-scale = Vector2(0.53, 0.53)
+offset_left = 1939.0
+offset_top = -1.0
+offset_right = 2143.0
+offset_bottom = 203.0
+scale = Vector2(0.72, 0.72)
 texture_normal = ExtResource("5_botonduda")
 texture_hover = ExtResource("5_botonduda")
+ignore_texture_size = true
+stretch_mode = 0
+
+[node name="Boton_NFC" type="TextureButton" parent="." unique_id=999158343]
+layout_mode = 0
+offset_left = 1985.0
+offset_top = 180.0
+offset_right = 2189.0
+offset_bottom = 395.0
+scale = Vector2(0.53, 0.53)
+texture_normal = ExtResource("15_sys8m")
+texture_hover = ExtResource("15_sys8m")
 ignore_texture_size = true
 stretch_mode = 0
 

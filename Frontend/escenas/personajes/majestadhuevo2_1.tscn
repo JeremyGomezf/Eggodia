@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_maj2"]
+[ext_resource type="Texture2D" uid="uid://bdijeeg2dhffk" path="res://imagenes/PersonajesPng/MajestadHuevo2.png" id="2_maj2"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_maj2"]
+size = Vector2(76, 140)
+
+[node name="Majestad Huevo II" type="Area2D"]
+script = ExtResource("1_maj2")
+IdPersonaje = "majestad_huevo_2"
+
+[node name="MajestadHuevo2" type="Sprite2D" parent="."]
+scale = Vector2(0.2118, 0.2118)
+texture = ExtResource("2_maj2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_maj2")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="Label" type="Label" parent="."]
+visible = false
+offset_right = 40.0
+offset_bottom = 23.0

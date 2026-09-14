@@ -18,6 +18,14 @@ public class GestorPartidas
         public string? JugadorBId { get; set; }
         public string? JugadorBNombre { get; set; }
         public string Estado { get; set; } = "esperando"; // esperando | emparejado
+
+        // Skin de huevo y trono equipados por cada jugador (índices de Preferencias.SKIN_*/
+        // TRONO_* en el cliente) — se mandan una sola vez al entrar a la cola, ya que no cambian
+        // a mitad de partida, y se usan para que el rival vea la skin/trono REAL, no uno sorteado.
+        public int SkinIdxA { get; set; } = 0;
+        public int TronoIdxA { get; set; } = 0;
+        public int SkinIdxB { get; set; } = 0;
+        public int TronoIdxB { get; set; } = 0;
         public string Semilla { get; set; } = new Random().Next(1, int.MaxValue).ToString(); // RNG compartido (Fase 2)
         public DateTime ActualizadaUtc { get; set; } = DateTime.UtcNow;
 
@@ -44,7 +52,7 @@ public class GestorPartidas
     private readonly object _lock = new();
     private readonly ConcurrentDictionary<string, Partida> _partidas = new();
 
-    public Partida EntrarACola(string jugadorId, string nombre)
+    public Partida EntrarACola(string jugadorId, string nombre, int skinIdx = 0, int tronoIdx = 0)
     {
         lock (_lock)
         {
@@ -65,6 +73,8 @@ public class GestorPartidas
             {
                 esperando.JugadorBId = jugadorId;
                 esperando.JugadorBNombre = nombre;
+                esperando.SkinIdxB = skinIdx;
+                esperando.TronoIdxB = tronoIdx;
                 esperando.Estado = "emparejado";
                 esperando.ActualizadaUtc = DateTime.UtcNow;
                 esperando.VistoA = esperando.VistoB = DateTime.UtcNow; // arranca el latido de ambos
@@ -72,7 +82,7 @@ public class GestorPartidas
             }
 
             // Nadie esperando → crear partida nueva y quedar a la espera.
-            var nueva = new Partida { JugadorAId = jugadorId, JugadorANombre = nombre };
+            var nueva = new Partida { JugadorAId = jugadorId, JugadorANombre = nombre, SkinIdxA = skinIdx, TronoIdxA = tronoIdx };
             _partidas[nueva.Id] = nueva;
             return nueva;
         }

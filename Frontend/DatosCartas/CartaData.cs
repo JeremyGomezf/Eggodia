@@ -38,4 +38,9 @@ public partial class CartaData : Resource
 	
 	[Export(PropertyHint.MultilineText)]
 	public string Descripcion = "";
+
+	// Id estable del hechizo (ej. "curacion", "fuerza") — solo se usa en cartas de
+	// Categoria=Hechizo, para poder guardar/cargar la selección de ardides de MenuConstructor
+	// sin depender de índices de array. Vacío/sin efecto en cartas de tropa.
+	[Export] public string IdHechizo = "";
 }

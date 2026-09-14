@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cak0od5ggqiqk"]
 
-[ext_resource type="Texture2D" uid="uid://b4lmp4ltcgcap" path="res://imagenes/PersonajesPng/TronoAlpha.png" id="1_4u0b8"]
 [ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_drxha"]
+[ext_resource type="Texture2D" uid="uid://sx8qksm6d33l" path="res://imagenes/Tronos/TronoReal.png" id="2_f6bqa"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_twi5e"]
 size = Vector2(134, 85)
@@ -10,9 +10,10 @@ size = Vector2(134, 85)
 script = ExtResource("1_drxha")
 IdPersonaje = "trono_rey"
 
-[node name="TronoAlpha" type="Sprite2D" parent="." unique_id=1051652193]
-scale = Vector2(0.6140553, 0.68750006)
-texture = ExtResource("1_4u0b8")
+[node name="TronoAlpha" type="Sprite2D" parent="." unique_id=1190960031]
+position = Vector2(1.2281104, -3.4375)
+scale = Vector2(0.341, 0.412)
+texture = ExtResource("2_f6bqa")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1163080008]
 position = Vector2(-1, 14.5)

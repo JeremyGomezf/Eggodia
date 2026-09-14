@@ -30,6 +30,13 @@ public partial class SesionJuego : Node
 	public List<string> ImagenesMazo     { get; set; } = new();
 	public bool TieneMazo => MazoSeleccionado != null && MazoSeleccionado.Count >= 8;
 
+	// ── ARDIDES SELECCIONADOS (opcional) ──────────────────────────────────
+	// Ids estables (CartaData.IdHechizo) de los 6 ardides elegidos en MenuConstructor. Si el
+	// jugador nunca los eligió (o eligió menos de 6), queda vacío y Campo1 arma un pool aleatorio
+	// de los 8 hechizos disponibles, igual que hacía antes con 5.
+	public List<string> ArdidesSeleccionados { get; set; } = new();
+	public bool TieneArdides => ArdidesSeleccionados != null && ArdidesSeleccionados.Count == 6;
+
 	// ── RESULTADO ÚLTIMA PARTIDA ──────────────────────────────────────────
 	public string UltimoResultado  { get; set; } = "";
 	public int    DañoUltimaPartida { get; set; } = 0;
@@ -58,6 +65,7 @@ public partial class SesionJuego : Node
 		NombreJugador  = "Jugador";
 		MazoSeleccionado.Clear();
 		ImagenesMazo.Clear();
+		ArdidesSeleccionados.Clear();
 		Preferencias.CerrarSesionGuardada(); // el logout también se recuerda
 	}
 
@@ -70,6 +78,14 @@ public partial class SesionJuego : Node
 		GD.Print($"[SesionJuego] Mazo guardado en memoria y disco: {MazoSeleccionado.Count} cartas.");
 	}
 
+	/// <summary>Guardar la selección de 6 ardides (opcional) desde MenuConstructor.</summary>
+	public void GuardarMazoArdid(List<string> idsHechizo)
+	{
+		ArdidesSeleccionados = new List<string>(idsHechizo);
+		GuardarMazoEnDisco();
+		GD.Print($"[SesionJuego] Ardides guardados en memoria y disco: {ArdidesSeleccionados.Count} elegidos.");
+	}
+
 	private void GuardarMazoEnDisco()
 	{
 		try
@@ -80,7 +96,8 @@ public partial class SesionJuego : Node
 				var data = new MazoPersistenteData
 				{
 					Escenas = MazoSeleccionado,
-					Imagenes = ImagenesMazo
+					Imagenes = ImagenesMazo,
+					Ardides = ArdidesSeleccionados
 				};
 				string json = JsonSerializer.Serialize(data);
 				file.StoreString(json);
@@ -107,7 +124,8 @@ public partial class SesionJuego : Node
 					{
 						MazoSeleccionado = data.Escenas;
 						ImagenesMazo = data.Imagenes ?? new List<string>();
-						GD.Print($"[SesionJuego] Mazo cargado desde disco: {MazoSeleccionado.Count} cartas.");
+						ArdidesSeleccionados = data.Ardides ?? new List<string>();
+						GD.Print($"[SesionJuego] Mazo cargado desde disco: {MazoSeleccionado.Count} cartas, {ArdidesSeleccionados.Count} ardides.");
 					}
 				}
 			}
@@ -122,5 +140,6 @@ public partial class SesionJuego : Node
 	{
 		public List<string> Escenas { get; set; } = new();
 		public List<string> Imagenes { get; set; } = new();
+		public List<string> Ardides { get; set; } = new();
 	}
 }

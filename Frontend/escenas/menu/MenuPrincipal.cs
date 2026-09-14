@@ -12,9 +12,14 @@ public partial class MenuPrincipal : Control
 	[Export] public string RutaTienda          = "res://escenas/menu/Tienda.tscn";
 
 	// Refuerzo de escala por skin en el selector (mismo orden que Preferencias.SKIN_ESCENAS:
-	// Rey, Capitán, Dino, Majestad, Paper Dino). Compensa que sus PNG originales tienen
-	// proporciones/márgenes distintos y por eso "KeepAspectCentered" los deja más chicos.
-	private static readonly float[] SKIN_ESCALA_EXTRA = { 1.0f, 1.5f, 1.3f, 1.0f, 1.6f };
+	// Rey, Capitán, Dino, Majestad, Paper Dino, Coronel, Huevo Rosa, Majestad II). Compensa que
+	// sus PNG originales tienen proporciones/márgenes distintos y por eso "KeepAspectCentered"
+	// los deja más chicos.
+	private static readonly float[] SKIN_ESCALA_EXTRA = { 1.0f, 1.7f, 1.3f, 1.0f, 1.85f, 1.0f, 1.0f, 1.0f };
+
+	// Corrección de centrado horizontal solo dentro del selector de skins (AbrirSelectorSkin) —
+	// Paper Dino Huevo nace descentrado hacia la izquierda en su PNG original.
+	private static readonly float[] SKIN_OFFSET_X_SELECTOR = { 0f, 0f, 0f, 0f, 18f, 0f, 0f, 0f };
 
 	// Nodos de animación y UI
 	private Control _islaContainer;
@@ -354,14 +359,20 @@ public partial class MenuPrincipal : Control
 		header.AddChild(btnX);
 		vbox.AddChild(header);
 
-		// Grid de skins — 5 columnas (una fila), ya que hay 5 skins: con 4 columnas la 5ta
-		// (Paper Dino Huevo) caía en una segunda fila que desbordaba el panel y quedaba
-		// inaccesible/cortada.
+		// Grid de skins en una sola fila, envuelto en un ScrollContainer horizontal — con 8 skins
+		// ya no entran todas a la vez en el panel; se arrastra/desliza para ver el resto (en vez de
+		// aplastarlas para que quepan todas, como antes).
+		var scrollSkins = new ScrollContainer();
+		scrollSkins.VerticalScrollMode = ScrollContainer.ScrollMode.Disabled;
+		scrollSkins.HorizontalScrollMode = ScrollContainer.ScrollMode.Auto;
+		scrollSkins.CustomMinimumSize = new Vector2(0, 260);
+		vbox.AddChild(scrollSkins);
+
 		var grid = new GridContainer();
 		grid.Columns = Preferencias.SKIN_NOMBRES.Length;
-		grid.AddThemeConstantOverride("h_separation", 10);
+		grid.AddThemeConstantOverride("h_separation", 14);
 		grid.AddThemeConstantOverride("v_separation", 12);
-		vbox.AddChild(grid);
+		scrollSkins.AddChild(grid);
 
 		for (int i = 0; i < Preferencias.SKIN_NOMBRES.Length; i++)
 		{
@@ -370,7 +381,7 @@ public partial class MenuPrincipal : Control
 			bool activa  = Preferencias.SkinActivaIdx == i;
 
 			var skinPanel = new PanelContainer();
-			skinPanel.CustomMinimumSize = new Vector2(150, 300);
+			skinPanel.CustomMinimumSize = new Vector2(190, 230);
 
 			var sbSkin = new StyleBoxFlat();
 			sbSkin.BgColor = activa ? new Color(0.12f, 0.22f, 0.10f) : new Color(0.08f, 0.10f, 0.20f, 0.95f);
@@ -388,7 +399,7 @@ public partial class MenuPrincipal : Control
 			svbox.AddThemeConstantOverride("separation", 6);
 
 			var tex = new TextureRect();
-			tex.CustomMinimumSize = new Vector2(130, 195); // misma proporción que el huevo del menú (195×350)
+			tex.CustomMinimumSize = new Vector2(130, 140); // caja más cuadrada — antes 130x195 (alargada)
 			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
 			// KeepAspectCentered ajusta la imagen COMPLETA sin deformar, pero como Rey/Capitán/
@@ -401,6 +412,10 @@ public partial class MenuPrincipal : Control
 			tex.PivotOffset = tex.CustomMinimumSize / 2f;
 			float escalaExtra = capI < SKIN_ESCALA_EXTRA.Length ? SKIN_ESCALA_EXTRA[capI] : 1.0f;
 			tex.Scale = new Vector2(escalaExtra, escalaExtra);
+			// Paper Dino Huevo queda descentrado hacia la izquierda dentro de su PNG original —
+			// se corrige con un empujón a la derecha, solo en este selector.
+			float offsetX = capI < SKIN_OFFSET_X_SELECTOR.Length ? SKIN_OFFSET_X_SELECTOR[capI] : 0f;
+			if (offsetX != 0f) tex.Position += new Vector2(offsetX, 0f);
 			// Grayscale para skins no poseídas
 			if (!poseida) tex.Modulate = new Color(0.4f, 0.4f, 0.4f);
 			svbox.AddChild(tex);

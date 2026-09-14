@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_coronel"]
+[ext_resource type="Texture2D" uid="uid://cp6amcjo5uoan" path="res://imagenes/PersonajesPng/CoronelHuevo.png" id="2_coronel"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_coronel"]
+size = Vector2(113, 140)
+
+[node name="Coronel Huevo" type="Area2D"]
+script = ExtResource("1_coronel")
+IdPersonaje = "coronel_huevo"
+
+[node name="CoronelHuevo" type="Sprite2D" parent="."]
+scale = Vector2(0.2112, 0.2112)
+texture = ExtResource("2_coronel")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_coronel")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="Label" type="Label" parent="."]
+visible = false
+offset_right = 40.0
+offset_bottom = 23.0

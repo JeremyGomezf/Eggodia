@@ -228,7 +228,8 @@ public partial class Campo1 : Node2D
 		// Fase de apertura: pasar turno automáticamente al llenar los 3 carriles
 		if (_faseApertura && TodosSpotsOcupados())
 		{
-			MostrarAviso("Tropas listas. La CPU prepara sus fuerzas...", Colors.LightGreen);
+			string quien = EsOnline ? "El rival" : "La CPU";
+			MostrarAviso($"Tropas listas. {quien} prepara sus fuerzas...", Colors.LightGreen);
 			GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) CambiarTurno(); };
 			return true;
 		}
@@ -402,18 +403,44 @@ public partial class Campo1 : Node2D
 		string skinPath = Preferencias.RutaSkinActiva;
 		var skinJugador = ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : escenaReyHuevoRef;
 		tronoJugador.CargarHuevo(skinJugador ?? escenaReyHuevoRef, false);
+		tronoJugador.CambiarTrono(GD.Load<Texture2D>(Preferencias.RutaTronoActiva));
 
 		tronoRival = (TronoCampo)escenaTronoRef.Instantiate(); AddChild(tronoRival);
 		tronoRival.GlobalPosition = m2.GlobalPosition;
-		tronoRival.CargarHuevo(SkinAleatoria() ?? escenaDinoHuevoRef, true);
+		// En línea, el "rival" es un jugador real: se muestra su skin/trono REALES (sincronizados al
+		// emparejar), no un sorteo — ConfigurarModoOnline() recién fija EsOnline al final de _Ready,
+		// así que acá se consulta ContextoOnline.Activo directamente (ya está fijado antes del cambio
+		// de escena, en MatchmakingOnline).
+		bool esOnlineAhora = ContextoOnline.Activo;
+		tronoRival.CargarHuevo((esOnlineAhora ? SkinRivalOnline() : SkinAleatoria()) ?? escenaDinoHuevoRef, true);
+		tronoRival.CambiarTrono(GD.Load<Texture2D>(esOnlineAhora ? TronoRivalOnline() : TronoAleatorio()), true);
 	}
 
 	/// <summary>Skin de Huevo aleatoria entre todas las disponibles en la tienda — solo para el
-	/// rival/IA; el jugador usa la skin que tiene seleccionada en el menú (Preferencias.RutaSkinActiva).</summary>
+	/// rival/IA (vs Bot); el jugador usa la skin que tiene seleccionada en el menú (Preferencias.RutaSkinActiva).</summary>
 	private PackedScene SkinAleatoria()
 	{
 		string skinPath = Preferencias.SKIN_ESCENAS[random.Next(Preferencias.SKIN_ESCENAS.Length)];
 		return ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : null;
+	}
+
+	/// <summary>Trono aleatorio entre todos los disponibles en la tienda — solo para el rival/IA
+	/// (vs Bot); el jugador usa el trono que tiene equipado en el menú (Preferencias.RutaTronoActiva).</summary>
+	private string TronoAleatorio() => Preferencias.TRONO_TEXTURAS[random.Next(Preferencias.TRONO_TEXTURAS.Length)];
+
+	/// <summary>Skin real del rival humano, sincronizada al emparejar (ContextoOnline.RivalSkinIdx).</summary>
+	private PackedScene SkinRivalOnline()
+	{
+		int idx = Mathf.Clamp(ContextoOnline.RivalSkinIdx, 0, Preferencias.SKIN_ESCENAS.Length - 1);
+		string skinPath = Preferencias.SKIN_ESCENAS[idx];
+		return ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : null;
+	}
+
+	/// <summary>Trono real del rival humano, sincronizado al emparejar (ContextoOnline.RivalTronoIdx).</summary>
+	private string TronoRivalOnline()
+	{
+		int idx = Mathf.Clamp(ContextoOnline.RivalTronoIdx, 0, Preferencias.TRONO_TEXTURAS.Length - 1);
+		return Preferencias.TRONO_TEXTURAS[idx];
 	}
 
 	private void ColocarTropasIniciales()

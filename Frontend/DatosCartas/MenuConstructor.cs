@@ -30,7 +30,7 @@ public partial class MenuConstructor : Control
 		("campero",        "res://imagenes/RendersTropa/Campero_Menu.png"),
 		("soldadoreal",    "res://imagenes/RendersTropa/SoldadoReal_Render.png"),
 		("maguin",         "res://imagenes/RendersTropa/Maguin_Menu.png"),
-		("majin",          "res://imagenes/RendersTropa/Maguin_Menu.png"),
+		("machi",          "res://imagenes/RendersTropa/Machi_Menu.png"),
 		("dragon",         "res://imagenes/RendersTropa/Dragon_Menu.png"),
 		("golem",          "res://imagenes/RendersTropa/Golem_Menu.png"),
 		("tiburon",        "res://imagenes/RendersTropa/Tiburon_Menu.png"),
@@ -308,9 +308,9 @@ public partial class MenuConstructor : Control
 		_mazoInicial = new List<CartaData>(_cartasEnMazo);
 	}
 
-	// Hoy solo hay 5 ardides/hechizos en total (Curación, Robar, Veneno, Bloqueo, Encebollado) —
-	// no alcanzan para llenar los 6 slots de ArdidSlots. Se precargan los 5 disponibles de
-	// entrada, igual que el mazo de tropas se autocompleta, en vez de arrancar vacío.
+	// Precarga los primeros 6 ardides disponibles (de los 8 hechizos totales) en los slots de
+	// ArdidSlots, igual que el mazo de tropas se autocompleta, en vez de arrancar vacío. La
+	// selección queda editable y es opcional confirmarla (ver ConfirmarSeleccionMazo).
 	private void InicializarMazoArdidJugador()
 	{
 		_cartasArdidEnMazo.Clear();
@@ -548,9 +548,9 @@ public partial class MenuConstructor : Control
 
 			// Ajustar tamaño de fuente y ancho del banner holgadamente para que no quede "a la medida" apretado,
 			// sino que mantenga proporciones amplias y elegantes como en el diseño original.
-			int fontSize = 25;
-			if (nombreUpper.Length > 14) fontSize = 23;
-			if (nombreUpper.Length > 18) fontSize = 20;
+			int fontSize = 29;
+			if (nombreUpper.Length > 14) fontSize = 27;
+			if (nombreUpper.Length > 18) fontSize = 23;
 			_lblShowcaseNombre.AddThemeFontSizeOverride("font_size", fontSize);
 
 			var font = _lblShowcaseNombre.GetThemeFont("font");
@@ -959,6 +959,7 @@ public partial class MenuConstructor : Control
 			marcadores[i].AddChild(mini);
 			mini.CargarDatos(datos);
 			mini.SetModoMazo(true, true);
+			mini.FijarAnimacionInteraccion(false); // ardides ya colocados: estáticos, sin hover/click punch
 
 			mini.Scale    = new Vector2(0.4f, 0.4f);
 			mini.Position = -(mini.Size * escFinal / 2f); // centrado sobre el Marker2D
@@ -1020,6 +1021,16 @@ public partial class MenuConstructor : Control
 		if (SesionJuego.Instance != null)
 		{
 			SesionJuego.Instance.GuardarMazo(escenas, imagenes);
+
+			// Ardides: opcional — si el jugador eligió los 6, se guardan; si no, Campo1 arma un
+			// pool aleatorio de los 8 disponibles (no bloquea la confirmación del mazo).
+			if (_cartasArdidEnMazo.Count == MAX_ARDIDES)
+			{
+				var idsArdid = new List<string>();
+				foreach (var c in _cartasArdidEnMazo)
+					if (!string.IsNullOrEmpty(c.IdHechizo)) idsArdid.Add(c.IdHechizo);
+				if (idsArdid.Count == MAX_ARDIDES) SesionJuego.Instance.GuardarMazoArdid(idsArdid);
+			}
 		}
 
 		// Actualizar snapshot confirmado

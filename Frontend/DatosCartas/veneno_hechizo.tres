@@ -20,3 +20,4 @@ DebilContra = "Metal"
 Descripcion = "Envenena el rea enemiga infligiendo daño peridico a las unidades afectadas."
 RutaEscena = ""
 Imagen = ExtResource("2_img")
+IdHechizo = "veneno"

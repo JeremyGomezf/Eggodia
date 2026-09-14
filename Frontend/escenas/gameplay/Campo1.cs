@@ -138,29 +138,44 @@ public partial class Campo1 : Node2D
 	// ── HECHIZOS ──────────────────────────────────────────────────────────
 	// Antes cada hechizo se gastaba UNA sola vez por partida entera (usadoVeneno=true para
 	// siempre). Ahora vuelven a estar disponibles pasados 5 turnos "en general" (cuentan los del
-	// jugador y los del rival) — índice 0=curación,1=robar,2=veneno,3=bloqueo,4=encebollado.
-	// "Robar Carta" además exige que la carta robada anterior (Spot4) ya se haya jugado.
-	private int[] _cooldownHechizo = new int[5];
+	// jugador y los del rival). "Robar Carta" además exige que la carta robada anterior (Spot4)
+	// ya se haya jugado.
+	private struct HechizoDef
+	{
+		public string Id;      // clave estable (persistencia, switch de efectos)
+		public string Nombre;
+		public string Ruta;    // PNG en HechizosPng
+		public bool   Aliado;  // true = objetivo tropas_jugador, false = tropas_rival
+	}
+
+	// Catálogo completo: 8 hechizos disponibles. El pool ACTIVO de una partida (_poolActivo) es
+	// este completo por defecto, o los 6 elegidos en MenuConstructor si el jugador los guardó
+	// (ver _Ready y SesionJuego.ArdidesSeleccionados).
+	private static readonly HechizoDef[] POOL_HECHIZO_BASE = {
+		new HechizoDef { Id = "curacion",     Nombre = "Curación",     Ruta = "res://imagenes/HechizosPng/Cura_hechizo.png",         Aliado = true  },
+		new HechizoDef { Id = "robar_carta",  Nombre = "Robar Carta",  Ruta = "res://imagenes/HechizosPng/Robo_hechizo.png",         Aliado = false },
+		new HechizoDef { Id = "veneno",       Nombre = "Veneno",       Ruta = "res://imagenes/HechizosPng/Veneno_hechizo.png",       Aliado = false },
+		new HechizoDef { Id = "bloqueo",      Nombre = "Bloqueo",      Ruta = "res://imagenes/HechizosPng/Bloqueo_hechizo.png",      Aliado = false },
+		new HechizoDef { Id = "encebollado",  Nombre = "Encebollado",  Ruta = "res://imagenes/HechizosPng/Encebo_hechizo.png",       Aliado = true  },
+		new HechizoDef { Id = "desprotegido", Nombre = "Desprotegido", Ruta = "res://imagenes/HechizosPng/Desprotegido_hechizo.png", Aliado = false },
+		new HechizoDef { Id = "escudo",       Nombre = "Escudo",       Ruta = "res://imagenes/HechizosPng/Escudo_hechizo.png",       Aliado = true  },
+		new HechizoDef { Id = "fuerza",       Nombre = "Fuerza",       Ruta = "res://imagenes/HechizosPng/Fuerza_hechizo.png",       Aliado = true  },
+	};
+	private HechizoDef[] _poolActivo = POOL_HECHIZO_BASE;
+	private int[] _cooldownHechizo;
 	private bool  _cartaRobadaPendiente = false;
 	private Carta _cartaRobada = null; // referencia a la carta robada al rival (antes se rastreaba por NombreSpot=="Spot4")
 	private Label  _lblInstruccion; // usada por Campo1.Enroque.cs ("Elige el carril de destino")
 	private bool   _hechizoUsadoEsteTurno = false; // 1 hechizo/trampa por turno (jugador e IA)
 	private System.Collections.Generic.List<Node> _resaltadosHechizoActivos = new();
 
-	// Pool visual de hechizos — mano de 3 cartas aleatorias de 5 posibles
-	private static readonly string[] POOL_HECHIZO_NOMBRE = { "Curación", "Robar Carta", "Veneno", "Bloqueo", "Encebollado" };
-	private static readonly string[] POOL_HECHIZO_RUTA = {
-		"res://imagenes/HechizosPng/Cura_hechizo.png",
-		"res://imagenes/HechizosPng/Robo_hechizo.png",
-		"res://imagenes/HechizosPng/Veneno_hechizo.png",
-		"res://imagenes/HechizosPng/Bloqueo_hechizo.png",
-		"res://imagenes/HechizosPng/Encebo_hechizo.png"
-	};
 	private int[]   _hechizosMano        = new int[2];
 	private Carta[] _tarjetasHechizoCarta = new Carta[2];
-	private const int MAX_CAMBIO_HECHIZO = 3; // hasta 3 cambios de hechizo por partida (jugador e IA)
-	private int     _usosCambioHechizo  = 0;
 	private TextureButton _btnCambiarHechizo;
+	// Cooldown del botón de Ardid (ArdidBarButton): 4 cambios de turno = 2 rondas completas
+	// (mío→rival→mío→rival), reemplaza el viejo tope de "3 usos por partida".
+	private const int COOLDOWN_BTN_ARDID = 4;
+	private int _cooldownBtnArdid = 0;
 
 	// ── CPU ADAPTATIVA ────────────────────────────────────────────────────
 	private int  _dificultadCPU       = 1; // 0=fácil, 1=medio, 2=difícil
@@ -277,6 +292,22 @@ public partial class Campo1 : Node2D
 				hbox.AddChild(btnHabilidad);
 			}
 		}
+
+		// Ardides desde sesión del jugador (MenuConstructor): si eligió y guardó 6, se usan en el
+		// orden elegido; si no, se mantiene el pool completo de 8 (mismo espíritu que hoy con 5).
+		// Debe resolverse ANTES de CrearPanelHechizos() (más abajo), que ya depende de _poolActivo
+		// y _cooldownHechizo para armar la mano inicial de hechizos.
+		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneArdides)
+		{
+			var elegidos = new List<HechizoDef>();
+			foreach (string id in SesionJuego.Instance.ArdidesSeleccionados)
+			{
+				foreach (var def in POOL_HECHIZO_BASE)
+					if (def.Id == id) { elegidos.Add(def); break; }
+			}
+			if (elegidos.Count == 6) _poolActivo = elegidos.ToArray();
+		}
+		_cooldownHechizo = new int[_poolActivo.Length];
 
 		_contenedorHechizos = GetNodeOrNull<Control>("ManoHechizos");
 		// Las cartas de mano deben verse SIEMPRE por encima de las tropas invocadas (el mayor

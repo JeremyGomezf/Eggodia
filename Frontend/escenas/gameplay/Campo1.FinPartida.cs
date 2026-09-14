@@ -63,7 +63,23 @@ public partial class Campo1 : Node2D
 				}
 			}
 		}
-		return _cacheIlustraciones.TryGetValue(ruta, out var tex) ? tex : null;
+		if (_cacheIlustraciones.TryGetValue(ruta, out var tex) && tex != null) return tex;
+
+		// Fallback: si la carta no tiene Imagen asignada en su .tres (o no se encontró match),
+		// usamos el propio sprite de la tropa en el tablero en vez de dejar el MVT en blanco.
+		return ObtenerTexturaDesdeNodo(tropa);
+	}
+
+	private Texture2D ObtenerTexturaDesdeNodo(Node2D tropa)
+	{
+		var sprite = tropa.GetNodeOrNull<Sprite2D>("Sprite2D");
+		if (sprite?.Texture != null) return sprite.Texture;
+
+		var animado = tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+		if (animado?.SpriteFrames != null && !string.IsNullOrEmpty(animado.Animation))
+			return animado.SpriteFrames.GetFrameTexture(animado.Animation, 0);
+
+		return null;
 	}
 
 	// Empareja la escena de batalla de la tropa (SceneFilePath) con el Nombre completo definido
@@ -362,7 +378,7 @@ public partial class Campo1 : Node2D
 		{
 			objetivo.SetMeta("bloqueado",     true);
 			objetivo.SetMeta("turnosBloqueo", 1);
-			objetivo.Modulate = new Color(0.4f, 0.6f, 1.4f);
+			objetivo.Modulate = COLOR_BLOQUEO;
 			ActualizarIconosEstado(objetivo);
 		}
 	}

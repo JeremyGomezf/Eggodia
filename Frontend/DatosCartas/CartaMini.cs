@@ -18,6 +18,12 @@ public partial class CartaMini : Control
 	private Vector2 _escalaBase = Vector2.One;
 	public void FijarEscalaBase(Vector2 escala) => _escalaBase = escala;
 
+	// Cuando es false, esta carta no anima al pasar el mouse ni al hacer click (se usa para los
+	// ardides ya colocados en ArdidSlots: deben quedar estáticos, pero el click sigue funcionando
+	// para poder quitarlos del mazo).
+	private bool _animarInteraccion = true;
+	public void FijarAnimacionInteraccion(bool activa) => _animarInteraccion = activa;
+
 	public void CargarDatos(CartaData datos)
 	{
 		MisDatos = datos;
@@ -95,10 +101,13 @@ public partial class CartaMini : Control
 		{
 			if (mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
 			{
-				PivotOffset = Size / 2;
-				var tween = CreateTween();
-				tween.TweenProperty(this, "scale", _escalaBase * 0.85f, 0.05f).SetTrans(Tween.TransitionType.Sine);
-				tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
+				if (_animarInteraccion)
+				{
+					PivotOffset = Size / 2;
+					var tween = CreateTween();
+					tween.TweenProperty(this, "scale", _escalaBase * 0.85f, 0.05f).SetTrans(Tween.TransitionType.Sine);
+					tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
+				}
 
 				OnClickeada?.Invoke(this);
 			}
@@ -107,6 +116,8 @@ public partial class CartaMini : Control
 
 	public override void _Notification(int what)
 	{
+		if (!_animarInteraccion) return;
+
 		if (what == NotificationMouseEnter)
 		{
 			PivotOffset = Size / 2;

@@ -23,6 +23,8 @@ public class MatchController : ControllerBase
     {
         public string JugadorId { get; set; } = "";
         public string Nombre { get; set; } = "";
+        public int SkinIdx { get; set; } = 0;
+        public int TronoIdx { get; set; } = 0;
     }
 
     [HttpPost("cola")]
@@ -36,7 +38,7 @@ public class MatchController : ControllerBase
         if (!req.JugadorId.StartsWith("u"))
             return StatusCode(403, new { mensaje = "Solo las cuentas registradas pueden jugar en línea." });
 
-        var p = _gestor.EntrarACola(req.JugadorId, string.IsNullOrWhiteSpace(req.Nombre) ? "Jugador" : req.Nombre);
+        var p = _gestor.EntrarACola(req.JugadorId, string.IsNullOrWhiteSpace(req.Nombre) ? "Jugador" : req.Nombre, req.SkinIdx, req.TronoIdx);
         return Ok(Serializar(p, req.JugadorId));
     }
 
@@ -122,6 +124,8 @@ public class MatchController : ControllerBase
     {
         string asiento = p.JugadorAId == jugadorId ? "A" : (p.JugadorBId == jugadorId ? "B" : "");
         string rival = asiento == "A" ? (p.JugadorBNombre ?? "") : p.JugadorANombre;
+        int rivalSkinIdx  = asiento == "A" ? p.SkinIdxB  : p.SkinIdxA;
+        int rivalTronoIdx = asiento == "A" ? p.TronoIdxB : p.TronoIdxA;
         return new
         {
             matchId = p.Id,
@@ -130,7 +134,9 @@ public class MatchController : ControllerBase
             semilla = p.Semilla,    // RNG compartido para la Fase 2
             jugadorA = p.JugadorANombre,
             jugadorB = p.JugadorBNombre ?? "",
-            rival
+            rival,
+            rivalSkinIdx,
+            rivalTronoIdx
         };
     }
 }

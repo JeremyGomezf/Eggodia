@@ -20,3 +20,4 @@ DebilContra = "Agua"
 Descripcion = "Drena energa y recursos del rival aumentando la velocidad de carga propia."
 RutaEscena = ""
 Imagen = ExtResource("2_img")
+IdHechizo = "robar_carta"

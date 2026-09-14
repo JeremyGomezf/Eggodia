@@ -89,7 +89,7 @@ public partial class Campo1 : Node2D
 		n.ZIndex = slotIdx == 0 ? 2 : 1;
 		n.GlobalPosition = spot.GlobalPosition - (n.Size * esc / 2f);
 		n.GuardarEstadoOriginal();
-		n.AsignarDatosHechizo(POOL_HECHIZO_RUTA[pi], pi, slotIdx);
+		n.AsignarDatosHechizo(_poolActivo[pi].Ruta, pi, slotIdx);
 		_tarjetasHechizoCarta[slotIdx] = n;
 	}
 
@@ -114,17 +114,17 @@ public partial class Campo1 : Node2D
 		CrearCartaHechizo(slotIdx);
 	}
 
-	// Un hechizo (0..4) es elegible si su cooldown ya llegó a 0 y, para "Robar Carta" (1), si no
-	// hay una carta robada anterior todavía sin jugar. "excluirPi" evita repetir el mismo hechizo
-	// que ya se ve en el otro slot. Devuelve -1 si no hay ninguno disponible.
+	// Un hechizo (índice dentro de _poolActivo) es elegible si su cooldown ya llegó a 0 y, para
+	// "Robar Carta", si no hay una carta robada anterior todavía sin jugar. "excluirPi" evita
+	// repetir el mismo hechizo que ya se ve en el otro slot. Devuelve -1 si no hay ninguno disponible.
 	private int ElegirHechizoElegible(int excluirPi = -1)
 	{
 		var candidatos = new System.Collections.Generic.List<int>();
-		for (int pi = 0; pi < 5; pi++)
+		for (int pi = 0; pi < _poolActivo.Length; pi++)
 		{
 			if (pi == excluirPi) continue;
 			if (_cooldownHechizo[pi] > 0) continue;
-			if (pi == 1 && _cartaRobadaPendiente) continue;
+			if (_poolActivo[pi].Id == "robar_carta" && _cartaRobadaPendiente) continue;
 			candidatos.Add(pi);
 		}
 		return candidatos.Count == 0 ? -1 : candidatos[random.Next(candidatos.Count)];
@@ -133,7 +133,7 @@ public partial class Campo1 : Node2D
 	// Pone en cooldown (5 turnos, contando jugador y rival) el hechizo pi recién usado.
 	private void MarcarHechizoUsado(int pi)
 	{
-		if (pi < 0 || pi >= 5) return;
+		if (pi < 0 || pi >= _cooldownHechizo.Length) return;
 		_cooldownHechizo[pi] = 5;
 	}
 
@@ -153,10 +153,11 @@ public partial class Campo1 : Node2D
 	// efecto directo sino que abre la mini-pantalla de robo.
 	public bool ResolverSueltaHechizoDesdeCarta(int slotIdx, int pi)
 	{
-		if (pi == 1) return ResolverSueltaRoboDesdeCarta(slotIdx);
+		if (pi < 0 || pi >= _poolActivo.Length) return false;
+		if (_poolActivo[pi].Id == "robar_carta") return ResolverSueltaRoboDesdeCarta(slotIdx);
 
 		Vector2 mouseMundo = GetGlobalMousePosition();
-		bool aliados = pi == 0 || pi == 4;
+		bool aliados = _poolActivo[pi].Aliado;
 		string grupo = aliados ? "tropas_jugador" : "tropas_rival";
 		Node2D objetivo = null; float mejor = 110f;
 		foreach (Node n in GetTree().GetNodesInGroup(grupo))
@@ -168,8 +169,7 @@ public partial class Campo1 : Node2D
 
 		if (objetivo == null || !AplicarHechizoADestino(pi, objetivo)) return false;
 
-		string[] nombresHechizo = { "Curación", "Robar Carta", "Veneno", "Bloqueo", "Encebollado" };
-		Preferencias.RegistrarUsoHechizo(nombresHechizo[pi]);
+		Preferencias.RegistrarUsoHechizo(_poolActivo[pi].Nombre);
 		_hechizoUsadoEsteTurno = true;
 		AutoReemplazarHechizo(slotIdx);
 		RegistrarGastoMovimiento();
@@ -184,13 +184,14 @@ public partial class Campo1 : Node2D
 	private void MostrarResaltadoObjetivosHechizo(int pi)
 	{
 		LimpiarResaltadoObjetivosHechizo();
-		if (pi == 1)
+		if (pi < 0 || pi >= _poolActivo.Length) return;
+		if (_poolActivo[pi].Id == "robar_carta")
 		{
 			if (tronoRival != null && IsInstanceValid(tronoRival))
 				_resaltadosHechizoActivos.Add(CrearAroResaltadoHechizo(tronoRival, new Color(1f, 0.82f, 0.3f, 0.9f), 90f));
 			return;
 		}
-		bool aliados = pi == 0 || pi == 4;
+		bool aliados = _poolActivo[pi].Aliado;
 		string grupo = aliados ? "tropas_jugador" : "tropas_rival";
 		Color colorAro = aliados ? new Color(0.35f, 1f, 0.5f, 0.9f) : new Color(1f, 0.35f, 0.3f, 0.9f);
 		foreach (Node n in GetTree().GetNodesInGroup(grupo))
@@ -230,24 +231,25 @@ public partial class Campo1 : Node2D
 	{
 		if (slotIdx < 0 || slotIdx >= 2 || _tarjetasHechizoCarta[slotIdx] == null) return false;
 		int pi = _hechizosMano[slotIdx];
-		if (pi == 1 && _cartaRobadaPendiente) return true;
+		if (pi < 0 || pi >= _poolActivo.Length) return false;
+		if (_poolActivo[pi].Id == "robar_carta" && _cartaRobadaPendiente) return true;
 		return _cooldownHechizo[pi] > 0;
 	}
 
 	// Botón "Ardid/Barajar": cambia las DOS cartas de hechizo de una sola vez (se van y vienen
-	// las nuevas), sin pasos intermedios — antes había que activar un "modo cambio" y después
-	// tocar una carta específica.
+	// las nuevas), sin pasos intermedios. Ya no tiene un tope de usos por partida — en su lugar,
+	// entra en cooldown por 2 rondas (4 cambios de turno) y se re-habilita solo (ver CambiarTurno,
+	// Campo1.Turnos.cs).
 	private void ActivarModoCambio()
 	{
-		if (_usosCambioHechizo >= MAX_CAMBIO_HECHIZO || !ValidarHechizo()) return;
-		_usosCambioHechizo++;
+		if (_cooldownBtnArdid > 0 || !ValidarHechizo()) return;
 		for (int i = 0; i < 2; i++) AutoReemplazarHechizo(i);
 
-		bool agotado = _usosCambioHechizo >= MAX_CAMBIO_HECHIZO;
+		_cooldownBtnArdid = COOLDOWN_BTN_ARDID;
 		if (_btnCambiarHechizo != null)
 		{
-			_btnCambiarHechizo.Disabled = agotado;
-			_btnCambiarHechizo.Modulate = agotado ? new Color(0.55f, 0.55f, 0.55f) : Colors.White;
+			_btnCambiarHechizo.Disabled = true;
+			_btnCambiarHechizo.Modulate = new Color(0.55f, 0.55f, 0.55f);
 		}
 	}
 

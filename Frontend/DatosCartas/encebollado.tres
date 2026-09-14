@@ -20,3 +20,4 @@ DebilContra = "Agua"
 Descripcion = "Furia de guiso: 150 AoE + veneno 2 turnos"
 RutaEscena = ""
 Imagen = ExtResource("1_l7eni")
+IdHechizo = "encebollado"

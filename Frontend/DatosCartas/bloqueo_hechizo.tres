@@ -20,3 +20,4 @@ DebilContra = "Fuego"
 Descripcion = "Genera un escudo mÃ­stico que absorbe hasta 350 de daño entrante."
 RutaEscena = ""
 Imagen = ExtResource("2_img")
+IdHechizo = "bloqueo"

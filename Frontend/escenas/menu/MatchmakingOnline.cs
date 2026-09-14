@@ -59,7 +59,12 @@ public partial class MatchmakingOnline : Node
 	{
 		if (_ocupado) return;
 		_ocupado = true;
-		string cuerpo = JsonSerializer.Serialize(new { jugadorId = _jugadorId, nombre = _nombre });
+		string cuerpo = JsonSerializer.Serialize(new {
+			jugadorId = _jugadorId,
+			nombre = _nombre,
+			skinIdx = Preferencias.SkinActivaIdx,
+			tronoIdx = Preferencias.TronoActivoIdx
+		});
 		string[] headers = { "Content-Type: application/json" };
 		if (_http.Request($"{ApiConfig.Base}/api/match/cola", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
 		{
@@ -93,11 +98,13 @@ public partial class MatchmakingOnline : Node
 			string rival = doc.TryGetProperty("rival", out var r) ? (r.GetString() ?? "") : "";
 			_asiento = doc.TryGetProperty("asiento", out var a) ? (a.GetString() ?? "A") : "A";
 			_semilla = doc.TryGetProperty("semilla", out var s) ? (s.GetString() ?? "") : "";
+			int rivalSkinIdx  = doc.TryGetProperty("rivalSkinIdx", out var rs) ? rs.GetInt32() : 0;
+			int rivalTronoIdx = doc.TryGetProperty("rivalTronoIdx", out var rt) ? rt.GetInt32() : 0;
 
 			if (_estado == "emparejado")
 			{
 				if (!_timerSondeo.IsStopped()) _timerSondeo.Stop();
-				MostrarEmparejado(rival);
+				MostrarEmparejado(rival, rivalSkinIdx, rivalTronoIdx);
 			}
 			else // esperando
 			{
@@ -208,7 +215,7 @@ public partial class MatchmakingOnline : Node
 		return b;
 	}
 
-	private void MostrarEmparejado(string rival)
+	private void MostrarEmparejado(string rival, int rivalSkinIdx, int rivalTronoIdx)
 	{
 		if (_spinner != null) _spinner.Visible = false;
 		_lblEstado.Text = "¡RIVAL ENCONTRADO!";
@@ -225,6 +232,8 @@ public partial class MatchmakingOnline : Node
 		ContextoOnline.Asiento     = _asiento;
 		ContextoOnline.Semilla     = _semilla;
 		ContextoOnline.RivalNombre = string.IsNullOrEmpty(rival) ? "Rival" : rival;
+		ContextoOnline.RivalSkinIdx  = rivalSkinIdx;
+		ContextoOnline.RivalTronoIdx = rivalTronoIdx;
 
 		GetTree().CreateTimer(1.6).Timeout += () =>
 		{
