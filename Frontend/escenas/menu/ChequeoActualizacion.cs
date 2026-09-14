@@ -27,6 +27,12 @@ public partial class ChequeoActualizacion : Node
 
 	public override void _Ready()
 	{
+		// Corriendo desde el editor de Godot (F5/F6) NO molesta con el aviso de actualización: así
+		// puedes desarrollar y probar sin que te bloquee aunque tu versión local sea menor que la del
+		// servidor. El bloqueo solo aplica en el APK exportado (build real), que es lo que juegan los
+		// usuarios: ahí "editor" no está presente en OS.HasFeature.
+		if (OS.HasFeature("editor")) { QueueFree(); return; }
+
 		_http = new HttpRequest();
 		AddChild(_http);
 		_http.RequestCompleted += OnRespuesta;
