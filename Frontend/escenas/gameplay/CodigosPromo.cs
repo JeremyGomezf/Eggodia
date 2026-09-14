@@ -1,46 +1,136 @@
 using Godot;
+using System;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
-/// <summary>Sistema de códigos de canje (skins, monedas, etc.) — hoy solo entrega monedas.
-/// Los códigos de un solo uso se rastrean POR DISPOSITIVO en Preferencias (ConfigFile local);
-/// no hay servidor, así que "un solo uso" significa "una vez en este dispositivo", no a nivel
-/// global de todos los jugadores.</summary>
+/// <summary>
+/// Sistema de códigos promocionales respaldado por el backend de Eggodia.
+/// Valida contra SQLite en el servidor, ligado a la cuenta del jugador (Usuario.Id).
+/// </summary>
 public static class CodigosPromo
 {
-	public enum Resultado { Canjeado, YaUsado, Erroneo, Expirado }
+	public enum TipoResultado { Canjeado, YaUsado, Erroneo, Expirado, RequiereLogin }
 
-	private struct Codigo
+	public class ResultadoCanje
 	{
-		public string Clave;
-		public int Monedas;
-		public int UsosMax; // -1 = ilimitado (se puede usar muchas veces); 1 = un solo uso
-		public bool Expirado;
+		public TipoResultado Tipo { get; set; }
+		public string Mensaje { get; set; } = "";
+		public string TipoRecompensa { get; set; } = ""; // "skin" | "monedas"
+		public string ValorRecompensa { get; set; } = ""; // ruta imagen skin o monto
+		public string NombreRecompensa { get; set; } = "";
+		public int Monedas { get; set; } = 0;
 	}
 
-	// 5 códigos de prueba pedidos: un solo uso cada uno, 200 monedas de recompensa.
-	private static readonly Codigo[] CODIGOS =
+	public static async Task<ResultadoCanje> CanjearAsync(string entrada, int userId, Node contextNode)
 	{
-		new Codigo { Clave = "EGGODIA2026",   Monedas = 200, UsosMax = 1 },
-		new Codigo { Clave = "HUEVODEORO",    Monedas = 200, UsosMax = 1 },
-		new Codigo { Clave = "BATALLAEPICA",  Monedas = 200, UsosMax = 1 },
-		new Codigo { Clave = "CASAABIERTA",   Monedas = 200, UsosMax = 1 },
-		new Codigo { Clave = "BIENVENIDOEGG", Monedas = 200, UsosMax = 1 },
-	};
-
-	public static (Resultado resultado, int monedas) Canjear(string entrada)
-	{
-		if (string.IsNullOrWhiteSpace(entrada)) return (Resultado.Erroneo, 0);
-		string clave = entrada.Trim().ToUpperInvariant();
-
-		foreach (var c in CODIGOS)
+		if (string.IsNullOrWhiteSpace(entrada))
 		{
-			if (c.Clave != clave) continue;
-			if (c.Expirado) return (Resultado.Expirado, 0);
-			if (c.UsosMax == 1 && Preferencias.CodigoYaCanjeado(clave)) return (Resultado.YaUsado, 0);
-
-			if (c.UsosMax == 1) Preferencias.MarcarCodigoCanjeado(clave);
-			Economia.Instancia()?.Agregar(c.Monedas);
-			return (Resultado.Canjeado, c.Monedas);
+			return new ResultadoCanje
+			{
+				Tipo = TipoResultado.Erroneo,
+				Mensaje = "Por favor ingresa un código válido."
+			};
 		}
-		return (Resultado.Erroneo, 0);
+
+		if (userId <= 0)
+		{
+			return new ResultadoCanje
+			{
+				Tipo = TipoResultado.RequiereLogin,
+				Mensaje = "Debes iniciar sesión primero para canjear códigos promocionales."
+			};
+		}
+
+		string codigo = entrada.Trim();
+
+		// Crear HTTPRequest temporal para la llamada asíncrona
+		var http = new HttpRequest();
+		contextNode.AddChild(http);
+
+		var tcs = new TaskCompletionSource<(long Result, long Code, byte[] Body)>();
+		http.RequestCompleted += (res, code, hdrs, body) =>
+		{
+			tcs.TrySetResult((res, code, body));
+		};
+
+		string jsonBody = JsonSerializer.Serialize(new
+		{
+			userId = userId,
+			codigo = codigo
+		});
+
+		string[] headers = { "Content-Type: application/json" };
+		Error err = http.Request(ApiConfig.CodigosCanjear, headers, HttpClient.Method.Post, jsonBody);
+		if (err != Error.Ok)
+		{
+			http.QueueFree();
+			return new ResultadoCanje
+			{
+				Tipo = TipoResultado.Erroneo,
+				Mensaje = "Error al intentar conectar con el servidor."
+			};
+		}
+
+		var (result, responseCode, respBody) = await tcs.Task;
+		http.QueueFree();
+
+		if (result != (long)HttpRequest.Result.Success)
+		{
+			return new ResultadoCanje
+			{
+				Tipo = TipoResultado.Erroneo,
+				Mensaje = "No se pudo comunicar con el servidor."
+			};
+		}
+
+		string respuestaJson = Encoding.UTF8.GetString(respBody);
+		try
+		{
+			using var doc = JsonDocument.Parse(respuestaJson);
+			var root = doc.RootElement;
+
+			if (responseCode == 200)
+			{
+				string tipo = root.TryGetProperty("tipo", out var pTipo) ? pTipo.GetString() ?? "" : "";
+				string valor = root.TryGetProperty("valor", out var pVal) ? pVal.GetString() ?? "" : "";
+				string nombre = root.TryGetProperty("nombre", out var pNom) ? pNom.GetString() ?? "" : "";
+				string msg = root.TryGetProperty("mensaje", out var pMsg) ? pMsg.GetString() ?? "¡Código canjeado!" : "¡Código canjeado!";
+
+				int monedas = 0;
+				if (tipo == "skin")
+				{
+					Preferencias.DesbloquearSkinExclusiva(valor);
+				}
+				else if (tipo == "monedas" && int.TryParse(valor, out monedas))
+				{
+					Economia.Instancia()?.Agregar(monedas);
+				}
+
+				return new ResultadoCanje
+				{
+					Tipo = TipoResultado.Canjeado,
+					Mensaje = msg,
+					TipoRecompensa = tipo,
+					ValorRecompensa = valor,
+					NombreRecompensa = nombre,
+					Monedas = monedas
+				};
+			}
+			else if (responseCode == 409)
+			{
+				string msg = root.TryGetProperty("message", out var pMsg) ? pMsg.GetString() ?? "Código ya usado." : "Código ya usado.";
+				return new ResultadoCanje { Tipo = TipoResultado.YaUsado, Mensaje = msg };
+			}
+			else
+			{
+				string msg = root.TryGetProperty("message", out var pMsg) ? pMsg.GetString() ?? "Código no válido." : "Código no válido.";
+				return new ResultadoCanje { Tipo = TipoResultado.Erroneo, Mensaje = msg };
+			}
+		}
+		catch
+		{
+			return new ResultadoCanje { Tipo = TipoResultado.Erroneo, Mensaje = "Respuesta del servidor no válida." };
+		}
 	}
 }

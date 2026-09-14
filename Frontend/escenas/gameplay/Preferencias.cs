@@ -151,6 +151,24 @@ public static class Preferencias
 		EscribirBoolEn(SEC_SKINS, $"owned_{idx}", true);
 	}
 
+	public static string SkinExclusivaActiva
+	{
+		get => LeerStringEn(SEC_SKINS, "exclusiva_activa", "");
+		set => EscribirStringEn(SEC_SKINS, "exclusiva_activa", value ?? "");
+	}
+
+	public static bool TieneSkinExclusiva(string ruta)
+	{
+		if (string.IsNullOrEmpty(ruta)) return false;
+		return LeerBoolEn(SEC_SKINS, $"owned_exclusiva_{ruta.GetHashCode()}", false);
+	}
+
+	public static void DesbloquearSkinExclusiva(string ruta)
+	{
+		if (string.IsNullOrEmpty(ruta)) return;
+		EscribirBoolEn(SEC_SKINS, $"owned_exclusiva_{ruta.GetHashCode()}", true);
+	}
+
 	// ── SKINS DE TRONO ────────────────────────────────────────────────────────
 	public static readonly string[] TRONO_TEXTURAS = {
 		"res://imagenes/Tronos/TronoReal.png",    // idx 0 = default, gratis
@@ -187,6 +205,115 @@ public static class Preferencias
 	public static void DesbloquearTrono(int idx)
 	{
 		EscribirBoolEn(SEC_TRONOS, $"owned_{idx}", true);
+	}
+
+	// ── COMPRAS DE CARTAS Y HECHIZOS (TIENDA) ──────────────────────────────────
+	private const string SEC_TIENDA_ITEMS = "tienda_items";
+
+	public static readonly string[] TIENDA_TROPA_IDS = {
+		"kabar", "soldadocartoon", "campero", "granadero", "tiburon", "calamar", "tanque"
+	};
+	public static readonly string[] TIENDA_TROPA_NOMBRES = {
+		"Ka-Bar", "Soldado Cartoon", "Campero", "Granadero", "Tiburón", "Calamar Gigante", "Tanque"
+	};
+	public static readonly int[] TIENDA_TROPA_PRECIOS = {
+		500, 500, 500, 1000, 1000, 1500, 1500
+	};
+	public static readonly string[] TIENDA_TROPA_ICONOS = {
+		"res://imagenes/iconos/KabarCA_icon.png",
+		"res://imagenes/iconos/SoldadoCA_icon.png",
+		"res://imagenes/iconos/CanperoCA_icon.png",
+		"res://imagenes/iconos/GranaderoCA_icon.png",
+		"res://imagenes/iconos/Tiburon_icon.png",
+		"res://imagenes/iconos/Calamar_icon.png",
+		"res://imagenes/iconos/TanqueCA_icon.png"
+	};
+
+	public static readonly string[] TIENDA_HECHIZO_IDS = {
+		"escudo", "desprotegido", "encebollado"
+	};
+	public static readonly string[] TIENDA_HECHIZO_NOMBRES = {
+		"Escudo", "Desprotegido", "Encebollado"
+	};
+	public static readonly int[] TIENDA_HECHIZO_PRECIOS = {
+		300, 300, 400
+	};
+	public static readonly string[] TIENDA_HECHIZO_ICONOS = {
+		"res://imagenes/HechizosPng/Escudo_hechizo.png",
+		"res://imagenes/HechizosPng/Desprotegido_hechizo.png",
+		"res://imagenes/HechizosPng/Encebo_hechizo.png"
+	};
+
+	public static string NormalizarIdItem(string raw)
+	{
+		if (string.IsNullOrEmpty(raw)) return "";
+		return raw.ToLowerInvariant().Replace(" ", "").Replace("_", "").Replace("-", "").Replace("á", "a").Replace("ó", "o");
+	}
+
+	public static bool EsTropaDeTienda(string nombreOId)
+	{
+		string norm = NormalizarIdItem(nombreOId);
+		foreach (var tid in TIENDA_TROPA_IDS)
+		{
+			if (norm.Contains(tid) || tid.Contains(norm)) return true;
+		}
+		return false;
+	}
+
+	public static bool EsHechizoDeTienda(string nombreOId)
+	{
+		string norm = NormalizarIdItem(nombreOId);
+		foreach (var hid in TIENDA_HECHIZO_IDS)
+		{
+			if (norm.Contains(hid) || hid.Contains(norm)) return true;
+		}
+		return false;
+	}
+
+	public static bool TieneTropaDesbloqueada(string nombreOId)
+	{
+		string norm = NormalizarIdItem(nombreOId);
+		string matchId = null;
+		foreach (var tid in TIENDA_TROPA_IDS)
+		{
+			if (norm.Contains(tid) || tid.Contains(norm)) { matchId = tid; break; }
+		}
+		if (matchId == null) return true;
+		return LeerBoolEn(SEC_TIENDA_ITEMS, $"tropa_{matchId}", false);
+	}
+
+	public static void DesbloquearTropa(string nombreOId)
+	{
+		string norm = NormalizarIdItem(nombreOId);
+		string matchId = norm;
+		foreach (var tid in TIENDA_TROPA_IDS)
+		{
+			if (norm.Contains(tid) || tid.Contains(norm)) { matchId = tid; break; }
+		}
+		EscribirBoolEn(SEC_TIENDA_ITEMS, $"tropa_{matchId}", true);
+	}
+
+	public static bool TieneHechizoDesbloqueado(string nombreOId)
+	{
+		string norm = NormalizarIdItem(nombreOId);
+		string matchId = null;
+		foreach (var hid in TIENDA_HECHIZO_IDS)
+		{
+			if (norm.Contains(hid) || hid.Contains(norm)) { matchId = hid; break; }
+		}
+		if (matchId == null) return true;
+		return LeerBoolEn(SEC_TIENDA_ITEMS, $"hechizo_{matchId}", false);
+	}
+
+	public static void DesbloquearHechizo(string nombreOId)
+	{
+		string norm = NormalizarIdItem(nombreOId);
+		string matchId = norm;
+		foreach (var hid in TIENDA_HECHIZO_IDS)
+		{
+			if (norm.Contains(hid) || hid.Contains(norm)) { matchId = hid; break; }
+		}
+		EscribirBoolEn(SEC_TIENDA_ITEMS, $"hechizo_{matchId}", true);
 	}
 
 	// ── CÓDIGOS DE CANJE ──────────────────────────────────────────────────────

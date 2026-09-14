@@ -5,6 +5,7 @@ using Godot;
 public partial class TorrePrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
+	protected override int TurnoDesbloqueoHabilidad => 1;
 
 	public override void _Ready()
 	{

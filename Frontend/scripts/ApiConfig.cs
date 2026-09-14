@@ -26,4 +26,7 @@ public static class ApiConfig
 	public static string Cartas    => $"{Base}/api/cartas";
 	public static string Ranking   => $"{Base}/api/usuarios/ranking";
 	public static string Resultado => $"{Base}/api/usuarios/resultado";
+	public static string ReclamarCartaFisica => $"{Base}/api/cartas/claim-physical-card";
+	public static string CodigosCanjear     => $"{Base}/api/codigos/canjear";
+	public static string CodigosSkins(int userId) => $"{Base}/api/codigos/usuario/{userId}/skins";
 }

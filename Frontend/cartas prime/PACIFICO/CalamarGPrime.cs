@@ -8,7 +8,7 @@ using System.Collections.Generic;
 public partial class CalamarGPrime : TropaBase
 {
 	public override string Tipo => Tipos.SOMBRA;
-	protected override int TurnoDesbloqueoHabilidad => 3;
+	protected override int TurnoDesbloqueoHabilidad => 4;
 
 	private const string RUTA_TENTACULO = "res://efectos/tentaculos_habilidad.tscn";
 

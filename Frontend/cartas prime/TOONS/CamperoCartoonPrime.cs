@@ -163,8 +163,9 @@ public partial class CamperoCartoonPrime : TropaBase
 
 		if (anim == "habilidad" && _habilidadActiva)
 		{
-			if (frame == 1) AplicarDañoDirecto(_objetivoHabilidad1, puntosAtaque);
-			if (frame == 7) AplicarDañoDirecto(_objetivoHabilidad2, puntosAtaque);
+			int danioHabilidad = Mathf.Max(10, puntosAtaque - 35);
+			if (frame == 1) AplicarDañoDirecto(_objetivoHabilidad1, danioHabilidad);
+			if (frame == 7) AplicarDañoDirecto(_objetivoHabilidad2, danioHabilidad);
 		}
 
 		if (anim == "derrota" && frame == 18 && !_derrotaIniciada)

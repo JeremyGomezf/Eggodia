@@ -10,6 +10,7 @@ public partial class MenuPrincipal : Control
 	[Export] public string RutaComoJugar       = "res://escenas/menu/PantallaComoJugar.tscn";
 	[Export] public string RutaBestiario       = "res://escenas/menu/PantallaBestiario.tscn";
 	[Export] public string RutaTienda          = "res://escenas/menu/Tienda.tscn";
+	[Export] public string RutaInvocacion      = "res://escenas/SummonTerminal.tscn";
 
 	// Refuerzo de escala por skin en el selector (mismo orden que Preferencias.SKIN_ESCENAS:
 	// Rey, Capitán, Dino, Majestad, Paper Dino, Coronel, Huevo Rosa, Majestad II). Compensa que
@@ -146,6 +147,13 @@ public partial class MenuPrincipal : Control
 			{
 				btnPruebas.Pressed += () => GetTree().ChangeSceneToFile(RutaCampoPruebas);
 				AgregarAnimacionHover(btnPruebas);
+			}
+
+			var btnInvocar = secundarios.GetNodeOrNull<Button>("BtnInvocarCarta");
+			if (btnInvocar != null)
+			{
+				btnInvocar.Pressed += () => GetTree().ChangeSceneToFile(RutaInvocacion);
+				AgregarAnimacionHover(btnInvocar);
 			}
 		}
 
@@ -369,16 +377,18 @@ public partial class MenuPrincipal : Control
 		vbox.AddChild(scrollSkins);
 
 		var grid = new GridContainer();
-		grid.Columns = Preferencias.SKIN_NOMBRES.Length;
+		grid.Columns = Preferencias.SKIN_NOMBRES.Length + 4;
 		grid.AddThemeConstantOverride("h_separation", 14);
 		grid.AddThemeConstantOverride("v_separation", 12);
 		scrollSkins.AddChild(grid);
+
+		string exclusivaActiva = Preferencias.SkinExclusivaActiva;
 
 		for (int i = 0; i < Preferencias.SKIN_NOMBRES.Length; i++)
 		{
 			int capI = i;
 			bool poseida = Preferencias.TieneSkin(i);
-			bool activa  = Preferencias.SkinActivaIdx == i;
+			bool activa  = string.IsNullOrEmpty(exclusivaActiva) && Preferencias.SkinActivaIdx == i;
 
 			var skinPanel = new PanelContainer();
 			skinPanel.CustomMinimumSize = new Vector2(190, 230);
@@ -444,6 +454,7 @@ public partial class MenuPrincipal : Control
 				btnEquip.CustomMinimumSize = new Vector2(0, 32);
 				btnEquip.AddThemeFontSizeOverride("font_size", 12);
 				btnEquip.Pressed += () => {
+					Preferencias.SkinExclusivaActiva = "";
 					Preferencias.SkinActivaIdx = capI;
 					overlay.QueueFree();
 					// Actualizar la imagen del huevo visible en el menú
@@ -465,6 +476,100 @@ public partial class MenuPrincipal : Control
 			grid.AddChild(skinPanel);
 		}
 
+		// ── SKINS EXCLUSIVAS (Huevo Ecotec + Skins Fijas de Devs) ──────────
+		int userIdActual = SesionJuego.Instance != null ? SesionJuego.Instance.UsuarioId : 0;
+		string nombreUsuario = (SesionJuego.Instance != null ? SesionJuego.Instance.NombreJugador : "").ToLowerInvariant();
+
+		var skinsExclusivas = new (string nombre, string ruta, int devId, string claveDev)[]
+		{
+			("Huevo Ecotec", "res://imagenes/PersonajesPng/HuevoEcotec.png", -1, ""),
+			("Jeremi Huevo", "res://imagenes/PersonajesPng/JeremiHuevo.png", 1, "jeremy"),
+			("Carlos Huevo", "res://imagenes/PersonajesPng/CarlosHuevo.png", 4, "kankox"),
+			("Gonza Huevo",  "res://imagenes/PersonajesPng/GonzaHuevo.png",  2, "gonza"),
+		};
+
+		foreach (var (nombreExc, rutaExc, devId, claveDev) in skinsExclusivas)
+		{
+			bool esDev = (devId > 0 && userIdActual == devId) || (!string.IsNullOrEmpty(claveDev) && nombreUsuario.Contains(claveDev));
+			bool poseida = esDev || Preferencias.TieneSkinExclusiva(rutaExc);
+			bool activa = exclusivaActiva == rutaExc;
+
+			// Si es skin de un dev y no es de este usuario, no la mostramos para mantener la exclusividad
+			if (devId > 0 && !esDev && !Preferencias.TieneSkinExclusiva(rutaExc)) continue;
+
+			var skinPanel = new PanelContainer();
+			skinPanel.CustomMinimumSize = new Vector2(190, 230);
+
+			var sbSkin = new StyleBoxFlat();
+			sbSkin.BgColor = activa ? new Color(0.15f, 0.25f, 0.12f) : new Color(0.12f, 0.08f, 0.22f, 0.95f);
+			sbSkin.BorderWidthLeft = sbSkin.BorderWidthTop = sbSkin.BorderWidthRight = sbSkin.BorderWidthBottom = 2;
+			sbSkin.BorderColor = activa ? new Color(0.4f, 1f, 0.4f)
+							  : poseida ? new Color(1f, 0.85f, 0.25f)
+							  :           new Color(0.35f, 0.35f, 0.55f);
+			sbSkin.CornerRadiusTopLeft = sbSkin.CornerRadiusTopRight =
+			sbSkin.CornerRadiusBottomLeft = sbSkin.CornerRadiusBottomRight = 10;
+			sbSkin.ContentMarginLeft = sbSkin.ContentMarginRight =
+			sbSkin.ContentMarginTop  = sbSkin.ContentMarginBottom = 8;
+			skinPanel.AddThemeStyleboxOverride("panel", sbSkin);
+
+			var svbox = new VBoxContainer();
+			svbox.AddThemeConstantOverride("separation", 6);
+
+			var tex = new TextureRect();
+			tex.CustomMinimumSize = new Vector2(130, 140);
+			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+			tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			if (ResourceLoader.Exists(rutaExc)) tex.Texture = GD.Load<Texture2D>(rutaExc);
+			tex.PivotOffset = tex.CustomMinimumSize / 2f;
+			if (!poseida) tex.Modulate = new Color(0.4f, 0.4f, 0.4f);
+			svbox.AddChild(tex);
+
+			var lblN = new Label();
+			lblN.Text = nombreExc + "\n★ EXCLUSIVO ★";
+			lblN.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
+			lblN.AddThemeFontSizeOverride("font_size", 11);
+			lblN.HorizontalAlignment = HorizontalAlignment.Center;
+			lblN.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+			svbox.AddChild(lblN);
+
+			if (activa)
+			{
+				var lbl = new Label();
+				lbl.Text = "✓ EQUIPADA";
+				lbl.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
+				lbl.AddThemeFontSizeOverride("font_size", 11);
+				lbl.HorizontalAlignment = HorizontalAlignment.Center;
+				svbox.AddChild(lbl);
+			}
+			else if (poseida)
+			{
+				var btnEquip = new Button();
+				btnEquip.Text = "EQUIPAR";
+				btnEquip.CustomMinimumSize = new Vector2(0, 32);
+				btnEquip.AddThemeFontSizeOverride("font_size", 12);
+				string r = rutaExc;
+				btnEquip.Pressed += () => {
+					Preferencias.SkinExclusivaActiva = r;
+					overlay.QueueFree();
+					ActualizarHuevoMenu();
+				};
+				svbox.AddChild(btnEquip);
+			}
+			else
+			{
+				var lblLocked = new Label();
+				lblLocked.Text = "🎁 Por código";
+				lblLocked.AddThemeColorOverride("font_color", new Color(0.8f, 0.7f, 0.4f));
+				lblLocked.AddThemeFontSizeOverride("font_size", 11);
+				lblLocked.HorizontalAlignment = HorizontalAlignment.Center;
+				svbox.AddChild(lblLocked);
+			}
+
+			skinPanel.AddChild(svbox);
+			grid.AddChild(skinPanel);
+		}
+
 		overlay.AddChild(panel);
 
 		// Animación de entrada
@@ -477,11 +582,19 @@ public partial class MenuPrincipal : Control
 
 	private const string RUTA_REY_HUEVO_CORONADO = "res://imagenes/MenuNuevo/ReyHuevoCrowned.png";
 
-	/// <summary>Refleja en el menú principal la skin de huevo equipada. La corona es exclusiva
-	/// del Rey Huevo (skin 0) — las demás skins se muestran tal cual, sin corona.</summary>
+	/// <summary>Refleja en el menú principal la skin de huevo equipada (soporta tanto catálogo estándar como exclusivas).</summary>
 	private void ActualizarHuevoMenu()
 	{
 		if (_reyHuevoNode == null) return;
+
+		string exclusiva = Preferencias.SkinExclusivaActiva;
+		if (!string.IsNullOrEmpty(exclusiva) && ResourceLoader.Exists(exclusiva))
+		{
+			_reyHuevoNode.Texture = GD.Load<Texture2D>(exclusiva);
+			_reyHuevoNode.Scale = Vector2.One;
+			return;
+		}
+
 		int idx = Preferencias.SkinActivaIdx;
 		string ruta = idx == 0 ? RUTA_REY_HUEVO_CORONADO : Preferencias.SKIN_IMAGENES[idx];
 		var tex = GD.Load<Texture2D>(ruta);

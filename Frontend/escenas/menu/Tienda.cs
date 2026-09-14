@@ -131,9 +131,13 @@ public partial class Tienda : Control
 		AgregarSeccion("TRONOS 🪑", new Color(0.85f, 0.7f, 1f));
 		AgregarGridTronos();
 
-		// Sección 3: Skins de cartas
-		AgregarSeccion("SKINS DE CARTAS 🃏", new Color(0.55f, 0.85f, 1f));
-		AgregarGridSkinsCartas();
+		// Sección 3: Tropas de combate
+		AgregarSeccion("TROPAS DISPONIBLES ⚔️", new Color(0.95f, 0.45f, 0.35f));
+		AgregarGridTropasTienda();
+
+		// Sección 4: Ardides y Hechizos
+		AgregarSeccion("ARDIDES Y HECHIZOS ✨", new Color(0.55f, 0.85f, 1f));
+		AgregarGridHechizosTienda();
 	}
 
 	private void AgregarSeccion(string titulo, Color color)
@@ -150,9 +154,6 @@ public partial class Tienda : Control
 
 	private void AgregarGridSkins()
 	{
-		// Fila continua [huevo][huevo][huevo]... que envuelve sola al llegar al borde (en vez de
-		// una grilla de columnas fijas) — HFlowContainer calcula cuántas entran por fila según el
-		// ancho disponible y baja el resto solo, como pediste.
 		var flow = new HFlowContainer();
 		flow.AddThemeConstantOverride("h_separation", 20);
 		flow.AddThemeConstantOverride("v_separation", 20);
@@ -175,15 +176,200 @@ public partial class Tienda : Control
 			flow.AddChild(CrearItemTrono(i));
 	}
 
-	private void AgregarGridSkinsCartas()
+	private void AgregarGridTropasTienda()
 	{
-		var grid = new GridContainer();
-		grid.Columns = 3;
-		grid.AddThemeConstantOverride("h_separation", 18);
-		grid.AddThemeConstantOverride("v_separation", 18);
-		grid.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		_contenidoScroll.AddChild(grid);
-		grid.AddChild(CrearItemCartaNoDisponible("T-Rex Prime", "res://cartas prime/PAPEL/TRex_prime.tscn"));
+		var flow = new HFlowContainer();
+		flow.AddThemeConstantOverride("h_separation", 20);
+		flow.AddThemeConstantOverride("v_separation", 20);
+		flow.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_contenidoScroll.AddChild(flow);
+
+		for (int i = 0; i < Preferencias.TIENDA_TROPA_NOMBRES.Length; i++)
+			flow.AddChild(CrearItemTropaTienda(i));
+	}
+
+	private void AgregarGridHechizosTienda()
+	{
+		var flow = new HFlowContainer();
+		flow.AddThemeConstantOverride("h_separation", 20);
+		flow.AddThemeConstantOverride("v_separation", 20);
+		flow.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_contenidoScroll.AddChild(flow);
+
+		for (int i = 0; i < Preferencias.TIENDA_HECHIZO_NOMBRES.Length; i++)
+			flow.AddChild(CrearItemHechizoTienda(i));
+	}
+
+	private Control CrearItemTropaTienda(int idx)
+	{
+		string id = Preferencias.TIENDA_TROPA_IDS[idx];
+		bool poseida = Preferencias.TieneTropaDesbloqueada(id);
+
+		var panel = new PanelContainer();
+		panel.CustomMinimumSize = new Vector2(230, 320);
+
+		var sbNormal = new StyleBoxFlat();
+		sbNormal.BgColor = poseida
+			? new Color(0.14f, 0.22f, 0.10f, 0.97f)
+			: new Color(0.09f, 0.11f, 0.22f, 0.96f);
+		sbNormal.BorderWidthLeft = sbNormal.BorderWidthTop = sbNormal.BorderWidthRight = sbNormal.BorderWidthBottom = 2;
+		sbNormal.BorderColor = poseida ? new Color(0.4f, 1f, 0.4f) : new Color(0.85f, 0.45f, 0.35f);
+		sbNormal.CornerRadiusTopLeft = sbNormal.CornerRadiusTopRight =
+		sbNormal.CornerRadiusBottomLeft = sbNormal.CornerRadiusBottomRight = 12;
+		sbNormal.ContentMarginLeft = sbNormal.ContentMarginRight =
+		sbNormal.ContentMarginTop  = sbNormal.ContentMarginBottom = 14;
+		sbNormal.ShadowColor = new Color(0, 0, 0, 0.4f); sbNormal.ShadowSize = 6;
+		panel.AddThemeStyleboxOverride("panel", sbNormal);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 10);
+
+		var tex = new TextureRect();
+		tex.CustomMinimumSize = new Vector2(180, 180);
+		tex.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		if (ResourceLoader.Exists(Preferencias.TIENDA_TROPA_ICONOS[idx]))
+			tex.Texture = GD.Load<Texture2D>(Preferencias.TIENDA_TROPA_ICONOS[idx]);
+		vbox.AddChild(tex);
+
+		var lblNombre = new Label();
+		lblNombre.Text = Preferencias.TIENDA_TROPA_NOMBRES[idx];
+		lblNombre.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
+		lblNombre.AddThemeFontSizeOverride("font_size", 18);
+		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
+		lblNombre.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		vbox.AddChild(lblNombre);
+
+		if (poseida)
+		{
+			var lblActiva = new Label();
+			lblActiva.Text = "✓ DESBLOQUEADA";
+			lblActiva.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
+			lblActiva.AddThemeFontSizeOverride("font_size", 16);
+			lblActiva.HorizontalAlignment = HorizontalAlignment.Center;
+			vbox.AddChild(lblActiva);
+		}
+		else
+		{
+			int precio = Preferencias.TIENDA_TROPA_PRECIOS[idx];
+			var btnComprar = new Button();
+			btnComprar.Text = precio.ToString();
+			btnComprar.Icon = GD.Load<Texture2D>(RUTA_ICONO_MONEDA);
+			btnComprar.ExpandIcon = false;
+			btnComprar.AddThemeConstantOverride("icon_max_width", 26);
+			btnComprar.CustomMinimumSize = new Vector2(0, 56);
+			btnComprar.AddThemeFontSizeOverride("font_size", 18);
+			int capIdx = idx;
+			btnComprar.Pressed += () => IntentarComprarTropa(capIdx, btnComprar);
+			vbox.AddChild(btnComprar);
+		}
+
+		panel.AddChild(vbox);
+		return panel;
+	}
+
+	private void IntentarComprarTropa(int idx, Button btn)
+	{
+		var eco = Economia.Instancia();
+		if (eco == null) return;
+		int precio = Preferencias.TIENDA_TROPA_PRECIOS[idx];
+		if (!eco.Gastar(precio))
+		{
+			MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f));
+			return;
+		}
+
+		string id = Preferencias.TIENDA_TROPA_IDS[idx];
+		Preferencias.DesbloquearTropa(id);
+		MostrarMensaje($"¡{Preferencias.TIENDA_TROPA_NOMBRES[idx]} desbloqueada!", Colors.Gold);
+		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
+	}
+
+	private Control CrearItemHechizoTienda(int idx)
+	{
+		string id = Preferencias.TIENDA_HECHIZO_IDS[idx];
+		bool poseido = Preferencias.TieneHechizoDesbloqueado(id);
+
+		var panel = new PanelContainer();
+		panel.CustomMinimumSize = new Vector2(230, 320);
+
+		var sbNormal = new StyleBoxFlat();
+		sbNormal.BgColor = poseido
+			? new Color(0.14f, 0.22f, 0.10f, 0.97f)
+			: new Color(0.09f, 0.11f, 0.22f, 0.96f);
+		sbNormal.BorderWidthLeft = sbNormal.BorderWidthTop = sbNormal.BorderWidthRight = sbNormal.BorderWidthBottom = 2;
+		sbNormal.BorderColor = poseido ? new Color(0.4f, 1f, 0.4f) : new Color(0.35f, 0.75f, 0.95f);
+		sbNormal.CornerRadiusTopLeft = sbNormal.CornerRadiusTopRight =
+		sbNormal.CornerRadiusBottomLeft = sbNormal.CornerRadiusBottomRight = 12;
+		sbNormal.ContentMarginLeft = sbNormal.ContentMarginRight =
+		sbNormal.ContentMarginTop  = sbNormal.ContentMarginBottom = 14;
+		sbNormal.ShadowColor = new Color(0, 0, 0, 0.4f); sbNormal.ShadowSize = 6;
+		panel.AddThemeStyleboxOverride("panel", sbNormal);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 10);
+
+		var tex = new TextureRect();
+		tex.CustomMinimumSize = new Vector2(180, 180);
+		tex.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
+		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		if (ResourceLoader.Exists(Preferencias.TIENDA_HECHIZO_ICONOS[idx]))
+			tex.Texture = GD.Load<Texture2D>(Preferencias.TIENDA_HECHIZO_ICONOS[idx]);
+		vbox.AddChild(tex);
+
+		var lblNombre = new Label();
+		lblNombre.Text = Preferencias.TIENDA_HECHIZO_NOMBRES[idx];
+		lblNombre.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
+		lblNombre.AddThemeFontSizeOverride("font_size", 18);
+		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
+		lblNombre.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		vbox.AddChild(lblNombre);
+
+		if (poseido)
+		{
+			var lblActivo = new Label();
+			lblActivo.Text = "✓ DESBLOQUEADO";
+			lblActivo.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
+			lblActivo.AddThemeFontSizeOverride("font_size", 16);
+			lblActivo.HorizontalAlignment = HorizontalAlignment.Center;
+			vbox.AddChild(lblActivo);
+		}
+		else
+		{
+			int precio = Preferencias.TIENDA_HECHIZO_PRECIOS[idx];
+			var btnComprar = new Button();
+			btnComprar.Text = precio.ToString();
+			btnComprar.Icon = GD.Load<Texture2D>(RUTA_ICONO_MONEDA);
+			btnComprar.ExpandIcon = false;
+			btnComprar.AddThemeConstantOverride("icon_max_width", 26);
+			btnComprar.CustomMinimumSize = new Vector2(0, 56);
+			btnComprar.AddThemeFontSizeOverride("font_size", 18);
+			int capIdx = idx;
+			btnComprar.Pressed += () => IntentarComprarHechizo(capIdx, btnComprar);
+			vbox.AddChild(btnComprar);
+		}
+
+		panel.AddChild(vbox);
+		return panel;
+	}
+
+	private void IntentarComprarHechizo(int idx, Button btn)
+	{
+		var eco = Economia.Instancia();
+		if (eco == null) return;
+		int precio = Preferencias.TIENDA_HECHIZO_PRECIOS[idx];
+		if (!eco.Gastar(precio))
+		{
+			MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f));
+			return;
+		}
+
+		string id = Preferencias.TIENDA_HECHIZO_IDS[idx];
+		Preferencias.DesbloquearHechizo(id);
+		MostrarMensaje($"¡{Preferencias.TIENDA_HECHIZO_NOMBRES[idx]} desbloqueado!", Colors.Gold);
+		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
 	}
 
 	private Control CrearItemSkin(int idx)

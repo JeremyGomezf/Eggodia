@@ -378,6 +378,14 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_sec_btn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_sec_btn_hover")
 text = "PRUEBAS"
 
+[node name="BtnInvocarCarta" type="Button" parent="SecondaryButtons" unique_id=981273912]
+custom_minimum_size = Vector2(235, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_sec_btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_sec_btn_hover")
+text = "INVOCAR CARTA"
+
 [node name="Nube1" type="Sprite2D" parent="." unique_id=856902181]
 material = SubResource("ShaderMaterial_4jhn6")
 position = Vector2(2254, 855.99994)

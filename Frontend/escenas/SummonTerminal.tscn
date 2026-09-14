@@ -1,0 +1,735 @@
+[gd_scene format=3 uid="uid://c6j27h8a4p1yq"]
+
+[ext_resource type="Script" path="res://escenas/SummonTerminal.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bwt8vhdaw1udt" path="res://imagenes/MenuNuevo/PortalMenu.png" id="2_portal"]
+[ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="3_font"]
+[ext_resource type="Texture2D" path="res://imagenes/UI_Dialogo/MarcoDialogoMadera.png" id="4_marco_dialogo"]
+[ext_resource type="Texture2D" path="res://imagenes/UI_Dialogo/MarcoAvatarMadera.png" id="5_marco_avatar"]
+[ext_resource type="Texture2D" path="res://imagenes/UI_Dialogo/PlacaNombreMadera.png" id="6_placa_nombre"]
+[ext_resource type="Texture2D" path="res://imagenes/UI_Dialogo/IconoVida.png" id="7_ico_hp"]
+[ext_resource type="Texture2D" path="res://imagenes/UI_Dialogo/IconoAtaque.png" id="8_ico_atk"]
+[ext_resource type="Texture2D" path="res://imagenes/UI_Dialogo/IconoDefensa.png" id="9_ico_def"]
+[ext_resource type="Texture2D" path="res://imagenes/UI_Dialogo/MedallaEjercitoOro.png" id="10_medalla"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.05, 0.08, 0.15, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.65, 0.95, 0.45)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prompt"]
+bg_color = Color(0.06, 0.12, 0.22, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.1, 0.85, 0.65, 0.8)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.1, 0.85, 0.65, 0.25)
+shadow_size = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge_serie"]
+bg_color = Color(0.05, 0.45, 0.6, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.85, 1, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_badge_tipo"]
+bg_color = Color(0.25, 0.28, 0.35, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.75, 0.85, 0.7)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp"]
+bg_color = Color(0.55, 0.08, 0.08, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.3, 0.3, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_atk"]
+bg_color = Color(0.65, 0.25, 0.03, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.55, 0.1, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_def"]
+bg_color = Color(0.08, 0.28, 0.65, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.6, 1, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hab"]
+bg_color = Color(0.38, 0.12, 0.62, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.4, 1, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+bg_color = Color(0.85, 0.58, 0.12, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.9, 0.4, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.98, 0.72, 0.18, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 0.7, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(1, 0.8, 0.2, 0.35)
+shadow_size = 10
+
+[node name="SummonTerminal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="FondoOscuro" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.08, 1)
+
+[node name="FondoTematico" type="TextureRect" parent="."]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BtnVolver" type="Button" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 35.0
+offset_right = 190.0
+offset_bottom = 85.0
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 24
+text = "◀ Volver"
+
+[node name="ContenedorAnimacion" type="Node2D" parent="."]
+position = Vector2(960, 420)
+
+[node name="Portal" type="Sprite2D" parent="ContenedorAnimacion"]
+scale = Vector2(1.85, 1.85)
+texture = ExtResource("2_portal")
+
+[node name="PersonajeSprite" type="Sprite2D" parent="ContenedorAnimacion"]
+scale = Vector2(1e-05, 1e-05)
+
+[node name="PanelInput" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -180.0
+offset_right = 380.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="PanelInput"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Titulo" type="Label" parent="PanelInput/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.8, 1, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 32
+text = "TERMINAL DE INVOCACIÓN"
+horizontal_alignment = 1
+
+[node name="BtnEscanearNFC" type="Button" parent="PanelInput/VBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.35, 1, 0.85, 1)
+text = "📡 ACERCAR TARJETA NFC / RFID"
+
+[node name="Subtitulo" type="Label" parent="PanelInput/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1)
+theme_override_font_sizes/font_size = 18
+text = "Acerca tu tarjeta a la pantalla o ingresa los 5 dígitos del reverso:"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HBoxInput" type="HBoxContainer" parent="PanelInput/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="TxtCodigo" type="LineEdit" parent="PanelInput/VBox/HBoxInput"]
+custom_minimum_size = Vector2(220, 52)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 26
+placeholder_text = "09764"
+alignment = 1
+max_length = 5
+
+[node name="BtnSincronizar" type="Button" parent="PanelInput/VBox/HBoxInput"]
+custom_minimum_size = Vector2(180, 52)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 24
+text = "Sincronizar"
+
+[node name="LblEstado" type="Label" parent="PanelInput/VBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="PanelNfcPrompt" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -120.0
+offset_right = 380.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(380, 120)
+theme_override_styles/panel = SubResource("StyleBoxFlat_prompt")
+
+[node name="VBox" type="VBoxContainer" parent="PanelNfcPrompt"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="IconoNFC" type="Label" parent="PanelNfcPrompt/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "📡"
+horizontal_alignment = 1
+
+[node name="LblPromptTouch" type="Label" parent="PanelNfcPrompt/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.8, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 26
+text = "¡ENLACE DETECTADO!
+APOYA TU TARJETA FÍSICA SOBRE LA PANTALLA"
+horizontal_alignment = 1
+
+[node name="CajaDialogoDDLC" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -820.0
+offset_top = -285.0
+offset_right = 820.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="FondoMadera" type="NinePatchRect" parent="CajaDialogoDDLC"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_marco_dialogo")
+patch_margin_left = 65
+patch_margin_top = 45
+patch_margin_right = 65
+patch_margin_bottom = 45
+
+[node name="Margin" type="MarginContainer" parent="CajaDialogoDDLC"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 35
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 35
+theme_override_constants/margin_bottom = 18
+
+[node name="HBox" type="HBoxContainer" parent="CajaDialogoDDLC/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="AvatarBox" type="Control" parent="CajaDialogoDDLC/Margin/HBox"]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+
+[node name="AvatarTexture" type="TextureRect" parent="CajaDialogoDDLC/Margin/HBox/AvatarBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 18.0
+offset_right = -18.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AvatarFrame" type="TextureRect" parent="CajaDialogoDDLC/Margin/HBox/AvatarBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_marco_avatar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBox" type="VBoxContainer" parent="CajaDialogoDDLC/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="HBoxTop" type="HBoxContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="NamePanel" type="TextureRect" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxTop"]
+custom_minimum_size = Vector2(260, 44)
+layout_mode = 2
+texture = ExtResource("6_placa_nombre")
+expand_mode = 1
+
+[node name="Center" type="CenterContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxTop/NamePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LblNombre" type="Label" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxTop/NamePanel/Center"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.55, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 26
+text = "NOMBRE PERSONAJE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BadgeSerie" type="PanelContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxTop"]
+custom_minimum_size = Vector2(120, 32)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge_serie")
+
+[node name="Margin" type="MarginContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxTop/BadgeSerie"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_right = 10
+
+[node name="LblSerie" type="Label" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxTop/BadgeSerie/Margin"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 17
+text = "🌊 PACÍFICO"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BadgeTipo" type="PanelContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxTop"]
+custom_minimum_size = Vector2(100, 32)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_badge_tipo")
+
+[node name="Margin" type="MarginContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxTop/BadgeTipo"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_right = 10
+
+[node name="LblTipo" type="Label" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxTop/BadgeTipo/Margin"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 17
+text = "⚔️ Asesino"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TxtDialogo" type="RichTextLabel" parent="CajaDialogoDDLC/Margin/HBox/VBox"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.98, 0.98, 0.98, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/normal_font_size = 22
+bbcode_enabled = true
+text = "Diálogo del personaje..."
+
+[node name="HBoxBottom" type="HBoxContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HBoxStats" type="HBoxContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="BadgeHP" type="PanelContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_hp")
+
+[node name="Margin" type="MarginContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeHP"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
+
+[node name="HBoxHP" type="HBoxContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeHP/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="IcoHP" type="TextureRect" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeHP/Margin/HBoxHP"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("7_ico_hp")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LblHP" type="Label" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeHP/Margin/HBoxHP"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 18
+text = "260"
+
+[node name="BadgeATK" type="PanelContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_atk")
+
+[node name="Margin" type="MarginContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeATK"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
+
+[node name="HBoxATK" type="HBoxContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeATK/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="IcoATK" type="TextureRect" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeATK/Margin/HBoxATK"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("8_ico_atk")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LblATK" type="Label" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeATK/Margin/HBoxATK"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 18
+text = "320"
+
+[node name="BadgeDEF" type="PanelContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_def")
+
+[node name="Margin" type="MarginContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeDEF"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
+
+[node name="HBoxDEF" type="HBoxContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeDEF/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="IcoDEF" type="TextureRect" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeDEF/Margin/HBoxDEF"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("9_ico_def")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LblDEF" type="Label" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeDEF/Margin/HBoxDEF"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 18
+text = "180"
+
+[node name="BadgeHab" type="PanelContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hab")
+
+[node name="Margin" type="MarginContainer" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeHab"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
+
+[node name="LblHab" type="Label" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom/HBoxStats/BadgeHab/Margin"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "⚡ Mordida feroz: x2 daño"
+clip_text = true
+
+[node name="BtnContinuar" type="Button" parent="CajaDialogoDDLC/Margin/HBox/VBox/HBoxBottom"]
+custom_minimum_size = Vector2(240, 44)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.12, 0.08, 0.02, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "¡Unir a mi Ejército! ▶"
+
+[node name="LblStats" type="Label" parent="CajaDialogoDDLC"]
+visible = false
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="ModalYaEnEjercito" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FondoDim" type="ColorRect" parent="ModalYaEnEjercito"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.82)
+
+[node name="PanelContenido" type="Control" parent="ModalYaEnEjercito"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -450.0
+offset_top = -290.0
+offset_right = 450.0
+offset_bottom = 290.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(450, 290)
+
+[node name="MarcoMadera" type="NinePatchRect" parent="ModalYaEnEjercito/PanelContenido"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_marco_dialogo")
+patch_margin_left = 65
+patch_margin_top = 45
+patch_margin_right = 65
+patch_margin_bottom = 45
+
+[node name="Margin" type="MarginContainer" parent="ModalYaEnEjercito/PanelContenido"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 45
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 45
+theme_override_constants/margin_bottom = 30
+
+[node name="VBox" type="VBoxContainer" parent="ModalYaEnEjercito/PanelContenido/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Medalla" type="TextureRect" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("10_medalla")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Titulo" type="Label" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.95)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 30
+text = "¡YA FORMA PARTE DE TU EJÉRCITO!"
+horizontal_alignment = 1
+
+[node name="Subtitulo" type="Label" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 17
+text = "Esta tarjeta física ya fue reclamada y está lista para el combate en tu colección de cartas."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="CardPreviewBox" type="HBoxContainer" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="AvatarPreview" type="TextureRect" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox/CardPreviewBox"]
+custom_minimum_size = Vector2(90, 90)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBoxInfo" type="VBoxContainer" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox/CardPreviewBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="LblNombreTropa" type="Label" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox/CardPreviewBox/VBoxInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.6, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 24
+text = "TIBURÓN"
+
+[node name="LblHabilidadTropa" type="Label" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox/CardPreviewBox/VBoxInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.82, 0.95, 1)
+theme_override_font_sizes/font_size = 15
+text = "Habilidad: Mordida feroz"
+
+[node name="HBoxBotones" type="HBoxContainer" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BtnIrAlMazo" type="Button" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox/HBoxBotones"]
+custom_minimum_size = Vector2(230, 48)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.1, 0.08, 0.02, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "🃏 VER EN EL MAZO"
+
+[node name="BtnCerrarModal" type="Button" parent="ModalYaEnEjercito/PanelContenido/Margin/VBox/HBoxBotones"]
+custom_minimum_size = Vector2(230, 48)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 20
+text = "◀ ACEPTAR"
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="AudioDatafast" type="AudioStreamPlayer" parent="."]
+
+[node name="AudioPortal" type="AudioStreamPlayer" parent="."]
+
+[node name="AudioTypewriter" type="AudioStreamPlayer" parent="."]

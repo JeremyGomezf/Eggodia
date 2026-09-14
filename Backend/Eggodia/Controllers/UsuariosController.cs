@@ -30,6 +30,40 @@ public class UsuariosController : ControllerBase
         _db.Usuarios.Add(usuario);
         await _db.SaveChangesAsync();
 
+        // 11 personajes base con los que inicia todo jugador al registrarse
+        var personajesBase = new[]
+        {
+            "peon",
+            "torre",
+            "arfil",
+            "caballo",
+            "dama",
+            "soldado_real",
+            "maguin",
+            "machi",
+            "dragon",
+            "golem",
+            "paper_rex"
+        };
+
+        // Exclusión estricta de las 7 cartas físicas exclusivas
+        var cartasExclusivasExcluidas = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "tiburon", "calamar_gigante", "soldado_cartoon", "campero", "granadero", "tanque", "kabar"
+        };
+
+        var mazoInicial = personajesBase
+            .Where(cardId => !cartasExclusivasExcluidas.Contains(cardId))
+            .Select(cardId => new UserCard
+            {
+                UserId = usuario.Id,
+                CardId = cardId,
+                AcquiredAt = DateTime.UtcNow
+            });
+
+        _db.UserCards.AddRange(mazoInicial);
+        await _db.SaveChangesAsync();
+
         return CreatedAtAction(nameof(GetUsuario), new { id = usuario.Id }, ToDto(usuario));
     }
 

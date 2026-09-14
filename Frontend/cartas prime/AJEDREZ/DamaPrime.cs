@@ -9,7 +9,7 @@ using System.Collections.Generic;
 public partial class DamaPrime : TropaBase
 {
 	public override string Tipo => Tipos.SOMBRA;
-	protected override int TurnoDesbloqueoHabilidad => 3;
+	protected override int TurnoDesbloqueoHabilidad => 4;
 
 	// ── ESTADOS Y SELECCIÓN POR CLIC ──────────────────────────────────────────
 	private bool   _esperandoSeleccion = false;

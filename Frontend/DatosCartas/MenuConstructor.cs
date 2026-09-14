@@ -106,6 +106,10 @@ public partial class MenuConstructor : Control
 	[Export] private Control _modalAyuda;
 	[Export] private Button _btnCerrarAyuda;
 
+	[ExportGroup("Terminal NFC / Invocación")]
+	[Export] private BaseButton _btnNfc;
+	[Export] public string RutaInvocacion = "res://escenas/SummonTerminal.tscn";
+
 	private const int MIN_CARTAS = 8;
 	private const int MAX_CARTAS = 8;
 	private const int MAX_ARDIDES = 6;
@@ -164,6 +168,13 @@ public partial class MenuConstructor : Control
 			AgregarJuiceBotonDuda(_btnDuda);
 		}
 		if (_btnCerrarAyuda != null) _btnCerrarAyuda.Pressed += CerrarAyuda;
+
+		if (_btnNfc == null) _btnNfc = GetNodeOrNull<BaseButton>("Boton_NFC");
+		if (_btnNfc != null)
+		{
+			_btnNfc.Pressed += AbrirTerminalInvocacion;
+			AgregarJuiceBotonNfc(_btnNfc);
+		}
 
 		if (_containerSpriteCenter != null)
 		{
@@ -317,6 +328,7 @@ public partial class MenuConstructor : Control
 		foreach (var c in _todasLasCartas)
 		{
 			if (c.Categoria == CategoriaCarta.Unidad) continue;
+			if (EsCartaBloqueada(c)) continue;
 			if (_cartasArdidEnMazo.Count >= MAX_ARDIDES) break;
 			_cartasArdidEnMazo.Add(c);
 		}
@@ -331,6 +343,8 @@ public partial class MenuConstructor : Control
 		foreach (var c in _todasLasCartas)
 		{
 			if (c.Categoria != CategoriaCarta.Unidad || string.IsNullOrEmpty(c.RutaEscena) || _cartasEnMazo.Contains(c))
+				continue;
+			if (EsCartaBloqueada(c))
 				continue;
 
 			var tipo = ClasificacionCartas.TipoDe(c.RutaEscena, c.Nombre);
@@ -469,6 +483,24 @@ public partial class MenuConstructor : Control
 		}
 	}
 
+	private static bool EsCartaBloqueada(CartaData datos)
+	{
+		if (datos == null) return false;
+		if (datos.Categoria == CategoriaCarta.Unidad)
+		{
+			if (Preferencias.EsTropaDeTienda(datos.Nombre))
+				return !Preferencias.TieneTropaDesbloqueada(datos.Nombre);
+			return false;
+		}
+		else
+		{
+			string id = !string.IsNullOrEmpty(datos.IdHechizo) ? datos.IdHechizo : datos.Nombre;
+			if (Preferencias.EsHechizoDeTienda(id) || Preferencias.EsHechizoDeTienda(datos.Nombre))
+				return !Preferencias.TieneHechizoDesbloqueado(id);
+			return false;
+		}
+	}
+
 	private void PoblarSelector()
 	{
 		if (_gridSelector == null || _escenaCartaMini == null) return;
@@ -479,8 +511,8 @@ public partial class MenuConstructor : Control
 		}
 
 		string textoFiltro = _txtBuscador != null ? _txtBuscador.Text.Trim().ToLower() : "";
-		int indice = 0;
 
+		var cartasFiltradas = new List<CartaData>();
 		foreach (var datos in _todasLasCartas)
 		{
 			if (datos == null) continue;
@@ -492,12 +524,33 @@ public partial class MenuConstructor : Control
 			if (!ClasificacionCartas.CoincideBusqueda(datos.RutaEscena, datos.Nombre, textoFiltro))
 				continue;
 
+			cartasFiltradas.Add(datos);
+		}
+
+		// Ordenar: primero las desbloqueadas, al final las bloqueadas con candado
+		cartasFiltradas.Sort((a, b) =>
+		{
+			bool bA = EsCartaBloqueada(a);
+			bool bB = EsCartaBloqueada(b);
+			if (bA != bB) return bA ? 1 : -1;
+			int prioA = ObtenerPrioridadTropa(a.Nombre);
+			int prioB = ObtenerPrioridadTropa(b.Nombre);
+			if (prioA != prioB) return prioA.CompareTo(prioB);
+			return string.Compare(a.Nombre, b.Nombre, StringComparison.OrdinalIgnoreCase);
+		});
+
+		int indice = 0;
+		foreach (var datos in cartasFiltradas)
+		{
 			var mini = _escenaCartaMini.Instantiate<CartaMini>();
 			_gridSelector.AddChild(mini);
 			mini.CargarDatos(datos);
 			mini.SetModoMazo(false);
 
-			mini.Modulate = new Color(1, 1, 1, 0);
+			bool bloqueada = EsCartaBloqueada(datos);
+			mini.SetBloqueada(bloqueada);
+
+			mini.Modulate = bloqueada ? new Color(0.42f, 0.42f, 0.42f, 0) : new Color(1, 1, 1, 0);
 			mini.Scale = new Vector2(0.7f, 0.7f);
 			mini.FijarEscalaBase(Vector2.One);
 			mini.PivotOffset = new Vector2(55f, 72f);
@@ -505,12 +558,18 @@ public partial class MenuConstructor : Control
 			var tw = mini.CreateTween();
 			float delay = indice * 0.025f;
 			tw.TweenInterval(delay);
-			tw.TweenProperty(mini, "modulate", Colors.White, 0.12f);
+			Color colFinal = bloqueada ? new Color(0.42f, 0.42f, 0.42f, 0.85f) : Colors.White;
+			tw.TweenProperty(mini, "modulate", colFinal, 0.12f);
 			tw.Parallel().TweenProperty(mini, "scale", Vector2.One, 0.18f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 
 			mini.OnClickeada += (c) =>
 			{
 				SeleccionarCarta(c.MisDatos);
+				if (c.EstaBloqueada)
+				{
+					MostrarModalCartaBloqueada(c.MisDatos);
+					return;
+				}
 				AgregarAlMazo(c.MisDatos);
 			};
 
@@ -723,6 +782,12 @@ public partial class MenuConstructor : Control
 		{
 			string desc = !string.IsNullOrEmpty(datos.Descripcion) ? datos.Descripcion : "Habilidad estándar de combate.";
 			_lblDetalleHabilidad.Text = desc;
+			_lblDetalleHabilidad.VerticalAlignment = VerticalAlignment.Top;
+			int len = desc.Length;
+			if (len > 120) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 14);
+			else if (len > 80) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 16);
+			else if (len > 50) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 18);
+			else _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 20);
 		}
 
 		// Línea extra: tipo de tropa (Táctico/Asesino/Coloso) en vez de ventajas por elemento.
@@ -732,6 +797,77 @@ public partial class MenuConstructor : Control
 			_lblDetalleExtra.Text = extra;
 			_lblDetalleExtra.Visible = !string.IsNullOrEmpty(extra);
 		}
+	}
+
+	private void MostrarModalCartaBloqueada(CartaData datos)
+	{
+		GlobalAudioManager.Instance?.PlayClickSound();
+
+		var capa = new CanvasLayer { Layer = 350 };
+		AddChild(capa);
+
+		var fondo = new ColorRect();
+		fondo.Color = new Color(0.03f, 0.05f, 0.1f, 0.85f);
+		fondo.SetAnchorsPreset(LayoutPreset.FullRect);
+		fondo.MouseFilter = MouseFilterEnum.Stop;
+		capa.AddChild(fondo);
+
+		var panel = new PanelContainer();
+		panel.SetAnchorsPreset(LayoutPreset.Center);
+		panel.CustomMinimumSize = new Vector2(560, 320);
+
+		var sb = new StyleBoxFlat();
+		sb.BgColor = new Color(0.08f, 0.11f, 0.2f, 0.98f);
+		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 3;
+		sb.BorderColor = new Color(0.9f, 0.75f, 0.25f);
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 16;
+		sb.ContentMarginLeft = sb.ContentMarginRight = 24;
+		sb.ContentMarginTop = sb.ContentMarginBottom = 24;
+		panel.AddThemeStyleboxOverride("panel", sb);
+		fondo.AddChild(panel);
+
+		var vbox = new VBoxContainer();
+		vbox.AddThemeConstantOverride("separation", 18);
+		vbox.Alignment = BoxContainer.AlignmentMode.Center;
+		panel.AddChild(vbox);
+
+		var lblTit = new Label();
+		lblTit.Text = $"🔒 {datos.Nombre.ToUpper()} BLOQUEADA";
+		lblTit.HorizontalAlignment = HorizontalAlignment.Center;
+		lblTit.AddThemeFontSizeOverride("font_size", 26);
+		lblTit.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.35f));
+		vbox.AddChild(lblTit);
+
+		var lblMsg = new Label();
+		lblMsg.Text = "Esta carta no está desbloqueada en tu colección.\nPuedes adquirirla en la TIENDA con monedas o escanear su tarjeta física en la Terminal de Invocación.";
+		lblMsg.HorizontalAlignment = HorizontalAlignment.Center;
+		lblMsg.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		lblMsg.AddThemeFontSizeOverride("font_size", 18);
+		lblMsg.AddThemeColorOverride("font_color", new Color(0.85f, 0.9f, 0.98f));
+		vbox.AddChild(lblMsg);
+
+		var hbox = new HBoxContainer();
+		hbox.Alignment = BoxContainer.AlignmentMode.Center;
+		hbox.AddThemeConstantOverride("separation", 20);
+		vbox.AddChild(hbox);
+
+		var btnTienda = new Button();
+		btnTienda.Text = "IR A LA TIENDA";
+		btnTienda.CustomMinimumSize = new Vector2(200, 60);
+		btnTienda.AddThemeFontSizeOverride("font_size", 20);
+		btnTienda.Pressed += () =>
+		{
+			capa.QueueFree();
+			GetTree().ChangeSceneToFile("res://escenas/menu/Tienda.tscn");
+		};
+		hbox.AddChild(btnTienda);
+
+		var btnCerrar = new Button();
+		btnCerrar.Text = "CERRAR";
+		btnCerrar.CustomMinimumSize = new Vector2(160, 60);
+		btnCerrar.AddThemeFontSizeOverride("font_size", 20);
+		btnCerrar.Pressed += () => capa.QueueFree();
+		hbox.AddChild(btnCerrar);
 	}
 
 	private static string EtiquetaSerie(SerieTropa s) => s switch
@@ -1110,6 +1246,42 @@ public partial class MenuConstructor : Control
 			btn.CreateTween().TweenProperty(btn, "scale", escalaBase, 0.12f)
 				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 		};
+	}
+
+	// Juice y animación de zoom del Boton_NFC: al aplastarlo hace un zoom pronunciado
+	// hacia adelante y al soltarlo abre la Terminal de Invocación.
+	private void AgregarJuiceBotonNfc(BaseButton btn)
+	{
+		Vector2 escalaBase = btn.Scale;
+		btn.PivotOffset = btn.Size / 2f;
+
+		btn.MouseEntered += () =>
+		{
+			if (btn.Disabled) return;
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase * 1.15f, 0.15f)
+				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		};
+		btn.MouseExited += () =>
+		{
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase, 0.15f)
+				.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+		};
+		// Cuando lo aplastan: ZOOM pronunciado hacia adelante
+		btn.ButtonDown += () =>
+		{
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase * 1.35f, 0.08f)
+				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		};
+		btn.ButtonUp += () =>
+		{
+			btn.CreateTween().TweenProperty(btn, "scale", escalaBase * 1.15f, 0.12f)
+				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		};
+	}
+
+	private void AbrirTerminalInvocacion()
+	{
+		GetTree().ChangeSceneToFile(RutaInvocacion);
 	}
 
 	private void MostrarMensajeAviso(string mensaje)

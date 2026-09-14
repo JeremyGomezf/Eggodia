@@ -24,6 +24,37 @@ public partial class CartaMini : Control
 	private bool _animarInteraccion = true;
 	public void FijarAnimacionInteraccion(bool activa) => _animarInteraccion = activa;
 
+	public bool EstaBloqueada { get; private set; } = false;
+	private Control _overlayBloqueo = null;
+
+	public void SetBloqueada(bool bloqueada)
+	{
+		EstaBloqueada = bloqueada;
+		if (bloqueada)
+		{
+			Modulate = new Color(0.42f, 0.42f, 0.42f, 0.85f);
+			if (_overlayBloqueo == null)
+			{
+				_overlayBloqueo = new CenterContainer();
+				_overlayBloqueo.SetAnchorsPreset(LayoutPreset.FullRect);
+				_overlayBloqueo.MouseFilter = MouseFilterEnum.Ignore;
+				var lbl = new Label();
+				lbl.Text = "🔒";
+				lbl.AddThemeFontSizeOverride("font_size", 30);
+				lbl.HorizontalAlignment = HorizontalAlignment.Center;
+				lbl.VerticalAlignment = VerticalAlignment.Center;
+				_overlayBloqueo.AddChild(lbl);
+				AddChild(_overlayBloqueo);
+			}
+			_overlayBloqueo.Visible = true;
+		}
+		else
+		{
+			Modulate = Colors.White;
+			if (_overlayBloqueo != null) _overlayBloqueo.Visible = false;
+		}
+	}
+
 	public void CargarDatos(CartaData datos)
 	{
 		MisDatos = datos;
@@ -124,14 +155,28 @@ public partial class CartaMini : Control
 			ZIndex = 10;
 			var tween = CreateTween();
 			tween.TweenProperty(this, "scale", _escalaBase * 1.08f, 0.1f).SetTrans(Tween.TransitionType.Sine);
-			Modulate = new Color(1.15f, 1.15f, 1.15f);
+			if (EstaBloqueada)
+			{
+				Modulate = new Color(0.45f, 0.45f, 0.45f, 0.88f);
+			}
+			else
+			{
+				Modulate = new Color(1.15f, 1.15f, 1.15f);
+			}
 		}
 		else if (what == NotificationMouseExit)
 		{
 			ZIndex = 0;
 			var tween = CreateTween();
 			tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
-			Modulate = Colors.White;
+			if (EstaBloqueada)
+			{
+				Modulate = new Color(0.42f, 0.42f, 0.42f, 0.85f);
+			}
+			else
+			{
+				Modulate = Colors.White;
+			}
 		}
 	}
 }

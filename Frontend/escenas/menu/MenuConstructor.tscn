@@ -345,6 +345,7 @@ offset_right = 1321.0
 offset_bottom = 485.0
 
 [node name="BannerNombre" type="NinePatchRect" parent="ShowcaseContainer" unique_id=744594248]
+z_index = 5
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -355,7 +356,6 @@ offset_right = 204.0
 offset_bottom = 128.0
 grow_horizontal = 2
 scale = Vector2(1, 1.1600006)
-z_index = 5
 texture = ExtResource("11_nombretropa")
 patch_margin_left = 75
 patch_margin_top = 24
@@ -723,11 +723,12 @@ stretch_mode = 0
 
 [node name="Boton_NFC" type="TextureButton" parent="." unique_id=999158343]
 layout_mode = 0
-offset_left = 1985.0
-offset_top = 180.0
-offset_right = 2189.0
-offset_bottom = 395.0
-scale = Vector2(0.53, 0.53)
+offset_left = 1939.0
+offset_top = 160.0
+offset_right = 2143.0
+offset_bottom = 364.0
+scale = Vector2(0.72, 0.72)
+pivot_offset = Vector2(102, 102)
 texture_normal = ExtResource("15_sys8m")
 texture_hover = ExtResource("15_sys8m")
 ignore_texture_size = true

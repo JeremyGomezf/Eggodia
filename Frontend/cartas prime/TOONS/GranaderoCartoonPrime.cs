@@ -11,7 +11,7 @@ using Godot;
 public partial class GranaderoCartoonPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
-	protected override int TurnoDesbloqueoHabilidad => 4;
+	protected override int TurnoDesbloqueoHabilidad => 3;
 
 	// ── CONSTANTES ────────────────────────────────────────────────────────────
 	private const int    ATQ_MORTERO   = 350;

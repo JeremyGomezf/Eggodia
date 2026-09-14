@@ -217,11 +217,10 @@ public partial class CaballoPrime : TropaBase
 			};
 		}
 
-		// --- PASO 2: FRAME DE IMPACTO (APLICA DAÑO BASE O BASE + 100 EXTRA) ---
+		// --- PASO 2: FRAME DE IMPACTO (APLICA DAÑO IGUAL AL ATAQUE NORMAL) ---
 		if (frameActual == FRAME_IMPACTO)
 		{
-			// Si es Habilidad -> 200 + 100 = 300 de daño
-			int dañoAplica = _esAtaqueHabilidad ? (puntosAtaque + 100) : puntosAtaque;
+			int dañoAplica = puntosAtaque;
 			AplicarDañoDirecto(_objetivoAtaque, dañoAplica);
 		}
 	}

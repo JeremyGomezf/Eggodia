@@ -25,11 +25,13 @@ public partial class Economia : Node
 	private int _monedas = 0;
 	public int Monedas => _monedas;
 
-	// ── Recompensas base por resultado (ajustables) ──────────────────────
-	public const int RECOMPENSA_VICTORIA = 100;
-	public const int RECOMPENSA_EMPATE   = 8;   // empate (incl. ambos se desconectan en online)
-	public const int RECOMPENSA_DERROTA  = 0;   // perder o rendirse no da oro
-	public const int BONO_POR_RACHA      = 25;   // extra por cada victoria en racha
+	// ── Recompensas según modo Online vs Bot ───────────────────────────
+	public const int RECOMPENSA_ONLINE_VICTORIA = 120;
+	public const int RECOMPENSA_ONLINE_DERROTA  = 30;
+	public const int RECOMPENSA_BOT_VICTORIA    = 20;
+	public const int RECOMPENSA_BOT_DERROTA     = 5;
+	public const int RECOMPENSA_EMPATE          = 8;
+	public const int BONO_POR_RACHA             = 25;
 
 	public override void _Ready()
 	{
@@ -72,17 +74,31 @@ public partial class Economia : Node
 	}
 
 	/// <summary>Calcula y otorga la recompensa de una partida. Devuelve lo ganado.</summary>
-	public int RecompensarPartida(string resultado, int racha)
+	public int RecompensarPartida(string resultado, int racha, bool esOnline = false)
 	{
-		int ganado = resultado switch
+		int ganado = 0;
+		if (resultado == "victoria")
 		{
-			"victoria" => RECOMPENSA_VICTORIA + Mathf.Max(0, racha - 1) * BONO_POR_RACHA,
-			"empate"   => RECOMPENSA_EMPATE,
-			_          => RECOMPENSA_DERROTA,
-		};
+			ganado = esOnline ? RECOMPENSA_ONLINE_VICTORIA : RECOMPENSA_BOT_VICTORIA;
+			if (esOnline && racha > 1)
+			{
+				ganado += Mathf.Max(0, racha - 1) * BONO_POR_RACHA;
+			}
+		}
+		else if (resultado == "derrota")
+		{
+			ganado = esOnline ? RECOMPENSA_ONLINE_DERROTA : RECOMPENSA_BOT_DERROTA;
+		}
+		else // empate
+		{
+			ganado = esOnline ? 15 : RECOMPENSA_EMPATE;
+		}
+
 		Agregar(ganado);
 		return ganado;
 	}
+
+	public int RecompensarPartida(string resultado, int racha) => RecompensarPartida(resultado, racha, false);
 
 	// ── PERSISTENCIA ─────────────────────────────────────────────────────
 

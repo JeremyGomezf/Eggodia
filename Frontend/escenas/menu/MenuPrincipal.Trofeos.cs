@@ -206,4 +206,19 @@ public partial class MenuPrincipal : Control
 
 		return fila;
 	}
+
+	private static Button CrearBotonCerrarRojo()
+	{
+		var btn = new Button();
+		btn.Text = "✕";
+		var sb = new StyleBoxFlat();
+		sb.BgColor = new Color(0.85f, 0.2f, 0.2f, 0.95f);
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
+		btn.AddThemeStyleboxOverride("normal", sb);
+		var sbH = new StyleBoxFlat();
+		sbH.BgColor = new Color(1f, 0.3f, 0.3f, 1f);
+		sbH.CornerRadiusTopLeft = sbH.CornerRadiusTopRight = sbH.CornerRadiusBottomLeft = sbH.CornerRadiusBottomRight = 12;
+		btn.AddThemeStyleboxOverride("hover", sbH);
+		return btn;
+	}
 }

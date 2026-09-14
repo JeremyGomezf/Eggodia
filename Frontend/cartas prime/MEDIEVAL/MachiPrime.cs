@@ -6,7 +6,7 @@ using Godot;
 public partial class MachiPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
-	protected override int TurnoDesbloqueoHabilidad => 2;
+	protected override int TurnoDesbloqueoHabilidad => 3;
 
 	private Node2D _objetivo;
 	private Tween _tweenFlotacion;

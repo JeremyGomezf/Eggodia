@@ -48,10 +48,10 @@ public partial class TiburonPrime : TropaBase
 		}
 	}
 
-	// ── PASIVA: +50 ATQ cada cambio de turno ──────────────────────────────────
+	// ── PASIVA: +35 ATQ cada cambio de turno de forma continua ──────────────────
 	public override void TickHabilidad()
 	{
 		if (_estaMuerto) return;
-		puntosAtaque += 50;
+		puntosAtaque += 35;
 	}
 }

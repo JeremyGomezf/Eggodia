@@ -105,13 +105,27 @@ public partial class ChequeoActualizacion : Node
 		texto.AddThemeColorOverride("font_color", new Color(0.9f, 0.93f, 0.98f));
 		caja.AddChild(texto);
 
-		// Único botón: DESCARGAR. No hay forma de cerrar el aviso ni de seguir sin actualizar.
+		var btnFila = new HBoxContainer();
+		btnFila.Alignment = BoxContainer.AlignmentMode.Center;
+		btnFila.AddThemeConstantOverride("separation", 20);
+		caja.AddChild(btnFila);
+
 		var btnDescargar = new Button();
 		btnDescargar.Text = "DESCARGAR";
-		btnDescargar.CustomMinimumSize = new Vector2(340, 104);
-		btnDescargar.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-		btnDescargar.AddThemeFontSizeOverride("font_size", 40);
+		btnDescargar.CustomMinimumSize = new Vector2(300, 90);
+		btnDescargar.AddThemeFontSizeOverride("font_size", 36);
 		btnDescargar.Pressed += () => { if (!string.IsNullOrEmpty(info.Url)) OS.ShellOpen(info.Url); };
-		caja.AddChild(btnDescargar);
+		btnFila.AddChild(btnDescargar);
+
+		// Si se corre en editor o en PC (no Android), permitir omitir para pruebas y desarrollo
+		if (OS.HasFeature("editor") || OS.GetName() != "Android")
+		{
+			var btnOmitir = new Button();
+			btnOmitir.Text = "OMITIR / CANCELAR";
+			btnOmitir.CustomMinimumSize = new Vector2(300, 90);
+			btnOmitir.AddThemeFontSizeOverride("font_size", 32);
+			btnOmitir.Pressed += () => capa.QueueFree();
+			btnFila.AddChild(btnOmitir);
+		}
 	}
 }
