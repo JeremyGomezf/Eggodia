@@ -24,6 +24,7 @@ public partial class MatchmakingOnline : Node
 	private string _estado = "";
 	private string _asiento = "A";
 	private string _semilla = "";
+	private ulong _inicioBusquedaMs = 0; // para variar el mensaje del que se quedó sin rival (nº impar)
 
 	// UI
 	private Label _lblEstado, _lblDetalle;
@@ -69,7 +70,7 @@ public partial class MatchmakingOnline : Node
 		if (_http.Request($"{ApiConfig.Base}/api/match/cola", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
 		{
 			_ocupado = false;
-			MostrarError("No se pudo conectar al servidor");
+			MostrarError("Revisa tu conexión a internet e inténtalo de nuevo.");
 		}
 	}
 
@@ -87,7 +88,7 @@ public partial class MatchmakingOnline : Node
 		if (result != (long)HttpRequest.Result.Success || (code != 200 && code != 201))
 		{
 			// Un fallo puntual de sondeo no es fatal si ya estamos en cola; solo error si aún no hay match.
-			if (string.IsNullOrEmpty(_matchId)) MostrarError("No se pudo conectar al servidor");
+			if (string.IsNullOrEmpty(_matchId)) MostrarError("Revisa tu conexión a internet e inténtalo de nuevo.");
 			return;
 		}
 		try
@@ -106,9 +107,14 @@ public partial class MatchmakingOnline : Node
 				if (!_timerSondeo.IsStopped()) _timerSondeo.Stop();
 				MostrarEmparejado(rival, rivalSkinIdx, rivalTronoIdx);
 			}
-			else // esperando
+			else // esperando: emparejamiento aleatorio; si el nº de jugadores es impar, uno queda sin
+			     // rival y sigue en cola hasta que entre otro (no se lo saca ni se lo empareja con nadie).
 			{
-				_lblDetalle.Text = "buscando rival…";
+				if (_inicioBusquedaMs == 0) _inicioBusquedaMs = Time.GetTicksMsec();
+				ulong seg = (Time.GetTicksMsec() - _inicioBusquedaMs) / 1000;
+				_lblDetalle.Text = seg < 15
+					? "buscando rival…"
+					: "no hay más jugadores por ahora… seguimos buscando";
 				if (_timerSondeo.IsStopped()) _timerSondeo.Start();
 			}
 		}
@@ -245,7 +251,7 @@ public partial class MatchmakingOnline : Node
 	{
 		if (_timerSondeo != null && !_timerSondeo.IsStopped()) _timerSondeo.Stop();
 		if (_spinner != null) _spinner.Visible = false;
-		_lblEstado.Text = "SIN CONEXIÓN";
+		_lblEstado.Text = "SIN INTERNET";
 		_lblEstado.AddThemeColorOverride("font_color", new Color(1f, 0.5f, 0.45f));
 		_lblDetalle.Text = msg;
 		_btnCancelar.Visible = false;

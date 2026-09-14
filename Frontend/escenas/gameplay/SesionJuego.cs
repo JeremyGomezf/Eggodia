@@ -44,6 +44,9 @@ public partial class SesionJuego : Node
 
 	private const string RUTA_MAZO_GUARDADO = "user://mazo_guardado.json";
 
+	// Ciclo de vida móvil: true mientras la app está en segundo plano.
+	private bool _appEnSegundoPlano = false;
+
 	public override void _Ready()
 	{
 		Instance = this;
@@ -56,6 +59,26 @@ public partial class SesionJuego : Node
 		{
 			UsuarioId     = idGuardado;
 			NombreJugador = Preferencias.SesionNombre;
+		}
+	}
+
+	/// <summary>
+	/// Ciclo de vida de la app (móvil): si el jugador sale de la aplicación (cambia de app, apaga la
+	/// pantalla o bloquea el celular) el juego pasa a segundo plano; al volver, se reinicia desde el
+	/// menú con estado limpio — como cualquier juego móvil. La sesión (login) NO se cierra: sigue
+	/// logueado. Cualquier partida en línea a medias se abandona (el rival gana por desconexión).
+	/// </summary>
+	public override void _Notification(int que)
+	{
+		if (que == NotificationApplicationPaused)
+		{
+			_appEnSegundoPlano = true;
+		}
+		else if (que == NotificationApplicationResumed && _appEnSegundoPlano)
+		{
+			_appEnSegundoPlano = false;
+			ContextoOnline.Limpiar(); // abandona cualquier emparejamiento/partida en línea en curso
+			GetTree()?.ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
 		}
 	}
 
