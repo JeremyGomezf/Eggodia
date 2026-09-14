@@ -58,12 +58,13 @@ public class GestorPartidas
         {
             LimpiarViejas();
 
-            // Reingreso (doble toque / reintento): si este jugador ya tiene una partida activa Y NO
-            // terminada, devolverla. Las partidas ya finalizadas (Resultado puesto) se ignoran para
-            // no re-meter al jugador a una partida perdida/ganada vieja.
+            // Reingreso a la COLA (doble toque / reintento del matchmaking): si este jugador ya tiene
+            // una partida propia TODAVÍA "esperando" rival, devolver esa misma. NO se reingresa a una
+            // partida ya "emparejado": si abandonó una anterior (o quedó a medias en una prueba), esa
+            // tiene su VistoX viejo y lo declararía caído al instante → derrota falsa apenas entra.
+            // Esas partidas viejas se resuelven solas (latido del rival) o se limpian a los 90s.
             var propia = _partidas.Values.FirstOrDefault(p =>
-                string.IsNullOrEmpty(p.Resultado) &&
-                (p.JugadorAId == jugadorId || p.JugadorBId == jugadorId));
+                p.Estado == "esperando" && p.JugadorAId == jugadorId);
             if (propia != null) { propia.ActualizadaUtc = DateTime.UtcNow; return propia; }
 
             // Hay alguien esperando (de otro jugador) → emparejar.

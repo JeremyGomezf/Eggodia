@@ -200,7 +200,7 @@ public partial class Campo1 : Node2D
 
 			if (!hayDeseado)
 			{
-				if (actual != null) QuitarTropaDeCarril(carril); // murió
+				if (actual != null) MatarTropaVisualOnline(carril); // murió: "derrota" + desvanecer
 				continue;
 			}
 
@@ -210,11 +210,21 @@ public partial class Campo1 : Node2D
 			if (actual != null && IsInstanceValid(actual) && actual.SceneFilePath == escenaDeseada)
 			{
 				// Misma tropa: solo actualizar stats (preserva su animación en curso).
+				int vidaAntes = actual.vidaActual;
 				actual.FijarStats(
 					td.GetProperty("vida").GetInt32(), td.GetProperty("vidaMax").GetInt32(),
 					td.GetProperty("escudo").GetInt32(), td.GetProperty("escudoMax").GetInt32(),
 					td.GetProperty("turnoCarta").GetInt32(), td.GetProperty("habUsada").GetBoolean());
 				if (td.TryGetProperty("ataque", out var atkTd)) actual.puntosAtaque = atkTd.GetInt32();
+
+				// Reacción de golpe: si perdió vida desde la última foto, animación de daño + número
+				// flotante (cubre ataques, veneno, cualquier fuente — no solo "atacar").
+				int golpe = vidaAntes - actual.vidaActual;
+				if (golpe > 0)
+				{
+					actual.EjecutarAccion("recibir_daño"); // reproduce "daño" y vuelve a idle
+					MostrarDañoFlotante(actual.GlobalPosition, golpe);
+				}
 			}
 			else
 			{
@@ -368,6 +378,28 @@ public partial class Campo1 : Node2D
 			if (obj is Node2D t && IsInstanceValid(t) && !t.IsQueuedForDeletion()) return t;
 		}
 		return null;
+	}
+
+	// Muerte SOLO visual para la reconciliación: reproduce "derrota", libera el carril y desvanece la
+	// tropa (igual que EjecutarMuerteTropaSacrificada) pero SIN tocar la vida de la base ni los
+	// contadores — eso ya viene aplicado en el snapshot del rival, aplicarlo aquí lo duplicaría.
+	private void MatarTropaVisualOnline(string carril)
+	{
+		Node2D zona = GetTree().Root.FindChild(carril, true, false) as Node2D;
+		var ocup = zona?.GetNodeOrNull("Ocupado");
+		if (ocup == null) return;
+		Node2D tropa = ocup.HasMeta("tropa_instanciada") ? ocup.GetMeta("tropa_instanciada").AsGodotObject() as Node2D : null;
+		ocup.Free(); // el carril queda libre de inmediato para futuras reconciliaciones
+		if (tropa == null || !IsInstanceValid(tropa)) return;
+
+		var animSprite = tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+		bool yaEnDerrota = animSprite != null && ((string)animSprite.Animation).Contains("derrota");
+		if (!yaEnDerrota && tropa.HasMethod("ReproducirDerrota")) tropa.Call("ReproducirDerrota");
+
+		Tween tw = CreateTween();
+		tw.TweenInterval(0.8f);
+		tw.TweenProperty(tropa, "modulate:a", 0.0f, 0.6f);
+		tw.Finished += () => { if (IsInstanceValid(tropa)) tropa.QueueFree(); };
 	}
 
 	private void QuitarTropaDeCarril(string carril)
