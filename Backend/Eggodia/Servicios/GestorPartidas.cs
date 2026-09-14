@@ -29,6 +29,10 @@ public class GestorPartidas
         // Detección de desconexión (latido por asiento) y resultado por abandono/inactividad.
         public DateTime VistoA { get; set; } = DateTime.UtcNow;
         public DateTime VistoB { get; set; } = DateTime.UtcNow;
+        // Un asiento "entró" cuando mandó su PRIMER latido (ya terminó de cargar la escena). Solo se
+        // puede considerar "caído" a quien ya entró; así el jugador que aún carga no pierde por error.
+        public bool EntroA { get; set; } = false;
+        public bool EntroB { get; set; } = false;
         public string Resultado { get; set; } = ""; // "" | gano_A | gano_B | empate
     }
 
@@ -43,9 +47,12 @@ public class GestorPartidas
         {
             LimpiarViejas();
 
-            // Reingreso (doble toque / reintento): si este jugador ya tiene una partida activa, devolverla.
+            // Reingreso (doble toque / reintento): si este jugador ya tiene una partida activa Y NO
+            // terminada, devolverla. Las partidas ya finalizadas (Resultado puesto) se ignoran para
+            // no re-meter al jugador a una partida perdida/ganada vieja.
             var propia = _partidas.Values.FirstOrDefault(p =>
-                p.JugadorAId == jugadorId || p.JugadorBId == jugadorId);
+                string.IsNullOrEmpty(p.Resultado) &&
+                (p.JugadorAId == jugadorId || p.JugadorBId == jugadorId));
             if (propia != null) { propia.ActualizadaUtc = DateTime.UtcNow; return propia; }
 
             // Hay alguien esperando (de otro jugador) → emparejar.
@@ -112,13 +119,16 @@ public class GestorPartidas
         var ahora = DateTime.UtcNow;
         bool soyA = p.JugadorAId == jugadorId;
         bool soyB = p.JugadorBId == jugadorId;
-        if (soyA) p.VistoA = ahora; else if (soyB) p.VistoB = ahora;
+        if (soyA) { p.VistoA = ahora; p.EntroA = true; } else if (soyB) { p.VistoB = ahora; p.EntroB = true; }
         p.ActualizadaUtc = ahora;
 
-        bool caidoA = (ahora - p.VistoA).TotalSeconds > SEG_DESCONEXION;
-        bool caidoB = (ahora - p.VistoB).TotalSeconds > SEG_DESCONEXION;
+        // Solo es "caído" quien YA entró (latió alguna vez) y luego se calló >12s. El que aún carga
+        // la escena no cuenta como caído — así el jugador lento no pierde apenas entra.
+        bool caidoA = p.EntroA && (ahora - p.VistoA).TotalSeconds > SEG_DESCONEXION;
+        bool caidoB = p.EntroB && (ahora - p.VistoB).TotalSeconds > SEG_DESCONEXION;
 
-        if (string.IsNullOrEmpty(p.Resultado) && p.Estado == "emparejado")
+        // El resultado por abandono solo se decide cuando AMBOS ya entraron a la partida.
+        if (string.IsNullOrEmpty(p.Resultado) && p.Estado == "emparejado" && p.EntroA && p.EntroB)
         {
             if (caidoA && caidoB) p.Resultado = "empate";
             else if (caidoA)      p.Resultado = "gano_B";
