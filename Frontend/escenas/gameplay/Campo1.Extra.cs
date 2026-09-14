@@ -390,7 +390,7 @@ public partial class Campo1 : Node2D
 		_lblUsuario = _barraHPJugador?.GetNodeOrNull<Label>("usuariolabel");
 		_lblCPU     = _barraHPRival?.GetNodeOrNull<Label>("CPUlabel");
 		if (_lblUsuario != null) _lblUsuario.Text = SesionJuego.Instance?.NombreJugador ?? "Invitado";
-		if (_lblCPU     != null) _lblCPU.Text     = NOMBRES_CPU[random.Next(NOMBRES_CPU.Length)];
+		if (_lblCPU     != null) _lblCPU.Text     = ContextoOnline.Activo ? ContextoOnline.RivalNombre : NOMBRES_CPU[random.Next(NOMBRES_CPU.Length)];
 
 		_panelEnergiaUsuario = _barraHPJugador?.GetNodeOrNull<Control>("EnergiaPanel");
 		_lblEnergiaUsuario   = _panelEnergiaUsuario?.GetNodeOrNull<Label>("HBox/energialabel");
@@ -414,7 +414,11 @@ public partial class Campo1 : Node2D
 		if (_btnCambiarHechizo != null) _btnCambiarHechizo.Pressed += ActivarModoCambio;
 
 		var btnPausa = capa.GetNodeOrNull<TextureButton>("PausaButton");
-		if (btnPausa != null) btnPausa.Pressed += () => GetNodeOrNull<MenuPausa>("MenuPausa")?.Pausar();
+		if (btnPausa != null)
+		{
+			if (ContextoOnline.Activo) btnPausa.Visible = false; // sin pausa en partidas en línea
+			else btnPausa.Pressed += () => GetNodeOrNull<MenuPausa>("MenuPausa")?.Pausar();
+		}
 
 		// Juice de botones (hover: agranda + aura blanca / press: encoge y oscurece). Se agrega
 		// DESPUÉS de MoverACanvasInmune para partir de la escala final ya calculada con la cámara.

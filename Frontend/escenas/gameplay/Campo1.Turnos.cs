@@ -8,6 +8,8 @@ public partial class Campo1 : Node2D
 	private void OnTickReloj()
 	{
 		if (juegoTerminado) return;
+		// En línea: mientras espero el turno del rival no corre el reloj (el turno no se me pasa solo).
+		if (EsOnline && !esTurnoJugador) return;
 		tiempoTotalPartida--;
 		if (tiempoTotalPartida <= 0) { DeterminarGanadorPorTiempo(); return; }
 		tiempoTurnoActual--;

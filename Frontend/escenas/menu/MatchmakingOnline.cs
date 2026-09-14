@@ -101,6 +101,7 @@ public partial class MatchmakingOnline : Node
 			}
 			else // esperando
 			{
+				_lblDetalle.Text = "buscando rival…";
 				if (_timerSondeo.IsStopped()) _timerSondeo.Start();
 			}
 		}
@@ -212,8 +213,8 @@ public partial class MatchmakingOnline : Node
 		if (_spinner != null) _spinner.Visible = false;
 		_lblEstado.Text = "¡RIVAL ENCONTRADO!";
 		_lblEstado.AddThemeColorOverride("font_color", new Color(0.5f, 1f, 0.55f));
-		_lblDetalle.Text = string.IsNullOrEmpty(rival) ? "Entrando a la partida…" : $"vs {rival}\nEntrando a la partida…";
-		_lblDetalle.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		// No se muestra el nombre del rival aquí: recién se ve dentro de la partida (sobre su barra).
+		_lblDetalle.Text = "Entrando a la partida…";
 		_btnCancelar.Visible = false;
 		_btnVolver.Visible = false;
 

@@ -207,6 +207,7 @@ public partial class PanelLogin : Control
 			{
 				SesionJuego.Instance.UsuarioId     = usuario.Id;
 				SesionJuego.Instance.NombreJugador  = usuario.Nombre;
+				Preferencias.GuardarSesion(usuario.Id, usuario.Nombre); // login persistente
 				GD.Print($"[Login] ¡Bienvenido, {usuario.Nombre}! (ID: {usuario.Id})");
 				IrAlMenu();
 			}

@@ -25,7 +25,14 @@ public class GestorPartidas
         // tablero con un número de turno creciente; el otro lo baja sondeando.
         public int TurnoActual { get; set; } = 0;
         public string EstadoJson { get; set; } = "";
+
+        // Detección de desconexión (latido por asiento) y resultado por abandono/inactividad.
+        public DateTime VistoA { get; set; } = DateTime.UtcNow;
+        public DateTime VistoB { get; set; } = DateTime.UtcNow;
+        public string Resultado { get; set; } = ""; // "" | gano_A | gano_B | empate
     }
+
+    private const int SEG_DESCONEXION = 12;
 
     private readonly object _lock = new();
     private readonly ConcurrentDictionary<string, Partida> _partidas = new();
@@ -50,6 +57,7 @@ public class GestorPartidas
                 esperando.JugadorBNombre = nombre;
                 esperando.Estado = "emparejado";
                 esperando.ActualizadaUtc = DateTime.UtcNow;
+                esperando.VistoA = esperando.VistoB = DateTime.UtcNow; // arranca el latido de ambos
                 return esperando;
             }
 
@@ -93,6 +101,32 @@ public class GestorPartidas
         if (!_partidas.TryGetValue(id, out var p)) return null;
         p.ActualizadaUtc = DateTime.UtcNow; // el sondeo mantiene viva la partida durante el juego
         return (p.TurnoActual, p.EstadoJson);
+    }
+
+    // ── Latido / detección de desconexión ────────────────────────────────
+    // Cada cliente late cada pocos segundos. Si el rival no late en 12s (desconexión, cierre de app
+    // o inactividad total), el que sigue latiendo gana. Devuelve (rivalCaido, resultado).
+    public (bool rivalCaido, string resultado) LatidoYEstado(string id, string jugadorId)
+    {
+        if (!_partidas.TryGetValue(id, out var p)) return (false, "");
+        var ahora = DateTime.UtcNow;
+        bool soyA = p.JugadorAId == jugadorId;
+        bool soyB = p.JugadorBId == jugadorId;
+        if (soyA) p.VistoA = ahora; else if (soyB) p.VistoB = ahora;
+        p.ActualizadaUtc = ahora;
+
+        bool caidoA = (ahora - p.VistoA).TotalSeconds > SEG_DESCONEXION;
+        bool caidoB = (ahora - p.VistoB).TotalSeconds > SEG_DESCONEXION;
+
+        if (string.IsNullOrEmpty(p.Resultado) && p.Estado == "emparejado")
+        {
+            if (caidoA && caidoB) p.Resultado = "empate";
+            else if (caidoA)      p.Resultado = "gano_B";
+            else if (caidoB)      p.Resultado = "gano_A";
+        }
+
+        bool rivalCaido = soyA ? caidoB : (soyB ? caidoA : false);
+        return (rivalCaido, p.Resultado);
     }
 
     private void LimpiarViejas()

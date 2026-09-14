@@ -192,4 +192,46 @@ public static class Preferencias
 		cfg.SetValue(sec, clave, valor);
 		cfg.Save(RUTA);
 	}
+
+	private static string LeerStringEn(string sec, string clave, string porDefecto)
+	{
+		var cfg = new ConfigFile();
+		if (cfg.Load(RUTA) != Error.Ok) return porDefecto;
+		return (string)cfg.GetValue(sec, clave, porDefecto);
+	}
+
+	private static void EscribirStringEn(string sec, string clave, string valor)
+	{
+		var cfg = new ConfigFile();
+		cfg.Load(RUTA);
+		cfg.SetValue(sec, clave, valor);
+		cfg.Save(RUTA);
+	}
+
+	// ── SESIÓN PERSISTENTE (login recordado entre reinicios) ──────────────────
+	private const string SEC_SESION = "sesion";
+
+	public static int SesionUsuarioId
+	{
+		get => LeerIntEn(SEC_SESION, "usuario_id", -1);
+		set => EscribirIntEn(SEC_SESION, "usuario_id", value);
+	}
+
+	public static string SesionNombre
+	{
+		get => LeerStringEn(SEC_SESION, "nombre", "");
+		set => EscribirStringEn(SEC_SESION, "nombre", valor: value);
+	}
+
+	public static void GuardarSesion(int usuarioId, string nombre)
+	{
+		SesionUsuarioId = usuarioId;
+		SesionNombre = nombre ?? "";
+	}
+
+	public static void CerrarSesionGuardada()
+	{
+		SesionUsuarioId = -1;
+		SesionNombre = "";
+	}
 }

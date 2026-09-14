@@ -82,6 +82,16 @@ public class MatchController : ControllerBase
         return Ok(new { turno = t.Value.turno, estado = hayNuevo ? t.Value.estado : "" });
     }
 
+    // Latido periódico: mantiene "vivo" al jugador y avisa si el rival se cayó (desconexión /
+    // inactividad > 12s). Si el rival se cayó, el que late gana; si ambos, empate.
+    [HttpPost("{id}/latido")]
+    public IActionResult Latido(string id, [FromBody] ColaRequest req)
+    {
+        if (req == null || string.IsNullOrWhiteSpace(req.JugadorId)) return BadRequest(new { mensaje = "jugadorId requerido" });
+        var (rivalCaido, resultado) = _gestor.LatidoYEstado(id, req.JugadorId);
+        return Ok(new { rivalCaido, resultado });
+    }
+
     private static object Serializar(GestorPartidas.Partida p, string jugadorId)
     {
         string asiento = p.JugadorAId == jugadorId ? "A" : (p.JugadorBId == jugadorId ? "B" : "");

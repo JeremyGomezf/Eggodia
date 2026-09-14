@@ -41,6 +41,15 @@ public partial class SesionJuego : Node
 	{
 		Instance = this;
 		CargarMazoDeDisco();
+
+		// Login persistente: si había una sesión guardada, se restaura (así el jugador sigue
+		// logueado entre reinicios y PanelLogin lo manda directo al menú).
+		int idGuardado = Preferencias.SesionUsuarioId;
+		if (idGuardado > 0)
+		{
+			UsuarioId     = idGuardado;
+			NombreJugador = Preferencias.SesionNombre;
+		}
 	}
 
 	public void CerrarSesion()
@@ -49,6 +58,7 @@ public partial class SesionJuego : Node
 		NombreJugador  = "Jugador";
 		MazoSeleccionado.Clear();
 		ImagenesMazo.Clear();
+		Preferencias.CerrarSesionGuardada(); // el logout también se recuerda
 	}
 
 	/// <summary>Guardar mazo desde el constructor antes de ir a la batalla o volver al menú.</summary>
