@@ -652,27 +652,24 @@ text = "Elemento: Metal"
 horizontal_alignment = 1
 
 [node name="HabilidadBox" type="Control" parent="InfoContainer" unique_id=1087317719]
+clip_contents = true
 anchors_preset = 0
-offset_left = 116.0
-offset_top = 479.0
-offset_right = 436.0
-offset_bottom = 794.0
+offset_left = 106.0
+offset_top = 480.0
+offset_right = 446.0
+offset_bottom = 810.0
 
 [node name="Margin" type="MarginContainer" parent="InfoContainer/HabilidadBox" unique_id=355476580]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -4.9795313
-offset_top = -16.142876
-offset_right = -4.9795227
-offset_bottom = -16.142883
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
 
 [node name="VBoxHabilidad" type="VBoxContainer" parent="InfoContainer/HabilidadBox/Margin" unique_id=775251707]
 layout_mode = 2
@@ -687,7 +684,7 @@ text = "Habilidad"
 horizontal_alignment = 1
 
 [node name="LblHabilidad" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad" unique_id=1307508624]
-custom_minimum_size = Vector2(260, 130)
+custom_minimum_size = Vector2(280, 180)
 layout_mode = 2
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)

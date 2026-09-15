@@ -50,7 +50,7 @@ INSERT INTO cartas (Id, Nombre, Tipo, Serie, VidaMaxima, EscudoMaximo, PuntosAta
 (9,  'Ka-Bar',          'Asesino', 'Toon',     250, 360, 100, 'res://imagenes/CartasPng/FantasmaCart.png',   'res://cartas prime/TOONS/Ka-Bar_cartoon_prime.tscn',    'Resucita como fantasma'),
 (10, 'Campero',         'Tactico', 'Toon',     200, 300, 250, 'res://imagenes/CartasPng/CamperoCart.png',    'res://cartas prime/TOONS/Campero_cartoon_prime.tscn',   'Postura defensiva'),
 -- MEDIEVAL
-(11, 'Soldado Real',    'Tactico', 'Medieval', 250, 300, 150, 'res://imagenes/CartasPng/SoldRealCart.png',   'res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn',    'Guardia real'),
+(11, 'Soldado Real',    'Asesino', 'Medieval', 250, 300, 170, 'res://imagenes/CartasPng/SoldRealCart.png',   'res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn',    'Guardia real'),
 (12, 'Maguín',          'Tactico', 'Medieval', 200, 220, 250, 'res://imagenes/CartasPng/MaguinCart.png',     'res://cartas prime/MEDIEVAL/Maguin_prime.tscn',         'Transmutación'),
 (13, 'Dragón',          'Asesino', 'Medieval', 350, 250, 280, 'res://imagenes/CartasPng/DragonCart.png',     'res://cartas prime/MEDIEVAL/Dragon_prime.tscn',         'Fuego eterno'),
 (14, 'Golem',           'Coloso',  'Medieval', 450, 500, 350, 'res://imagenes/CartasPng/GolemCart.png',      'res://cartas prime/MEDIEVAL/Golem_prime.tscn',          'Rocas escudo: +200 ESC a aliados'),

@@ -6,7 +6,7 @@ using Godot;
 public partial class SoldadoRealPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
-	protected override int TurnoDesbloqueoHabilidad => 2;
+	protected override int TurnoDesbloqueoHabilidad => 3;
 
 	private bool   _enParry            = false;
 	private int    _parryTicksRestantes = 0;
@@ -16,7 +16,7 @@ public partial class SoldadoRealPrime : TropaBase
 
 	public override void _Ready()
 	{
-		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 250; escudoActual = escudoMaximo = 300; puntosAtaque = 150; }
+		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 250; escudoActual = escudoMaximo = 300; puntosAtaque = 170; }
 		base._Ready();
 
 		if (_anim != null)

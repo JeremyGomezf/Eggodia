@@ -48,11 +48,17 @@ public partial class Campo1 : Node2D
 		// Turno propio de cada tropa rival: se adelanta antes de cualquier invocación/ataque
 		// de este turno, para que una tropa recién invocada hoy no se cuente a sí misma.
 		// Sin aviso al jugador aquí — el asistente táctico solo notifica sobre tropas PROPIAS.
-		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+		// La ronda de invocación inicial (armar el campo) no cuenta — se saltea una sola vez, igual
+		// que del lado jugador (ver Campo1.Turnos.cs).
+		if (!_primerAvanceRivalPendiente)
 		{
-			if (!(n is Node2D tropaRival) || !IsInstanceValid(tropaRival)) continue;
-			if (tropaRival.HasMethod("AvanzarTurnoTropa")) tropaRival.Call("AvanzarTurnoTropa");
+			foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+			{
+				if (!(n is Node2D tropaRival) || !IsInstanceValid(tropaRival)) continue;
+				if (tropaRival.HasMethod("AvanzarTurnoTropa")) tropaRival.Call("AvanzarTurnoTropa");
+			}
 		}
+		_primerAvanceRivalPendiente = false;
 
 		// Cadencia orgánica entre acciones de la IA (0.5s-1.0s): más lenta en fácil, más ágil
 		// en difícil, pero siempre dentro del rango legible para el jugador.

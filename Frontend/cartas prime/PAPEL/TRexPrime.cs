@@ -2,7 +2,7 @@ using Godot;
 using System;
 
 /// <summary>
-/// T-Rex Prime — Tropa pesada de naturaleza (850 HP / 370 ATK / Sin Escudo).
+/// T-Rex Prime — Tropa pesada de naturaleza (840 HP / 370 ATK / Sin Escudo).
 /// Ataque: Muerde e inflige daño en el Frame 2 de la animación.
 /// UI: Sin botón de defensa ni barra de escudo. Ignora poses defensivas.
 /// Habilidad: Muestra destello amarillo por 1s, ejecuta animación de ataque y en Frame 2 
@@ -23,10 +23,10 @@ public partial class TRexPrime : TropaBase
 
 	public override void _Ready()
 	{
-		// Estadísticas: 850 HP / 370 ATK (0 Escudo)
-		if (vidaMaxima == 0) 
-		{ 
-			vidaActual = vidaMaxima = 850; 
+		// Estadísticas: 840 HP / 370 ATK (0 Escudo)
+		if (vidaMaxima == 0)
+		{
+			vidaActual = vidaMaxima = 840;
 			escudoActual = escudoMaximo = 0; 
 			puntosAtaque = 370; 
 		}

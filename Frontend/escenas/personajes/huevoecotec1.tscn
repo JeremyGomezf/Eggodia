@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://mmi8rwgrmrfa"]
+
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_phxhs"]
+[ext_resource type="Texture2D" uid="uid://cyr2g533ya27t" path="res://imagenes/PersonajesPng/HuevoEcotec.png" id="2_phxhs"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rosa"]
+size = Vector2(147, 140)
+
+[node name="Huevo Ecotec" type="Area2D" unique_id=1196687168]
+script = ExtResource("1_phxhs")
+IdPersonaje = "huevo_rosa"
+
+[node name="HuevoEcotec" type="Sprite2D" parent="." unique_id=764270815]
+position = Vector2(-2.1175824e-22, -1.9999981)
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("2_phxhs")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=378268327]
+shape = SubResource("RectangleShape2D_rosa")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=143408997]
+
+[node name="Label" type="Label" parent="." unique_id=637799834]
+visible = false
+offset_right = 40.0
+offset_bottom = 23.0

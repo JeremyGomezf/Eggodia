@@ -6,7 +6,7 @@ using Godot;
 /// </summary>
 public partial class MuroGolemPrime : Area2D
 {
-	[Export] public int durabilidadMaxima = 250;
+	[Export] public int durabilidadMaxima = 260;
 	public int durabilidadActual;
 
 	/// <summary>Alias de compatibilidad: código de combate que lee "vidaActual" por reflexión

@@ -121,15 +121,17 @@ public static class Preferencias
 		"Rey Huevo", "Capitán Huevo", "Dino Huevo", "Majestad Huevo", "Paper Dino Huevo",
 		"Coronel Huevo", "Huevo Rosa", "Majestad Huevo II"
 	};
+	// Renders unificados (todos 600x661, mismo tamaño real) — Paper Dino Huevo ya tiene su propio
+	// render estático igual que los demás, no hace falta ningún caso especial animado.
 	public static readonly string[] SKIN_IMAGENES = {
-		"res://imagenes/PersonajesPng/ReyHuevo.png",
-		"res://imagenes/PersonajesPng/CapitanHuevo.png",
-		"res://imagenes/PersonajesPng/DinoHuevo.png",
-		"res://imagenes/PersonajesPng/MajestadHuevo.png",
-		"res://imagenes/PersonajesPng/PaperDinoHuevoIcon.tres",
-		"res://imagenes/PersonajesPng/CoronelHuevo.png",
-		"res://imagenes/PersonajesPng/HuevoRosa.png",
-		"res://imagenes/PersonajesPng/MajestadHuevo2.png",
+		"res://imagenes/RendersTropa/Huevo render/ReyHuevo_Render.png",
+		"res://imagenes/RendersTropa/Huevo render/CapitanHuevo_Render.png",
+		"res://imagenes/RendersTropa/Huevo render/DinoHuevo_Render.png",
+		"res://imagenes/RendersTropa/Huevo render/MajestadHuevo_Render.png",
+		"res://imagenes/RendersTropa/Huevo render/PaperDinoHuevo_Render.png",
+		"res://imagenes/RendersTropa/Huevo render/CoronalHuevo_Render.png",
+		"res://imagenes/RendersTropa/Huevo render/HuevoRosa_Render.png",
+		"res://imagenes/RendersTropa/Huevo render/MajestadHuevo2_Render.png",
 	};
 
 	public static int SkinActivaIdx
@@ -156,6 +158,18 @@ public static class Preferencias
 		get => LeerStringEn(SEC_SKINS, "exclusiva_activa", "");
 		set => EscribirStringEn(SEC_SKINS, "exclusiva_activa", value ?? "");
 	}
+
+	// Mapeo textura exclusiva (la que usan MenuPrincipal/Tienda para mostrarla) → escena de
+	// personaje (la que necesita Campo1 para mostrarla EN BATALLA, arriba del trono). Antes solo
+	// existía la textura — en partida siempre se caía a Rey Huevo aunque tuvieras una exclusiva
+	// equipada, porque nada sabía a qué escena correspondía.
+	public static readonly (string textura, string escena)[] SKINS_EXCLUSIVAS_ESCENAS = {
+		("res://imagenes/RendersTropa/Huevo render/HuevoDorado_Render.png", "res://escenas/personajes/huevodorado1.tscn"),
+		("res://imagenes/RendersTropa/Huevo render/HuevoEcotec_Render.png", "res://escenas/personajes/huevoecotec1.tscn"),
+		("res://imagenes/RendersTropa/Huevo render/JeremyHuevo_Render.png", "res://escenas/personajes/huevojeremy1.tscn"),
+		("res://imagenes/RendersTropa/Huevo render/CarlosHuevo_Render.png", "res://escenas/personajes/huevocarlos1.tscn"),
+		("res://imagenes/RendersTropa/Huevo render/GonzaHuevo_Render.png",  "res://escenas/personajes/huevogonzalo1.tscn"),
+	};
 
 	public static bool TieneSkinExclusiva(string ruta)
 	{

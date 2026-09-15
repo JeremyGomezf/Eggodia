@@ -1,7 +1,7 @@
 using Godot;
 
 /// <summary>
-/// Tiburón — Pasiva: +50 ATQ cada turno (ambos turnos). Sin botón de habilidad.
+/// Tiburón — Pasiva: +35 ATQ cada cambio de turno (ambos turnos). Sin botón de habilidad.
 /// Daño de ataque en frame 3 de la animación "ataque".
 /// </summary>
 public partial class TiburonPrime : TropaBase
@@ -12,7 +12,7 @@ public partial class TiburonPrime : TropaBase
 
 	public override void _Ready()
 	{
-		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 300; escudoActual = escudoMaximo = 200; puntosAtaque = 230; }
+		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 310; escudoActual = escudoMaximo = 250; puntosAtaque = 230; }
 		base._Ready();
 		_anim.FrameChanged += OnFrameChanged;
 	}

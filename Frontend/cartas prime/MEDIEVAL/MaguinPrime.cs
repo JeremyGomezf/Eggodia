@@ -14,11 +14,17 @@ public partial class MaguinPrime : TropaBase
 
 	private Node2D _objetivo;
 	private bool   _esHabilidadPendiente = false;
+	// _esHabilidadPendiente se apaga apenas dispara la transmutación en el frame 2 (para no
+	// relanzarla si OnFrameChanged se repitiera). Por eso el chequeo del frame 3 (fuego del ataque
+	// normal) NO puede usar esa misma bandera — ya estaría en false para cuando llega el frame 3
+	// de la MISMA animación, y el fuego se disparaba igual encima de la transmutación. Esta bandera
+	// aparte se mantiene fija durante todo el ataque/habilidad en curso.
+	private bool   _fueHabilidadEsteAtaque = false;
 	private Node2D _objetivoTransmutacion;
 
 	public override void _Ready()
 	{
-		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 200; escudoActual = escudoMaximo = 220; puntosAtaque = 250; }
+		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 200; escudoActual = escudoMaximo = 280; puntosAtaque = 245; }
 		base._Ready();
 		_anim.FrameChanged += OnFrameChanged;
 	}
@@ -31,9 +37,10 @@ public partial class MaguinPrime : TropaBase
 	{
 		if (accion == "atacar")
 		{
-			_yaActuo              = true;
-			_esHabilidadPendiente = false;
-			_objetivo             = BuscarObjetivoEnCarril(ignorarMuro: true);
+			_yaActuo                = true;
+			_esHabilidadPendiente   = false;
+			_fueHabilidadEsteAtaque = false;
+			_objetivo               = BuscarObjetivoEnCarril(ignorarMuro: true);
 			ReproducirAtaque();
 			return;
 		}
@@ -53,8 +60,9 @@ public partial class MaguinPrime : TropaBase
 		}
 
 		// Frame 3: ataque normal -> instancia el fuego sobre el objetivo (el daño lo aplica
-		// el propio fuego en SU frame 1, no aquí).
-		if (!_esHabilidadPendiente && _anim.Frame == 3 && _objetivo != null && IsInstanceValid(_objetivo))
+		// el propio fuego en SU frame 1, no aquí). Nunca si esta pasada de animación era la
+		// habilidad (transmutación) — si no, disparaba las dos cosas en el mismo ataque.
+		if (!_fueHabilidadEsteAtaque && _anim.Frame == 3 && _objetivo != null && IsInstanceValid(_objetivo))
 		{
 			InstanciarFuego(_objetivo);
 		}
@@ -95,6 +103,7 @@ public partial class MaguinPrime : TropaBase
 		habilidadUsada          = true;
 		_yaActuo                = true;
 		_esHabilidadPendiente   = true;
+		_fueHabilidadEsteAtaque = true;
 		_objetivoTransmutacion  = objetivo;
 		ReproducirAtaque();
 	}

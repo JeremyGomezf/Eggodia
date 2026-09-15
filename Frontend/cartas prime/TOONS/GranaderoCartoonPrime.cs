@@ -41,7 +41,7 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			vidaActual   = vidaMaxima   = 50;
 			escudoActual = escudoMaximo = 600;
-			puntosAtaque = 230;
+			puntosAtaque = 220;
 		}
 		base._Ready();
 

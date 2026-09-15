@@ -6,8 +6,8 @@ using System.Collections.Generic;
 /// ArfilPrime — Pieza Arfil de Ajedrez.
 /// Stats Intermedios entre Caballo y Torre.
 /// Habilidad Diagonal Extrema:
-/// - Desde Carril 1 -> Ataca Carril Rival 3 (+50 de daño extra).
-/// - Desde Carril 3 -> Ataca Carril Rival 1 (+50 de daño extra).
+/// - Desde Carril 1 -> Ataca Carril Rival 3 (+100 de daño extra).
+/// - Desde Carril 3 -> Ataca Carril Rival 1 (+100 de daño extra).
 /// - Desde Carril 2 (Centro) -> No puede usar Habilidad.
 /// Frame de Despegue: Frame 3.
 /// </summary>
@@ -31,9 +31,9 @@ public partial class ArfilPrime : TropaBase
 	{
 		if (vidaMaxima == 0) 
 		{ 
-			vidaActual = vidaMaxima = 280;   // Más vida que el Caballo (230)
-			escudoActual = escudoMaximo = 270;
-			puntosAtaque = 240;              // Ataque intermedio
+			vidaActual = vidaMaxima = 320;   // Más vida que el Caballo (300)
+			escudoActual = escudoMaximo = 240;
+			puntosAtaque = 235;              // Ataque intermedio
 		}
 		base._Ready();
 
@@ -187,8 +187,8 @@ public partial class ArfilPrime : TropaBase
 		// 💥 PASO 2: IMPACTO (DAÑO BASE O BASE + 50 EXTRA)
 		if (frameActual == FRAME_IMPACTO)
 		{
-			// Si es Habilidad -> 240 + 50 = 290 de daño
-			int dañoAplica = _esAtaqueHabilidad ? (puntosAtaque + 50) : puntosAtaque;
+			// Si es Habilidad -> 235 + 100 = 335 de daño
+			int dañoAplica = _esAtaqueHabilidad ? (puntosAtaque + 100) : puntosAtaque;
 			AplicarDañoDirecto(_objetivoAtaque, dañoAplica);
 		}
 	}

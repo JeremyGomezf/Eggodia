@@ -222,6 +222,11 @@ public partial class Campo1 : Node2D
 		faseInvocacion = false;
 		ReacomodarManoTropas(); // por si se jugó la carta robada (Spot4) y hay que volver a 3
 
+		// Nota: la reposición de mano NO se hace acá al instante (se probó y se sentía como un bug —
+		// una carta nueva aparecía de golpe apenas jugabas una sola carta, en medio del turno). Se
+		// programa para el segundo 5 del turno en el que corresponda — ver CambiarTurno() en
+		// Campo1.Turnos.cs.
+
 		// En línea: avisar al rival que invoqué esta tropa (la reproduce en su carril espejado).
 		if (EsOnline) EmitirAccionOnline("invocar", new Godot.Collections.Dictionary { { "carril", (string)puntoMod.Name } });
 
@@ -259,9 +264,9 @@ public partial class Campo1 : Node2D
 		Node m = puntoMod.GetNodeOrNull("Ocupado");
 		if (m == null)
 		{
-			m = new Node(); 
-			m.Name = "Ocupado"; 
-			puntoMod.AddChild(m); 
+			m = new Node();
+			m.Name = "Ocupado";
+			puntoMod.AddChild(m);
 		}
 		m.SetMeta("tropa_instanciada", t);
 	}
@@ -400,8 +405,12 @@ public partial class Campo1 : Node2D
 
 		tronoJugador = (TronoCampo)escenaTronoRef.Instantiate(); AddChild(tronoJugador);
 		tronoJugador.GlobalPosition = m1.GlobalPosition;
-		string skinPath = Preferencias.RutaSkinActiva;
-		var skinJugador = ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : escenaReyHuevoRef;
+		// Antes esto solo miraba Preferencias.RutaSkinActiva (las 8 skins estándar) — si tenías
+		// equipada una skin EXCLUSIVA (de dev o por código), acá se ignoraba por completo y en
+		// batalla siempre aparecía Rey Huevo. SkinExclusivaEquipadaEscena() prueba primero la
+		// exclusiva equipada; si no hay ninguna (o no tiene escena de batalla mapeada), cae a la
+		// estándar de siempre.
+		var skinJugador = SkinExclusivaEquipadaEscena() ?? SkinEstandarEquipada();
 		tronoJugador.CargarHuevo(skinJugador ?? escenaReyHuevoRef, false);
 		tronoJugador.CambiarTrono(GD.Load<Texture2D>(Preferencias.RutaTronoActiva));
 
@@ -412,8 +421,29 @@ public partial class Campo1 : Node2D
 		// así que acá se consulta ContextoOnline.Activo directamente (ya está fijado antes del cambio
 		// de escena, en MatchmakingOnline).
 		bool esOnlineAhora = ContextoOnline.Activo;
-		tronoRival.CargarHuevo((esOnlineAhora ? SkinRivalOnline() : SkinAleatoria()) ?? escenaDinoHuevoRef, true);
+		// VS BOT (offline): si el nombre sorteado del bot coincide con un dev/código conocido
+		// (Jeremy/Carlos/Gonzalo/Ec0tec), usa esa skin — si no, sorteo normal entre las estándar.
+		var skinRival = esOnlineAhora ? SkinRivalOnline() : (SkinPorNombreCPU() ?? SkinAleatoria());
+		tronoRival.CargarHuevo(skinRival ?? escenaDinoHuevoRef, true);
 		tronoRival.CambiarTrono(GD.Load<Texture2D>(esOnlineAhora ? TronoRivalOnline() : TronoAleatorio()), true);
+	}
+
+	/// <summary>Escena de la skin EXCLUSIVA equipada (dev o por código), si hay alguna equipada y
+	/// tiene una escena de batalla mapeada en Preferencias.SKINS_EXCLUSIVAS_ESCENAS. Null si no hay
+	/// exclusiva equipada o no matchea ninguna (cae a la estándar).</summary>
+	private PackedScene SkinExclusivaEquipadaEscena()
+	{
+		string exclusiva = Preferencias.SkinExclusivaActiva;
+		if (string.IsNullOrEmpty(exclusiva)) return null;
+		foreach (var (textura, escena) in Preferencias.SKINS_EXCLUSIVAS_ESCENAS)
+			if (textura == exclusiva && ResourceLoader.Exists(escena)) return GD.Load<PackedScene>(escena);
+		return null;
+	}
+
+	private PackedScene SkinEstandarEquipada()
+	{
+		string skinPath = Preferencias.RutaSkinActiva;
+		return ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : escenaReyHuevoRef;
 	}
 
 	/// <summary>Skin de Huevo aleatoria entre todas las disponibles en la tienda — solo para el

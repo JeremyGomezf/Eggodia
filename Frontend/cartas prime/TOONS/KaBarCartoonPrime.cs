@@ -2,7 +2,7 @@ using Godot;
 
 /// <summary>
 /// KaBarCartoonPrime — Soldado fantasma que resucita como espíritu combatiente.
-/// 250 HP / 360 ESC / 10 ATQ.
+/// 250 HP / 330 ESC / 115 ATQ.
 /// El escudo absorbe daño SOLO en postura defensiva explícita.
 /// Al morir en combate: 4 s después aparece como fantasma invulnerable en zona rival,
 /// ataca cada 5 s (30 dmg), dura 25 s máx o hasta eliminar al rival.
@@ -29,8 +29,8 @@ public partial class KaBarCartoonPrime : TropaBase
 		if (vidaMaxima == 0)
 		{
 			vidaActual   = vidaMaxima   = 250;
-			escudoActual = escudoMaximo = 360;
-			puntosAtaque = 100;
+			escudoActual = escudoMaximo = 330;
+			puntosAtaque = 115;
 		}
 		base._Ready();
 

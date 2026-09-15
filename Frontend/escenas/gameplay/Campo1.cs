@@ -13,11 +13,13 @@ public partial class Campo1 : Node2D
 	[Export] private float _volumenMusicaDb = -6.0f;
 	private AudioStreamPlayer _reproductorMusica;
 
-	// ── ESCENARIOS DE BATALLA (4 mapas visuales+musicales, sorteados por partida) ─────────
-	// Medieval tiene 50% de probabilidad; Ajedrez, Papeleo y Toon se reparten el 50% restante
-	// en partes iguales. Cada escenario trae su propio FONDO/ESCENARIO (los dos Sprite2D ya
-	// existentes en la escena) y su propia música — y, al perder, un segundo específico desde
-	// donde arrancar esa música (sin loop, se apaga sola al terminar).
+	// ── ESCENARIOS DE BATALLA (5 mapas visuales+musicales, sorteados por partida) ─────────
+	// "digital" tiene 80% de probabilidad (mapa nuevo, para probarlo de una); los 4 mapas de
+	// siempre se reparten el 20% restante, proporcional al peso que ya tenían entre ellos. Cada
+	// escenario trae su propio FONDO/ESCENARIO (los dos Sprite2D ya existentes en la escena) y su
+	// propia música — y, al perder, un segundo específico desde donde arrancar esa música (sin
+	// loop, se apaga sola al terminar). El mapa "digital" es especial: no usa Fondo fijo, tiene su
+	// propia secuencia de cambios de fondo sincronizada con la música (ver Campo1.SecuenciaDigital.cs).
 	private struct EscenarioBatalla
 	{
 		public string Fondo, Escenario, Musica, Nombre;
@@ -27,30 +29,47 @@ public partial class Campo1 : Node2D
 	}
 	private static readonly EscenarioBatalla[] ESCENARIOS_BATALLA =
 	{
-		new EscenarioBatalla { Nombre = "medieval", Peso = 35f,
+		new EscenarioBatalla { Nombre = "digital", Peso = 3f,
+			Fondo = "res://imagenes/Escenarios/digitalFONDO.png", Escenario = "res://imagenes/Escenarios/digital-escenario.png",
+			Musica = "res://efectos/musica/MUSICA DIGITAL.mp3", SegundoDerrota = 2 * 60 + 46 },
+		new EscenarioBatalla { Nombre = "medieval", Peso = 7f,
 			Fondo = "res://imagenes/Escenarios/medievalFONDO.png", Escenario = "res://imagenes/Escenarios/medieval-escenario.png",
 			Musica = "res://efectos/musica/MUSICA MEDIEVAL.mp3", SegundoDerrota = 2 * 60 + 53 },
-		new EscenarioBatalla { Nombre = "ajedrez", Peso = 20f,
+		new EscenarioBatalla { Nombre = "ajedrez", Peso = 4f,
 			Fondo = "res://imagenes/Escenarios/ajedrezlFONDO.png", Escenario = "res://imagenes/Escenarios/ajedrez-escenario.png",
 			Musica = "res://efectos/musica/MUSICA AJEDREZ.mp3", SegundoDerrota = 3 * 60 + 26 },
-		new EscenarioBatalla { Nombre = "toon", Peso = 25f,
+		new EscenarioBatalla { Nombre = "toon", Peso = 5f,
 			Fondo = "res://imagenes/Escenarios/toonslFONDO.png", Escenario = "res://imagenes/Escenarios/toons-escenario.png",
 			Musica = "res://efectos/musica/MUSICA TOON.mp3", SegundoDerrota = 3 * 60 + 5 },
-		new EscenarioBatalla { Nombre = "papeleo", Peso = 25f,
+		new EscenarioBatalla { Nombre = "papeleo", Peso = 4f,
 			Fondo = "res://imagenes/Escenarios/papeleolFONDO.png", Escenario = "res://imagenes/Escenarios/papeleo-escenario.png",
 			Musica = "res://efectos/musica/MUSICA PAPELEO.mp3", SegundoDerrota = 4 * 60 + 42, VolumenExtraDb = 3f },
 	};
+	public bool EscenarioEsDigital => ESCENARIOS_BATALLA[_idxEscenarioActual].Nombre == "digital";
 	private int   _idxEscenarioActual    = 0;
 	private float _segundoDerrotaMusica  = 0f;
 	private float _volumenExtraEscenario = 0f;
 	private ColorRect _rectVintage;
 	public  bool  EscenarioEsToon => ESCENARIOS_BATALLA[_idxEscenarioActual].Nombre == "toon";
 
+	/// <summary>El azar normal (campo "random") NO está sincronizado entre los dos clientes de una
+	/// partida online — cada uno tira su propio dado. Para el escenario de batalla específicamente
+	/// necesitamos que ambos vean el mismo mapa/música, así que en modo online usamos la semilla que
+	/// ya manda el servidor por partida (ContextoOnline.Semilla, ver MatchmakingOnline.cs / Backend
+	/// GestorPartidas.Semilla) para que los dos clientes calculen exactamente la misma tirada sin
+	/// necesitar ninguna acción de red nueva. Fuera de modo online, usa el random normal de siempre.</summary>
+	private Random ObtenerRandomEscenario()
+	{
+		if (ContextoOnline.Activo && int.TryParse(ContextoOnline.Semilla, out int semilla))
+			return new Random(semilla);
+		return random;
+	}
+
 	private void ElegirEscenarioBatalla()
 	{
 		float total = 0f;
 		foreach (var e in ESCENARIOS_BATALLA) total += e.Peso;
-		float r = (float)random.NextDouble() * total;
+		float r = (float)ObtenerRandomEscenario().NextDouble() * total;
 		float acumulado = 0f;
 		int elegido = ESCENARIOS_BATALLA.Length - 1;
 		for (int i = 0; i < ESCENARIOS_BATALLA.Length; i++)
@@ -112,6 +131,14 @@ public partial class Campo1 : Node2D
 
 	// ── FASE DE APERTURA ─────────────────────────────────────────────────
 	private bool _faseApertura         = true;
+
+	// La ronda de invocación (armar el campo al inicio de la partida) no debe contar como progreso
+	// de ronda para el desbloqueo de habilidades — igual que invocar una tropa a mitad de partida no
+	// cuenta su propio turno de invocación. Cada bando tiene su primer AvanzarTurnoTropa() salteado
+	// una única vez, justo en la transición que cierra la fase de apertura (ver Campo1.Turnos.cs y
+	// Campo1.CPU.cs) — después de esa vez, cuenta normal.
+	private bool _primerAvanceJugadorPendiente = true;
+	private bool _primerAvanceRivalPendiente   = true;
 
 	// ── MODO DEMO ─────────────────────────────────────────────────────────
 	private bool _modoDemo             = false;
@@ -206,6 +233,32 @@ public partial class Campo1 : Node2D
 		"6 a 1", "Rival malo", "KanKox", "KromaNexus", "juegocards"
 	};
 
+	// El nombre del bot (VS BOT, offline) se sortea una sola vez y se guarda acá — tanto la
+	// etiqueta sobre su barra de vida (Campo1.Extra.cs) como la skin que usa en batalla
+	// (CrearEscenaDeBatalla, Campo1.Flujo.cs) leen ESTE mismo valor, para que si te toca "Jeremy"
+	// de rival, se vea con la piel de Jeremy — no un nombre random con una skin random sin relación.
+	private string _nombreCPUElegido = "";
+
+	/// <summary>Cuando el nombre sorteado del bot coincide con uno de los devs (o su código/alias),
+	/// devuelve la escena de esa skin exclusiva; si no matchea ninguno, null (skin aleatoria normal).</summary>
+	private static readonly (string clave, string escena)[] SKIN_POR_NOMBRE_CPU = {
+		("jeremy", "res://escenas/personajes/huevojeremy1.tscn"),
+		("carlos", "res://escenas/personajes/huevocarlos1.tscn"),
+		("kankox", "res://escenas/personajes/huevocarlos1.tscn"), // mismo dev que "Carlos"
+		("gonzalo", "res://escenas/personajes/huevogonzalo1.tscn"),
+		("ec0tec", "res://escenas/personajes/huevoecotec1.tscn"),
+	};
+
+	private PackedScene SkinPorNombreCPU()
+	{
+		string n = _nombreCPUElegido.ToLowerInvariant();
+		foreach (var (clave, escena) in SKIN_POR_NOMBRE_CPU)
+		{
+			if (n.Contains(clave) && ResourceLoader.Exists(escena)) return GD.Load<PackedScene>(escena);
+		}
+		return null;
+	}
+
 	// ── SECUENCIA DE FIN DE PARTIDA ─────────────────────────────────────────
 	private static readonly string[] FRASES_VICTORIA = { "GG BRO", "GANADOR", "BIEN HECHO", "VAMOOOOS SIII", "OSIOSIOSI" };
 	private static readonly string[] FRASES_DERROTA   = { "VALISTE OE", "YA TE FUISTE XD", "GG EZ", "ÑIÑIÑIÑI", "XDDDDxdxd :V", "TE MURISTE ÑAÑO","BYE BYE", "HUEVO ROTO" };
@@ -284,8 +337,8 @@ public partial class Campo1 : Node2D
 				btnHabilidad         = new Button();
 				btnHabilidad.Text     = "HABILIDAD";
 				btnHabilidad.Visible  = false;
-				btnHabilidad.CustomMinimumSize = new Vector2(190, 74);
-				btnHabilidad.AddThemeFontSizeOverride("font_size", 28);
+				btnHabilidad.CustomMinimumSize = new Vector2(225, 88);
+				btnHabilidad.AddThemeFontSizeOverride("font_size", 34);
 				var fuenteBotones = GD.Load<Font>("res://Almendra-Bold.ttf");
 				if (fuenteBotones != null) btnHabilidad.AddThemeFontOverride("font", fuenteBotones);
 				btnHabilidad.Pressed += _on_btn_habilidad_pressed;
@@ -345,6 +398,9 @@ public partial class Campo1 : Node2D
 		InicializarClasificacionMazo();
 		InicializarMazoCPU();
 		InicializarManoVisualCPU();
+		// Se sortea acá (antes de CrearEscenaDeBatalla) para que la skin del rival pueda usar este
+		// mismo nombre — ver SkinPorNombreCPU(). En online no aplica: ahí se usa ContextoOnline.RivalNombre.
+		_nombreCPUElegido = NOMBRES_CPU[random.Next(NOMBRES_CPU.Length)];
 		CrearEscenaDeBatalla();
 		BarajarMazoInicial();
 		_faseApertura  = true;
@@ -447,6 +503,23 @@ public partial class Campo1 : Node2D
 		AddChild(_reproductorMusica);
 		_reproductorMusica.Play();
 		GD.Print("🎵 Música del escenario sonando en Campo1.");
+
+		if (EscenarioEsDigital)
+		{
+			IniciarSecuenciaDigital();
+		}
+		else
+		{
+			// Mismo criterio que el mapa Digital: si la pista se acaba mientras la partida sigue en
+			// curso, se repite desde el principio en vez de quedarse en silencio (antes solo Digital
+			// tenía esto). FinalizarPartida() ya reconfigura Loop/Seek de música al terminar, así que
+			// esto solo importa mientras juegoTerminado siga en false.
+			if (_musicaPartida is AudioStreamMP3 mp3NoDigital) mp3NoDigital.Loop = false;
+			_reproductorMusica.Finished += () =>
+			{
+				if (!juegoTerminado && IsInstanceValid(_reproductorMusica)) _reproductorMusica.Play(0f);
+			};
+		}
 	}
 
 	// ── MODO DEMO: IA vs IA ───────────────────────────────────────────────

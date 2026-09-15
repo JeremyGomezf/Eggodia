@@ -20,7 +20,7 @@ public partial class SoldadoCartoonPrime : TropaBase
 	{
 		if (vidaMaxima == 0)
 		{
-			vidaActual   = vidaMaxima   = 220;
+			vidaActual   = vidaMaxima   = 230;
 			escudoActual = escudoMaximo = 350;
 			puntosAtaque = 50;
 		}

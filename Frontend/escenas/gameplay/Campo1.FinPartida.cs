@@ -168,7 +168,24 @@ public partial class Campo1 : Node2D
 			// En victoria: salta a los últimos 10s de la canción y quedan en loop (sigue sonando
 			// en la pantalla de Victoria). En derrota: arranca desde el minuto específico de ESE
 			// escenario (ver ESCENARIOS_BATALLA) y NO se repite — termina y se queda en silencio.
-			if (_reproductorMusica != null && _reproductorMusica.Stream != null)
+			//
+			// Mapa "digital": comportamiento propio, pedido explícitamente — tanto en victoria como
+			// en derrota la música salta al 2:46 (mismo segundo para ambas, guardado en
+			// _segundoDerrotaMusica) y sigue sonando normal desde ahí hasta el final de la pista
+			// (sin loop — CongelarSecuenciaDigital ya frenó la secuencia, así que el fondo se queda
+			// fijo en FONDO1 si ganamos o en el apagón total si perdemos, aunque la música siga).
+			if (EscenarioEsDigital)
+			{
+				CongelarSecuenciaDigital(esVictoria);
+				if (_reproductorMusica != null && _reproductorMusica.Stream != null)
+				{
+					if (_reproductorMusica.Stream is AudioStreamMP3 mp3digital) mp3digital.Loop = false;
+					float duracionDigital = (float)_reproductorMusica.Stream.GetLength();
+					float destinoDigital = Mathf.Clamp(_segundoDerrotaMusica, 0f, Mathf.Max(0f, duracionDigital - 0.1f));
+					_reproductorMusica.Seek(destinoDigital);
+				}
+			}
+			else if (_reproductorMusica != null && _reproductorMusica.Stream != null)
 			{
 				if (_reproductorMusica.Stream is AudioStreamMP3 mp3) mp3.Loop = esVictoria;
 				float duracion = (float)_reproductorMusica.Stream.GetLength();
@@ -348,11 +365,58 @@ public partial class Campo1 : Node2D
 
 
 	// ── CPU HECHIZOS ─────────────────────────────────────────────────────
+	// El CPU ahora tiene acceso al mismo repertorio de hechizos que el jugador (antes solo alternaba
+	// Veneno/Bloqueo). Reutiliza los mismos efectos que Campo1.Hechizos.cs aplica para el jugador
+	// (AplicarCuracion/AplicarEncebollado/AplicarDesprotegido/AplicarEscudo/AplicarFuerza son
+	// genéricos, no dependen de la mano del jugador) — pero NO reutiliza AplicarHechizoADestino ni
+	// MarcarHechizoUsado, porque esas sí están atadas a las 2 cartas de hechizo visibles del jugador
+	// (_tarjetasHechizoCarta/_cooldownHechizo); llamarlas desde acá le gastaría una carta de hechizo
+	// AL JUGADOR por un hechizo que tiró el CPU.
+	private static readonly string[] CPU_HECHIZOS_IDS =
+		{ "veneno", "bloqueo", "curacion", "encebollado", "desprotegido", "escudo", "fuerza", "robar_carta" };
+
 	private void CPUUsarHechizo()
 	{
 		if (_hechizoUsadoEsteTurno) return; // mismo límite de 1 hechizo/trampa por turno que el jugador
 
-		// Buscar tropa del jugador con más vida para envenenaría
+		string id = CPU_HECHIZOS_IDS[random.Next(CPU_HECHIZOS_IDS.Length)];
+		bool esParaAliado = id is "curacion" or "encebollado" or "escudo" or "fuerza";
+
+		if (id == "robar_carta")
+		{
+			if (!RobarCartaDelJugadorCPU()) return;
+			_hechizoUsadoEsteTurno = true;
+			return;
+		}
+
+		Node2D objetivo = esParaAliado ? BuscarAliadoRivalParaHechizo(id) : BuscarObjetivoJugadorMasFuerte();
+		if (objetivo == null) return;
+
+		_hechizoUsadoEsteTurno = true;
+
+		switch (id)
+		{
+			case "veneno":
+				objetivo.SetMeta("envenenado",   true);
+				objetivo.SetMeta("danoVeneno",   50);
+				objetivo.SetMeta("turnosVeneno", 3);
+				objetivo.Modulate = new Color(0.6f, 1f, 0.4f);
+				break;
+			case "bloqueo":
+				objetivo.SetMeta("bloqueado",     true);
+				objetivo.SetMeta("turnosBloqueo", 2);
+				objetivo.Modulate = COLOR_BLOQUEO;
+				break;
+			case "curacion":      AplicarCuracion(objetivo);      break;
+			case "encebollado":   AplicarEncebollado(objetivo);   break;
+			case "desprotegido":  AplicarDesprotegido(objetivo);  break;
+			case "escudo":        AplicarEscudo(objetivo);        break;
+			case "fuerza":        AplicarFuerza(objetivo);        break;
+		}
+	}
+
+	private Node2D BuscarObjetivoJugadorMasFuerte()
+	{
 		Node2D objetivo = null;
 		int maxVida = 0;
 		foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
@@ -361,26 +425,56 @@ public partial class Campo1 : Node2D
 			int v = Gi(t, "vidaActual");
 			if (v > maxVida) { maxVida = v; objetivo = t; }
 		}
-		if (objetivo == null) return;
+		return objetivo;
+	}
 
-		_hechizoUsadoEsteTurno = true;
+	/// <summary>Para Curación/Escudo prioriza al aliado más lastimado (más útil ahí); para
+	/// Encebollado/Fuerza (buffs de ataque) prioriza al de más ataque actual, para reforzar a su
+	/// pegador más fuerte. Si no hay ninguna tropa rival viva, no hay a quién aplicarlo.</summary>
+	private Node2D BuscarAliadoRivalParaHechizo(string id)
+	{
+		bool priorizarVidaBaja = id is "curacion" or "escudo";
+		Node2D mejor = null;
+		float mejorPuntaje = priorizarVidaBaja ? float.MaxValue : float.MinValue;
+		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+		{
+			if (!(n is Node2D t) || !IsInstanceValid(t)) continue;
+			if (priorizarVidaBaja)
+			{
+				int vidaMax = Mathf.Max(1, Gi(t, "vidaMaxima"));
+				float pct = (float)Gi(t, "vidaActual") / vidaMax;
+				if (pct < mejorPuntaje) { mejorPuntaje = pct; mejor = t; }
+			}
+			else
+			{
+				int atk = Gi(t, "puntosAtaque");
+				if (atk > mejorPuntaje) { mejorPuntaje = atk; mejor = t; }
+			}
+		}
+		return mejor;
+	}
 
-		// Alternar entre veneno y bloqueo
-		if (random.Next(2) == 0)
-		{
-			objetivo.SetMeta("envenenado",   true);
-			objetivo.SetMeta("danoVeneno",   40);
-			objetivo.SetMeta("turnosVeneno", 2);
-			objetivo.Modulate = new Color(0.6f, 1f, 0.4f);
-			ActualizarIconosEstado(objetivo);
-		}
-		else
-		{
-			objetivo.SetMeta("bloqueado",     true);
-			objetivo.SetMeta("turnosBloqueo", 1);
-			objetivo.Modulate = COLOR_BLOQUEO;
-			ActualizarIconosEstado(objetivo);
-		}
+	/// <summary>El CPU le roba una carta al azar de la mano visible del jugador (el propio CPU no
+	/// tiene una "mano" real de la que jugar — elige tropa libremente de su mazo al invocar, ver
+	/// ElegirTropaCPUDeck — así que robar solo tiene sentido como efecto disruptivo: te saca una
+	/// carta de la mano, sin necesidad de dársela a nadie). Devuelve false sin gastar el hechizo si
+	/// el jugador no tiene ninguna carta en mano para robar.</summary>
+	private bool RobarCartaDelJugadorCPU()
+	{
+		if (contenedorMano == null) return false;
+		var candidatas = new List<Carta>();
+		foreach (Node n in contenedorMano.GetChildren())
+			if (n is Carta c && c.EstaEnMano && !c.IsQueuedForDeletion()) candidatas.Add(c);
+		if (candidatas.Count == 0) return false;
+
+		var elegida = candidatas[random.Next(candidatas.Count)];
+		elegida.NombreSpot = "X";
+		elegida.QueueFree();
+		// Colapsa de 4→3 cartas si correspondía (mismo criterio que al jugar cualquier carta) y dejar
+		// a la vista solo las que realmente quedan — nunca "3 cartas pareciendo 4" ni al revés.
+		ReacomodarManoTropas();
+		MostrarAviso("¡El rival te robó una carta de la mano!", new Color(1f, 0.45f, 0.4f));
+		return true;
 	}
 
 	// ── IA PRIORIZA TROPAS DÉBILES ────────────────────────────────────────

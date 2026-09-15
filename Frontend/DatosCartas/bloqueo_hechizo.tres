@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("1_script")
-Nombre = "Barrera Sagrada"
+Nombre = "Bloqueo"
 Categoria = 1
 Elemento = "Metal"
 Era = "Era Medieval"
@@ -17,7 +17,7 @@ Velocidad = "INSTANTÃNEA"
 Rango = "GLOBAL"
 FuerteContra = "Sombra"
 DebilContra = "Fuego"
-Descripcion = "Genera un escudo mÃ­stico que absorbe hasta 350 de daño entrante."
+Descripcion = "Bloquea al rival: pierde su próximo turno sin poder actuar."
 RutaEscena = ""
 Imagen = ExtResource("2_img")
 IdHechizo = "bloqueo"

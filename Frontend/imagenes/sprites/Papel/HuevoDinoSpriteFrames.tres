@@ -1,0 +1,32 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://gfof0o3rpwg5"]
+
+[ext_resource type="Texture2D" uid="uid://bm2ach0uttvx8" path="res://imagenes/sprites/Papel/Huevo Dino sprites.png" id="1_atlas"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pd1"]
+atlas = ExtResource("1_atlas")
+region = Rect2(0, 2114, 942, 1057)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pd2"]
+atlas = ExtResource("1_atlas")
+region = Rect2(0, 3171, 942, 1057)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pd3"]
+atlas = ExtResource("1_atlas")
+region = Rect2(0, 4228, 942, 1057)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pd1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pd2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pd3")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 4.0
+}]

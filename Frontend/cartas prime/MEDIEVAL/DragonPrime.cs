@@ -25,7 +25,7 @@ public partial class DragonPrime : TropaBase
 
 	public override void _Ready()
 	{
-		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 350; escudoActual = escudoMaximo = 250; puntosAtaque = 280; }
+		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 340; escudoActual = escudoMaximo = 380; puntosAtaque = 270; }
 		base._Ready();
 
 		_spotFuego = GetNodeOrNull<Marker2D>("SpotFuego");

@@ -293,39 +293,14 @@ public partial class Campo1 : Node2D
 	}
 
 	// ── ÍCONOS DE ESTADO (veneno / bloqueo) ───────────────────────────────
+	// Antes mostraba un emoji (☠ veneno, 🔒 bloqueo) flotando sobre la tropa — se pidió sacarlo por
+	// completo: "le quita visibilidad al juego y lo hace ver feo". El tinte de color que ya se aplica
+	// al activar cada estado (verde para veneno, oscuro para bloqueo — ver Campo1.Hechizos.cs) sigue
+	// siendo el único aviso visual. Se mantiene la función (no el cuerpo) porque varios lugares del
+	// código todavía la llaman al aplicar/quitar estos estados; ahora solo limpia íconos viejos que
+	// pudieran quedar de una partida ya en curso al aplicar este cambio.
 	private void ActualizarIconosEstado(Node2D tropa)
 	{
-		// Limpiar íconos anteriores
-		Node iconosViejos = tropa.GetNodeOrNull("IconosEstado");
-		iconosViejos?.QueueFree();
-
-		bool envenenado = tropa.HasMeta("envenenado") && ((bool)tropa.GetMeta("envenenado") == true);
-		bool bloqueado  = tropa.HasMeta("bloqueado")  && ((bool)tropa.GetMeta("bloqueado")  == true);
-
-		if (!envenenado && !bloqueado) return;
-
-		var contenedor = new HBoxContainer();
-		contenedor.Name     = "IconosEstado";
-		contenedor.Position = new Vector2(-20, -85);
-		tropa.AddChild(contenedor);
-
-		if (envenenado)
-		{
-			var ico = new Label();
-			ico.Text = "☠";
-			ico.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.2f));
-			ico.AddThemeFontSizeOverride("font_size", 20);
-			contenedor.AddChild(ico);
-
-			// El ícono es solo un aviso visual pasajero; el veneno en sí sigue activo el resto de sus turnos.
-			GetTree().CreateTimer(3.0).Timeout += () => { if (IsInstanceValid(ico)) ico.QueueFree(); };
-		}
-		if (bloqueado)
-		{
-			var ico = new Label();
-			ico.Text = "🔒";
-			ico.AddThemeFontSizeOverride("font_size", 20);
-			contenedor.AddChild(ico);
-		}
+		tropa.GetNodeOrNull("IconosEstado")?.QueueFree();
 	}
 }

@@ -66,7 +66,13 @@ public partial class Campo1 : Node2D
 		{
 			// Avanzar cooldowns de reaparición antes de robar la mano del turno.
 			AvanzarCooldownsJugador();
-			CompletarManoAlInicio();
+
+			// La reposición de la mano del CPU pasa acá, a los 2s de EMPEZAR MI turno (no el suyo) —
+			// así cuando le vuelva a tocar al CPU ya tiene la mano lista, sin gastar ni un segundo de
+			// SU propio turno esperando. Nunca durante la fase de apertura (ahí ya se arma la mano
+			// inicial aparte, en InicializarManoVisualCPU).
+			if (!_faseApertura)
+				GetTree().CreateTimer(2.0).Timeout += () => { if (!juegoTerminado) RellenarManoVisualCPUSiFalta(); };
 
 			// Si algún slot de hechizo quedó vacío (nada elegible cuando se gastó), reintentar
 			// ahora que los cooldowns recién bajaron.
@@ -83,7 +89,8 @@ public partial class Campo1 : Node2D
 
 				bool bloqueadaAntes = false;
 				try { bloqueadaAntes = (bool)tropa.Call("HabilidadBloqueada"); } catch { }
-				if (tropa.HasMethod("AvanzarTurnoTropa")) tropa.Call("AvanzarTurnoTropa");
+				// La ronda de invocación inicial (armar el campo) no cuenta — se saltea una sola vez.
+				if (!_primerAvanceJugadorPendiente && tropa.HasMethod("AvanzarTurnoTropa")) tropa.Call("AvanzarTurnoTropa");
 
 				bool tieneHabilidad = false;
 				try { tieneHabilidad = (bool)tropa.Call("TieneHabilidadEspecial"); } catch { }
@@ -95,6 +102,7 @@ public partial class Campo1 : Node2D
 						avisosAsistente.Add(($"¡{NombreCorto(tropa)} ya tiene su habilidad lista!", new Color(0.5f, 0.85f, 1f)));
 				}
 			}
+			_primerAvanceJugadorPendiente = false; // ya se consumió (o no aplicaba) — de acá en más cuenta normal
 			if (avisosAsistente.Count > 0) MostrarAvisosAsistente(avisosAsistente);
 		}
 		else
@@ -102,7 +110,11 @@ public partial class Campo1 : Node2D
 			// Programar aparición de coloso del CPU cada 3 turnos.
 			int turnoNum = _turnosJugados / 2 + 1;
 			_cpuColosoPendiente = (turnoNum % 3 == 0);
-			RellenarManoVisualCPUSiFalta(); // repone hasta 3 lo que el hechizo "Robar Carta" le haya quitado
+			// La reposición de MI mano pasa acá, a los 2s de empezar el turno DEL RIVAL — así cuando
+			// vuelva a ser mi turno la mano ya está lista y no pierdo nada de mis 30s pensando la
+			// estrategia esperando que aparezca una carta. Nunca durante la fase de apertura.
+			if (!_faseApertura)
+				GetTree().CreateTimer(2.0).Timeout += () => { if (!juegoTerminado) CompletarManoAlInicio(); };
 			EjecutarTurnoCPU();
 		}
 

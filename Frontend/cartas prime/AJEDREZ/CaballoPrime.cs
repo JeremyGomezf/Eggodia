@@ -30,9 +30,9 @@ public partial class CaballoPrime : TropaBase
 	{
 		if (vidaMaxima == 0) 
 		{ 
-			vidaActual = vidaMaxima = 230; 
-			escudoActual = escudoMaximo = 250; 
-			puntosAtaque = 200; // Daño Base
+			vidaActual = vidaMaxima = 300;
+			escudoActual = escudoMaximo = 250;
+			puntosAtaque = 250; // Daño Base
 		}
 		base._Ready();
 

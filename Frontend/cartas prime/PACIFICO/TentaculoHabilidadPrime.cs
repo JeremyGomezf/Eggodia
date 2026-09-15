@@ -6,7 +6,7 @@ using Godot;
 /// habilidad, no participa del flujo de turnos.
 ///
 /// Mientras existe, marca a su objetivo con la meta "atrapado_tentaculo" (que
-/// Campo1.EstaBlockeada ya respeta, tanto para el jugador como para la CPU) y le inflige 10 de
+/// Campo1.EstaBlockeada ya respeta, tanto para el jugador como para la CPU) y le inflige 20 de
 /// daño cada 10 segundos continuos. Se libera —reproduciendo "irse_tentaculo" antes de
 /// eliminarse— cuando el Calamar que lo invocó pierde su postura (llama a <see cref="Liberar"/>)
 /// o si el objetivo muere primero.
@@ -72,7 +72,7 @@ public partial class TentaculoHabilidadPrime : Area2D
 				Liberar();
 				return;
 			}
-			objetivo.Call("RecibirDaño", 10);
+			objetivo.Call("RecibirDaño", 20);
 			ProgramarDañoPeriodico();
 		};
 	}

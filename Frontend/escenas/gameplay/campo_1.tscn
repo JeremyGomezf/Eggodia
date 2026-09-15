@@ -197,17 +197,17 @@ offset_bottom = 40.0
 theme_override_constants/separation = 18
 
 [node name="BtnAtaque" type="Button" parent="InterfazMenu/MenuAcciones/HBoxContainer" unique_id=2043477391]
-custom_minimum_size = Vector2(190, 74)
+custom_minimum_size = Vector2(225, 88)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("15_gg5bv")
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 34
 text = "ATACAR"
 
 [node name="BtnDefensa" type="Button" parent="InterfazMenu/MenuAcciones/HBoxContainer" unique_id=1630369539]
-custom_minimum_size = Vector2(190, 74)
+custom_minimum_size = Vector2(225, 88)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("15_gg5bv")
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 34
 text = "DEFENSA"
 
 [node name="SacrificioButton" type="TextureButton" parent="." unique_id=582472426]
@@ -368,9 +368,9 @@ alignment = 1
 [node name="turno o avisos" type="Label" parent="TurnoPanel/HBox" unique_id=858833816]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_constants/outline_size = 27
+theme_override_constants/outline_size = 32
 theme_override_fonts/font = ExtResource("15_gg5bv")
-theme_override_font_sizes/font_size = 38
+theme_override_font_sizes/font_size = 50
 text = "tostal banner"
 vertical_alignment = 1
 

@@ -7,13 +7,13 @@ public partial class Campo1 : Node2D
 	// ── HECHIZOS ──────────────────────────────────────────────────────────
 	private void AplicarEncebollado(Node2D objetivo)
 	{
-		int ata = 0, esc = 0, escMax = 0;
-		try { ata    = (int)objetivo.Get("puntosAtaque"); } catch { }
-		try { esc    = (int)objetivo.Get("escudoActual"); } catch { }
-		try { escMax = (int)objetivo.Get("escudoMaximo"); } catch { }
-		try { objetivo.Set("puntosAtaque", ata + 100); }                 catch { }
-		try { objetivo.Set("escudoActual", esc + 100); }                 catch { }
-		try { objetivo.Set("escudoMaximo", Mathf.Max(escMax, esc + 100)); } catch { }
+		int ata = 0, vida = 0, vidaMax = 0;
+		try { ata     = (int)objetivo.Get("puntosAtaque"); } catch { }
+		try { vida    = (int)objetivo.Get("vidaActual"); } catch { }
+		try { vidaMax = (int)objetivo.Get("vidaMaxima"); } catch { }
+		try { objetivo.Set("puntosAtaque", ata + 100); }                   catch { }
+		try { objetivo.Set("vidaActual", vida + 100); }                    catch { }
+		try { objetivo.Set("vidaMaxima", Mathf.Max(vidaMax, vida + 100)); } catch { }
 
 		MostrarDañoFlotante(objetivo.GlobalPosition, 100, true);
 		Tween tw = objetivo.CreateTween();

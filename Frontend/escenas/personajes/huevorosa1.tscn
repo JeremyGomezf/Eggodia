@@ -1,4 +1,4 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cmmptx14dwwg6"]
 
 [ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_rosa"]
 [ext_resource type="Texture2D" uid="uid://bbo4vuia5ku8y" path="res://imagenes/PersonajesPng/HuevoRosa.png" id="2_rosa"]
@@ -6,20 +6,21 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_rosa"]
 size = Vector2(147, 140)
 
-[node name="Huevo Rosa" type="Area2D"]
+[node name="Huevo Rosa" type="Area2D" unique_id=1196687168]
 script = ExtResource("1_rosa")
 IdPersonaje = "huevo_rosa"
 
-[node name="HuevoRosa" type="Sprite2D" parent="."]
-scale = Vector2(0.2751, 0.2751)
+[node name="HuevoRosa" type="Sprite2D" parent="." unique_id=764270815]
+position = Vector2(-3.5527137e-15, 16)
+scale = Vector2(0.2, 0.2)
 texture = ExtResource("2_rosa")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=378268327]
 shape = SubResource("RectangleShape2D_rosa")
 
-[node name="HTTPRequest" type="HTTPRequest" parent="."]
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=143408997]
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=637799834]
 visible = false
 offset_right = 40.0
 offset_bottom = 23.0

@@ -5,17 +5,17 @@
 
 [resource]
 script = ExtResource("2_script")
-Nombre = "Kabar"
+Nombre = "Ka-Bar"
 Elemento = "Sombra"
 Era = "Era Cartoon"
 Costo = 3
-Ataque = 270
-Defensa = 130
-Vida = 180
+Ataque = 115
+Defensa = 330
+Vida = 250
 Velocidad = "MEDIA"
 Rango = "CORTO"
 FuerteContra = "Fuego"
 DebilContra = "Metal"
-Descripcion = "Invisibilidad Espectral: Atraviesa enemigos y ataca por la espalda"
+Descripcion = "Sin habilidad activa: al morir, reaparece como fantasma invulnerable en su carril."
 RutaEscena = "res://cartas prime/TOONS/Ka-Bar_cartoon_prime.tscn"
 Imagen = ExtResource("1_icon")

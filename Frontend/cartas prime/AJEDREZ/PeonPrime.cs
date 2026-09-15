@@ -21,9 +21,9 @@ public partial class PeonPrime : TropaBase
 	{
 		if (vidaMaxima == 0) 
 		{ 
-			vidaActual = vidaMaxima = 150; 
-			escudoActual = escudoMaximo = 150; 
-			puntosAtaque = 100; 
+			vidaActual = vidaMaxima = 150;
+			escudoActual = escudoMaximo = 150;
+			puntosAtaque = 150;
 		}
 		base._Ready();
 	}

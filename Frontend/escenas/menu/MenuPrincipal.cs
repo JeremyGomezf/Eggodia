@@ -13,20 +13,26 @@ public partial class MenuPrincipal : Control
 	[Export] public string RutaInvocacion      = "res://escenas/SummonTerminal.tscn";
 
 	// Refuerzo de escala por skin en el selector (mismo orden que Preferencias.SKIN_ESCENAS:
-	// Rey, Capitán, Dino, Majestad, Paper Dino, Coronel, Huevo Rosa, Majestad II). Compensa que
-	// sus PNG originales tienen proporciones/márgenes distintos y por eso "KeepAspectCentered"
-	// los deja más chicos.
-	private static readonly float[] SKIN_ESCALA_EXTRA = { 1.0f, 1.7f, 1.3f, 1.0f, 1.85f, 1.0f, 1.0f, 1.0f };
+	// Rey, Capitán, Dino, Majestad, Paper Dino, Coronel, Huevo Rosa, Majestad II). Ya no hace
+	// falta compensar nada: todos los renders de "Huevo render/" vienen al mismo tamaño real.
+	// Paper Dino (idx 4) no usa este arreglo — se muestra animado (ver AbrirSelectorSkin).
+	// idx 0 (Rey Huevo): el problema real NO era la escala — ReyHuevo_Render.png es mucho más ancho
+	// que el PNG viejo (600×661 vs 361×661), así que con KeepAspectCentered dentro de la misma
+	// cajita angosta de siempre le sobraba muchísimo espacio vacío arriba/abajo. Se arregló
+	// agrandando la cajita en menu_principal.tscn (nodo ReyHuevoCrowned) para que coincida con la
+	// proporción real de la imagen nueva — ya no hace falta ningún refuerzo de escala acá.
+	private static readonly float[] SKIN_ESCALA_EXTRA = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
 
 	// Corrección de centrado horizontal solo dentro del selector de skins (AbrirSelectorSkin) —
-	// Paper Dino Huevo nace descentrado hacia la izquierda en su PNG original.
-	private static readonly float[] SKIN_OFFSET_X_SELECTOR = { 0f, 0f, 0f, 0f, 18f, 0f, 0f, 0f };
+	// ya no hace falta con los renders unificados.
+	private static readonly float[] SKIN_OFFSET_X_SELECTOR = { 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
 
 	// Nodos de animación y UI
 	private Control _islaContainer;
 	private TextureRect _portalNode;
 	private TextureRect _reyHuevoNode;
-	
+	private AnimatedSprite2D _reyHuevoAnimado;
+
 	private Label _lblCoins;
 	private PanelContainer _panelSettings;
 	private PanelContainer _popupDialog;
@@ -34,6 +40,10 @@ public partial class MenuPrincipal : Control
 	// Posiciones iniciales
 	private Vector2 _posInicialIsla;
 	private Vector2 _posInicialReyHuevo;
+	// Escala "de reposo" del huevo equipado (la que fija MostrarHuevoEstatico) — la respiración de
+	// _Process() multiplica sobre ESTA, no pisa directo a 1.0. Antes sí lo hacía, así que cualquier
+	// escala puesta en MostrarHuevoEstatico se perdía en el primer frame sin que se notara por qué.
+	private Vector2 _reyHuevoEscalaBase = Vector2.One;
 
 	private float _tiempoAcumulado = 0f;
 
@@ -47,6 +57,7 @@ public partial class MenuPrincipal : Control
 		_islaContainer     = GetNodeOrNull<Control>("IslaContainer");
 		_portalNode        = GetNodeOrNull<TextureRect>("IslaContainer/Portal");
 		_reyHuevoNode      = GetNodeOrNull<TextureRect>("IslaContainer/ReyHuevoCrowned");
+		_reyHuevoAnimado   = GetNodeOrNull<AnimatedSprite2D>("IslaContainer/ReyHuevoAnimado");
 
 		// Guardar posiciones iniciales si los nodos existen
 		if (_islaContainer   != null) _posInicialIsla = _islaContainer.Position;
@@ -245,12 +256,15 @@ public partial class MenuPrincipal : Control
 			);
 		}
 
-		// C. Huevo Coronado (Rey Huevo) visible y respirando suavemente en el centro del nido
+		// C. Huevo Coronado (Rey Huevo) visible y respirando suavemente en el centro del nido —
+		// multiplica sobre _reyHuevoEscalaBase (la escala real de la skin equipada), no pisa a 1.0.
+		// Antes era rápida y marcada (2.2 de frecuencia, hasta 2% de escala); ahora mucho más lenta
+		// y sutil, como se pidió ("suave suave suave").
 		if (_reyHuevoNode != null)
 		{
-			float escalaY = 1.0f + MathF.Sin(_tiempoAcumulado * 2.2f) * 0.02f;
-			float escalaX = 1.0f - MathF.Sin(_tiempoAcumulado * 2.2f) * 0.012f;
-			_reyHuevoNode.Scale = new Vector2(escalaX, escalaY);
+			float wobbleY = 1.0f + MathF.Sin(_tiempoAcumulado * 0.9f) * 0.008f;
+			float wobbleX = 1.0f - MathF.Sin(_tiempoAcumulado * 0.9f) * 0.005f;
+			_reyHuevoNode.Scale = new Vector2(_reyHuevoEscalaBase.X * wobbleX, _reyHuevoEscalaBase.Y * wobbleY);
 			_reyHuevoNode.Position = new Vector2(
 				_posInicialReyHuevo.X,
 				_posInicialReyHuevo.Y + MathF.Sin(_tiempoAcumulado * 2.2f) * 3f
@@ -367,10 +381,10 @@ public partial class MenuPrincipal : Control
 		header.AddChild(btnX);
 		vbox.AddChild(header);
 
-		// Grid de skins en una sola fila, envuelto en un ScrollContainer horizontal — con 8 skins
-		// ya no entran todas a la vez en el panel; se arrastra/desliza para ver el resto (en vez de
-		// aplastarlas para que quepan todas, como antes).
-		var scrollSkins = new ScrollContainer();
+		// Grid de skins en una sola fila, envuelto en un ScrollTactil horizontal — con 8 skins ya no
+		// entran todas a la vez en el panel; se arrastra/desliza para ver el resto (con el dedo o el
+		// mouse en cualquier parte del contenido, además de la barra nativa, que sigue disponible).
+		var scrollSkins = new ScrollTactil();
 		scrollSkins.VerticalScrollMode = ScrollContainer.ScrollMode.Disabled;
 		scrollSkins.HorizontalScrollMode = ScrollContainer.ScrollMode.Auto;
 		scrollSkins.CustomMinimumSize = new Vector2(0, 260);
@@ -388,6 +402,10 @@ public partial class MenuPrincipal : Control
 		{
 			int capI = i;
 			bool poseida = Preferencias.TieneSkin(i);
+			// El selector solo lista lo que ya tienes — una cuenta nueva solo ve Rey Huevo (idx 0,
+			// siempre poseída) hasta que compre/canjee más. La Tienda sigue mostrando el catálogo
+			// completo para comprar lo que falta.
+			if (!poseida) continue;
 			bool activa  = string.IsNullOrEmpty(exclusivaActiva) && Preferencias.SkinActivaIdx == i;
 
 			var skinPanel = new PanelContainer();
@@ -412,20 +430,10 @@ public partial class MenuPrincipal : Control
 			tex.CustomMinimumSize = new Vector2(130, 140); // caja más cuadrada — antes 130x195 (alargada)
 			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-			// KeepAspectCentered ajusta la imagen COMPLETA sin deformar, pero como Rey/Capitán/
-			// Dino/Majestad/Paper Dino tienen proporciones y márgenes transparentes distintos en
-			// su PNG original, terminan viéndose a tamaños diferentes aunque la caja sea igual.
-			// SKIN_ESCALA_EXTRA compensa eso con un refuerzo de escala por skin.
 			tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			var txImg = GD.Load<Texture2D>(Preferencias.SKIN_IMAGENES[capI]);
 			if (txImg != null) tex.Texture = txImg;
 			tex.PivotOffset = tex.CustomMinimumSize / 2f;
-			float escalaExtra = capI < SKIN_ESCALA_EXTRA.Length ? SKIN_ESCALA_EXTRA[capI] : 1.0f;
-			tex.Scale = new Vector2(escalaExtra, escalaExtra);
-			// Paper Dino Huevo queda descentrado hacia la izquierda dentro de su PNG original —
-			// se corrige con un empujón a la derecha, solo en este selector.
-			float offsetX = capI < SKIN_OFFSET_X_SELECTOR.Length ? SKIN_OFFSET_X_SELECTOR[capI] : 0f;
-			if (offsetX != 0f) tex.Position += new Vector2(offsetX, 0f);
 			// Grayscale para skins no poseídas
 			if (!poseida) tex.Modulate = new Color(0.4f, 0.4f, 0.4f);
 			svbox.AddChild(tex);
@@ -447,7 +455,7 @@ public partial class MenuPrincipal : Control
 				lbl.HorizontalAlignment = HorizontalAlignment.Center;
 				svbox.AddChild(lbl);
 			}
-			else if (poseida)
+			else
 			{
 				var btnEquip = new Button();
 				btnEquip.Text = "EQUIPAR";
@@ -462,15 +470,6 @@ public partial class MenuPrincipal : Control
 				};
 				svbox.AddChild(btnEquip);
 			}
-			else
-			{
-				var lblLocked = new Label();
-				lblLocked.Text = "🔒 No poseída";
-				lblLocked.AddThemeColorOverride("font_color", new Color(0.6f, 0.6f, 0.6f));
-				lblLocked.AddThemeFontSizeOverride("font_size", 11);
-				lblLocked.HorizontalAlignment = HorizontalAlignment.Center;
-				svbox.AddChild(lblLocked);
-			}
 
 			skinPanel.AddChild(svbox);
 			grid.AddChild(skinPanel);
@@ -482,10 +481,11 @@ public partial class MenuPrincipal : Control
 
 		var skinsExclusivas = new (string nombre, string ruta, int devId, string claveDev)[]
 		{
-			("Huevo Ecotec", "res://imagenes/PersonajesPng/HuevoEcotec.png", -1, ""),
-			("Jeremi Huevo", "res://imagenes/PersonajesPng/JeremiHuevo.png", 1, "jeremy"),
-			("Carlos Huevo", "res://imagenes/PersonajesPng/CarlosHuevo.png", 4, "kankox"),
-			("Gonza Huevo",  "res://imagenes/PersonajesPng/GonzaHuevo.png",  2, "gonza"),
+			("Huevo Dorado", "res://imagenes/RendersTropa/Huevo render/HuevoDorado_Render.png", -1, ""),
+			("Huevo Ecotec", "res://imagenes/RendersTropa/Huevo render/HuevoEcotec_Render.png",  -1, ""),
+			("Jeremi Huevo", "res://imagenes/RendersTropa/Huevo render/JeremyHuevo_Render.png",  1, "jeremy"),
+			("Carlos Huevo", "res://imagenes/RendersTropa/Huevo render/CarlosHuevo_Render.png",  4, "kankox"),
+			("Gonza Huevo",  "res://imagenes/RendersTropa/Huevo render/GonzaHuevo_Render.png",   2, "gonza"),
 		};
 
 		foreach (var (nombreExc, rutaExc, devId, claveDev) in skinsExclusivas)
@@ -494,8 +494,9 @@ public partial class MenuPrincipal : Control
 			bool poseida = esDev || Preferencias.TieneSkinExclusiva(rutaExc);
 			bool activa = exclusivaActiva == rutaExc;
 
-			// Si es skin de un dev y no es de este usuario, no la mostramos para mantener la exclusividad
-			if (devId > 0 && !esDev && !Preferencias.TieneSkinExclusiva(rutaExc)) continue;
+			// El selector solo lista lo que ya tienes: skins de dev ocultas para cualquier otra
+			// cuenta (mantiene la exclusividad), y skins por código ocultas hasta canjearlas.
+			if (!poseida) continue;
 
 			var skinPanel = new PanelContainer();
 			skinPanel.CustomMinimumSize = new Vector2(190, 230);
@@ -542,7 +543,7 @@ public partial class MenuPrincipal : Control
 				lbl.HorizontalAlignment = HorizontalAlignment.Center;
 				svbox.AddChild(lbl);
 			}
-			else if (poseida)
+			else
 			{
 				var btnEquip = new Button();
 				btnEquip.Text = "EQUIPAR";
@@ -555,15 +556,6 @@ public partial class MenuPrincipal : Control
 					ActualizarHuevoMenu();
 				};
 				svbox.AddChild(btnEquip);
-			}
-			else
-			{
-				var lblLocked = new Label();
-				lblLocked.Text = "🎁 Por código";
-				lblLocked.AddThemeColorOverride("font_color", new Color(0.8f, 0.7f, 0.4f));
-				lblLocked.AddThemeFontSizeOverride("font_size", 11);
-				lblLocked.HorizontalAlignment = HorizontalAlignment.Center;
-				svbox.AddChild(lblLocked);
 			}
 
 			skinPanel.AddChild(svbox);
@@ -580,7 +572,15 @@ public partial class MenuPrincipal : Control
 		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 	}
 
-	private const string RUTA_REY_HUEVO_CORONADO = "res://imagenes/MenuNuevo/ReyHuevoCrowned.png";
+	private const string RUTA_REY_HUEVO_CORONADO = "res://imagenes/RendersTropa/Huevo render/ReyHuevo_Render.png";
+	// Paper Dino Huevo: en el selector y la Tienda usa el render estático como todos (ya arreglado),
+	// pero en el MENÚ PRINCIPAL, cuando es la skin equipada, se pidió mostrarla animada — mismos
+	// sprite frames que su ficha de personaje — pero calculada para verse al mismo tamaño que el
+	// resto. La caja de referencia (ReyHuevoCrowned, ver menu_principal.tscn) mide 317.7×350 tras el
+	// arreglo de proporción; el frame de la animación mide 942×1057, así que escala =
+	// min(317.7/942, 350/1057) ≈ 0.331 reproduce el mismo criterio "cabe completo, centrado" que
+	// usa KeepAspectCentered para las demás.
+	private const int IDX_PAPER_DINO = 4; // Preferencias.SKIN_ESCENAS[4]
 
 	/// <summary>Refleja en el menú principal la skin de huevo equipada (soporta tanto catálogo estándar como exclusivas).</summary>
 	private void ActualizarHuevoMenu()
@@ -590,17 +590,47 @@ public partial class MenuPrincipal : Control
 		string exclusiva = Preferencias.SkinExclusivaActiva;
 		if (!string.IsNullOrEmpty(exclusiva) && ResourceLoader.Exists(exclusiva))
 		{
-			_reyHuevoNode.Texture = GD.Load<Texture2D>(exclusiva);
-			_reyHuevoNode.Scale = Vector2.One;
+			MostrarHuevoEstatico(exclusiva, Vector2.One);
 			return;
 		}
 
 		int idx = Preferencias.SkinActivaIdx;
+
+		if (idx == IDX_PAPER_DINO)
+		{
+			MostrarHuevoAnimado();
+			return;
+		}
+
 		string ruta = idx == 0 ? RUTA_REY_HUEVO_CORONADO : Preferencias.SKIN_IMAGENES[idx];
+		float escalaExtra = idx < SKIN_ESCALA_EXTRA.Length ? SKIN_ESCALA_EXTRA[idx] : 1.0f;
+		MostrarHuevoEstatico(ruta, new Vector2(escalaExtra, escalaExtra));
+	}
+
+	/// <summary>Muestra el huevo equipado como TextureRect estático y oculta la versión animada.
+	/// _reyHuevoNode se mantiene siempre Visible=true (nunca se apaga) porque es el único nodo con
+	/// el GuiInput que abre el selector de skin — para ocultarlo visualmente se usa alpha 0, nunca
+	/// Visible=false.</summary>
+	private void MostrarHuevoEstatico(string ruta, Vector2 escala)
+	{
 		var tex = GD.Load<Texture2D>(ruta);
 		if (tex != null) _reyHuevoNode.Texture = tex;
-		float escalaExtra = idx < SKIN_ESCALA_EXTRA.Length ? SKIN_ESCALA_EXTRA[idx] : 1.0f;
-		_reyHuevoNode.Scale = new Vector2(escalaExtra, escalaExtra);
+		_reyHuevoEscalaBase = escala;
+		_reyHuevoNode.Scale = escala;
+		_reyHuevoNode.Modulate = Colors.White;
+		if (_reyHuevoAnimado != null) _reyHuevoAnimado.Visible = false;
+	}
+
+	/// <summary>Paper Dino Huevo equipado en el menú principal: se muestra animada (idle real),
+	/// tapando al TextureRect normal (que sigue detrás, transparente, para conservar el clic que
+	/// abre el selector).</summary>
+	private void MostrarHuevoAnimado()
+	{
+		if (_reyHuevoAnimado == null) { MostrarHuevoEstatico(RUTA_REY_HUEVO_CORONADO, Vector2.One); return; }
+		_reyHuevoNode.Modulate = new Color(1, 1, 1, 0);
+		_reyHuevoAnimado.Visible = true;
+		if (_reyHuevoAnimado.SpriteFrames != null && _reyHuevoAnimado.SpriteFrames.HasAnimation("idle"))
+			_reyHuevoAnimado.Play("idle");
 	}
 
 	// ── PERFIL DEL JUGADOR ────────────────────────────────────────────────────

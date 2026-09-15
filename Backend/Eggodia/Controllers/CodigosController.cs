@@ -20,70 +20,81 @@ namespace Eggodia.API.Controllers
         [HttpPost("canjear")]
         public async Task<IActionResult> Canjear([FromBody] CanjearCodigoRequest req)
         {
-            if (req == null || string.IsNullOrWhiteSpace(req.Codigo))
+            try
             {
-                return BadRequest(new { success = false, message = "Debes ingresar un código válido." });
-            }
-
-            if (req.UserId <= 0)
-            {
-                return BadRequest(new { success = false, message = "Debes iniciar sesión con una cuenta para canjear códigos." });
-            }
-
-            var usuario = await _db.Usuarios.FindAsync(req.UserId);
-            if (usuario == null)
-            {
-                return NotFound(new { success = false, message = "Usuario no encontrado." });
-            }
-
-            string codigoLimpio = req.Codigo.Trim().ToLowerInvariant();
-
-            var promo = await _db.PromoCodes.FirstOrDefaultAsync(p => p.Codigo.ToLower() == codigoLimpio);
-            if (promo == null)
-            {
-                return BadRequest(new { success = false, message = "Código promocional no válido o inexistente." });
-            }
-
-            if (promo.UsosActuales >= promo.MaxUsos)
-            {
-                return Conflict(new { success = false, message = "Este código ya ha sido canjeado." });
-            }
-
-            // Si es una skin, verificar si el usuario ya la posee
-            if (promo.TipoRecompensa == "skin")
-            {
-                bool yaTieneSkin = await _db.UserSkins.AnyAsync(us => us.UserId == req.UserId && us.SkinRuta == promo.ValorRecompensa);
-                if (yaTieneSkin)
+                if (req == null || string.IsNullOrWhiteSpace(req.Codigo))
                 {
-                    return Conflict(new { success = false, message = "Ya tienes este skin de huevo desbloqueado en tu cuenta." });
+                    return BadRequest(new { success = false, message = "Debes ingresar un código válido." });
                 }
 
-                _db.UserSkins.Add(new UserSkin
+                if (req.UserId <= 0)
                 {
-                    UserId = req.UserId,
-                    SkinRuta = promo.ValorRecompensa,
-                    Nombre = promo.NombreRecompensa,
-                    FechaDesbloqueo = DateTime.UtcNow
+                    return BadRequest(new { success = false, message = "Debes iniciar sesión con una cuenta para canjear códigos." });
+                }
+
+                var usuario = await _db.Usuarios.FindAsync(req.UserId);
+                if (usuario == null)
+                {
+                    return NotFound(new { success = false, message = "Usuario no encontrado." });
+                }
+
+                string codigoLimpio = req.Codigo.Trim().ToLowerInvariant();
+
+                var promo = await _db.PromoCodes.FirstOrDefaultAsync(p => p.Codigo.ToLower() == codigoLimpio);
+                if (promo == null)
+                {
+                    return BadRequest(new { success = false, message = "Código promocional no válido o inexistente." });
+                }
+
+                if (promo.UsosActuales >= promo.MaxUsos)
+                {
+                    return Conflict(new { success = false, message = "Este código ya ha sido canjeado." });
+                }
+
+                // Si es una skin, verificar si el usuario ya la posee
+                if (promo.TipoRecompensa == "skin")
+                {
+                    bool yaTieneSkin = await _db.UserSkins.AnyAsync(us => us.UserId == req.UserId && us.SkinRuta == promo.ValorRecompensa);
+                    if (yaTieneSkin)
+                    {
+                        return Conflict(new { success = false, message = "Ya tienes este skin de huevo desbloqueado en tu cuenta." });
+                    }
+
+                    _db.UserSkins.Add(new UserSkin
+                    {
+                        UserId = req.UserId,
+                        SkinRuta = promo.ValorRecompensa,
+                        Nombre = promo.NombreRecompensa,
+                        FechaDesbloqueo = DateTime.UtcNow
+                    });
+                }
+
+                // Marcar código como usado
+                promo.UsosActuales++;
+                promo.UsadoPorUsuarioId = req.UserId;
+                promo.FechaCanje = DateTime.UtcNow;
+
+                await _db.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    tipo = promo.TipoRecompensa,
+                    valor = promo.ValorRecompensa,
+                    nombre = promo.NombreRecompensa,
+                    mensaje = promo.TipoRecompensa == "skin"
+                        ? $"¡Felicidades! Has desbloqueado el skin: {promo.NombreRecompensa}"
+                        : $"¡Código canjeado con éxito! Has recibido: {promo.NombreRecompensa}"
                 });
             }
-
-            // Marcar código como usado
-            promo.UsosActuales++;
-            promo.UsadoPorUsuarioId = req.UserId;
-            promo.FechaCanje = DateTime.UtcNow;
-
-            await _db.SaveChangesAsync();
-
-            return Ok(new
+            catch (Exception ex)
             {
-                success = true,
-                tipo = promo.TipoRecompensa,
-                valor = promo.ValorRecompensa,
-                nombre = promo.NombreRecompensa,
-                mensaje = promo.TipoRecompensa == "skin"
-                    ? $"¡Felicidades! Has desbloqueado el skin: {promo.NombreRecompensa}"
-                    : $"¡Código canjeado con éxito! Has recibido: {promo.NombreRecompensa}"
-            });
+                // Antes: una excepción sin manejar acá (p. ej. "no such table" si promo_codes/user_skins
+                // faltaban en una BD vieja) devolvía un 500 crudo sin cuerpo JSON, y el cliente lo
+                // traducía en un mensaje genérico de "error de conexión" que escondía la causa real.
+                Console.Error.WriteLine($"[Codigos/Canjear] Error inesperado: {ex}");
+                return StatusCode(500, new { success = false, message = "Error interno del servidor al canjear el código. Intenta de nuevo en unos minutos." });
+            }
         }
 
         // GET: api/codigos/usuario/{userId}/skins

@@ -43,11 +43,18 @@ public partial class ScrollTactil : ScrollContainer
 	public override void _GuiInput(InputEvent e)
 	{
 		// Dedo real o mouse emulado como toque (emulate_touch_from_mouse está activo en el proyecto).
+		// Traduce el arrastre al eje (o ejes) que este contenedor tenga habilitado — vertical para
+		// la Tienda, horizontal para el selector de skins del menú principal.
 		if (e is InputEventScreenDrag d)
 		{
-			ScrollVertical -= (int)d.Relative.Y;
-			AcceptEvent();
-			return; // sin base: evita el doble desplazamiento con el scroll nativo
+			bool movio = false;
+			if (HorizontalScrollMode != ScrollMode.Disabled) { ScrollHorizontal -= (int)d.Relative.X; movio = true; }
+			if (VerticalScrollMode   != ScrollMode.Disabled) { ScrollVertical   -= (int)d.Relative.Y; movio = true; }
+			if (movio)
+			{
+				AcceptEvent();
+				return; // sin base: evita el doble desplazamiento con el scroll nativo
+			}
 		}
 		base._GuiInput(e);
 	}

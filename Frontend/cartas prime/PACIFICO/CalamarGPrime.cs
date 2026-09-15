@@ -18,7 +18,7 @@ public partial class CalamarGPrime : TropaBase
 
 	public override void _Ready()
 	{
-		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 400; escudoActual = escudoMaximo = 380; puntosAtaque = 370; }
+		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 420; escudoActual = escudoMaximo = 380; puntosAtaque = 300; }
 		base._Ready();
 		_anim.FrameChanged      += OnFrameChanged;
 		_anim.AnimationFinished += OnAnimationFinished;

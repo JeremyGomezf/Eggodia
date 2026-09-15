@@ -20,7 +20,7 @@ public partial class GolemPrime : TropaBase
 
 	public override void _Ready()
 	{
-		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 450; escudoActual = escudoMaximo = 500; puntosAtaque = 350; }
+		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 450; escudoActual = escudoMaximo = 500; puntosAtaque = 330; }
 		base._Ready();
 		_anim.FrameChanged += OnFrameChanged;
 

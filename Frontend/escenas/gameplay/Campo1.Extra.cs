@@ -390,7 +390,7 @@ public partial class Campo1 : Node2D
 		_lblUsuario = _barraHPJugador?.GetNodeOrNull<Label>("usuariolabel");
 		_lblCPU     = _barraHPRival?.GetNodeOrNull<Label>("CPUlabel");
 		if (_lblUsuario != null) _lblUsuario.Text = SesionJuego.Instance?.NombreJugador ?? "Invitado";
-		if (_lblCPU     != null) _lblCPU.Text     = ContextoOnline.Activo ? ContextoOnline.RivalNombre : NOMBRES_CPU[random.Next(NOMBRES_CPU.Length)];
+		if (_lblCPU     != null) _lblCPU.Text     = ContextoOnline.Activo ? ContextoOnline.RivalNombre : _nombreCPUElegido;
 
 		_panelEnergiaUsuario = _barraHPJugador?.GetNodeOrNull<Control>("EnergiaPanel");
 		_lblEnergiaUsuario   = _panelEnergiaUsuario?.GetNodeOrNull<Label>("HBox/energialabel");

@@ -784,10 +784,10 @@ public partial class MenuConstructor : Control
 			_lblDetalleHabilidad.Text = desc;
 			_lblDetalleHabilidad.VerticalAlignment = VerticalAlignment.Top;
 			int len = desc.Length;
-			if (len > 120) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 14);
-			else if (len > 80) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 16);
-			else if (len > 50) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 18);
-			else _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 20);
+			if (len > 160) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 13);
+			else if (len > 110) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 15);
+			else if (len > 70) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 17);
+			else _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 19);
 		}
 
 		// Línea extra: tipo de tropa (Táctico/Asesino/Coloso) en vez de ventajas por elemento.

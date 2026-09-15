@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("1_script")
-Nombre = "Frasco de Veneno"
+Nombre = "Veneno"
 Categoria = 1
 Elemento = "Sombra"
 Era = "Era Medieval"

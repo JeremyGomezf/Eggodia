@@ -5,19 +5,19 @@
 
 [resource]
 script = ExtResource("1_script")
-Nombre = "Poción Curativa"
+Nombre = "Curación"
 Categoria = 1
 Elemento = "Agua"
 Era = "Era Medieval"
 Costo = 2
 Ataque = 0
 Defensa = 0
-Vida = 250
+Vida = 200
 Velocidad = "RÁPIDA"
 Rango = "GLOBAL"
 FuerteContra = "Fuego"
 DebilContra = "Sombra"
-Descripcion = "Restaura 250 puntos de salud a una tropa aliada al instante."
+Descripcion = "Restaura hasta 200 puntos de salud a una tropa aliada al instante."
 RutaEscena = ""
 Imagen = ExtResource("2_img")
 IdHechizo = "curacion"

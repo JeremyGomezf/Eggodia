@@ -279,16 +279,38 @@ public partial class Campo1 : Node2D
 	}
 
 	// ── CPU: aparición de colosos cada 3 turnos ───────────────────────────
+	// El CPU no puede tener la misma tropa repetida dos veces en su propio campo (se sentía
+	// injusto: dos Gólem o dos Caballeros al mismo tiempo del lado rival). Se filtra por ruta de
+	// escena contra las tropas rivales vivas ahora mismo; si alguna vez se diera el caso de que
+	// TODAS las opciones disponibles ya están repetidas, se cae al pool completo sin filtrar antes
+	// que dejar un carril sin poder invocar nada.
+	private HashSet<string> TropasEnCampoRival()
+	{
+		var enCampo = new HashSet<string>();
+		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+			if (n is Node2D t && IsInstanceValid(t) && !string.IsNullOrEmpty(t.SceneFilePath))
+				enCampo.Add(t.SceneFilePath);
+		return enCampo;
+	}
+
 	private PackedScene ElegirTropaCPUDeck()
 	{
-		// Forzar coloso en los turnos de coloso del CPU.
+		var yaEnCampo = TropasEnCampoRival();
+
+		// Forzar coloso en los turnos de coloso del CPU (evitando repetir uno ya en el campo).
 		if (_cpuColosoPendiente && _colososCPU.Count > 0)
 		{
 			_cpuColosoPendiente = false;
-			var pc = GD.Load<PackedScene>(_colososCPU[random.Next(_colososCPU.Count)]);
+			var colososLibres = _colososCPU.FindAll(ruta => !yaEnCampo.Contains(ruta));
+			var poolColoso = colososLibres.Count > 0 ? colososLibres : _colososCPU;
+			var pc = GD.Load<PackedScene>(poolColoso[random.Next(poolColoso.Count)]);
 			if (pc != null) return pc;
 		}
-		var fuente = _mazoCPU.Count > 0 ? _mazoCPU : new List<string>(escenasTropas);
+
+		var fuenteBase = _mazoCPU.Count > 0 ? _mazoCPU : new List<string>(escenasTropas);
+		var fuenteLibre = fuenteBase.FindAll(ruta => !yaEnCampo.Contains(ruta));
+		var fuente = fuenteLibre.Count > 0 ? fuenteLibre : fuenteBase;
+
 		var packed = GD.Load<PackedScene>(fuente[random.Next(fuente.Count)]);
 		if (packed != null) return packed;
 		return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length)]);

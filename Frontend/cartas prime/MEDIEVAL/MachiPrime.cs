@@ -14,7 +14,7 @@ public partial class MachiPrime : TropaBase
 
 	public override void _Ready()
 	{
-		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 200; escudoActual = escudoMaximo = 100; puntosAtaque = 180; }
+		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 210; escudoActual = escudoMaximo = 320; puntosAtaque = 180; }
 		base._Ready();
 
 		if (_anim != null)

@@ -1,10 +1,11 @@
 using Godot;
-using System.Collections.Generic;
 
 /// <summary>
 /// DamaPrime — Pieza Reina de Ajedrez.
 /// Ataque Normal: Se queda en su lugar haciendo la animación de ataque.
-/// Habilidad: Luz de aviso, selección por clic (o IA Táctica) y vuelo por los aires hacia el objetivo.
+/// Habilidad: Luz de aviso, selección por clic (o IA Táctica) y vuelo por los aires hacia el
+/// objetivo, al que ataca donde sea que esté (cualquier carril) por Ataque+150 fijo. Ya no
+/// da ningún bono a sus aliados.
 /// </summary>
 public partial class DamaPrime : TropaBase
 {
@@ -14,10 +15,7 @@ public partial class DamaPrime : TropaBase
 	// ── ESTADOS Y SELECCIÓN POR CLIC ──────────────────────────────────────────
 	private bool   _esperandoSeleccion = false;
 	private bool   _esAtaqueHabilidad  = false;
-	private bool   _inspiracionActiva;
-	private int    _turnosInspiracion;
 	private Tween  _tweenAviso;
-	private List<(Node2D tropa, int ataqueOrig)> _inspirados = new();
 
 	// ── CONTROL DE MOVIMIENTO AJEDREZ (FLOTAR SOLO EN HABILIDAD) ──────────────
 	private Vector2 _posicionOriginal;
@@ -32,9 +30,9 @@ public partial class DamaPrime : TropaBase
 	{
 		if (vidaMaxima == 0) 
 		{ 
-			vidaActual = vidaMaxima = 350; 
-			escudoActual = escudoMaximo = 300; 
-			puntosAtaque = 350; 
+			vidaActual = vidaMaxima = 380;
+			escudoActual = escudoMaximo = 300;
+			puntosAtaque = 350;
 		}
 		base._Ready();
 
@@ -150,26 +148,6 @@ public partial class DamaPrime : TropaBase
 		habilidadUsada     = true;
 		_esAtaqueHabilidad = true; // ⚡ Marca que ES ataque de habilidad con vuelo
 
-		// Buff a Aliados
-		string grupoAliado = IsInGroup("tropas_jugador") ? "tropas_jugador" : "tropas_rival";
-
-		_inspirados.Clear();
-		foreach (Node n in GetTree().GetNodesInGroup(grupoAliado))
-		{
-			if (!(n is Node2D a) || !IsInstanceValid(a) || a == this) continue;
-			int atk = 0;
-			try { atk = (int)a.Get("puntosAtaque"); } catch { continue; }
-			_inspirados.Add((a, atk));
-			try { a.Set("puntosAtaque", atk + 100); } catch { }
-
-			Tween ta = a.CreateTween();
-			ta.TweenProperty(a, "modulate", new Color(1.4f, 1.3f, 0.3f), 0.2f);
-			ta.TweenProperty(a, "modulate", Colors.White, 0.5f);
-		}
-
-		_inspiracionActiva = true;
-		_turnosInspiracion = 2;
-
 		IniciarAtaque();
 	}
 
@@ -227,7 +205,8 @@ public partial class DamaPrime : TropaBase
 		// 💥 APLICA DAÑO EN EL FRAME CORRESPONDIENTE (Tanto normal como habilidad)
 		if (frameActual == FRAME_IMPACTO)
 		{
-			int dañoAplica = _esAtaqueHabilidad ? Mathf.RoundToInt(puntosAtaque * 1.5f) : puntosAtaque;
+			// Habilidad: Ataque + 150 fijo (350+150=500). Ya no multiplica ni da buffs a aliados.
+			int dañoAplica = _esAtaqueHabilidad ? (puntosAtaque + 150) : puntosAtaque;
 			AplicarDañoDirecto(_objetivoAtaque, dañoAplica);
 		}
 	}
@@ -266,23 +245,6 @@ public partial class DamaPrime : TropaBase
 		ZIndex              = _zIndexOriginal;
 		DetenerEfectoAviso();
 		ReproducirIdle();
-	}
-
-	public override void TickHabilidad()
-	{
-		if (!_inspiracionActiva) return;
-
-		_turnosInspiracion--;
-		if (_turnosInspiracion > 0) return;
-
-		foreach (var (tropa, ataqueOrig) in _inspirados)
-		{
-			if (!IsInstanceValid(tropa)) continue;
-			try { tropa.Set("puntosAtaque", ataqueOrig); } catch { }
-		}
-
-		_inspirados.Clear();
-		_inspiracionActiva = false;
 	}
 
 	// ── HELPERS & SELECCIÓN TÁCTICA ──────────────────────────────────────────

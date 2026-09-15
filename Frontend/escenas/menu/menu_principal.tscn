@@ -8,10 +8,11 @@
 [ext_resource type="Texture2D" uid="uid://gf6jp87xs42m" path="res://imagenes/MenuNuevo/BotonCartas.png" id="6_btn_cartas"]
 [ext_resource type="Texture2D" uid="uid://526p8y83mt3f" path="res://imagenes/MenuNuevo/BotonCartasNegativo.png" id="7_btn_cartas_neg"]
 [ext_resource type="Texture2D" uid="uid://bcbpmj85dc43b" path="res://imagenes/MenuNuevo/BotonTienda.png" id="8_btn_tienda"]
+[ext_resource type="Texture2D" uid="uid://b8gket466j1dh" path="res://imagenes/RendersTropa/Huevo render/ReyHuevo_Render.png" id="9_4jhn6"]
 [ext_resource type="Texture2D" uid="uid://c5utt6tl7bxxr" path="res://imagenes/MenuNuevo/BotonTiendaNegativo.png" id="9_btn_tienda_neg"]
+[ext_resource type="SpriteFrames" uid="uid://gfof0o3rpwg5" path="res://imagenes/sprites/Papel/HuevoDinoSpriteFrames.tres" id="9_paperdino_frames"]
 [ext_resource type="Texture2D" uid="uid://fi0ijmmiv1nc" path="res://imagenes/MenuNuevo/BotonConf.png" id="10_btn_conf"]
 [ext_resource type="PackedScene" uid="uid://psettings123" path="res://escenas/menu/PanelSettings.tscn" id="11_sett"]
-[ext_resource type="Texture2D" uid="uid://dbq7l6a8lpkro" path="res://imagenes/MenuNuevo/ReyHuevoCrowned.png" id="12_rey_huevo"]
 [ext_resource type="Texture2D" uid="uid://dmhqo7r8643uf" path="res://imagenes/MenuNuevo/cuadro_nivel.png" id="13_cuadro_nivel"]
 [ext_resource type="Texture2D" uid="uid://wtm5o1b8pog" path="res://imagenes/MenuNuevo/cuadro_moneda.png" id="14_cuadro_moneda"]
 [ext_resource type="Texture2D" uid="uid://c3isse6qikajh" path="res://imagenes/MenuNuevo/Moneda_icon.png" id="15_moneda_icon"]
@@ -185,16 +186,23 @@ texture = ExtResource("5_objetos")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ReyHuevoCrowned" type="TextureRect" parent="IslaContainer" unique_id=250296756]
+[node name="ReyHuevoCrowned" type="TextureRect" parent="IslaContainer" unique_id=897383014]
 layout_mode = 0
-offset_left = 662.78687
-offset_top = 318.6885
-offset_right = 857.78687
-offset_bottom = 668.6885
-pivot_offset = Vector2(97, 240)
-texture = ExtResource("12_rey_huevo")
+offset_left = 601.3115
+offset_top = 319.50818
+offset_right = 919.0115
+offset_bottom = 669.5081
+pivot_offset = Vector2(158.85, 240)
+texture = ExtResource("9_4jhn6")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="ReyHuevoAnimado" type="AnimatedSprite2D" parent="IslaContainer" unique_id=897383015]
+visible = false
+position = Vector2(798.8525, 471.96713)
+scale = Vector2(0.45, 0.45)
+sprite_frames = ExtResource("9_paperdino_frames")
+animation = &"idle"
 
 [node name="CARTAS" type="TextureButton" parent="IslaContainer" unique_id=1172999173]
 layout_mode = 0
@@ -221,9 +229,6 @@ texture_normal = ExtResource("8_btn_tienda")
 texture_pressed = ExtResource("9_btn_tienda_neg")
 texture_hover = ExtResource("8_btn_tienda")
 stretch_mode = 3
-
-[node name="HUEVO" type="Marker2D" parent="IslaContainer" unique_id=912777585]
-position = Vector2(758.68854, 569.5082)
 
 [node name="TopHUD" type="HBoxContainer" parent="." unique_id=972495174]
 layout_mode = 1

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://081bejd28mb6"
+path="res://.godot/imported/MUSICA DIGITAL.mp3-189d561b361df01bdf0af7b4d161da7f.mp3str"
+
+[deps]
+
+source_file="res://efectos/musica/MUSICA DIGITAL.mp3"
+dest_files=["res://.godot/imported/MUSICA DIGITAL.mp3-189d561b361df01bdf0af7b4d161da7f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

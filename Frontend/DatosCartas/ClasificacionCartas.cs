@@ -43,7 +43,7 @@ public static class ClasificacionCartas
 		("kabar",          TipoTropa.Asesino, SerieTropa.Toon,     "res://imagenes/CartasPng/Kabar_Cart.png"),
 		("campero",        TipoTropa.Tactico, SerieTropa.Toon,     "res://imagenes/CartasPng/Campero_Cart.png"),
 		// ── MEDIEVAL ──
-		("soldadoreal",    TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/SoldReal_Cart.png"),
+		("soldadoreal",    TipoTropa.Asesino, SerieTropa.Medieval, "res://imagenes/CartasPng/SoldReal_Cart.png"),
 		("maguin",         TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/Maguin_Cart.png"),
 		("machi",          TipoTropa.Tactico, SerieTropa.Medieval, "res://imagenes/CartasPng/Machi_Cart.png"),
 		("dragon",         TipoTropa.Asesino, SerieTropa.Medieval, "res://imagenes/CartasPng/DragonFlama_Cart.png"),

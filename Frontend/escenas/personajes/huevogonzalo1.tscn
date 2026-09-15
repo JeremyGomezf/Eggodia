@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://bmdtoqbxdq172"]
+
+[ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_upeon"]
+[ext_resource type="Texture2D" uid="uid://dj2aphevcs5c5" path="res://imagenes/PersonajesPng/GonzaHuevo.png" id="2_upeon"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rosa"]
+size = Vector2(147, 140)
+
+[node name="Huevo gonza" type="Area2D" unique_id=1196687168]
+script = ExtResource("1_upeon")
+IdPersonaje = "huevo_rosa"
+
+[node name="Huevogonza" type="Sprite2D" parent="." unique_id=764270815]
+position = Vector2(-2.1175824e-22, 15)
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("2_upeon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=378268327]
+shape = SubResource("RectangleShape2D_rosa")
+
+[node name="HTTPRequest" type="HTTPRequest" parent="." unique_id=143408997]
+
+[node name="Label" type="Label" parent="." unique_id=637799834]
+visible = false
+offset_right = 40.0
+offset_bottom = 23.0
