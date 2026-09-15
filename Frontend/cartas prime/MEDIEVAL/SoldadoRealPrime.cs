@@ -53,7 +53,10 @@ public partial class SoldadoRealPrime : TropaBase
 		habilidadUsada       = true;
 		_yaActuo             = true;
 		_enParry             = true;
-		_parryTicksRestantes = 2;
+		// 4 rondas completas (8 cambios de turno: cada ronda = mi turno + turno rival) — se
+		// desactiva antes si lo golpean mientras está en parry (ver RecibirDaño), o al agotarse
+		// estas 4 rondas sin que lo toquen.
+		_parryTicksRestantes = 8;
 
 		_anim.Play("pre defensa");
 
@@ -141,7 +144,7 @@ public partial class SoldadoRealPrime : TropaBase
 		}
 	}
 
-	// ── TICK: EXPIRAR PARADA EN 2 TURNOS ───────────────────────────────────────
+	// ── TICK: EXPIRAR PARADA EN 4 RONDAS (8 CAMBIOS DE TURNO) ──────────────────
 	public override void TickHabilidad()
 	{
 		if (!_enParry) return;

@@ -346,10 +346,11 @@ public partial class Campo1 : Node2D
 			}
 		}
 
-		// Ardides desde sesión del jugador (MenuConstructor): si eligió y guardó 6, se usan en el
-		// orden elegido; si no, se mantiene el pool completo de 8 (mismo espíritu que hoy con 5).
-		// Debe resolverse ANTES de CrearPanelHechizos() (más abajo), que ya depende de _poolActivo
-		// y _cooldownHechizo para armar la mano inicial de hechizos.
+		// Ardides desde sesión del jugador (MenuConstructor): si equipó al menos
+		// SesionJuego.MIN_ARDIDES_JUGAR (4), se usan esos en el orden elegido (sean 4, 5 o los 6
+		// completos); si no, se mantiene el pool completo de 8. Debe resolverse ANTES de
+		// CrearPanelHechizos() (más abajo), que ya depende de _poolActivo y _cooldownHechizo para
+		// armar la mano inicial de hechizos.
 		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneArdides)
 		{
 			var elegidos = new List<HechizoDef>();
@@ -358,7 +359,7 @@ public partial class Campo1 : Node2D
 				foreach (var def in POOL_HECHIZO_BASE)
 					if (def.Id == id) { elegidos.Add(def); break; }
 			}
-			if (elegidos.Count == 6) _poolActivo = elegidos.ToArray();
+			if (elegidos.Count >= SesionJuego.MIN_ARDIDES_JUGAR) _poolActivo = elegidos.ToArray();
 		}
 		_cooldownHechizo = new int[_poolActivo.Length];
 

@@ -85,7 +85,7 @@ public partial class MenuPrincipal : Control
 		var btnJugar = GetNodeOrNull<Button>("VBoxContainer/JUGAR");
 		if (btnJugar != null)
 		{
-			btnJugar.Pressed += () => { ContextoOnline.Limpiar(); GetTree().ChangeSceneToFile(RutaEscenaJuego); };
+			btnJugar.Pressed += () => { if (!TieneMazoCompletoOAvisa()) return; ContextoOnline.Limpiar(); GetTree().ChangeSceneToFile(RutaEscenaJuego); };
 			AgregarAnimacionHover(btnJugar);
 		}
 
@@ -121,7 +121,7 @@ public partial class MenuPrincipal : Control
 		var btnOnline = GetNodeOrNull<BaseButton>("BottomButtons/BtnOnline");
 		if (btnOnline != null)
 		{
-			btnOnline.Pressed += MostrarPantallaOnline;
+			btnOnline.Pressed += () => { if (TieneMazoCompletoOAvisa()) MostrarPantallaOnline(); };
 			AgregarAnimacionHover(btnOnline);
 		}
 
@@ -130,7 +130,7 @@ public partial class MenuPrincipal : Control
 		var btnVsBot = GetNodeOrNull<BaseButton>("BottomButtons/BtnVsBot");
 		if (btnVsBot != null)
 		{
-			btnVsBot.Pressed += () => { ContextoOnline.Limpiar(); GetTree().ChangeSceneToFile(RutaEscenaJuego); };
+			btnVsBot.Pressed += () => { if (!TieneMazoCompletoOAvisa()) return; ContextoOnline.Limpiar(); GetTree().ChangeSceneToFile(RutaEscenaJuego); };
 			AgregarAnimacionHover(btnVsBot);
 		}
 
@@ -836,12 +836,46 @@ public partial class MenuPrincipal : Control
 		if (_panelSettings != null) _panelSettings.Visible = true;
 	}
 
+	/// <summary>Antes esta validación pasaba al confirmar el mazo en el Constructor (botón
+	/// SELECCIONAR, ya reemplazado por LIMPIAR); ahora el mazo se autoguarda ahí sin bloquear nada,
+	/// así que el aviso de "completa tu mazo" se movió acá — justo antes de arrancar una partida
+	/// (VS BOT, ONLINE o el botón JUGAR viejo del VBoxContainer). Revisa TROPAS (8 obligatorias) Y
+	/// ARDIDES (mínimo SesionJuego.MIN_ARDIDES_JUGAR) — antes solo se podía jugar sin ningún ardid
+	/// equipado, cosa que ya no se permite.</summary>
+	private bool TieneMazoCompletoOAvisa()
+	{
+		bool tieneMazo   = SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo;
+		int  nArdides    = SesionJuego.Instance?.ArdidesSeleccionados?.Count ?? 0;
+		bool tieneArdides = nArdides >= SesionJuego.MIN_ARDIDES_JUGAR;
+
+		if (tieneMazo && tieneArdides) return true;
+
+		string mensaje = (!tieneMazo && !tieneArdides)
+			? $"Equípate 8 tropas y al menos {SesionJuego.MIN_ARDIDES_JUGAR} ardides (hechizos) para jugar."
+			: !tieneMazo
+				? "Completa tu mazo de 8 cartas de tropa en el menú de Cartas antes de jugar."
+				: $"Equípate al menos {SesionJuego.MIN_ARDIDES_JUGAR} ardides (hechizos) en el menú de Cartas antes de jugar.";
+
+		MostrarPopup("Mazo incompleto", mensaje);
+		return false;
+	}
+
 	private void MostrarPopup(string titulo, string mensaje)
 	{
 		if (_popupDialog != null)
 		{
-			_popupDialog.GetNode<Label>("VBox/Title").Text = titulo;
-			_popupDialog.GetNode<Label>("VBox/Message").Text = mensaje;
+			// Único uso hoy es el aviso de mazo incompleto (VS BOT/ONLINE/JUGAR) — se pidió que
+			// esta interfaz se vea más grande, así que se agranda acá directo (no hay otro caso
+			// que dependa del tamaño chico anterior).
+			var lblTitulo  = _popupDialog.GetNode<Label>("VBox/Title");
+			var lblMensaje = _popupDialog.GetNode<Label>("VBox/Message");
+			lblTitulo.Text = titulo;
+			lblTitulo.AddThemeFontSizeOverride("font_size", 32);
+			lblMensaje.Text = mensaje;
+			lblMensaje.AddThemeFontSizeOverride("font_size", 22);
+			lblMensaje.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+			lblMensaje.CustomMinimumSize = new Vector2(520, 0);
+			_popupDialog.CustomMinimumSize = new Vector2(600, 0);
 			_popupDialog.Visible = true;
 
 			_popupDialog.Scale = new Vector2(0.6f, 0.6f);

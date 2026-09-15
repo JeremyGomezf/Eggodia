@@ -31,6 +31,25 @@ public partial class Campo1 : Node2D
 	private List<string> _colososCPU = new();
 	private bool _cpuColosoPendiente = false;
 
+	// Catálogo COMPLETO de las 17 tropas, fijo — el CPU arma su mazo de acá, no de "escenasTropas"
+	// (que para cuando corre InicializarMazoCPU ya fue reemplazado por TU mazo de 8 cartas, ver
+	// Campo1.cs _Ready). Antes el bot terminaba con exactamente tu mismo mazo por eso. El CPU
+	// también ignora a propósito cualquier candado de tienda/desbloqueo — tiene acceso a las 17
+	// tropas y los 8 hechizos siempre, para que tenga más variedad que vos y no sea un espejo.
+	private static readonly string[] TODAS_LAS_TROPAS_CPU = {
+		"res://cartas prime/MEDIEVAL/Dragon_prime.tscn",   "res://cartas prime/MEDIEVAL/Golem_prime.tscn",
+		"res://cartas prime/MEDIEVAL/Maguin_prime.tscn",   "res://cartas prime/MEDIEVAL/SoldadoReal_prime.tscn",
+		"res://cartas prime/PAPEL/Paper_Rex.tscn",      "res://cartas prime/PACIFICO/Tiburon_prime.tscn",
+		"res://cartas prime/AJEDREZ/Peon_prime.tscn",  "res://cartas prime/TOONS/Tanque_cartoon_prime.tscn",
+		"res://cartas prime/PACIFICO/CalamarG_prime.tscn", "res://cartas prime/AJEDREZ/Caballo_prime.tscn",
+		"res://cartas prime/AJEDREZ/Dama_prime.tscn",      "res://cartas prime/AJEDREZ/Torre_prime.tscn",
+		"res://cartas prime/TOONS/Soldado_cartoon_prime.tscn",
+		"res://cartas prime/TOONS/Campero_cartoon_prime.tscn",
+		"res://cartas prime/AJEDREZ/Arfil_prime.tscn", "res://cartas prime/TOONS/Ka-Bar_cartoon_prime.tscn",
+		"res://cartas prime/TOONS/Granadero_cartoon_prime.tscn",
+		"res://cartas prime/MEDIEVAL/Machi_prime.tscn"
+	};
+
 	// ── INICIALIZACIÓN ────────────────────────────────────────────────────
 	private void InicializarClasificacionMazo()
 	{
@@ -74,7 +93,7 @@ public partial class Campo1 : Node2D
 	{
 		_mazoCPU.Clear(); _colososCPU.Clear();
 		var tac = new List<string>(); var ase = new List<string>(); var col = new List<string>();
-		foreach (string ruta in escenasTropas)
+		foreach (string ruta in TODAS_LAS_TROPAS_CPU)
 		{
 			switch (ClasificacionCartas.TipoDe(ruta))
 			{
@@ -89,9 +108,9 @@ public partial class Campo1 : Node2D
 		TomarHasta(_colososCPU, col, 2);
 		// Red de seguridad: si el pool no tuvo suficientes de un tipo, completa con lo que haya.
 		if (_mazoCPU.Count == 0)
-			foreach (string r in escenasTropas) if (ClasificacionCartas.TipoDe(r) != TipoTropa.Coloso) _mazoCPU.Add(r);
+			foreach (string r in TODAS_LAS_TROPAS_CPU) if (ClasificacionCartas.TipoDe(r) != TipoTropa.Coloso) _mazoCPU.Add(r);
 		if (_colososCPU.Count == 0)
-			foreach (string r in escenasTropas) if (ClasificacionCartas.TipoDe(r) == TipoTropa.Coloso) _colososCPU.Add(r);
+			foreach (string r in TODAS_LAS_TROPAS_CPU) if (ClasificacionCartas.TipoDe(r) == TipoTropa.Coloso) _colososCPU.Add(r);
 	}
 
 	private void BarajarLista(List<string> l)
@@ -307,13 +326,13 @@ public partial class Campo1 : Node2D
 			if (pc != null) return pc;
 		}
 
-		var fuenteBase = _mazoCPU.Count > 0 ? _mazoCPU : new List<string>(escenasTropas);
+		var fuenteBase = _mazoCPU.Count > 0 ? _mazoCPU : new List<string>(TODAS_LAS_TROPAS_CPU);
 		var fuenteLibre = fuenteBase.FindAll(ruta => !yaEnCampo.Contains(ruta));
 		var fuente = fuenteLibre.Count > 0 ? fuenteLibre : fuenteBase;
 
 		var packed = GD.Load<PackedScene>(fuente[random.Next(fuente.Count)]);
 		if (packed != null) return packed;
-		return GD.Load<PackedScene>(escenasTropas[random.Next(escenasTropas.Length)]);
+		return GD.Load<PackedScene>(TODAS_LAS_TROPAS_CPU[random.Next(TODAS_LAS_TROPAS_CPU.Length)]);
 	}
 
 	// ── REACOMODO DE LA MANO (3 ↔ 4 cartas) ───────────────────────────────

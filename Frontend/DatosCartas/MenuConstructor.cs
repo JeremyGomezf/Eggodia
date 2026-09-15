@@ -155,10 +155,13 @@ public partial class MenuConstructor : Control
 			_txtBuscador.AddThemeStyleboxOverride("normal", new StyleBoxEmpty());
 		}
 
+		// SELECCIONAR ya no existe — en su lugar, este mismo botón ahora es LIMPIAR (borra solo la
+		// grilla de la pestaña activa, Tropas o Ardid). El mazo se autoguarda solo con cada
+		// agregado/quitado (GuardarMazoActual), así que ya no hace falta un botón de "confirmar".
 		if (_btnBatallar != null)
 		{
-			_btnBatallar.Text = "SELECCIONAR";
-			_btnBatallar.Pressed += ConfirmarSeleccionMazo;
+			_btnBatallar.Text = "LIMPIAR";
+			_btnBatallar.Pressed += LimpiarGridActivo;
 		}
 		if (_btnVolver != null) _btnVolver.Pressed += VolverAlMenu;
 
@@ -298,7 +301,13 @@ public partial class MenuConstructor : Control
 	{
 		_cartasEnMazo.Clear();
 
-		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
+		// Ya NO autocompleta a la fuerza cuando queda por debajo de 8 — antes, apenas volvías a
+		// entrar a esta pantalla con un mazo incompleto (por ejemplo, justo después de tocar
+		// LIMPIAR), esto rellenaba solo hasta 8 y pisaba lo que habías borrado, haciendo que
+		// LIMPIAR pareciera no funcionar. Ahora se respeta EXACTAMENTE lo último guardado, esté
+		// completo, parcial o vacío — el aviso de "mazo incompleto" para poder jugar está en
+		// MenuPrincipal (VS BOT / ONLINE), no acá.
+		if (SesionJuego.Instance != null && SesionJuego.Instance.MazoSeleccionado != null)
 		{
 			foreach (string ruta in SesionJuego.Instance.MazoSeleccionado)
 			{
@@ -311,26 +320,24 @@ public partial class MenuConstructor : Control
 			}
 		}
 
-		if (_cartasEnMazo.Count < MAX_CARTAS)
-		{
-			AutoCompletarMazoValido();
-		}
-
 		_mazoInicial = new List<CartaData>(_cartasEnMazo);
 	}
 
-	// Precarga los primeros 6 ardides disponibles (de los 8 hechizos totales) en los slots de
-	// ArdidSlots, igual que el mazo de tropas se autocompleta, en vez de arrancar vacío. La
-	// selección queda editable y es opcional confirmarla (ver ConfirmarSeleccionMazo).
+	// Antes precargaba los primeros 6 ardides disponibles cada vez, sin importar lo que hubiera
+	// guardado — por eso LIMPIAR en la pestaña Ardid tampoco se notaba al volver a entrar. Ahora
+	// carga exactamente lo guardado en SesionJuego.ArdidesSeleccionados (por IdHechizo); si no hay
+	// nada guardado (o se guardó vacío a propósito), arranca vacío.
 	private void InicializarMazoArdidJugador()
 	{
 		_cartasArdidEnMazo.Clear();
-		foreach (var c in _todasLasCartas)
+		if (SesionJuego.Instance?.ArdidesSeleccionados == null) return;
+
+		foreach (string id in SesionJuego.Instance.ArdidesSeleccionados)
 		{
-			if (c.Categoria == CategoriaCarta.Unidad) continue;
-			if (EsCartaBloqueada(c)) continue;
-			if (_cartasArdidEnMazo.Count >= MAX_ARDIDES) break;
-			_cartasArdidEnMazo.Add(c);
+			if (string.IsNullOrEmpty(id)) continue;
+			var match = _todasLasCartas.Find(c => c.Categoria != CategoriaCarta.Unidad && c.IdHechizo == id);
+			if (match != null && !_cartasArdidEnMazo.Contains(match))
+				_cartasArdidEnMazo.Add(match);
 		}
 	}
 
@@ -803,70 +810,82 @@ public partial class MenuConstructor : Control
 	{
 		GlobalAudioManager.Instance?.PlayClickSound();
 
-		var capa = new CanvasLayer { Layer = 350 };
-		AddChild(capa);
+		// Igual que MostrarMensajeAviso más abajo: la escena tiene una Camera2D, así que hay que
+		// colgar esto de "CapaUI" (el CanvasLayer que ya tiene la escena para esto) en vez de crear
+		// un CanvasLayer nuevo colgado de "this" — si no, queda corrido/no centrado según la
+		// posición y el zoom de la cámara.
+		Node capaUI = GetNodeOrNull<CanvasLayer>("CapaUI") ?? (Node)this;
 
 		var fondo = new ColorRect();
 		fondo.Color = new Color(0.03f, 0.05f, 0.1f, 0.85f);
 		fondo.SetAnchorsPreset(LayoutPreset.FullRect);
 		fondo.MouseFilter = MouseFilterEnum.Stop;
-		capa.AddChild(fondo);
+		fondo.ZIndex = 350;
+		capaUI.AddChild(fondo);
+
+		// CenterContainer en vez de anclar el panel directo a "Center": es el mismo patrón que ya
+		// usa MostrarMensajeAviso (funciona bien ahí) — centra de verdad sin importar el tamaño del
+		// panel, en vez de depender de offsets fijos calculados en el momento de crearlo.
+		var centro = new CenterContainer();
+		centro.SetAnchorsPreset(LayoutPreset.FullRect);
+		centro.MouseFilter = MouseFilterEnum.Ignore;
+		fondo.AddChild(centro);
 
 		var panel = new PanelContainer();
-		panel.SetAnchorsPreset(LayoutPreset.Center);
-		panel.CustomMinimumSize = new Vector2(560, 320);
+		panel.CustomMinimumSize = new Vector2(760, 420); // antes 560x320 — se pidió más grande
 
 		var sb = new StyleBoxFlat();
 		sb.BgColor = new Color(0.08f, 0.11f, 0.2f, 0.98f);
 		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 3;
 		sb.BorderColor = new Color(0.9f, 0.75f, 0.25f);
 		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 16;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 24;
-		sb.ContentMarginTop = sb.ContentMarginBottom = 24;
+		sb.ContentMarginLeft = sb.ContentMarginRight = 32;
+		sb.ContentMarginTop = sb.ContentMarginBottom = 32;
 		panel.AddThemeStyleboxOverride("panel", sb);
-		fondo.AddChild(panel);
+		centro.AddChild(panel);
 
 		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 18);
+		vbox.AddThemeConstantOverride("separation", 22);
 		vbox.Alignment = BoxContainer.AlignmentMode.Center;
 		panel.AddChild(vbox);
 
 		var lblTit = new Label();
 		lblTit.Text = $"🔒 {datos.Nombre.ToUpper()} BLOQUEADA";
 		lblTit.HorizontalAlignment = HorizontalAlignment.Center;
-		lblTit.AddThemeFontSizeOverride("font_size", 26);
+		lblTit.AddThemeFontSizeOverride("font_size", 34);
 		lblTit.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.35f));
 		vbox.AddChild(lblTit);
 
 		var lblMsg = new Label();
 		lblMsg.Text = "Esta carta no está desbloqueada en tu colección.\nPuedes adquirirla en la TIENDA con monedas o escanear su tarjeta física en la Terminal de Invocación.";
+		lblMsg.CustomMinimumSize = new Vector2(680, 0);
 		lblMsg.HorizontalAlignment = HorizontalAlignment.Center;
 		lblMsg.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		lblMsg.AddThemeFontSizeOverride("font_size", 18);
+		lblMsg.AddThemeFontSizeOverride("font_size", 24);
 		lblMsg.AddThemeColorOverride("font_color", new Color(0.85f, 0.9f, 0.98f));
 		vbox.AddChild(lblMsg);
 
 		var hbox = new HBoxContainer();
 		hbox.Alignment = BoxContainer.AlignmentMode.Center;
-		hbox.AddThemeConstantOverride("separation", 20);
+		hbox.AddThemeConstantOverride("separation", 26);
 		vbox.AddChild(hbox);
 
 		var btnTienda = new Button();
 		btnTienda.Text = "IR A LA TIENDA";
-		btnTienda.CustomMinimumSize = new Vector2(200, 60);
-		btnTienda.AddThemeFontSizeOverride("font_size", 20);
+		btnTienda.CustomMinimumSize = new Vector2(250, 72);
+		btnTienda.AddThemeFontSizeOverride("font_size", 24);
 		btnTienda.Pressed += () =>
 		{
-			capa.QueueFree();
+			fondo.QueueFree();
 			GetTree().ChangeSceneToFile("res://escenas/menu/Tienda.tscn");
 		};
 		hbox.AddChild(btnTienda);
 
 		var btnCerrar = new Button();
 		btnCerrar.Text = "CERRAR";
-		btnCerrar.CustomMinimumSize = new Vector2(160, 60);
-		btnCerrar.AddThemeFontSizeOverride("font_size", 20);
-		btnCerrar.Pressed += () => capa.QueueFree();
+		btnCerrar.CustomMinimumSize = new Vector2(200, 72);
+		btnCerrar.AddThemeFontSizeOverride("font_size", 24);
+		btnCerrar.Pressed += () => fondo.QueueFree();
 		hbox.AddChild(btnCerrar);
 	}
 
@@ -918,6 +937,28 @@ public partial class MenuConstructor : Control
 		// Marker2D fijos de "ArdidSlots" (ver ActualizarMazoVisual).
 	}
 
+	// Insistir en una carta ya agregada/con su cupo lleno mostraba el aviso en CADA click — se pidió
+	// que solo avise cada 3 intentos seguidos sobre la MISMA carta (se resetea la cuenta apenas
+	// cambiás de carta o el intento sí logra agregarse), para que no se sature de avisos si tocás
+	// varias veces rápido.
+	private string _ultimaCartaBloqueadaMazo = "";
+	private int    _intentosBloqueoMazo      = 0;
+
+	private void AvisarBloqueoConDebounce(string claveCarta, string mensaje)
+	{
+		if (claveCarta != _ultimaCartaBloqueadaMazo)
+		{
+			_ultimaCartaBloqueadaMazo = claveCarta;
+			_intentosBloqueoMazo = 0;
+		}
+		_intentosBloqueoMazo++;
+		if (_intentosBloqueoMazo >= 3)
+		{
+			MostrarMensajeAviso(mensaje);
+			_intentosBloqueoMazo = 0; // si sigue insistiendo, vuelve a avisar cada 3 intentos
+		}
+	}
+
 	public void AgregarAlMazo(CartaData datos)
 	{
 		if (datos == null) return;
@@ -930,7 +971,7 @@ public partial class MenuConstructor : Control
 			{
 				if (c.Nombre.Equals(datos.Nombre, StringComparison.OrdinalIgnoreCase))
 				{
-					MostrarMensajeAviso($"¡{datos.Nombre} ya está en tu mazo de tropas!");
+					AvisarBloqueoConDebounce(datos.Nombre, $"¡{datos.Nombre} ya está en tu mazo de tropas!");
 					return;
 				}
 			}
@@ -941,13 +982,13 @@ public partial class MenuConstructor : Control
 			int maxTipo = MaxPorTipo(tipo);
 			if (tipo != TipoTropa.Desconocido && enTipo >= maxTipo)
 			{
-				MostrarMensajeAviso($"Tipo {EtiquetaTipo(tipo)} ya lleno ({enTipo}/{maxTipo}). Prueba otro tipo.");
+				AvisarBloqueoConDebounce(datos.Nombre, $"Tipo {EtiquetaTipo(tipo)} ya lleno ({enTipo}/{maxTipo}). Prueba otro tipo.");
 				return;
 			}
 
 			if (_cartasEnMazo.Count >= MAX_CARTAS)
 			{
-				MostrarMensajeAviso($"El mazo de tropas está lleno ({MAX_CARTAS}/{MAX_CARTAS}). Quita una carta primero.");
+				AvisarBloqueoConDebounce(datos.Nombre, $"El mazo de tropas está lleno ({MAX_CARTAS}/{MAX_CARTAS}). Quita una carta primero.");
 				return;
 			}
 
@@ -959,22 +1000,28 @@ public partial class MenuConstructor : Control
 			{
 				if (c.Nombre.Equals(datos.Nombre, StringComparison.OrdinalIgnoreCase))
 				{
-					MostrarMensajeAviso($"¡{datos.Nombre} ya está en tus ardides!");
+					AvisarBloqueoConDebounce(datos.Nombre, $"¡{datos.Nombre} ya está en tus ardides!");
 					return;
 				}
 			}
 
 			if (_cartasArdidEnMazo.Count >= MAX_ARDIDES)
 			{
-				MostrarMensajeAviso($"Los espacios de ardid están llenos ({MAX_ARDIDES}/{MAX_ARDIDES}). Quita un hechizo primero.");
+				AvisarBloqueoConDebounce(datos.Nombre, $"Los espacios de ardid están llenos ({MAX_ARDIDES}/{MAX_ARDIDES}). Quita un hechizo primero.");
 				return;
 			}
 
 			_cartasArdidEnMazo.Add(datos);
 		}
 
+		// Un agregado exitoso resetea el debounce — si vuelven a tocar una carta bloqueada después,
+		// que cuente desde 1 otra vez, no que herede intentos de antes.
+		_ultimaCartaBloqueadaMazo = "";
+		_intentosBloqueoMazo = 0;
+
 		ActualizarMazoVisual();
 		GlobalAudioManager.Instance?.PlayClickSound();
+		GuardarMazoActual();
 	}
 
 	private int ContarPorTipo(TipoTropa tipo)
@@ -1012,6 +1059,47 @@ public partial class MenuConstructor : Control
 
 		ActualizarMazoVisual();
 		GlobalAudioManager.Instance?.PlayClickSound();
+		GuardarMazoActual();
+	}
+
+	/// <summary>Guarda el estado actual del mazo en SesionJuego — se llama después de cada
+	/// agregado/quitado/limpiado, así el mazo queda guardado siempre sin necesitar un botón
+	/// explícito de "guardar". Antes los ardides solo se guardaban con exactamente 6 (si no,
+	/// LIMPIAR nunca persistía un ardid en 0) — ahora se guarda siempre lo que haya, completo,
+	/// parcial o vacío; Campo1.TieneArdides ya exige ==6 para usarlos, así que un valor menor
+	/// sigue cayendo al pool aleatorio de siempre sin que haga falta filtrar acá también.</summary>
+	private void GuardarMazoActual()
+	{
+		if (SesionJuego.Instance == null) return;
+
+		var escenas  = new List<string>();
+		var imagenes = new List<string>();
+		foreach (var c in _cartasEnMazo)
+		{
+			if (string.IsNullOrEmpty(c.RutaEscena)) continue;
+			escenas.Add(c.RutaEscena);
+			string png = ClasificacionCartas.ImagenBatalla(c.RutaEscena, c.Nombre);
+			if (string.IsNullOrEmpty(png)) png = c.Imagen != null ? c.Imagen.ResourcePath : "";
+			imagenes.Add(png);
+		}
+		SesionJuego.Instance.GuardarMazo(escenas, imagenes);
+
+		var idsArdid = new List<string>();
+		foreach (var c in _cartasArdidEnMazo)
+			if (!string.IsNullOrEmpty(c.IdHechizo)) idsArdid.Add(c.IdHechizo);
+		SesionJuego.Instance.GuardarMazoArdid(idsArdid);
+	}
+
+	/// <summary>Botón LIMPIAR (nuevo, separado de SELECCIONAR): borra solo la grilla de la pestaña
+	/// activa — si estás en TROPAS, solo vacía el mazo de tropas sin tocar los ardides guardados,
+	/// y viceversa.</summary>
+	private void LimpiarGridActivo()
+	{
+		GlobalAudioManager.Instance?.PlayClickSound();
+		if (_pestanaActual == "TROPAS") _cartasEnMazo.Clear();
+		else                            _cartasArdidEnMazo.Clear();
+		ActualizarMazoVisual();
+		GuardarMazoActual();
 	}
 
 	private void ActualizarMazoVisual()
@@ -1032,12 +1120,13 @@ public partial class MenuConstructor : Control
 			_lblContadorMazo.Modulate = count == maxActivo ? new Color(0.2f, 1f, 0.4f) : new Color(0.9f, 0.7f, 0.2f);
 		}
 
+		// LIMPIAR (antes SELECCIONAR) siempre queda habilitado — no depende de si el mazo está
+		// completo, borrar la grilla activa tiene que poder hacerse en cualquier momento.
 		if (_btnBatallar != null)
 		{
-			_btnBatallar.Text = "SELECCIONAR";
-			bool listo = (_cartasEnMazo.Count == MAX_CARTAS);
-			_btnBatallar.Disabled = !listo;
-			_btnBatallar.Modulate = listo ? Colors.White : new Color(0.75f, 0.75f, 0.75f, 0.8f);
+			_btnBatallar.Text = "LIMPIAR";
+			_btnBatallar.Disabled = false;
+			_btnBatallar.Modulate = Colors.White;
 		}
 	}
 
@@ -1115,73 +1204,15 @@ public partial class MenuConstructor : Control
 
 	#region Acciones de Botones y Navegación
 
-	private void ConfirmarSeleccionMazo()
-	{
-		if (_cartasEnMazo.Count < MIN_CARTAS)
-		{
-			MostrarMensajeAviso($"Necesitas {MIN_CARTAS} cartas para completar tu mazo.");
-			return;
-		}
-
-		// Validar composición obligatoria: 3 tácticos, 3 asesinos, 2 colosos
-		int nTac = ContarPorTipo(TipoTropa.Tactico);
-		int nAse = ContarPorTipo(TipoTropa.Asesino);
-		int nCol = ContarPorTipo(TipoTropa.Coloso);
-		if (nTac != MAX_TACTICOS || nAse != MAX_ASESINOS || nCol != MAX_COLOSOS)
-		{
-			MostrarMensajeAviso($"Mazo inválido: necesitas {MAX_TACTICOS} tácticos, {MAX_ASESINOS} asesinos y {MAX_COLOSOS} colosos (tienes {nTac}/{nAse}/{nCol}).");
-			return;
-		}
-
-		var escenas = new List<string>();
-		var imagenes = new List<string>();
-
-		foreach (var c in _cartasEnMazo)
-		{
-			if (!string.IsNullOrEmpty(c.RutaEscena))
-			{
-				escenas.Add(c.RutaEscena);
-				// Imagen grande de batalla (CartasPng), no el icono del selector
-				string png = ClasificacionCartas.ImagenBatalla(c.RutaEscena, c.Nombre);
-				if (string.IsNullOrEmpty(png)) png = c.Imagen != null ? c.Imagen.ResourcePath : "";
-				imagenes.Add(png);
-			}
-		}
-
-		if (escenas.Count < MIN_CARTAS)
-		{
-			MostrarMensajeAviso($"El mazo contiene cartas sin escena de combate.");
-			return;
-		}
-
-		if (SesionJuego.Instance != null)
-		{
-			SesionJuego.Instance.GuardarMazo(escenas, imagenes);
-
-			// Ardides: opcional — si el jugador eligió los 6, se guardan; si no, Campo1 arma un
-			// pool aleatorio de los 8 disponibles (no bloquea la confirmación del mazo).
-			if (_cartasArdidEnMazo.Count == MAX_ARDIDES)
-			{
-				var idsArdid = new List<string>();
-				foreach (var c in _cartasArdidEnMazo)
-					if (!string.IsNullOrEmpty(c.IdHechizo)) idsArdid.Add(c.IdHechizo);
-				if (idsArdid.Count == MAX_ARDIDES) SesionJuego.Instance.GuardarMazoArdid(idsArdid);
-			}
-		}
-
-		// Actualizar snapshot confirmado
-		_mazoInicial = new List<CartaData>(_cartasEnMazo);
-		GlobalAudioManager.Instance?.PlayClickSound();
-
-		GD.Print($"[MenuConstructor] Mazo de {_cartasEnMazo.Count} cartas seleccionado y guardado → Volviendo al Menú Principal");
-		EfectoVintageToons.AplicarIntensidad(_rectVintage, 0f, 0.15f);
-		GetTree().ChangeSceneToFile(RutaMenu);
-	}
+	// ConfirmarSeleccionMazo() ya no existe — SELECCIONAR se reemplazó por LIMPIAR (ver _Ready y
+	// LimpiarGridActivo). El mazo se autoguarda solo con cada cambio, así que no hace falta un
+	// botón de "confirmar" separado.
 
 	private void VolverAlMenu()
 	{
 		GlobalAudioManager.Instance?.PlayClickSound();
-		// Descartar cambios no guardados y restaurar el mazo tal como estaba al entrar
+		// Ya no hay "cambios sin guardar" que descartar — el mazo se autoguarda en cada cambio
+		// (GuardarMazoActual). Esto solo resetea la lista local antes de que la escena se destruya.
 		_cartasEnMazo.Clear();
 		if (_mazoInicial != null)
 		{

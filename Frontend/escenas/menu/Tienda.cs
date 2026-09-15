@@ -271,12 +271,18 @@ public partial class Tienda : Control
 
 	private void IntentarComprarTropa(int idx, Button btn)
 	{
+		// Bloquea el botón AL INSTANTE — antes, si aplastabas varias veces rápido, cada click
+		// entraba de nuevo acá antes de que la escena recargara (1.2s después) y te cobraba de
+		// nuevo, aunque la tropa ya se hubiera desbloqueado en el primer click.
+		if (btn != null) { if (btn.Disabled) return; btn.Disabled = true; }
+
 		var eco = Economia.Instancia();
 		if (eco == null) return;
 		int precio = Preferencias.TIENDA_TROPA_PRECIOS[idx];
 		if (!eco.Gastar(precio))
 		{
 			MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f));
+			if (btn != null) btn.Disabled = false; // no se cobró nada: puede reintentar
 			return;
 		}
 
@@ -357,12 +363,15 @@ public partial class Tienda : Control
 
 	private void IntentarComprarHechizo(int idx, Button btn)
 	{
+		if (btn != null) { if (btn.Disabled) return; btn.Disabled = true; }
+
 		var eco = Economia.Instancia();
 		if (eco == null) return;
 		int precio = Preferencias.TIENDA_HECHIZO_PRECIOS[idx];
 		if (!eco.Gastar(precio))
 		{
 			MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f));
+			if (btn != null) btn.Disabled = false;
 			return;
 		}
 
@@ -469,11 +478,13 @@ public partial class Tienda : Control
 
 	private void IntentarComprarSkin(int idx, Button btn)
 	{
+		if (btn != null) { if (btn.Disabled) return; btn.Disabled = true; }
+
 		var eco = Economia.Instancia();
 		if (eco == null) return;
 		int precio = Preferencias.SKIN_PRECIOS[idx];
 		if (!eco.Gastar(precio))
-		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); return; }
+		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; return; }
 
 		Preferencias.DesbloquearSkin(idx);
 		Preferencias.SkinActivaIdx = idx;
@@ -566,11 +577,13 @@ public partial class Tienda : Control
 
 	private void IntentarComprarTrono(int idx, Button btn)
 	{
+		if (btn != null) { if (btn.Disabled) return; btn.Disabled = true; }
+
 		var eco = Economia.Instancia();
 		if (eco == null) return;
 		int precio = Preferencias.TRONO_PRECIOS[idx];
 		if (!eco.Gastar(precio))
-		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); return; }
+		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; return; }
 
 		Preferencias.DesbloquearTrono(idx);
 		Preferencias.TronoActivoIdx = idx;

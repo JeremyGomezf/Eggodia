@@ -24,6 +24,11 @@ public partial class SesionJuego : Node
 	public string NombreJugador { get; set; } = "Jugador";
 	public bool   EstaLogueado  => UsuarioId > 0;
 
+	// Mínimo de ardides equipados para poder jugar y para que Campo1 use tu selección real (por
+	// debajo de esto, Campo1 arma su propio pool aleatorio de los 8 hechizos disponibles). Se pidió
+	// "4 o 5" — 4 es el piso; equipar 5 o los 6 completos también sirve.
+	public const int MIN_ARDIDES_JUGAR = 4;
+
 	// ── MAZO SELECCIONADO ─────────────────────────────────────────────────
 	// Lista de rutas de escenas (.tscn) que el jugador armó en el constructor
 	public List<string> MazoSeleccionado { get; set; } = new();
@@ -31,11 +36,11 @@ public partial class SesionJuego : Node
 	public bool TieneMazo => MazoSeleccionado != null && MazoSeleccionado.Count >= 8;
 
 	// ── ARDIDES SELECCIONADOS (opcional) ──────────────────────────────────
-	// Ids estables (CartaData.IdHechizo) de los 6 ardides elegidos en MenuConstructor. Si el
-	// jugador nunca los eligió (o eligió menos de 6), queda vacío y Campo1 arma un pool aleatorio
-	// de los 8 hechizos disponibles, igual que hacía antes con 5.
+	// Ids estables (CartaData.IdHechizo) de los ardides elegidos en MenuConstructor (hasta 6). Si
+	// el jugador equipó menos de MIN_ARDIDES_JUGAR, queda sin efecto y Campo1 arma un pool
+	// aleatorio de los 8 hechizos disponibles.
 	public List<string> ArdidesSeleccionados { get; set; } = new();
-	public bool TieneArdides => ArdidesSeleccionados != null && ArdidesSeleccionados.Count == 6;
+	public bool TieneArdides => ArdidesSeleccionados != null && ArdidesSeleccionados.Count >= MIN_ARDIDES_JUGAR;
 
 	// ── RESULTADO ÚLTIMA PARTIDA ──────────────────────────────────────────
 	public string UltimoResultado  { get; set; } = "";
