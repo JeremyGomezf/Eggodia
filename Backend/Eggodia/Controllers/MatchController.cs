@@ -94,6 +94,18 @@ public class MatchController : ControllerBase
         return Ok(new { rivalCaido, resultado });
     }
 
+    // El cliente reporta el ganador al terminar la partida (huevo a 0 o por tiempo). El primero en
+    // reportar fija el resultado; ambos clientes lo leen y muestran lo mismo (evita "los dos ganan").
+    public class ResultadoRequest { public string JugadorId { get; set; } = ""; public string Ganador { get; set; } = ""; }
+
+    [HttpPost("{id}/resultado")]
+    public IActionResult ReportarResultado(string id, [FromBody] ResultadoRequest req)
+    {
+        if (req == null) return BadRequest(new { mensaje = "cuerpo requerido" });
+        string resultado = _gestor.ReportarResultado(id, req.Ganador);
+        return Ok(new { resultado });
+    }
+
     // ── Acciones en vivo ──────────────────────────────────────────────────
     public class AccionRequest
     {

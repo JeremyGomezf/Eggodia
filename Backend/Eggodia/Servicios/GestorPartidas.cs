@@ -153,6 +153,24 @@ public class GestorPartidas
         return (rivalCaido, p.Resultado);
     }
 
+    // Un cliente reporta el ganador de una partida terminada NORMALMENTE (huevo a 0 o por tiempo). El
+    // PRIMER reporte gana el arbitraje (first-write-wins): así ambos clientes convergen al MISMO
+    // resultado y nunca pasa que los dos se ven ganando. Devuelve el resultado autoritativo final.
+    public string ReportarResultado(string id, string ganador)
+    {
+        if (!_partidas.TryGetValue(id, out var p)) return "";
+        lock (_lock)
+        {
+            if (string.IsNullOrEmpty(p.Resultado) &&
+                (ganador == "gano_A" || ganador == "gano_B" || ganador == "empate"))
+            {
+                p.Resultado = ganador;
+            }
+            p.ActualizadaUtc = DateTime.UtcNow;
+            return p.Resultado;
+        }
+    }
+
     // ── Acciones en vivo (invocar/atacar/habilidad/hechizo/fin_turno) ─────
     // Devuelve el índice (0-based) de la acción recién agregada.
     public int AgregarAccion(string id, string accionJson)

@@ -128,6 +128,15 @@ public partial class Campo1 : Node2D
 	// ── FIN DE PARTIDA ────────────────────────────────────────────────────
 	private void DeterminarGanadorPorTiempo()
 	{
+		// En línea el resultado lo ARBITRA el servidor (no cada cliente por su cuenta, que causaba
+		// que los dos se vieran ganando). Reportamos quién creemos que ganó; el server decide.
+		if (EsOnline)
+		{
+			if (vidaJugador > vidaRival) EnviarResultadoOnline("yo");
+			else if (vidaRival > vidaJugador) EnviarResultadoOnline("rival");
+			else EnviarResultadoOnline("empate");
+			return;
+		}
 		if (vidaJugador > vidaRival) FinalizarPartida("¡VICTORIA!");
 		else if (vidaRival > vidaJugador) FinalizarPartida("¡DERROTA!");
 		else FinalizarPartida("¡EMPATE!");
@@ -135,6 +144,12 @@ public partial class Campo1 : Node2D
 
 	private void CheckEstadoJuego()
 	{
+		if (EsOnline)
+		{
+			if (vidaJugador <= 0) EnviarResultadoOnline("rival");     // mi huevo murió → ganó el rival
+			else if (vidaRival <= 0) EnviarResultadoOnline("yo");     // huevo rival murió → gané yo
+			return;
+		}
 		if (vidaJugador <= 0) FinalizarPartida("DERROTA");
 		else if (vidaRival <= 0) FinalizarPartida("VICTORIA");
 	}

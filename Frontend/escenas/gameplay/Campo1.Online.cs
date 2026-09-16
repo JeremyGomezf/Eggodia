@@ -38,6 +38,10 @@ public partial class Campo1 : Node2D
 	private Timer _timerWs;
 	private bool _wsConectado = false;
 
+	// Arbitraje de resultado: el fin de partida se decide en el servidor, no localmente.
+	private HttpRequest _httpResultado;
+	private bool _finOnlineEnviado = false;
+
 	private void ConfigurarModoOnline()
 	{
 		EsOnline = ContextoOnline.Activo;
@@ -279,8 +283,10 @@ public partial class Campo1 : Node2D
 		if (TodosLosSeisLlenos()) _faseApertura = false;
 		ActualizarInterfaz();
 
-		if (vidaJugador <= 0) FinalizarPartida("DERROTA");
-		else if (vidaRival <= 0) FinalizarPartida("VICTORIA");
+		// Fin de partida: NO se decide localmente (los dos podrían verse ganando). Se reporta al
+		// servidor y se muestra el resultado autoritativo (ver EnviarResultadoOnline).
+		if (vidaJugador <= 0) EnviarResultadoOnline("rival");     // mi huevo murió → ganó el rival
+		else if (vidaRival <= 0) EnviarResultadoOnline("yo");     // el huevo rival murió → gané yo
 	}
 
 	private void ColocarTropaAdoptada(string carril, string escena, int vida, int vidaMax, int escudo, int escudoMax, int turnoCarta, bool habUsada, bool miLado)
@@ -383,11 +389,17 @@ public partial class Campo1 : Node2D
 			string resultado = doc.TryGetProperty("resultado", out var r) ? (r.GetString() ?? "") : "";
 			bool rivalCaido = doc.TryGetProperty("rivalCaido", out var rc) && rc.GetBoolean();
 			if (!string.IsNullOrEmpty(resultado)) ResolverResultadoOnline(resultado);
-			else if (rivalCaido) ResolverResultadoOnline("gano_" + ContextoOnline.Asiento);
+			else if (rivalCaido)
+			{
+				MostrarAviso("El rival se desconectó. ¡Ganaste!", new Color(0.5f, 1f, 0.6f));
+				ResolverResultadoOnline("gano_" + ContextoOnline.Asiento);
+			}
 		}
 		catch { }
 	}
 
+	// Muestra el resultado AUTORITATIVO (viene del servidor). "gano_<miAsiento>" = gané; "empate";
+	// cualquier otro = perdí. Se usa tanto para desconexión (latido) como para fin normal (arbitraje).
 	private void ResolverResultadoOnline(string resultado)
 	{
 		if (juegoTerminado) return;
@@ -396,17 +408,49 @@ public partial class Campo1 : Node2D
 		if (_timerWs != null && !_timerWs.IsStopped()) _timerWs.Stop();
 		if (_ws != null && _ws.GetReadyState() == WebSocketPeer.State.Open) _ws.Close();
 
-		if (resultado == "empate")
-		{
-			MostrarAviso("Empate: ambos abandonaron", Colors.White);
-			FinalizarPartida("¡EMPATE!");
-		}
-		else if (resultado == "gano_" + ContextoOnline.Asiento)
-		{
-			MostrarAviso("El rival se desconectó. ¡Ganaste!", new Color(0.5f, 1f, 0.6f));
-			FinalizarPartida("¡VICTORIA!");
-		}
+		if (resultado == "empate") FinalizarPartida("¡EMPATE!");
+		else if (resultado == "gano_" + ContextoOnline.Asiento) FinalizarPartida("¡VICTORIA!");
 		else FinalizarPartida("¡DERROTA!");
+	}
+
+	// Reporta el fin de partida NORMAL (huevo a 0 o por tiempo) al servidor, que ARBITRA (el primer
+	// reporte gana), y muestra el resultado autoritativo → ambos clientes ven lo mismo, nunca "los dos
+	// ganan". quien: "yo" gané | "rival" ganó (perdí) | "empate". Si la red falla, cae al local.
+	private void EnviarResultadoOnline(string quien)
+	{
+		if (!EsOnline || _finOnlineEnviado || juegoTerminado) return;
+		_finOnlineEnviado = true;
+
+		string ganador = quien == "yo"    ? "gano_" + ContextoOnline.Asiento
+					   : quien == "rival" ? "gano_" + (ContextoOnline.SoyPrimero ? "B" : "A")
+					   :                     "empate";
+
+		if (_timerPollAcc != null && !_timerPollAcc.IsStopped()) _timerPollAcc.Stop();
+
+		_httpResultado = new HttpRequest();
+		AddChild(_httpResultado);
+		_httpResultado.RequestCompleted += (long r, long c, string[] h, byte[] b) =>
+		{
+			string autoritativo = ganador; // respaldo si el server no responde
+			if (r == (long)HttpRequest.Result.Success && c == 200)
+			{
+				try
+				{
+					var doc = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(b));
+					if (doc.TryGetProperty("resultado", out var rr))
+					{
+						string s = rr.GetString() ?? "";
+						if (!string.IsNullOrEmpty(s)) autoritativo = s;
+					}
+				}
+				catch { }
+			}
+			ResolverResultadoOnline(autoritativo);
+		};
+		string cuerpo = JsonSerializer.Serialize(new { jugadorId = ContextoOnline.JugadorId, ganador });
+		string[] headers = { "Content-Type: application/json" };
+		if (_httpResultado.Request($"{ApiConfig.Base}/api/match/{ContextoOnline.MatchId}/resultado", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
+			ResolverResultadoOnline(ganador);
 	}
 
 	// ── HELPERS ───────────────────────────────────────────────────────────────
