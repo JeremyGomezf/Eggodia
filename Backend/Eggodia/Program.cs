@@ -9,6 +9,9 @@ builder.Services.AddControllers();
 // Matchmaking 1v1 en memoria (Fase 1 multijugador)
 builder.Services.AddSingleton<GestorPartidas>();
 
+// Salas de WebSocket para el multijugador en tiempo real (push). Aditivo: convive con el sondeo REST.
+builder.Services.AddSingleton<SalasWebSocket>();
+
 // 2. Configurar Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -38,6 +41,9 @@ if (app.Environment.IsDevelopment())
 
 // 5. Usar la política de CORS
 app.UseCors("AllowAll");
+
+// WebSockets para el multijugador en tiempo real (endpoint /ws/match).
+app.UseWebSockets();
 
 app.UseAuthorization();
 app.MapControllers();
