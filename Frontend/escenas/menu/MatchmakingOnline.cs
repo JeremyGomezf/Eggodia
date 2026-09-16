@@ -18,6 +18,12 @@ public partial class MatchmakingOnline : Node
 	private Timer _timerSondeo;
 	private bool _ocupado = false;
 
+	// Cancelación de la búsqueda (salir de la cola): espera la confirmación del server para no dejar
+	// una partida "fantasma", con feedback "Cancelando…". _cerrado hace idempotente el cierre.
+	private HttpRequest _httpCancelar;
+	private bool _cancelando = false;
+	private bool _cerrado = false;
+
 	private string _jugadorId = "";
 	private string _nombre = "Jugador";
 	private string _matchId = "";
@@ -123,20 +129,44 @@ public partial class MatchmakingOnline : Node
 
 	private void Cancelar()
 	{
+		if (_cancelando) return;
+		_cancelando = true;
+
+		// Dejar de sondear: ya no estamos buscando.
+		if (_timerSondeo != null && !_timerSondeo.IsStopped()) _timerSondeo.Stop();
+
+		// Feedback claro de que estamos saliendo de la búsqueda.
+		if (_spinner != null)     _spinner.Visible = false;
+		if (_lblEstado != null)   _lblEstado.Text  = "CANCELANDO…";
+		if (_lblDetalle != null)  _lblDetalle.Text = "Saliendo de la búsqueda…";
+		if (_btnCancelar != null) { _btnCancelar.Disabled = true; _btnCancelar.Modulate = new Color(1, 1, 1, 0.5f); }
+
+		// Avisar al servidor para salir de la cola y ESPERAR a que confirme antes de cerrar. Antes se
+		// cerraba de inmediato (fire-and-forget), lo que liberaba el HttpRequest antes de enviarse: la
+		// partida en espera quedaba "fantasma" y el próximo jugador se emparejaba con alguien ya ido.
 		if (!string.IsNullOrEmpty(_matchId) && _estado != "emparejado")
 		{
 			string cuerpo = JsonSerializer.Serialize(new { jugadorId = _jugadorId });
 			string[] headers = { "Content-Type: application/json" };
-			var h = new HttpRequest();
-			AddChild(h);
-			h.Request($"{ApiConfig.Base}/api/match/{_matchId}/cancelar", headers, HttpClient.Method.Post, cuerpo);
+			_httpCancelar = new HttpRequest();
+			AddChild(_httpCancelar);
+			_httpCancelar.RequestCompleted += (long r, long c, string[] hd, byte[] bd) => Cerrar();
+			if (_httpCancelar.Request($"{ApiConfig.Base}/api/match/{_matchId}/cancelar", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
+				Cerrar();
+			// Red de seguridad: si el server no responde en 2.5s, cerramos igual.
+			GetTree().CreateTimer(2.5).Timeout += Cerrar;
 		}
-		Cerrar();
+		else
+		{
+			Cerrar();
+		}
 	}
 
 	private void Cerrar()
 	{
-		QueueFree(); // libera este nodo y su CanvasLayer hija
+		if (_cerrado) return;   // idempotente (lo llaman la respuesta del server y el timeout de respaldo)
+		_cerrado = true;
+		QueueFree(); // libera este nodo y su CanvasLayer hija → vuelve a verse el menú
 	}
 
 	// ── UI ──────────────────────────────────────────────────────────────────
