@@ -1,6 +1,8 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Text.Json;
 
 public partial class Tienda : Control
 {
@@ -269,27 +271,62 @@ public partial class Tienda : Control
 		return panel;
 	}
 
-	private void IntentarComprarTropa(int idx, Button btn)
+	// Compra SERVER-AUTORITATIVA por cuenta: el servidor descuenta las monedas y registra el ítem, así
+	// la compra PERSISTE en la cuenta (no en el dispositivo). Si es invitado (sin cuenta), compra local
+	// como antes. Al confirmar, aplica lo local (marcar owned/equipar) y recarga la Tienda.
+	private void ComprarEnServidor(string tipo, string itemId, int precio, string nombre, Action aplicarLocal, Button btn)
 	{
-		// Bloquea el botón AL INSTANTE — antes, si aplastabas varias veces rápido, cada click
-		// entraba de nuevo acá antes de que la escena recargara (1.2s después) y te cobraba de
-		// nuevo, aunque la tropa ya se hubiera desbloqueado en el primer click.
-		if (btn != null) { if (btn.Disabled) return; btn.Disabled = true; }
-
 		var eco = Economia.Instancia();
-		if (eco == null) return;
-		int precio = Preferencias.TIENDA_TROPA_PRECIOS[idx];
-		if (!eco.Gastar(precio))
+		if (eco == null) { if (btn != null) btn.Disabled = false; return; }
+		int userId = SesionJuego.Instance?.UsuarioId ?? -1;
+
+		void ExitoLocal()
 		{
-			MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f));
-			if (btn != null) btn.Disabled = false; // no se cobró nada: puede reintentar
+			aplicarLocal();
+			MostrarMensaje($"¡{nombre} desbloqueado!", Colors.Gold);
+			GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
+		}
+		void SinMonedas() { MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; }
+
+		if (userId <= 0) // invitado: compra local (no hay cuenta donde guardarla)
+		{
+			if (eco.Gastar(precio)) ExitoLocal(); else SinMonedas();
 			return;
 		}
 
+		if (!eco.TieneSuficiente(precio)) { SinMonedas(); return; }
+
+		var h = new HttpRequest();
+		AddChild(h);
+		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
+		{
+			bool exito = false; int monedas = eco.Monedas;
+			if (r == (long)HttpRequest.Result.Success && c == 200)
+			{
+				try
+				{
+					var doc = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(b));
+					exito = doc.TryGetProperty("ok", out var okp) && okp.GetBoolean();
+					if (doc.TryGetProperty("monedas", out var mp)) monedas = mp.GetInt32();
+				}
+				catch { }
+			}
+			if (exito) { eco.AdoptarDeServidor(userId, monedas); ExitoLocal(); }
+			else { MostrarMensaje("No se pudo comprar. Revisa tu conexión.", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; }
+			if (IsInstanceValid(h)) h.QueueFree();
+		};
+		string cuerpo = JsonSerializer.Serialize(new { tipo, itemId, costo = precio });
+		string[] hdr = { "Content-Type: application/json" };
+		if (h.Request($"{ApiConfig.Base}/api/usuarios/{userId}/comprar", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok)
+		{ MostrarMensaje("Sin conexión", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; if (IsInstanceValid(h)) h.QueueFree(); }
+	}
+
+	private void IntentarComprarTropa(int idx, Button btn)
+	{
+		if (btn != null) { if (btn.Disabled) return; btn.Disabled = true; }
 		string id = Preferencias.TIENDA_TROPA_IDS[idx];
-		Preferencias.DesbloquearTropa(id);
-		MostrarMensaje($"¡{Preferencias.TIENDA_TROPA_NOMBRES[idx]} desbloqueada!", Colors.Gold);
-		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
+		ComprarEnServidor("tropa", id, Preferencias.TIENDA_TROPA_PRECIOS[idx], Preferencias.TIENDA_TROPA_NOMBRES[idx],
+			() => Preferencias.DesbloquearTropa(id), btn);
 	}
 
 	private Control CrearItemHechizoTienda(int idx)
@@ -364,21 +401,9 @@ public partial class Tienda : Control
 	private void IntentarComprarHechizo(int idx, Button btn)
 	{
 		if (btn != null) { if (btn.Disabled) return; btn.Disabled = true; }
-
-		var eco = Economia.Instancia();
-		if (eco == null) return;
-		int precio = Preferencias.TIENDA_HECHIZO_PRECIOS[idx];
-		if (!eco.Gastar(precio))
-		{
-			MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f));
-			if (btn != null) btn.Disabled = false;
-			return;
-		}
-
 		string id = Preferencias.TIENDA_HECHIZO_IDS[idx];
-		Preferencias.DesbloquearHechizo(id);
-		MostrarMensaje($"¡{Preferencias.TIENDA_HECHIZO_NOMBRES[idx]} desbloqueado!", Colors.Gold);
-		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
+		ComprarEnServidor("hechizo", id, Preferencias.TIENDA_HECHIZO_PRECIOS[idx], Preferencias.TIENDA_HECHIZO_NOMBRES[idx],
+			() => Preferencias.DesbloquearHechizo(id), btn);
 	}
 
 	private Control CrearItemSkin(int idx)
@@ -479,17 +504,8 @@ public partial class Tienda : Control
 	private void IntentarComprarSkin(int idx, Button btn)
 	{
 		if (btn != null) { if (btn.Disabled) return; btn.Disabled = true; }
-
-		var eco = Economia.Instancia();
-		if (eco == null) return;
-		int precio = Preferencias.SKIN_PRECIOS[idx];
-		if (!eco.Gastar(precio))
-		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; return; }
-
-		Preferencias.DesbloquearSkin(idx);
-		Preferencias.SkinActivaIdx = idx;
-		MostrarMensaje($"¡{Preferencias.SKIN_NOMBRES[idx]} desbloqueada!", Colors.Gold);
-		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
+		ComprarEnServidor("skin", idx.ToString(), Preferencias.SKIN_PRECIOS[idx], Preferencias.SKIN_NOMBRES[idx],
+			() => { Preferencias.DesbloquearSkin(idx); Preferencias.SkinActivaIdx = idx; }, btn);
 	}
 
 	private Control CrearItemTrono(int idx)
@@ -578,17 +594,8 @@ public partial class Tienda : Control
 	private void IntentarComprarTrono(int idx, Button btn)
 	{
 		if (btn != null) { if (btn.Disabled) return; btn.Disabled = true; }
-
-		var eco = Economia.Instancia();
-		if (eco == null) return;
-		int precio = Preferencias.TRONO_PRECIOS[idx];
-		if (!eco.Gastar(precio))
-		{ MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; return; }
-
-		Preferencias.DesbloquearTrono(idx);
-		Preferencias.TronoActivoIdx = idx;
-		MostrarMensaje($"¡{Preferencias.TRONO_NOMBRES[idx]} desbloqueado!", Colors.Gold);
-		GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
+		ComprarEnServidor("trono", idx.ToString(), Preferencias.TRONO_PRECIOS[idx], Preferencias.TRONO_NOMBRES[idx],
+			() => { Preferencias.DesbloquearTrono(idx); Preferencias.TronoActivoIdx = idx; }, btn);
 	}
 
 	private Control CrearItemCartaNoDisponible(string nombre, string rutaEscena)

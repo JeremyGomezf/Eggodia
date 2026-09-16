@@ -208,8 +208,9 @@ public partial class PanelLogin : Control
 				SesionJuego.Instance.UsuarioId     = usuario.Id;
 				SesionJuego.Instance.NombreJugador  = usuario.Nombre;
 				Preferencias.GuardarSesion(usuario.Id, usuario.Nombre); // login persistente
-				// Adoptar el saldo de monedas de la CUENTA (lo que el admin haya ajustado en el server).
-				Economia.Instancia()?.AdoptarDeServidor(usuario.Id, usuario.Monedas);
+				// Cargar el inventario COMPLETO de la cuenta (monedas + skins + tronos + ítems + equipado),
+				// limpiando antes lo local → cada cuenta ve solo lo suyo, sin heredar de la anterior.
+				Economia.Instancia()?.CargarInventarioCuenta(usuario.Id);
 				GD.Print($"[Login] ¡Bienvenido, {usuario.Nombre}! (ID: {usuario.Id}, monedas: {usuario.Monedas})");
 				IrAlMenu();
 			}

@@ -193,4 +193,74 @@ public partial class Economia : Node
 		if (h.Request($"{ApiConfig.Usuarios}/{_usuarioId}/monedas", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok && IsInstanceValid(h))
 			h.QueueFree();
 	}
+
+	// ── INVENTARIO POR CUENTA ─────────────────────────────────────────────────
+
+	/// <summary>Al CERRAR SESIÓN: olvida la cuenta y pone el saldo local en 0, SIN empujar 0 al
+	/// servidor (eso borraría las monedas de la cuenta). El saldo real se recarga al volver a entrar.</summary>
+	public void OlvidarCuenta()
+	{
+		_usuarioId = -1;
+		_monedas = 0;
+		Guardar();
+		EmitSignal(SignalName.MonedasCambiaron, _monedas);
+	}
+
+	/// <summary>Carga el inventario COMPLETO de la cuenta desde el servidor (monedas + skins + tronos +
+	/// ítems + equipado) y lo aplica localmente. Se llama al iniciar sesión / reabrir la app: primero
+	/// limpia lo local (para no heredar la cuenta anterior) y luego pone lo que de verdad tiene ESTA
+	/// cuenta. Así "toda cuenta es distinta" — no se traspasa nada entre cuentas del mismo dispositivo.</summary>
+	public void CargarInventarioCuenta(int usuarioId)
+	{
+		_usuarioId = usuarioId;
+		if (usuarioId <= 0) return;
+		var h = new HttpRequest();
+		AddChild(h);
+		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
+		{
+			if (r == (long)HttpRequest.Result.Success && c == 200)
+			{
+				try { AplicarInventario(Encoding.UTF8.GetString(b)); } catch { }
+			}
+			if (IsInstanceValid(h)) h.QueueFree();
+		};
+		if (h.Request($"{ApiConfig.Usuarios}/{usuarioId}/inventario") != Error.Ok && IsInstanceValid(h)) h.QueueFree();
+	}
+
+	private void AplicarInventario(string json)
+	{
+		var doc = JsonSerializer.Deserialize<JsonElement>(json);
+
+		// Pizarra limpia: borra skins/tronos/ítems locales antes de poner los de ESTA cuenta.
+		Preferencias.LimpiarDatosDeCuenta();
+
+		if (doc.TryGetProperty("monedas", out var m))
+		{
+			_monedas = Mathf.Max(0, m.GetInt32());
+			Guardar();
+			EmitSignal(SignalName.MonedasCambiaron, _monedas);
+		}
+
+		if (doc.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array)
+			foreach (var it in items.EnumerateArray())
+			{
+				string tipo   = it.TryGetProperty("tipo", out var tp) ? (tp.GetString() ?? "") : "";
+				string itemId = it.TryGetProperty("itemId", out var ii) ? (ii.GetString() ?? "") : "";
+				switch (tipo)
+				{
+					case "skin":    if (int.TryParse(itemId, out var si)) Preferencias.DesbloquearSkin(si);  break;
+					case "trono":   if (int.TryParse(itemId, out var ti)) Preferencias.DesbloquearTrono(ti); break;
+					case "tropa":   Preferencias.DesbloquearTropa(itemId);   break;
+					case "hechizo": Preferencias.DesbloquearHechizo(itemId); break;
+				}
+			}
+
+		if (doc.TryGetProperty("skinsExclusivas", out var exs) && exs.ValueKind == JsonValueKind.Array)
+			foreach (var e in exs.EnumerateArray())
+				Preferencias.DesbloquearSkinExclusiva(e.GetString() ?? "");
+
+		if (doc.TryGetProperty("equipSkinIdx", out var esi))       Preferencias.SkinActivaIdx      = esi.GetInt32();
+		if (doc.TryGetProperty("equipTronoIdx", out var eti))      Preferencias.TronoActivoIdx     = eti.GetInt32();
+		if (doc.TryGetProperty("equipSkinExclusiva", out var ese)) Preferencias.SkinExclusivaActiva = ese.GetString() ?? "";
+	}
 }

@@ -396,6 +396,26 @@ public static class Preferencias
 		cfg.Save(RUTA);
 	}
 
+	private static void BorrarSeccion(string sec)
+	{
+		var cfg = new ConfigFile();
+		cfg.Load(RUTA);
+		if (cfg.HasSection(sec)) cfg.EraseSection(sec);
+		cfg.Save(RUTA);
+	}
+
+	/// <summary>Borra TODO lo que es propiedad de la CUENTA (skins, tronos, ítems de tienda y caché de
+	/// códigos) del dispositivo. Se llama al CERRAR SESIÓN para que la siguiente cuenta empiece limpia y
+	/// no herede nada de la anterior. Las monedas se resetean aparte (Economia). Al iniciar sesión se
+	/// vuelve a cargar el inventario real desde el servidor.</summary>
+	public static void LimpiarDatosDeCuenta()
+	{
+		BorrarSeccion(SEC_SKINS);
+		BorrarSeccion(SEC_TRONOS);
+		BorrarSeccion(SEC_TIENDA_ITEMS);
+		BorrarSeccion(SEC_CODIGOS);
+	}
+
 	// ── SESIÓN PERSISTENTE (login recordado entre reinicios) ──────────────────
 	private const string SEC_SESION = "sesion";
 

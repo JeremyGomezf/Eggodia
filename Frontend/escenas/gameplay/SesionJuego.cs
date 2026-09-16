@@ -73,7 +73,9 @@ public partial class SesionJuego : Node
 
 	private void SincronizarMonedasCuenta()
 	{
-		if (UsuarioId > 0) Economia.Instancia()?.SincronizarDesdeServidor(UsuarioId);
+		// Carga TODO el inventario de la cuenta (monedas + skins + tronos + ítems + equipado) desde el
+		// servidor, limpiando antes lo local. Así al reabrir la app se ve solo lo de ESTA cuenta.
+		if (UsuarioId > 0) Economia.Instancia()?.CargarInventarioCuenta(UsuarioId);
 	}
 
 	/// <summary>
@@ -104,6 +106,10 @@ public partial class SesionJuego : Node
 		ImagenesMazo.Clear();
 		ArdidesSeleccionados.Clear();
 		Preferencias.CerrarSesionGuardada(); // el logout también se recuerda
+		// Aislamiento por cuenta: borrar del dispositivo skins/tronos/ítems/códigos y resetear monedas,
+		// para que la siguiente cuenta NO herede nada de esta (ni oro ni cosas).
+		Preferencias.LimpiarDatosDeCuenta();
+		Economia.Instance?.OlvidarCuenta();
 	}
 
 	/// <summary>Guardar mazo desde el constructor antes de ir a la batalla o volver al menú.</summary>
