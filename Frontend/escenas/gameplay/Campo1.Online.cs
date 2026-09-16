@@ -118,16 +118,30 @@ public partial class Campo1 : Node2D
 	{
 		_enviandoAccion = false;
 		bool ok = result == (long)HttpRequest.Result.Success && (code == 200 || code == 201);
+		string enviado = _colaAcciones.Count > 0 ? _colaAcciones.Peek() : null; // la que se acaba de enviar
 		if (ok && _colaAcciones.Count > 0) _colaAcciones.Dequeue(); // enviada: la sacamos de la cola
-		// Aviso instantáneo al rival por WebSocket: la acción YA quedó guardada en el backend, que la
-		// lea de inmediato (sin esperar su sondeo de 0.35s). Si el WS no está conectado, no pasa nada.
-		if (ok && _ws != null && _ws.GetReadyState() == WebSocketPeer.State.Open) _ws.SendText("n");
+
+		// PUSH real por WebSocket: mando la acción COMPLETA + su índice del log. El rival la reproduce
+		// al instante SIN re-consultar por REST → mínima latencia (tiempo real). El índice permite
+		// dedup y detectar huecos; si el WS no está o se pierde algo, el sondeo REST lo cubre.
+		if (ok && enviado != null && _ws != null && _ws.GetReadyState() == WebSocketPeer.State.Open)
+		{
+			try
+			{
+				var resp = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(body));
+				int idx = resp.TryGetProperty("indice", out var ip) ? ip.GetInt32() : -1;
+				var env = JsonSerializer.Deserialize<JsonElement>(enviado); // { jugadorId, accion }
+				string accion = env.TryGetProperty("accion", out var ap) ? (ap.GetString() ?? "") : "";
+				if (idx >= 0 && !string.IsNullOrEmpty(accion))
+					_ws.SendText(Json.Stringify(new Godot.Collections.Dictionary { { "indice", idx }, { "accion", accion } }));
+			}
+			catch { }
+		}
 		// Si falló, se mantiene al frente para reintentar en el siguiente bombeo.
 		BombearColaAcciones();
 	}
 
-	// Sondea el WebSocket (~20 Hz). Un mensaje del rival = "hay algo nuevo" → leer sus acciones YA,
-	// sin esperar el timer de 0.35s. Es lo que hace que el multijugador se sienta en tiempo real.
+	// Sondea el WebSocket (~20 Hz) y reproduce en el acto las acciones que llegan por push.
 	private void PollWs()
 	{
 		if (_ws == null) return;
@@ -136,14 +150,43 @@ public partial class Campo1 : Node2D
 		if (estado == WebSocketPeer.State.Open)
 		{
 			_wsConectado = true;
-			bool aviso = false;
-			while (_ws.GetAvailablePacketCount() > 0) { _ws.GetPacket(); aviso = true; }
-			if (aviso && !esTurnoJugador && !juegoTerminado) SondearAcciones();
+			while (_ws.GetAvailablePacketCount() > 0)
+			{
+				string msg = Encoding.UTF8.GetString(_ws.GetPacket());
+				ProcesarMensajeWs(msg);
+				if (juegoTerminado) return;
+			}
 		}
 		else if (estado == WebSocketPeer.State.Closed)
 		{
 			_wsConectado = false; // el sondeo REST de 0.35s sigue cubriendo todo (respaldo)
 		}
+	}
+
+	// Procesa una acción que llegó por WS. Dedup + orden por índice: si es la SIGUIENTE esperada, la
+	// reproduce ya (mínima latencia); si hay un hueco (se perdió algún push), deja que el sondeo REST
+	// traiga lo faltante en orden. Nunca reproduce dos veces la misma (el índice manda).
+	private void ProcesarMensajeWs(string msg)
+	{
+		if (string.IsNullOrEmpty(msg) || esTurnoJugador || juegoTerminado) return;
+		try
+		{
+			var d = JsonSerializer.Deserialize<JsonElement>(msg);
+			if (!d.TryGetProperty("indice", out var ip) || !d.TryGetProperty("accion", out var ap))
+			{ SondearAcciones(); return; } // formato inesperado → respaldo REST
+			int idx = ip.GetInt32();
+			if (idx == _accionesVistas + 1)
+			{
+				_accionesVistas = idx;
+				ReproducirAccion(ap.GetString() ?? "");
+			}
+			else if (idx > _accionesVistas + 1)
+			{
+				SondearAcciones(); // hueco: faltan acciones → traerlas en orden por REST
+			}
+			// idx <= _accionesVistas: ya la vimos, ignorar
+		}
+		catch { SondearAcciones(); }
 	}
 
 	// Llamado cuando termina MI turno (la CPU está gateada en online, ver EjecutarTurnoCPU).
