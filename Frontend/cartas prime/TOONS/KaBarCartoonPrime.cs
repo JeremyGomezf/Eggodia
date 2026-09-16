@@ -171,6 +171,12 @@ public partial class KaBarCartoonPrime : TropaBase
 
 		_anim.Play("derrota");
 
+		// Mismo efecto de desvanecido que el resto de las tropas al morir, pero desde el frame 19
+		// (pedido específico para Ka-Bar, no 17 como el resto) y sin liberar el nodo — sigue vivo
+		// 4s para reaparecer como fantasma, que resetea su propio modulate a 0 antes de aparecer,
+		// así que no importa si ya llegó a 0 antes.
+		TropaBase.DesvanecerTrasFrameDerrota(this, _anim, 19, 0.6f, liberarAlTerminar: false);
+
 		GetTree().CreateTimer(4.0f).Timeout += AparecerComoFantasma;
 	}
 

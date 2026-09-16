@@ -19,13 +19,24 @@ public partial class MachiPrime : TropaBase
 
 		if (_anim != null)
 		{
-			// Guardar el offset visual original del Sprite para no desencajar las barras de vida
-			_offsetSpriteOriginal = _anim.Position;
-
 			_anim.Connect(AnimatedSprite2D.SignalName.FrameChanged, Callable.From(OnFrameChanged));
 			_anim.Connect(AnimatedSprite2D.SignalName.AnimationFinished, Callable.From(OnAnimationFinished));
 		}
 
+		// Diferido: si esta Machi es del rival, Campo1.AsegurarOrientacionRival() todavía va a
+		// reposicionar _anim (recentrado del sprite volteado) DESPUÉS de que termine este _Ready().
+		// Si capturáramos _offsetSpriteOriginal ahora mismo, quedaría con la posición vieja (antes
+		// de ese recentrado) y la flotación idle usaría ese offset viejo como base — eso es lo que
+		// hacía que la Machi rival "se fuera un poco atrás" apenas se invocaba en campo_1 (nunca
+		// pasaba en campo_pruebas, que no reposiciona el sprite por separado). CallDeferred corre
+		// después de que Campo1 ya llamó AsegurarOrientacionRival en esta misma invocación.
+		CallDeferred(nameof(CapturarOffsetYFlotar));
+	}
+
+	private void CapturarOffsetYFlotar()
+	{
+		if (_anim == null || !IsInstanceValid(this)) return;
+		_offsetSpriteOriginal = _anim.Position;
 		IniciarFlotacionIdle();
 	}
 
@@ -117,9 +128,11 @@ public partial class MachiPrime : TropaBase
 	private void PausarFlotacion()
 	{
 		_tweenFlotacion?.Kill();
-		if (_anim != null)
+		// Si todavía no corrió CapturarOffsetYFlotar (el frame de invocación ni terminó), no hay
+		// nada que restaurar todavía — _anim ya está en su posición correcta tal cual la dejó
+		// Campo1.AsegurarOrientacionRival, sin necesidad de tocarla.
+		if (_anim != null && _tweenFlotacion != null)
 		{
-			// Restaura la posición original del sprite exactamente
 			_anim.Position = _offsetSpriteOriginal;
 		}
 	}

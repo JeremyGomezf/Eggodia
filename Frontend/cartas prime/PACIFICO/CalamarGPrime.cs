@@ -160,6 +160,16 @@ public partial class CalamarGPrime : TropaBase
 		}
 	}
 
+	// El hechizo Bloqueo lo saca de su postura permanente igual que si le hubieran roto el
+	// escudo: suelta a las tropas atrapadas y vuelve a "idle" antes de quedar congelado/oscuro.
+	// Si no estaba en postura (nunca usó la habilidad, o ya se había liberado), LiberarTentaculos
+	// no hace nada — se cae al comportamiento por defecto (forzar idle igual).
+	public override void AlSerBloqueado()
+	{
+		if (_posturaPermanente) LiberarTentaculos();
+		else base.AlSerBloqueado();
+	}
+
 	// Escudo roto (o el Calamar murió): termina la habilidad y libera a las tropas atrapadas.
 	private void LiberarTentaculos()
 	{

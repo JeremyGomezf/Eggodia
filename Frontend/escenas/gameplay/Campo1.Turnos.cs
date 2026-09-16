@@ -56,6 +56,8 @@ public partial class Campo1 : Node2D
 
 		if (modoSacrificioActivo) CancelarSacrificio();
 		if (menuAcciones != null) menuAcciones.Visible = false;
+		CancelarSeleccionesPendientesDeHabilidad();
+		LimpiarResaltadoObjetivosHechizo(); // por si quedó un arrastre de hechizo sin resolver
 
 		ProcesarStatusEfectos();
 
@@ -192,6 +194,17 @@ public partial class Campo1 : Node2D
 			vidaRival -= CASTIGO_CARRIL_VACIO; if (vidaRival < 0) vidaRival = 0;
 		}
 		CheckEstadoJuego();
+	}
+
+	// Cancela cualquier modo "esperando un clic para confirmar el objetivo" que haya quedado
+	// pendiente en cualquier tropa (Caballo, Dama, Maguín) al terminar el turno — sin esto, el
+	// aro/aviso de selección se quedaba brillando para siempre y un clic de un turno futuro podía
+	// llegar a confirmar una habilidad fuera de contexto.
+	private void CancelarSeleccionesPendientesDeHabilidad()
+	{
+		foreach (string grupo in new[] { "tropas_jugador", "tropas_rival" })
+			foreach (Node n in GetTree().GetNodesInGroup(grupo))
+				if (n is TropaBase t && IsInstanceValid(t)) t.CancelarSeleccionPendiente();
 	}
 
 	// ── STATUS EFFECTS ────────────────────────────────────────────────────

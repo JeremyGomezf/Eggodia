@@ -83,6 +83,14 @@ public partial class SoldadoRealPrime : TropaBase
 		base.RecibirDaño(cantidad);
 	}
 
+	// El hechizo Bloqueo cancela la Parada igual que si lo golpearan mientras la tenía activa
+	// (sin el contraataque): apaga el aura dorada y vuelve a "idle" antes de quedar congelado/oscuro.
+	public override void AlSerBloqueado()
+	{
+		if (_enParry) LimpiarEstadoParry();
+		if (!_estaMuerto) _anim.Play("idle");
+	}
+
 	// ── MÉTODOS AUXILIARES PARA EL AURA Y LIMPIEZA ────────────────────────────
 	private void IniciarAuraParrySuave()
 	{

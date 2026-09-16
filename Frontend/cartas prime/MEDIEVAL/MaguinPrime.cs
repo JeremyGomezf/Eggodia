@@ -22,6 +22,10 @@ public partial class MaguinPrime : TropaBase
 	private bool   _fueHabilidadEsteAtaque = false;
 	private Node2D _objetivoTransmutacion;
 
+	// ── SELECCIÓN POR CLIC (jugador humano elige a quién transforma) ─────────
+	private bool  _esperandoSeleccion = false;
+	private Tween _tweenAviso;
+
 	public override void _Ready()
 	{
 		if (vidaMaxima == 0) { vidaActual = vidaMaxima = 200; escudoActual = escudoMaximo = 280; puntosAtaque = 245; }
@@ -91,14 +95,99 @@ public partial class MaguinPrime : TropaBase
 	}
 
 	// ── HABILIDAD: TRANSMUTACIÓN ────────────────────────────────────────────────
-	// Reutiliza la animación de ataque estándar; en vez de aplicar daño en el frame 2,
-	// dispara la transmutación sobre el enemigo con más vida actual del tablero.
+	// Reutiliza la animación de ataque estándar; en vez de aplicar daño en el frame 2, dispara la
+	// transmutación. El jugador humano ELIGE a quién transforma (clic sobre un enemigo, con aviso
+	// "Decide a cuál transformas" y aro brillante mientras espera); la CPU/rival sigue eligiendo
+	// automáticamente al enemigo con más vida actual, porque no puede clickear.
 	protected override void UsarHabilidadPropia()
 	{
-		if (habilidadUsada) return;
+		if (habilidadUsada || _estaMuerto) return;
+		if (BuscarEnemigoConMasVida() == null) return; // nada transformable en el tablero
 
-		Node2D objetivo = BuscarEnemigoConMasVida();
-		if (objetivo == null) return;
+		bool esRivalTropa = IsInGroup("tropas_rival");
+		try
+		{
+			Variant valRival = Get("esRival");
+			if (valRival.VariantType != Variant.Type.Nil && valRival.AsBool()) esRivalTropa = true;
+		}
+		catch { }
+
+		if (esRivalTropa)
+		{
+			ConfirmarTransmutacion(BuscarEnemigoConMasVida());
+			return;
+		}
+
+		_esperandoSeleccion = true;
+		var campo = GetTree().Root.FindChild("Campo1", true, false);
+		campo?.Call("MostrarAviso", "Decide a cuál transformas", new Color(0.5f, 1f, 0.9f));
+
+		_tweenAviso?.Kill();
+		_tweenAviso = CreateTween().SetLoops();
+		_tweenAviso.TweenProperty(this, "modulate", new Color(0.5f, 1.6f, 1.4f), 0.3f);
+		_tweenAviso.TweenProperty(this, "modulate", Colors.White, 0.3f);
+	}
+
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (!_esperandoSeleccion || _estaMuerto) return;
+
+		if (@event is InputEventMouseButton mouseEvent && mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Left)
+		{
+			Node2D enemigoClickeado = DetectarEnemigoEnPosicion(GetGlobalMousePosition());
+			if (enemigoClickeado != null)
+			{
+				_esperandoSeleccion = false;
+				GetViewport().SetInputAsHandled();
+				DetenerEfectoAviso();
+				ConfirmarTransmutacion(enemigoClickeado);
+			}
+		}
+	}
+
+	// Si el turno termina mientras esperaba el clic, se cancela sin gastar la habilidad —
+	// nunca llegó a marcarse "usada" (eso solo pasa dentro de ConfirmarTransmutacion).
+	public override void CancelarSeleccionPendiente()
+	{
+		if (!_esperandoSeleccion) return;
+		_esperandoSeleccion = false;
+		DetenerEfectoAviso();
+	}
+
+	// Si lo bloquean mientras esperaba el clic (no debería poder pasar en la práctica, ya que
+	// Bloqueo solo apunta al bando rival del que lo lanza y la espera se cancela sola al cambiar
+	// de turno — pero por si acaso), cancela la espera antes de quedar congelado/oscuro. Nunca
+	// deshace una transmutación que YA haya aplicado sobre otra tropa.
+	public override void AlSerBloqueado()
+	{
+		CancelarSeleccionPendiente();
+		base.AlSerBloqueado();
+	}
+
+	private void DetenerEfectoAviso()
+	{
+		_tweenAviso?.Kill();
+		Modulate = Colors.White;
+	}
+
+	private Node2D DetectarEnemigoEnPosicion(Vector2 posClic)
+	{
+		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
+		Node2D objetivoCercano = null;
+		float distanciaMinima = 120.0f;
+		foreach (Node n in GetTree().GetNodesInGroup(grupoEnemigo))
+		{
+			// Una tropa ya transmutada (Tortuga/Pez) no puede volver a transmutarse encima.
+			if (!(n is Node2D e) || !IsInstanceValid(e) || e is TortugaYPescado) continue;
+			float dist = e.GlobalPosition.DistanceTo(posClic);
+			if (dist < distanciaMinima) { distanciaMinima = dist; objetivoCercano = e; }
+		}
+		return objetivoCercano;
+	}
+
+	private void ConfirmarTransmutacion(Node2D objetivo)
+	{
+		if (objetivo == null || !IsInstanceValid(objetivo)) return;
 
 		habilidadUsada          = true;
 		_yaActuo                = true;

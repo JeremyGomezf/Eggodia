@@ -66,6 +66,29 @@ public partial class CampoPruebas : Node2D
 			_slotsE[i] = GetNodeOrNull<Node2D>(NombresEnemigos[i]);
 		}
 		CrearInterfaz();
+		ConfigurarIndicadoresCarril();
+	}
+
+	// Mismo criterio que Campo1.ConfigurarIndicadoresCarril: agranda el círculo de cada carril
+	// (casi tapado por la propia tropa) y lo oculta mientras el carril está ocupado.
+	private void ConfigurarIndicadoresCarril()
+	{
+		foreach (string grupo in new[] { "zonas_invocacion", "zonas_invocacion_rival" })
+		{
+			foreach (Node zonaNodo in GetTree().GetNodesInGroup(grupo))
+			{
+				if (zonaNodo is not Node2D zona) continue;
+				var indicador = zona.GetNodeOrNull<ColorRect>("Indicador");
+				if (indicador == null) continue;
+
+				indicador.Scale *= 1.8f;
+
+				zona.ChildEnteredTree += (Node hijo) => { if (hijo.Name == "Ocupado" && IsInstanceValid(indicador)) indicador.Visible = false; };
+				zona.ChildExitingTree += (Node hijo) => { if (hijo.Name == "Ocupado" && IsInstanceValid(indicador)) indicador.Visible = true; };
+
+				indicador.Visible = zona.GetNodeOrNull("Ocupado") == null;
+			}
+		}
 	}
 
 	public override void _Process(double delta)
@@ -427,6 +450,7 @@ public partial class CampoPruebas : Node2D
 	{
 		var t = ObtenerObjetivoHechizo();
 		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
+		if (t.HasMethod("AlSerBloqueado")) t.Call("AlSerBloqueado");
 		t.SetMeta("bloqueado",     true);
 		t.SetMeta("turnosBloqueo", 2);
 		t.Modulate = new Color(0.4f, 0.6f, 1.4f);

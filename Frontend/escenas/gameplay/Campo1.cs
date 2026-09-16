@@ -153,6 +153,9 @@ public partial class Campo1 : Node2D
 	// ── UI ────────────────────────────────────────────────────────────────
 	private Control       menuAcciones;
 	private Node2D        tropaSeleccionada;
+	// Se prende al final de MostrarMenuTropa y se consume en Campo1.Nfc._UnhandledInput: evita que
+	// el cierre-al-tocar-otra-cosa se coma el menú que ESTE MISMO clic recién abrió (ver ahí).
+	private bool          _menuTropaRecienAbiertoEsteClic = false;
 	private TextureButton btnBarajar;
 	private TextureButton btnSacrificio;
 	private Button        btnHabilidad;
@@ -449,13 +452,17 @@ public partial class Campo1 : Node2D
 		// del jugador sobre el círculo del carril. Idempotente (meta) para no revertirse si se llama 2 veces.
 		if (!tropa.HasMeta("orientacion_rival_aplicada"))
 		{
-			var ancla = tropa.GetNodeOrNull<Marker2D>("efecto_secundario_slot");
-			float ejeX = ancla != null ? ancla.Position.X : 0f;
-			if (animSprite != null) animSprite.Position = new Vector2(2f * ejeX - animSprite.Position.X, animSprite.Position.Y);
-			if (sprite2D != null)   sprite2D.Position   = new Vector2(2f * ejeX - sprite2D.Position.X,   sprite2D.Position.Y);
-			// El área clicable del cuerpo (ver TropaBase.CrearAreaClicCuerpo) sigue al sprite espejado.
-			var clickBody = tropa.GetNodeOrNull<CollisionShape2D>("ClickBody");
-			if (clickBody != null && animSprite != null) clickBody.Position = animSprite.Position;
+			// Espejar la X del sprite tal cual (sin pivotear sobre "efecto_secundario_slot"): es la
+			// misma regla que ya usan OffsetCentroColision/ObtenerSpotOrientado ("negar la X local")
+			// y que Godot aplicaría solo con Scale.X=-1 (convención de campo_de_pruebas). Pivotear
+			// sobre el ancla (fórmula vieja: 2*ejeX - X) solo coincidía con esto cuando ejeX=0 — para
+			// el resto de tropas (p. ej. Gólem, ancla en X=-16 con sprite en X=20) el sprite quedaba
+			// corrido 2*ejeX píxeles del centro real, desalineando el cuerpo visual de los efectos
+			// (tentáculos del Calamar, etc.) que sí anclan correctamente sobre el origen del nodo.
+			if (animSprite != null) animSprite.Position = new Vector2(-animSprite.Position.X, animSprite.Position.Y);
+			if (sprite2D != null)   sprite2D.Position   = new Vector2(-sprite2D.Position.X,   sprite2D.Position.Y);
+			// El área clicable ("ClickBody") ya no depende de esto: TropaBase.ActualizarAreaClicCuerpo
+			// la centra sola en OffsetCentroColision (diferido, corre después de esto).
 			tropa.SetMeta("orientacion_rival_aplicada", true);
 		}
 
@@ -599,6 +606,8 @@ public partial class Campo1 : Node2D
 	// ── ESTILIZADO MEJORADO DE INDICADORES (Aporte Visual Amigo) ──────────
 	private void EstilizarIndicadoresInvocacion()
 	{
+		const float TAM = 72f; // antes 40 — más grande y visible que antes
+
 		foreach (var grupo in new[] { "zonas_invocacion", "zonas_invocacion_rival" })
 		{
 			bool esRival = grupo.Contains("rival");
@@ -611,15 +620,15 @@ public partial class Campo1 : Node2D
 
 					var panel = new Panel();
 					panel.Name = "IndicadorMejorado";
-					panel.CustomMinimumSize = new Vector2(40, 40);
-					panel.Size = new Vector2(40, 40);
-					panel.Position = new Vector2(-20, -20);
+					panel.CustomMinimumSize = new Vector2(TAM, TAM);
+					panel.Size = new Vector2(TAM, TAM);
+					panel.Position = new Vector2(-TAM / 2f, -TAM / 2f);
 
 					var style = new StyleBoxFlat();
 					style.BgColor = new Color(0, 0, 0, 0.25f);
-					style.BorderWidthLeft = style.BorderWidthRight = style.BorderWidthTop = style.BorderWidthBottom = 2;
+					style.BorderWidthLeft = style.BorderWidthRight = style.BorderWidthTop = style.BorderWidthBottom = 3;
 					style.BorderColor = esRival ? new Color(1f, 0.15f, 0.2f, 0.85f) : new Color(0.15f, 0.65f, 1f, 0.85f);
-					style.CornerRadiusTopLeft = style.CornerRadiusTopRight = style.CornerRadiusBottomLeft = style.CornerRadiusBottomRight = 20;
+					style.CornerRadiusTopLeft = style.CornerRadiusTopRight = style.CornerRadiusBottomLeft = style.CornerRadiusBottomRight = (int)(TAM / 2f);
 					style.ShadowColor = esRival ? new Color(1f, 0.15f, 0.2f, 0.5f) : new Color(0.15f, 0.65f, 1f, 0.5f);
 					style.ShadowSize = 8;
 
@@ -629,6 +638,13 @@ public partial class Campo1 : Node2D
 					Tween tw = panel.CreateTween().SetLoops();
 					tw.TweenProperty(panel, "modulate:a", 0.35f, 0.8f);
 					tw.TweenProperty(panel, "modulate:a", 1.0f, 0.8f);
+
+					// Oculto mientras el carril esté ocupado por una tropa — reaparece solo
+					// cuando vuelve a quedar libre (muerte, Enroque, etc.), sin tener que tocar
+					// cada lugar del código que agrega o libera el nodo "Ocupado".
+					panel.Visible = zona.GetNodeOrNull("Ocupado") == null;
+					zona.ChildEnteredTree += (Node hijo) => { if (hijo.Name == "Ocupado" && IsInstanceValid(panel)) panel.Visible = false; };
+					zona.ChildExitingTree += (Node hijo) => { if (hijo.Name == "Ocupado" && IsInstanceValid(panel)) panel.Visible = true; };
 				}
 			}
 		}

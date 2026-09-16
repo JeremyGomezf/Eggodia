@@ -210,6 +210,57 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6ei77")
 }],
 "loop": 0,
 "name": &"derrota",
@@ -323,7 +374,7 @@ position = Vector2(94, -1)
 position = Vector2(6.999999, -40)
 scale = Vector2(0.3, 0.3)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"ataque"
+animation = &"derrota"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3

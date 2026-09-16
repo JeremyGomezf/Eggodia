@@ -42,14 +42,6 @@ region = Rect2(1584, 479, 528, 479)
 atlas = ExtResource("1_o72ys")
 region = Rect2(0, 0, 528, 479)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_y1goo"]
-atlas = ExtResource("1_o72ys")
-region = Rect2(2112, 479, 528, 479)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_hiar7"]
-atlas = ExtResource("1_o72ys")
-region = Rect2(0, 958, 528, 479)
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_g6kcr"]
 atlas = ExtResource("1_o72ys")
 region = Rect2(528, 958, 528, 479)
@@ -223,18 +215,6 @@ animations = [{
 "speed": 7.0
 }, {
 "frames": [{
-"duration": 0.7,
-"texture": SubResource("AtlasTexture_y1goo")
-}, {
-"duration": 0.7,
-"texture": SubResource("AtlasTexture_hiar7")
-}, {
-"duration": 0.7,
-"texture": SubResource("AtlasTexture_y1goo")
-}, {
-"duration": 0.7,
-"texture": SubResource("AtlasTexture_hiar7")
-}, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_g6kcr")
 }, {
@@ -522,7 +502,9 @@ position = Vector2(87, -5)
 position = Vector2(-2, -25)
 scale = Vector2(0.31, 0.31)
 sprite_frames = SubResource("SpriteFrames_lp7oi")
-animation = &"idle"
+animation = &"derrota"
+frame = 21
+frame_progress = 1.0
 
 [node name="StatsTropa" type="Control" parent="." unique_id=1704710540]
 layout_mode = 3

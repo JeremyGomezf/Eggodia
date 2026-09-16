@@ -71,12 +71,28 @@ public abstract partial class TropaBase : Area2D
 	/// <summary>Añade un CollisionShape2D grande ("ClickBody") que cubre TODO el sprite del
 	/// personaje, para que la UI de la tropa (vida/defensa/botones) se abra al tocar cualquier parte
 	/// del personaje y no solo el punto/colisión chica original. El combate es por carril (no usa
-	/// overlap de áreas), así que agrandar el área clicable no afecta la jugabilidad. En tropas
-	/// rivales su posición se espeja junto con el sprite (ver Campo1.AsegurarOrientacionRival).</summary>
+	/// overlap de áreas), así que agrandar el área clicable no afecta la jugabilidad.</summary>
 	private void CrearAreaClicCuerpo()
 	{
 		if (_anim?.SpriteFrames == null) return;
 		if (GetNodeOrNull<CollisionShape2D>("ClickBody") != null) return;
+		var cuerpo = new CollisionShape2D { Name = "ClickBody" };
+		AddChild(cuerpo);
+		// Diferido: para una tropa rival recién invocada, en este mismo instante (dentro de
+		// _Ready) todavía no se le asignó el grupo "tropas_rival" ni corrió
+		// Campo1.AsegurarOrientacionRival() (eso pasa DESPUÉS, ya con el nodo fuera de _Ready) —
+		// calcular la posición/tamaño ahora mismo daría el offset del lado equivocado. Diferir
+		// hasta que todo eso ya haya corrido deja el área de clic siempre alineada con el punto
+		// "oficial" (OffsetCentroColision), sea cual sea el lado.
+		CallDeferred(nameof(ActualizarAreaClicCuerpo));
+	}
+
+	private void ActualizarAreaClicCuerpo()
+	{
+		if (!IsInstanceValid(this) || _anim?.SpriteFrames == null) return;
+		var cuerpo = GetNodeOrNull<CollisionShape2D>("ClickBody");
+		if (cuerpo == null) return;
+
 		string anim = _anim.Animation;
 		if (string.IsNullOrEmpty(anim))
 		{
@@ -86,11 +102,19 @@ public abstract partial class TropaBase : Area2D
 		}
 		var tex = _anim.SpriteFrames.GetFrameTexture(anim, 0);
 		if (tex == null) return;
-		var cuerpo = new CollisionShape2D { Name = "ClickBody" };
-		var rect = new RectangleShape2D { Size = tex.GetSize() * _anim.Scale.Abs() * 0.9f };
-		cuerpo.Shape = rect;
-		cuerpo.Position = _anim.Position;
-		AddChild(cuerpo);
+
+		// Generoso a propósito (110% del sprite, con un piso de 140px por lado): que alcance
+		// con tocar cualquier parte visible del personaje, sin tener que adivinar el punto
+		// exacto ni buscar el círculo del carril detrás suyo.
+		Vector2 tam = tex.GetSize() * _anim.Scale.Abs() * 1.1f;
+		tam.X = Mathf.Max(tam.X, 140f);
+		tam.Y = Mathf.Max(tam.Y, 140f);
+		cuerpo.Shape = new RectangleShape2D { Size = tam };
+		// Centrado en el mismo punto "oficial" que usa el resto del posicionamiento
+		// (OffsetCentroColision, que ya respeta la orientación rival) en vez de _anim.Position en
+		// crudo, para que el área de clic no dependa de que cada sprite esté perfectamente
+		// centrado en su propio Position.
+		cuerpo.Position = OffsetCentroColision();
 	}
 
 	/// <summary>Si false, Campo1 oculta/deshabilita el botón de defensa para esta tropa.</summary>
@@ -218,6 +242,27 @@ public abstract partial class TropaBase : Area2D
 	/// </summary>
 	public virtual void TickHabilidad() { }
 
+	/// <summary>Campo1 lo llama en cada cambio de turno para cancelar cualquier selección de
+	/// objetivo por clic que haya quedado pendiente (Caballo, Dama, Maguín — todas las que
+	/// activan la habilidad y luego esperan un clic sobre un enemigo para confirmarlo). Por
+	/// defecto no hace nada (la mayoría de las cartas no tiene este modo). Sin esto, si el turno
+	/// termina antes de completar la selección, la tropa quedaba "escuchando" un clic que ya no
+	/// le corresponde a este turno — sin gastar la habilidad (nunca llegó a marcarse usada), pero
+	/// con el aro de aviso brillando para siempre.</summary>
+	public virtual void CancelarSeleccionPendiente() { }
+
+	/// <summary>Campo1 lo llama al aplicarle el hechizo Bloqueo a esta tropa. Por defecto solo la
+	/// deja en "idle" — toda tropa bloqueada queda congelada en reposo, nunca a mitad de una
+	/// animación de ataque/habilidad. Las tropas con un estado propio activo y visible en curso
+	/// (Parada del Soldado Real, postura de tentáculos del Calamar Gigante) sobreescriben esto
+	/// para cancelar ESE estado antes de volver a "idle". Nunca debe revertir efectos que esta
+	/// misma tropa ya le haya causado A OTRAS unidades (transformación del Maguín, muros del
+	/// Gólem) — esos quedan tal cual aunque a esta tropa la bloqueen después.</summary>
+	public virtual void AlSerBloqueado()
+	{
+		if (!_estaMuerto) ReproducirIdle();
+	}
+
 	/// <summary>Punto de aterrizaje para un salto/vuelo de ataque (Caballo/Arfil/Dama): el
 	/// SpotInvocacion del objetivo — ya orientado hacia el lado de quien ataca, derivado de su
 	/// propia caja de colisión — en vez de un offset fijo en píxeles. Si el objetivo no tiene
@@ -324,6 +369,43 @@ public abstract partial class TropaBase : Area2D
 				disparado = true;
 				DesvanecerYLiberar(nodo, duracion);
 			}
+		};
+	}
+
+	/// <summary>Desvanece una tropa derrotada cuando su animación "derrota" llega al
+	/// <paramref name="frameObjetivo"/> (en vez de un timer fijo desde que empieza) — así una
+	/// derrota con animación larga no se corta a la mitad, ni una corta se queda esperando de
+	/// más antes de dejar libre el carril para la siguiente invocación del rival/CPU. Si la
+	/// animación ya venía en curso y pasó ese frame, o si nunca llega a tenerlo (menos frames en
+	/// total), se dispara igual — al momento de llamar, o al terminar la animación, respectivamente.
+	/// <paramref name="liberarAlTerminar"/> en false solo desvanece (sin QueueFree) — lo usa el
+	/// fantasma de Ka-Bar, que recicla el mismo nodo para reaparecer después.</summary>
+	public static void DesvanecerTrasFrameDerrota(Node2D tropa, AnimatedSprite2D anim, int frameObjetivo = 17, float duracion = 0.6f, bool liberarAlTerminar = true)
+	{
+		if (!IsInstanceValid(tropa)) return;
+		bool disparado = false;
+
+		void Disparar()
+		{
+			if (disparado || !IsInstanceValid(tropa)) return;
+			disparado = true;
+			Tween tw = tropa.CreateTween();
+			tw.TweenProperty(tropa, "modulate:a", 0.0f, duracion);
+			if (liberarAlTerminar) tw.Finished += () => { if (IsInstanceValid(tropa)) tropa.QueueFree(); };
+		}
+
+		if (anim == null) { Disparar(); return; }
+		if (((string)anim.Animation).Contains("derrota") && anim.Frame >= frameObjetivo) { Disparar(); return; }
+
+		anim.FrameChanged += () =>
+		{
+			if (disparado || !IsInstanceValid(anim)) return;
+			if (((string)anim.Animation).Contains("derrota") && anim.Frame >= frameObjetivo) Disparar();
+		};
+		anim.AnimationFinished += () =>
+		{
+			if (disparado || !IsInstanceValid(anim)) return;
+			if (((string)anim.Animation).Contains("derrota")) Disparar();
 		};
 	}
 

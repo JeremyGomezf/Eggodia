@@ -51,6 +51,29 @@ public partial class Campo1 : Node2D
 		{
 			ProcesarEscaneoNfcBatalla("tiburon");
 		}
+
+		CerrarMenuTropaSiTocanOtraCosa(@event);
+	}
+
+	// El menú de acciones (ataque/defensa/habilidad) antes solo se cerraba al elegir una acción —
+	// no había forma de "arrepentirse" sin verse obligado a atacar/defender/usar habilidad. Ahora,
+	// tocar cualquier otra cosa lo cierra. Va en _UnhandledInput (no en _Input) a propósito: a
+	// este punto SOLO llegan los clics que la GUI (los botones del propio menú, que ya paran el
+	// evento con MouseFilter=Stop) y la física de las tropas (TropaBase._InputEvent) NO
+	// consumieron — así nunca compite con el clic de un botón ni con el de abrir el menú de una
+	// tropa nueva (que ya corrió antes, en la etapa de picking física, y prende la bandera de
+	// abajo para que este cierre no se la coma).
+	private void CerrarMenuTropaSiTocanOtraCosa(InputEvent @event)
+	{
+		if (_menuTropaRecienAbiertoEsteClic) { _menuTropaRecienAbiertoEsteClic = false; return; }
+		if (menuAcciones == null || !menuAcciones.Visible) return;
+
+		bool esClic = (@event is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
+					|| (@event is InputEventScreenTouch st && st.Pressed);
+		if (!esClic) return;
+
+		menuAcciones.Visible = false;
+		tropaSeleccionada = null;
 	}
 
 	public List<Node2D> ObtenerSpotsLibresJugador()

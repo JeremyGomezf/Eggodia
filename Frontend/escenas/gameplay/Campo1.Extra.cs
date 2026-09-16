@@ -56,7 +56,9 @@ public partial class Campo1 : Node2D
 	private Control _avisoActual;
 	private const float DURACION_TOAST = 2.5f; // exigido: exactamente 2.5s visible antes de desaparecer
 
-	private void MostrarAviso(string texto, Color color)
+	// Público: algunas cartas (p. ej. MaguinPrime, con su modo de selección "decide a cuál
+	// transformas") lo llaman desde afuera vía campo.Call("MostrarAviso", ...).
+	public void MostrarAviso(string texto, Color color)
 	{
 		// y=230: un poco más arriba que antes (300), pidiendo seguir debajo del bloque superior
 		// (barras HP, Tiempo, Turno) pero sin quedar tan abajo en el tablero.

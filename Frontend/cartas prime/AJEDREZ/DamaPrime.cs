@@ -142,6 +142,15 @@ public partial class DamaPrime : TropaBase
 		Modulate = Colors.White;
 	}
 
+	// Si el turno termina mientras esperaba el clic de selección, se cancela sin gastar la
+	// habilidad — nunca llegó a marcarse "usada".
+	public override void CancelarSeleccionPendiente()
+	{
+		if (!_esperandoSeleccion) return;
+		_esperandoSeleccion = false;
+		DetenerEfectoAviso();
+	}
+
 	private void EjecutarHabilidadConfirmada()
 	{
 		_yaActuo           = true;

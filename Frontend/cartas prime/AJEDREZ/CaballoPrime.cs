@@ -158,6 +158,15 @@ public partial class CaballoPrime : TropaBase
 		Modulate = Colors.White;
 	}
 
+	// Si el turno termina mientras esperaba el clic de selección (jugador humano, carril 2), se
+	// cancela sin gastar la habilidad — nunca llegó a marcarse "usada".
+	public override void CancelarSeleccionPendiente()
+	{
+		if (!_esperandoSeleccion) return;
+		_esperandoSeleccion = false;
+		DetenerEfectoAviso();
+	}
+
 	private void EjecutarHabilidadConfirmada()
 	{
 		_yaActuo           = true;

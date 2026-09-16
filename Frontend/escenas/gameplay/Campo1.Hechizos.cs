@@ -64,6 +64,7 @@ public partial class Campo1 : Node2D
 				MostrarAviso($"¡Envenenaste a {NombreCorto(objetivo)} del rival!", new Color(0.6f,1f,0.4f));
 				break;
 			case "bloqueo":
+				if (objetivo.HasMethod("AlSerBloqueado")) objetivo.Call("AlSerBloqueado");
 				objetivo.SetMeta("bloqueado",     true);
 				objetivo.SetMeta("turnosBloqueo", 2);
 				objetivo.Modulate = COLOR_BLOQUEO;

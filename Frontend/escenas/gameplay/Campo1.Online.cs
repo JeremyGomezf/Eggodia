@@ -396,10 +396,10 @@ public partial class Campo1 : Node2D
 		bool yaEnDerrota = animSprite != null && ((string)animSprite.Animation).Contains("derrota");
 		if (!yaEnDerrota && tropa.HasMethod("ReproducirDerrota")) tropa.Call("ReproducirDerrota");
 
-		Tween tw = CreateTween();
-		tw.TweenInterval(0.8f);
-		tw.TweenProperty(tropa, "modulate:a", 0.0f, 0.6f);
-		tw.Finished += () => { if (IsInstanceValid(tropa)) tropa.QueueFree(); };
+		// Mismo criterio que EjecutarMuerteTropaSacrificada: desvanecer desde el frame 17 de
+		// "derrota" (19 para Ka-Bar), no con un timer fijo — ver ese método para el por qué.
+		int frameDesvanecer = tropa is KaBarCartoonPrime ? 19 : 17;
+		TropaBase.DesvanecerTrasFrameDerrota(tropa, animSprite, frameDesvanecer, 0.6f);
 	}
 
 	private void QuitarTropaDeCarril(string carril)

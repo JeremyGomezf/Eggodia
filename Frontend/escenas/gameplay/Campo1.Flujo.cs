@@ -56,7 +56,7 @@ public partial class Campo1 : Node2D
 		}
 
 		// Evitar refresco redundante si el menú ya está abierto para esta misma tropa
-		if (tropaSeleccionada == tropa && menuAcciones.Visible) return;
+		if (tropaSeleccionada == tropa && menuAcciones.Visible) { _menuTropaRecienAbiertoEsteClic = true; return; }
 		tropaSeleccionada = tropa;
 
 		// Botón Ataque: siempre visible y habilitado
@@ -109,6 +109,7 @@ public partial class Campo1 : Node2D
 		}
 		menuAcciones.GlobalPosition = tropa.GetGlobalTransformWithCanvas().Origin + new Vector2(-50, -110);
 		menuAcciones.Visible = true;
+		_menuTropaRecienAbiertoEsteClic = true;
 	}
 
 	public void _on_btn_ataque_pressed()
@@ -369,8 +370,12 @@ public partial class Campo1 : Node2D
 			zona?.GetNodeOrNull("Ocupado")?.Free();
 		}
 
-		Tween tw = CreateTween(); tw.TweenInterval(0.8f); tw.TweenProperty(tropa, "modulate:a", 0.0f, 0.6f);
-		tw.Finished += () => { if (IsInstanceValid(tropa)) tropa.QueueFree(); };
+		// Desvanecer desde el frame 17 de "derrota" (no un timer fijo): así la animación de
+		// derrota se aprecia completa antes de desaparecer, y el carril no queda "libre" tan
+		// rápido como para que la próxima tropa invocada choque visualmente con la anterior
+		// todavía desvaneciéndose. Ka-Bar es la única excepción pedida: su derrota usa el frame 19.
+		int frameDesvanecer = tropa is KaBarCartoonPrime ? 19 : 17;
+		TropaBase.DesvanecerTrasFrameDerrota(tropa, animSprite, frameDesvanecer, 0.6f);
 		CheckEstadoJuego(); ActualizarInterfaz();
 	}
 
