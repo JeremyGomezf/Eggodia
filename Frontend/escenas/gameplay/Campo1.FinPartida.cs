@@ -326,13 +326,23 @@ public partial class Campo1 : Node2D
 		btnReinicio.Position          = new Vector2(50, 300);
 		btnReinicio.CustomMinimumSize = new Vector2(190, 48);
 		btnReinicio.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ReloadCurrentScene(); };
-		pantalla.AddChild(btnReinicio);
+		// "Jugar de nuevo" NO tiene sentido en línea: recargar la escena volvería a leer el ContextoOnline
+		// (MatchId/Semilla de la partida YA terminada) y re-entraría a la misma partida muerta. En online
+		// solo se puede volver al menú y buscar un rival nuevo. Solo se muestra en partidas locales (vs bot).
+		if (!EsOnline) pantalla.AddChild(btnReinicio);
 
 		var btnMenu = new Button();
 		btnMenu.Text              = "Menú Principal";
-		btnMenu.Position          = new Vector2(255, 300);
+		btnMenu.Position          = EsOnline ? new Vector2(152, 300) : new Vector2(255, 300);
 		btnMenu.CustomMinimumSize = new Vector2(190, 48);
-		btnMenu.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn"); };
+		btnMenu.Pressed += () =>
+		{
+			LimpiezaEfectos.LimpiarEfectosDeCampo();
+			// Al salir de una partida en línea terminada, borrar su contexto (MatchId/Semilla/rival) para
+			// que no quede caché de la partida anterior colgando en memoria hasta el próximo emparejamiento.
+			ContextoOnline.Limpiar();
+			GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
+		};
 		pantalla.AddChild(btnMenu);
 
 		if (SesionJuego.Instance?.EstaLogueado == true)
