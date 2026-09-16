@@ -41,7 +41,9 @@ public partial class Campo1 : Node2D
 		_httpPollAcc = new HttpRequest(); AddChild(_httpPollAcc);
 		_httpPollAcc.RequestCompleted += OnRespuestaAcciones;
 
-		_timerPollAcc = new Timer { WaitTime = 0.6, OneShot = false };
+		// 0.35s: las jugadas del rival aparecen ~2× más rápido que con 0.6s (más "tiempo real")
+		// sin cambiar el transporte. Para push instantáneo real haría falta migrar a WebSockets.
+		_timerPollAcc = new Timer { WaitTime = 0.35, OneShot = false };
 		AddChild(_timerPollAcc);
 		_timerPollAcc.Timeout += SondearAcciones;
 
