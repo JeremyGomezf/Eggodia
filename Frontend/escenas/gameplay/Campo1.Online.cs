@@ -31,6 +31,13 @@ public partial class Campo1 : Node2D
 	private Timer _timerLatido;
 	private bool _ocupadoLatido = false;
 
+	// WebSocket para el TIEMPO REAL (push). Aditivo: cuando conecta, avisa al instante que el rival
+	// jugó y se lee la acción de inmediato (sin esperar el sondeo). Si el WS no está disponible
+	// (p. ej. Nginx sin 'Connection upgrade'), NO pasa nada: el sondeo REST de 0.35s cubre todo.
+	private WebSocketPeer _ws;
+	private Timer _timerWs;
+	private bool _wsConectado = false;
+
 	private void ConfigurarModoOnline()
 	{
 		EsOnline = ContextoOnline.Activo;
@@ -54,6 +61,14 @@ public partial class Campo1 : Node2D
 		AddChild(_timerLatido);
 		_timerLatido.Timeout += EnviarLatido;
 		_timerLatido.Start();
+
+		// WebSocket (tiempo real). Intenta conectar; si no puede, todo sigue por sondeo.
+		_ws = new WebSocketPeer();
+		_ws.ConnectToUrl(ApiConfig.WsMatch(ContextoOnline.MatchId, ContextoOnline.JugadorId));
+		_timerWs = new Timer { WaitTime = 0.05, OneShot = false };
+		AddChild(_timerWs);
+		_timerWs.Timeout += PollWs;
+		_timerWs.Start();
 
 		// El asiento "A" empieza; el "B" espera y reproduce las acciones del rival.
 		if (!ContextoOnline.SoyPrimero)
@@ -100,8 +115,31 @@ public partial class Campo1 : Node2D
 		_enviandoAccion = false;
 		bool ok = result == (long)HttpRequest.Result.Success && (code == 200 || code == 201);
 		if (ok && _colaAcciones.Count > 0) _colaAcciones.Dequeue(); // enviada: la sacamos de la cola
+		// Aviso instantáneo al rival por WebSocket: la acción YA quedó guardada en el backend, que la
+		// lea de inmediato (sin esperar su sondeo de 0.35s). Si el WS no está conectado, no pasa nada.
+		if (ok && _ws != null && _ws.GetReadyState() == WebSocketPeer.State.Open) _ws.SendText("n");
 		// Si falló, se mantiene al frente para reintentar en el siguiente bombeo.
 		BombearColaAcciones();
+	}
+
+	// Sondea el WebSocket (~20 Hz). Un mensaje del rival = "hay algo nuevo" → leer sus acciones YA,
+	// sin esperar el timer de 0.35s. Es lo que hace que el multijugador se sienta en tiempo real.
+	private void PollWs()
+	{
+		if (_ws == null) return;
+		_ws.Poll();
+		var estado = _ws.GetReadyState();
+		if (estado == WebSocketPeer.State.Open)
+		{
+			_wsConectado = true;
+			bool aviso = false;
+			while (_ws.GetAvailablePacketCount() > 0) { _ws.GetPacket(); aviso = true; }
+			if (aviso && !esTurnoJugador && !juegoTerminado) SondearAcciones();
+		}
+		else if (estado == WebSocketPeer.State.Closed)
+		{
+			_wsConectado = false; // el sondeo REST de 0.35s sigue cubriendo todo (respaldo)
+		}
 	}
 
 	// Llamado cuando termina MI turno (la CPU está gateada en online, ver EjecutarTurnoCPU).
@@ -355,6 +393,8 @@ public partial class Campo1 : Node2D
 		if (juegoTerminado) return;
 		if (_timerLatido != null && !_timerLatido.IsStopped()) _timerLatido.Stop();
 		if (_timerPollAcc != null && !_timerPollAcc.IsStopped()) _timerPollAcc.Stop();
+		if (_timerWs != null && !_timerWs.IsStopped()) _timerWs.Stop();
+		if (_ws != null && _ws.GetReadyState() == WebSocketPeer.State.Open) _ws.Close();
 
 		if (resultado == "empate")
 		{

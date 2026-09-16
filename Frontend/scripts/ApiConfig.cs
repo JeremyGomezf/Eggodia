@@ -29,4 +29,11 @@ public static class ApiConfig
 	public static string ReclamarCartaFisica => $"{Base}/api/cartas/claim-physical-card";
 	public static string CodigosCanjear     => $"{Base}/api/codigos/canjear";
 	public static string CodigosSkins(int userId) => $"{Base}/api/codigos/usuario/{userId}/skins";
+
+	// WebSocket del multijugador en tiempo real (http→ws, https→wss).
+	public static string WsBase =>
+		Base.StartsWith("https://") ? "wss://" + Base.Substring("https://".Length)
+		                            : "ws://"  + Base.Substring("http://".Length);
+	public static string WsMatch(string matchId, string jugadorId) =>
+		$"{WsBase}/ws/match?matchId={matchId}&jugadorId={jugadorId}";
 }
