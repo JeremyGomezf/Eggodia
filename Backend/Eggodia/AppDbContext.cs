@@ -12,6 +12,7 @@ namespace Eggodia.API.Data
         public DbSet<UserCard>  UserCards  { get; set; }
         public DbSet<PromoCode> PromoCodes { get; set; }
         public DbSet<UserSkin>  UserSkins  { get; set; }
+        public DbSet<UserItem>  UserItems  { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,6 +36,11 @@ namespace Eggodia.API.Data
             {
                 e.ToTable("user_skins");
                 e.HasIndex(us => new { us.UserId, us.SkinRuta });
+            });
+            modelBuilder.Entity<UserItem>(e =>
+            {
+                e.ToTable("user_items");
+                e.HasIndex(ui => new { ui.UserId, ui.Tipo, ui.ItemId }).IsUnique();
             });
 
             // ── SEED CARTAS (Rebalanceo de 17 tropas) ────

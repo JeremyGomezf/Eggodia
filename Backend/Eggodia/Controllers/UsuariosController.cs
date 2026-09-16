@@ -187,12 +187,80 @@ public class UsuariosController : ControllerBase
         return Ok(new { u.Id, u.Monedas });
     }
 
+    // ── INVENTARIO POR CUENTA (server-side; ver UserItem) ─────────────────────
+    // GET api/usuarios/{id}/inventario  → todo lo que el jugador posee, para cargar al iniciar sesión.
+    [HttpGet("{id}/inventario")]
+    public async Task<IActionResult> Inventario(int id)
+    {
+        var u = await _db.Usuarios.FindAsync(id);
+        if (u == null) return NotFound(new { mensaje = "Usuario no encontrado." });
+
+        var items = await _db.UserItems.Where(x => x.UserId == id)
+            .Select(x => new { tipo = x.Tipo, itemId = x.ItemId }).ToListAsync();
+        var exclusivas = await _db.UserSkins.Where(s => s.UserId == id)
+            .Select(s => s.SkinRuta).ToListAsync();
+
+        return Ok(new
+        {
+            monedas = u.Monedas,
+            equipSkinIdx = u.EquipSkinIdx,
+            equipSkinExclusiva = u.EquipSkinExclusiva,
+            equipTronoIdx = u.EquipTronoIdx,
+            items,
+            skinsExclusivas = exclusivas
+        });
+    }
+
+    // POST api/usuarios/{id}/comprar { tipo, itemId, costo }
+    // Compra SERVER-AUTORITATIVA: el servidor descuenta las monedas y registra el ítem en la cuenta.
+    // Idempotente: si ya lo tiene, no cobra de nuevo. Evita trampas de cliente (monedas/ítems locales).
+    [HttpPost("{id}/comprar")]
+    public async Task<IActionResult> Comprar(int id, [FromBody] ComprarRequest req)
+    {
+        if (req == null || string.IsNullOrWhiteSpace(req.Tipo) || string.IsNullOrWhiteSpace(req.ItemId))
+            return BadRequest(new { ok = false, mensaje = "Datos de compra incompletos." });
+
+        var u = await _db.Usuarios.FindAsync(id);
+        if (u == null) return NotFound(new { ok = false, mensaje = "Usuario no encontrado." });
+
+        bool yaTiene = await _db.UserItems.AnyAsync(x => x.UserId == id && x.Tipo == req.Tipo && x.ItemId == req.ItemId);
+        if (yaTiene) return Ok(new { ok = true, yaTenia = true, monedas = u.Monedas });
+
+        int costo = Math.Max(0, req.Costo);
+        if (u.Monedas < costo)
+            return BadRequest(new { ok = false, mensaje = "Monedas insuficientes.", monedas = u.Monedas });
+
+        u.Monedas -= costo;
+        _db.UserItems.Add(new UserItem { UserId = id, Tipo = req.Tipo, ItemId = req.ItemId });
+        await _db.SaveChangesAsync();
+        return Ok(new { ok = true, monedas = u.Monedas });
+    }
+
+    // POST api/usuarios/{id}/equipar { skinIdx?, skinExclusiva?, tronoIdx? }
+    // Guarda el cosmético equipado en la CUENTA (solo se actualizan los campos enviados).
+    [HttpPost("{id}/equipar")]
+    public async Task<IActionResult> Equipar(int id, [FromBody] EquiparRequest req)
+    {
+        var u = await _db.Usuarios.FindAsync(id);
+        if (u == null) return NotFound(new { ok = false, mensaje = "Usuario no encontrado." });
+        if (req == null) return BadRequest(new { ok = false });
+
+        if (req.SkinIdx.HasValue)      u.EquipSkinIdx = req.SkinIdx.Value;
+        if (req.SkinExclusiva != null) u.EquipSkinExclusiva = req.SkinExclusiva;
+        if (req.TronoIdx.HasValue)     u.EquipTronoIdx = req.TronoIdx.Value;
+        await _db.SaveChangesAsync();
+        return Ok(new { ok = true, u.EquipSkinIdx, u.EquipSkinExclusiva, u.EquipTronoIdx });
+    }
+
     private static UsuarioDto ToDto(Usuario u) => new()
     {
         Id        = u.Id,
         Nombre    = u.Nombre,
         Email     = u.Email,
         Monedas   = u.Monedas,
+        EquipSkinIdx       = u.EquipSkinIdx,
+        EquipSkinExclusiva = u.EquipSkinExclusiva,
+        EquipTronoIdx      = u.EquipTronoIdx,
         Victorias = u.Victorias,
         Derrotas  = u.Derrotas,
         Empates   = u.Empates,

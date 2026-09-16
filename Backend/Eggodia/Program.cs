@@ -60,6 +60,12 @@ using (var scope = app.Services.CreateScope())
     try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN Monedas INTEGER NOT NULL DEFAULT 0;"); }
     catch { /* la columna ya existía */ }
 
+    // Cosméticos equipados por cuenta (skin/trono) — antes eran locales y se "traspasaban" entre
+    // cuentas del mismo dispositivo. Cada ALTER se ignora si la columna ya existe.
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN EquipSkinIdx INTEGER NOT NULL DEFAULT 0;"); } catch { }
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN EquipSkinExclusiva TEXT NOT NULL DEFAULT '';"); } catch { }
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN EquipTronoIdx INTEGER NOT NULL DEFAULT 0;"); } catch { }
+
     // Migración ligera (igual que arriba): EnsureCreated tampoco agrega TABLAS nuevas a una BD ya
     // creada — promo_codes/user_skins se agregaron después del primer despliegue, así que en un
     // servidor con una cards.db previa a ese cambio esas tablas nunca existían y CUALQUIER canje de
@@ -100,6 +106,17 @@ using (var scope = app.Services.CreateScope())
                 ""AcquiredAt"" TEXT NOT NULL
             );");
         db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_user_cards_UserId"" ON ""user_cards"" (""UserId"");");
+
+        // user_items: inventario de cosméticos comprados por cuenta (skins/tronos/tropas/hechizos).
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""user_items"" (
+                ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_user_items"" PRIMARY KEY AUTOINCREMENT,
+                ""UserId"" INTEGER NOT NULL,
+                ""Tipo"" TEXT NOT NULL,
+                ""ItemId"" TEXT NOT NULL,
+                ""FechaUtc"" TEXT NOT NULL
+            );");
+        db.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_user_items_UserId_Tipo_ItemId"" ON ""user_items"" (""UserId"", ""Tipo"", ""ItemId"");");
     }
     catch (Exception ex) { Console.Error.WriteLine($"[DB] No se pudieron asegurar promo_codes/user_skins/user_cards: {ex.Message}"); }
 

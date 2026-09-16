@@ -13,6 +13,12 @@ namespace Eggodia.API.model
         // iniciar sesión y lo sincroniza al ganar/gastar; el admin puede darlas/quitarlas.
         public int Monedas { get; set; } = 0;
 
+        // Cosméticos EQUIPADOS por cuenta (se cargan al iniciar sesión). Antes eran locales del
+        // dispositivo y "se traspasaban" entre cuentas en el mismo celular.
+        public int    EquipSkinIdx       { get; set; } = 0;
+        public string EquipSkinExclusiva { get; set; } = "";
+        public int    EquipTronoIdx      { get; set; } = 0;
+
         // Estadísticas para el ranking
         public int Victorias  { get; set; } = 0;
         public int Derrotas   { get; set; } = 0;
@@ -30,6 +36,9 @@ namespace Eggodia.API.model
         public string Nombre   { get; set; } = "";
         public string Email    { get; set; } = "";
         public int    Monedas   { get; set; }
+        public int    EquipSkinIdx       { get; set; }
+        public string EquipSkinExclusiva { get; set; } = "";
+        public int    EquipTronoIdx      { get; set; }
         public int    Victorias { get; set; }
         public int    Derrotas  { get; set; }
         public int    Empates   { get; set; }
