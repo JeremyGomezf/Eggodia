@@ -120,26 +120,27 @@ namespace Eggodia.API.Controllers
 
         private async Task AsegurarSkinsDesarrollador(Usuario usuario)
         {
-            string nombreLower = usuario.Nombre.ToLowerInvariant();
-            string emailLower = usuario.Email.ToLowerInvariant();
-
+            // Skins de desarrollador ligadas a la CUENTA EXACTA (por Id), NO al texto del nombre.
+            // Antes se usaba nombre.Contains("jeremy"/"gonza"/"carlos"...) y cualquier nombre PARECIDO
+            // (p. ej. "ggonzalo", "pruebadev") recibía la skin dev. Ahora solo la reciben las cuentas
+            // reales de los desarrolladores por su Id fijo.
             string? skinExclusiva = null;
             string? nombreSkin = null;
 
-            if (nombreLower.Contains("jeremy") || emailLower.Contains("jeremy"))
+            switch (usuario.Id)
             {
-                skinExclusiva = "res://imagenes/PersonajesPng/JeremiHuevo.png";
-                nombreSkin = "Jeremi Huevo";
-            }
-            else if (nombreLower.Contains("gonza") || emailLower.Contains("gonza") || usuario.Id == 2)
-            {
-                skinExclusiva = "res://imagenes/PersonajesPng/GonzaHuevo.png";
-                nombreSkin = "Gonza Huevo";
-            }
-            else if (nombreLower.Contains("kankox") || nombreLower.Contains("carlos") || emailLower.Contains("carlos") || usuario.Id == 4)
-            {
-                skinExclusiva = "res://imagenes/PersonajesPng/CarlosHuevo.png";
-                nombreSkin = "Carlos Huevo";
+                case 1: // Jeremy_dev
+                    skinExclusiva = "res://imagenes/PersonajesPng/JeremiHuevo.png";
+                    nombreSkin = "Jeremi Huevo";
+                    break;
+                case 2: // SrGonza
+                    skinExclusiva = "res://imagenes/PersonajesPng/GonzaHuevo.png";
+                    nombreSkin = "Gonza Huevo";
+                    break;
+                case 4: // kankox_dev (Carlos)
+                    skinExclusiva = "res://imagenes/PersonajesPng/CarlosHuevo.png";
+                    nombreSkin = "Carlos Huevo";
+                    break;
             }
 
             if (skinExclusiva != null)

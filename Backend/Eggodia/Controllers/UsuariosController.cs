@@ -16,14 +16,34 @@ public class UsuariosController : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        // Verificar email único
-        bool existe = await _db.Usuarios.AnyAsync(u => u.Email == req.Email);
-        if (existe) return Conflict(new { mensaje = "El email ya está registrado." });
+        // Normalizar entradas (evita duplicados por espacios o mayúsculas).
+        string nombre     = (req.Nombre ?? "").Trim();
+        string email      = (req.Email  ?? "").Trim();
+        string nombreLower = nombre.ToLowerInvariant();
+        string emailLower  = email.ToLowerInvariant();
+
+        if (nombre.Length < 3)
+            return Conflict(new { mensaje = "El nombre debe tener al menos 3 caracteres." });
+
+        // Nombres reservados (staff / impersonación): nadie los puede registrar.
+        var reservados = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        { "dev", "admin", "administrador", "moderador", "mod", "staff", "eggodia", "jeremy_dev", "gonza_dev", "soporte", "sistema" };
+        if (reservados.Contains(nombreLower))
+            return Conflict(new { mensaje = "Ese nombre está reservado. Elige otro." });
+
+        // Email único (insensible a mayúsculas).
+        if (await _db.Usuarios.AnyAsync(u => u.Email.ToLower() == emailLower))
+            return Conflict(new { mensaje = "El email ya está registrado." });
+
+        // Nombre de usuario ÚNICO (insensible a mayúsculas): evita nombres repetidos o "similares"
+        // por capitalización (p. ej. "Jeremy_dev" vs "jeremy_dev").
+        if (await _db.Usuarios.AnyAsync(u => u.Nombre.ToLower() == nombreLower))
+            return Conflict(new { mensaje = "Ese nombre de usuario ya está en uso. Elige otro." });
 
         var usuario = new Usuario
         {
-            Nombre   = req.Nombre,
-            Email    = req.Email,
+            Nombre   = nombre,
+            Email    = email,
             Password = BCrypt.Net.BCrypt.HashPassword(req.Password) // hash seguro (nunca texto plano)
         };
 

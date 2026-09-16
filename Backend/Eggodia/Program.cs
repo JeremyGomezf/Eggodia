@@ -83,8 +83,19 @@ using (var scope = app.Services.CreateScope())
                 ""FechaDesbloqueo"" TEXT NOT NULL
             );");
         db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_user_skins_UserId_SkinRuta"" ON ""user_skins"" (""UserId"", ""SkinRuta"");");
+
+        // user_cards: inventario de cartas por usuario (se siembra en el registro). Sin esta tabla,
+        // el registro reventaba con 500 "no such table: user_cards" en una BD creada antes de agregarla.
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""user_cards"" (
+                ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_user_cards"" PRIMARY KEY AUTOINCREMENT,
+                ""UserId"" INTEGER NOT NULL,
+                ""CardId"" TEXT NOT NULL,
+                ""AcquiredAt"" TEXT NOT NULL
+            );");
+        db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_user_cards_UserId"" ON ""user_cards"" (""UserId"");");
     }
-    catch (Exception ex) { Console.Error.WriteLine($"[DB] No se pudieron asegurar promo_codes/user_skins: {ex.Message}"); }
+    catch (Exception ex) { Console.Error.WriteLine($"[DB] No se pudieron asegurar promo_codes/user_skins/user_cards: {ex.Message}"); }
 
     // Siembra idempotente de los 20 códigos vigentes (10 Huevo Dorado + 10 Huevo Ecotec). No usa
     // HasData porque HasData solo se aplica cuando EnsureCreated crea la BD desde cero — en un
@@ -101,6 +112,21 @@ using (var scope = app.Services.CreateScope())
         }
     }
     catch (Exception ex) { Console.Error.WriteLine($"[DB] No se pudieron sembrar los codigos promo: {ex.Message}"); }
+
+    // Corrección idempotente: el bug antiguo (nombre.Contains("gonza"/"dev"...)) otorgó skins de
+    // desarrollador a cuentas que NO son dev (p. ej. "ggonzalo", "pruebadev"). Se quitan a cualquiera
+    // que no sea una de las cuentas dev reales (Id 1, 2, 4). Seguro de correr en cada arranque.
+    try
+    {
+        db.Database.ExecuteSqlRaw(@"
+            DELETE FROM user_skins
+            WHERE UserId NOT IN (1, 2, 4)
+              AND SkinRuta IN (
+                'res://imagenes/PersonajesPng/JeremiHuevo.png',
+                'res://imagenes/PersonajesPng/GonzaHuevo.png',
+                'res://imagenes/PersonajesPng/CarlosHuevo.png');");
+    }
+    catch (Exception ex) { Console.Error.WriteLine($"[DB] No se pudo limpiar skins dev mal otorgadas: {ex.Message}"); }
 }
 
 app.Run();
