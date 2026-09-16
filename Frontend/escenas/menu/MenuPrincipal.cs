@@ -225,8 +225,8 @@ public partial class MenuPrincipal : Control
 			Callable.From(AbrirComoJugar).CallDeferred();
 		}
 
-		// 8. Chequear si hay una versión nueva del APK (avisa / obliga a actualizar)
-		AddChild(new ChequeoActualizacion());
+		// El chequeo de versión nueva del APK ahora corre AL INICIO, en la PantallaCarga (antes del
+		// login), no aquí — así un update obligatorio bloquea desde el arranque. Ver PantallaCarga.cs.
 	}
 
 	public override void _ExitTree()

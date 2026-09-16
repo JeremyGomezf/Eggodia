@@ -58,10 +58,30 @@ public partial class PantallaCarga : Control
 	private readonly List<string> _pendientes = new();
 	private int _total;
 
+	// ── Chequeo de actualización AL INICIO ────────────────────────────────────
+	// Apenas abre la app se consulta la versión del servidor. Si hay una versión nueva OBLIGATORIA,
+	// el aviso bloquea aquí mismo (antes del login) y no se avanza. Si no hay update / no hay conexión,
+	// se sigue normal al login. Se espera a que el chequeo termine antes de pasar (con tope de seguridad).
+	private bool _cargaLista        = false; // la precarga/animación de la barra terminó
+	private bool _chequeoListo       = false; // el chequeo de versión respondió (o falló/omitió)
+	private bool _bloqueadoPorUpdate = false; // hay update obligatorio en pantalla → no avanzar
+
 	public override void _Ready()
 	{
 		_barra         = GetNodeOrNull<TextureProgressBar>("BarraContenedor/Margin/Barra");
 		_lblPorcentaje = GetNodeOrNull<Label>("LblPorcentaje");
+
+		// Chequeo de versión al arranque (en el APK real; en el editor se omite solo).
+		var chequeo = new ChequeoActualizacion();
+		chequeo.AlTerminar = (bloquea) =>
+		{
+			_chequeoListo       = true;
+			_bloqueadoPorUpdate = bloquea;
+			IntentarAvanzar();
+		};
+		AddChild(chequeo);
+		// Red de seguridad: si el chequeo jamás responde (caso raro), a los 6s se sigue igual.
+		GetTree().CreateTimer(6.0).Timeout += () => { if (!_chequeoListo) { _chequeoListo = true; IntentarAvanzar(); } };
 
 		CargarPeon();
 
@@ -86,7 +106,7 @@ public partial class PantallaCarga : Control
 			if (esMovil)
 				MostrarCargaDecorativa(); // barra animada 1.5s, sin precarga real
 			else
-				CallDeferred(nameof(IrASiguiente));
+				CallDeferred(nameof(CargaCompletada));
 		}
 	}
 
@@ -95,7 +115,7 @@ public partial class PantallaCarga : Control
 	{
 		Tween tw = CreateTween();
 		tw.TweenMethod(Callable.From<double>(ActualizarBarraDecorativa), 0.0, 100.0, 1.5);
-		tw.Finished += IrASiguiente;
+		tw.Finished += CargaCompletada;
 	}
 
 	private void ActualizarBarraDecorativa(double v)
@@ -182,13 +202,27 @@ public partial class PantallaCarga : Control
 			_peon.GlobalPosition = new Vector2(x, y);
 		}
 
-		if (_pendientes.Count == 0) IrASiguiente();
+		if (_pendientes.Count == 0) CargaCompletada();
 	}
 
-	private bool _yendo = false;
-	private void IrASiguiente()
+	// La precarga (o su animación) terminó. No se pasa al login hasta que el chequeo de versión también
+	// haya respondido — así un update obligatorio alcanza a bloquear ANTES de entrar.
+	private bool _cargaAvisada = false;
+	private void CargaCompletada()
 	{
-		if (_yendo) return;
+		if (_cargaAvisada) return;
+		_cargaAvisada = true;
+		_cargaLista = true;
+		IntentarAvanzar();
+	}
+
+	// Avanza al login solo cuando: (1) la carga terminó, (2) el chequeo de versión respondió y
+	// (3) no hay un update obligatorio bloqueando. Si hay update, se queda aquí con el aviso en pantalla.
+	private bool _yendo = false;
+	private void IntentarAvanzar()
+	{
+		if (_yendo || _bloqueadoPorUpdate) return;
+		if (!_cargaLista || !_chequeoListo) return; // espera a que ambos estén listos
 		_yendo = true;
 		GetTree().ChangeSceneToFile(RUTA_SIGUIENTE);
 	}

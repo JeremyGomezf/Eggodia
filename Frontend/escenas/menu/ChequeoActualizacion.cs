@@ -18,6 +18,14 @@ public partial class ChequeoActualizacion : Node
 {
 	private HttpRequest _http;
 
+	// Se invoca EXACTAMENTE una vez cuando el chequeo termina, con true si hay una actualización
+	// obligatoria bloqueando (se mostró el aviso y NO se debe avanzar) o false si no hay nada que
+	// hacer (sin versión nueva, sin conexión o corriendo en editor). Lo usa la PantallaCarga para
+	// decidir si sigue al login o se queda mostrando el aviso. Puede ser null (uso sin callback).
+	public System.Action<bool> AlTerminar;
+	private bool _avisado = false;
+	private void Avisar(bool bloquea) { if (_avisado) return; _avisado = true; AlTerminar?.Invoke(bloquea); }
+
 	private class InfoVersion
 	{
 		public string Ultima { get; set; } = "0.0.0";
@@ -31,30 +39,31 @@ public partial class ChequeoActualizacion : Node
 		// puedes desarrollar y probar sin que te bloquee aunque tu versión local sea menor que la del
 		// servidor. El bloqueo solo aplica en el APK exportado (build real), que es lo que juegan los
 		// usuarios: ahí "editor" no está presente en OS.HasFeature.
-		if (OS.HasFeature("editor")) { QueueFree(); return; }
+		if (OS.HasFeature("editor")) { Avisar(false); QueueFree(); return; }
 
 		_http = new HttpRequest();
+		_http.Timeout = 5; // sin conexión no debe dejar al jugador esperando en la carga: a los 5s sigue
 		AddChild(_http);
 		_http.RequestCompleted += OnRespuesta;
 		if (_http.Request($"{ApiConfig.Base}/api/version") != Error.Ok)
-			QueueFree();
+			{ Avisar(false); QueueFree(); }
 	}
 
 	private void OnRespuesta(long result, long code, string[] headers, byte[] body)
 	{
-		if (result != (long)HttpRequest.Result.Success || code != 200) { QueueFree(); return; }
+		if (result != (long)HttpRequest.Result.Success || code != 200) { Avisar(false); QueueFree(); return; }
 		try
 		{
 			string json = Encoding.UTF8.GetString(body);
 			var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 			var info = JsonSerializer.Deserialize<InfoVersion>(json, opts);
-			if (info == null) { QueueFree(); return; }
+			if (info == null) { Avisar(false); QueueFree(); return; }
 
 			string actual = (string)ProjectSettings.GetSetting("application/config/version", "0.0.0");
-			if (Comparar(actual, info.Ultima) < 0) MostrarAviso(actual, info); // hay versión nueva → obligar
-			else QueueFree();
+			if (Comparar(actual, info.Ultima) < 0) { MostrarAviso(actual, info); Avisar(true); } // versión nueva → obligar (el aviso queda en pantalla)
+			else { Avisar(false); QueueFree(); }
 		}
-		catch { QueueFree(); }
+		catch { Avisar(false); QueueFree(); }
 	}
 
 	// Compara "1.2.3" numéricamente. <0 si a<b, 0 si igual, >0 si a>b.
