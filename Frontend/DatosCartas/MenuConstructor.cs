@@ -58,10 +58,36 @@ public partial class MenuConstructor : Control
 		{ "res://imagenes/RendersTropa/Campero_Menu.png",          -20f },
 		{ "res://imagenes/RendersTropa/Golem_Menu.png",             -5f },
 		{ "res://imagenes/RendersTropa/Tiburon_Menu.png",           0f },
+
+		// Ardides/hechizos — mismo mecanismo, retocar acá el que quede muy arriba/abajo.
+		{ "res://imagenes/RendersTropa/Renders Ardid/Veneno_Menu.png",       -110f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Bloqueo_Menu.png",      -110f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Curacion_Menu.png",     -110f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Encebollado_Menu.png",  -110f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Desprotegido_Menu.png", -110f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Escudo_Menu.png",       -110f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Fuerza_Menu.png",       -110f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Robar_Menu.png",        -110f },
 	};
 
 	private const string RUTA_SOLDADO_REAL_MENU = "res://imagenes/RendersTropa/SoldadoReal_Menu.png";
 	private const string RUTA_SOLDADO_REAL_RENDER = "res://imagenes/RendersTropa/SoldadoReal_Render.png";
+
+	// Renders estáticos de ARDIDES/hechizos para el mismo showcase central (carpeta "Renders
+	// Ardid") — antes los hechizos solo mostraban su ícono chico ajustado a una caja; ahora se
+	// ven igual de grandes que las tropas. "Nuclear" y "Debil" quedan afuera a propósito: son
+	// arte conceptual de hechizos que todavía no están listos para jugarse.
+	private static readonly Dictionary<string, string> RENDERS_ARDID = new()
+	{
+		{ "veneno",       "res://imagenes/RendersTropa/Renders Ardid/Veneno_Menu.png" },
+		{ "bloqueo",      "res://imagenes/RendersTropa/Renders Ardid/Bloqueo_Menu.png" },
+		{ "curacion",     "res://imagenes/RendersTropa/Renders Ardid/Curacion_Menu.png" },
+		{ "encebollado",  "res://imagenes/RendersTropa/Renders Ardid/Encebollado_Menu.png" },
+		{ "desprotegido", "res://imagenes/RendersTropa/Renders Ardid/Desprotegido_Menu.png" },
+		{ "escudo",       "res://imagenes/RendersTropa/Renders Ardid/Escudo_Menu.png" },
+		{ "fuerza",       "res://imagenes/RendersTropa/Renders Ardid/Fuerza_Menu.png" },
+		{ "robar_carta",  "res://imagenes/RendersTropa/Renders Ardid/Robar_Menu.png" },
+	};
 
 	[ExportGroup("Texturas y Assets")]
 	[Export] private Texture2D _texTropaSelector;
@@ -658,6 +684,14 @@ public partial class MenuConstructor : Control
 		return null;
 	}
 
+	// Igual que ObtenerRutaRenderTropa pero para ardides/hechizos — usa IdHechizo directo (ya es
+	// exacto, no hace falta normalizar/matchear por substring como con las tropas).
+	private static string ObtenerRutaRenderArdid(CartaData datos)
+	{
+		if (datos == null || string.IsNullOrEmpty(datos.IdHechizo)) return null;
+		return RENDERS_ARDID.TryGetValue(datos.IdHechizo, out string ruta) ? ruta : null;
+	}
+
 	private void ActualizarShowcaseAnimado(CartaData datos)
 	{
 		if (_fallbackTextureCenter == null) return;
@@ -676,7 +710,7 @@ public partial class MenuConstructor : Control
 
 		string norm = ClasificacionCartas.Normalizar(datos.RutaEscena) + "|" + ClasificacionCartas.Normalizar(datos.Nombre);
 		bool esSoldadoReal = norm.Contains("soldadoreal");
-		string rutaRender = ObtenerRutaRenderTropa(datos);
+		string rutaRender = ObtenerRutaRenderTropa(datos) ?? ObtenerRutaRenderArdid(datos);
 
 		_fallbackTextureCenter.Visible = true;
 		_fallbackTextureCenter.Position = Vector2.Zero;

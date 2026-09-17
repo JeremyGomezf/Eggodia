@@ -88,7 +88,7 @@ public class CartasController : ControllerBase
     private static readonly Dictionary<string, PhysicalCardData> PhysicalCardsDb = new()
     {
         { "09764", new PhysicalCardData("tiburon", "Tiburón", "PACÍFICO", "Asesino", 260, 320, 180, "Mordida feroz: siguiente ataque hace x2 daño", "¡Felicidades, me has encontrado! Mis mandíbulas están listas para destrozar a tus rivales.") },
-        { "09750", new PhysicalCardData("calamar_gigante", "Calamar Gigante", "PACÍFICO", "Coloso", 400, 370, 380, "Depredador acuático", "Emerjo desde las profundidades abisales para unirme a tus tropas.") },
+        { "09750", new PhysicalCardData("calamar", "Calamar Gigante", "PACÍFICO", "Coloso", 400, 370, 380, "Depredador acuático", "Emerjo desde las profundidades abisales para unirme a tus tropas.") },
         { "09393", new PhysicalCardData("soldado_cartoon", "Soldado Cartoon", "TOON", "Asesino", 230, 220, 170, "Fuego automático: Dispara ráfagas rápidas de metralla", "¡Reportándome al deber! ¡Listos para abrir fuego constante!") },
         { "27058", new PhysicalCardData("campero", "Campero", "TOON", "Táctico", 160, 350, 110, "Camuflaje: Oculto en arbustos hasta disparar su rifle", "Blanco fijado en la mira. Nadie nos verá venir.") },
         { "26920", new PhysicalCardData("granadero", "Granadero", "TOON", "Asesino", 240, 300, 190, "Lanzamiento Explosivo: Lanza granadas que causan daño de área", "¡Fuego en el hoyo! Mis explosivos abrirán el camino hacia la victoria.") },

@@ -175,12 +175,18 @@ public partial class Campo1 : Node2D
 		RellenarManoObjetivo();
 	}
 
+	// Tropa que ya recibió el primer clic en modo sacrificio: hace falta un SEGUNDO clic sobre
+	// ELLA MISMA para confirmar y matarla — evita que un clic apurado/accidental mate a la tropa
+	// equivocada sin darse cuenta. Tocar cualquier OTRA tropa reinicia la selección a esa nueva.
+	private Node2D _candidatoSacrificio = null;
+
 	public void _on_sacrificar_pressed()
 	{
 		if (!esTurnoJugador || movimientosRestantes <= 0 || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500 || _faseApertura)
 		{ if (modoSacrificioActivo) CancelarSacrificio(); return; }
 		modoSacrificioActivo = !modoSacrificioActivo;
 		Input.SetCustomMouseCursor(modoSacrificioActivo ? iconoCursorSacrificio : null);
+		ActualizarEscalaBotonSacrificio();
 	}
 
 	private void VerificarSacrificioEnCampo(Vector2 p)
@@ -192,11 +198,33 @@ public partial class Campo1 : Node2D
 			if (m == null || !m.HasMeta("tropa_instanciada")) continue;
 			Node2D t = (Node2D)m.GetMeta("tropa_instanciada");
 			if (!IsInstanceValid(t)) continue;
-			usosSacrificio++; EjecutarMuerteTropaSacrificada(t); CancelarSacrificio(); RegistrarGastoMovimiento(); break;
+
+			if (_candidatoSacrificio == t)
+			{
+				// Segundo clic sobre la MISMA tropa: confirma.
+				usosSacrificio++; EjecutarMuerteTropaSacrificada(t); CancelarSacrificio(); RegistrarGastoMovimiento();
+			}
+			else
+			{
+				// Primer clic (o clic sobre una tropa distinta a la ya marcada): solo la marca,
+				// pide el segundo clic para confirmar — con un destello rojo de aviso.
+				_candidatoSacrificio = t;
+				MostrarAviso("Tocá de nuevo para confirmar el sacrificio", Colors.OrangeRed);
+				Tween tw = t.CreateTween();
+				tw.TweenProperty(t, "modulate", new Color(3f, 0.3f, 0.3f, 1f), 0.15f);
+				tw.TweenProperty(t, "modulate", Colors.White, 0.25f);
+			}
+			break;
 		}
 	}
 
-	private void CancelarSacrificio() { modoSacrificioActivo = false; Input.SetCustomMouseCursor(null); }
+	private void CancelarSacrificio()
+	{
+		modoSacrificioActivo = false;
+		_candidatoSacrificio = null;
+		Input.SetCustomMouseCursor(null);
+		ActualizarEscalaBotonSacrificio();
+	}
 
 	// ── INVOCACIÓN Y TRANSFORMACIÓN ───────────────────────────────────────
 	public bool TropaInvocada(Node2D puntoMod, PackedScene escenaTropa, int idxMazo = -1)

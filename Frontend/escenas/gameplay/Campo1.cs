@@ -158,6 +158,7 @@ public partial class Campo1 : Node2D
 	private bool          _menuTropaRecienAbiertoEsteClic = false;
 	private TextureButton btnBarajar;
 	private TextureButton btnSacrificio;
+	private Vector2        _escalaOriginalBtnSacrificio;
 	private Button        btnHabilidad;
 	private Control       panelPausa;
 

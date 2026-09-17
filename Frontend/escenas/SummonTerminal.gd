@@ -23,7 +23,7 @@ const CATALOGO_TARJETAS_FISICAS = {
 		"dialogue": "¡Felicidades, me has encontrado! Mis mandíbulas están listas para destrozar a tus rivales."
 	},
 	"09750": {
-		"cardId": "calamar_gigante",
+		"cardId": "calamar",
 		"name": "Calamar Gigante",
 		"serie": "PACÍFICO",
 		"tipo": "Coloso",
@@ -93,7 +93,7 @@ const CATALOGO_TARJETAS_FISICAS = {
 # Mapeo de renders completos que emergen del portal
 const SPRITES_PERSONAJE = {
 	"tiburon": "res://imagenes/RendersTropa/Tiburon_Menu.png",
-	"calamar_gigante": "res://imagenes/RendersTropa/Calamar_Menu.png",
+	"calamar": "res://imagenes/RendersTropa/Calamar_Menu.png",
 	"soldado_cartoon": "res://imagenes/RendersTropa/SoldadoCartoon_Menu.png",
 	"campero": "res://imagenes/RendersTropa/Campero_Menu.png",
 	"granadero": "res://imagenes/RendersTropa/Granadero_Menu.png",
@@ -104,7 +104,7 @@ const SPRITES_PERSONAJE = {
 # Mapeo de íconos/avatares en el marco de diálogo
 const ICONOS_PERSONAJE = {
 	"tiburon": "res://imagenes/iconos/Tiburon_icon.png",
-	"calamar_gigante": "res://imagenes/iconos/Calamar_icon.png",
+	"calamar": "res://imagenes/iconos/Calamar_icon.png",
 	"soldado_cartoon": "res://imagenes/iconos/SoldadoCA_icon.png",
 	"campero": "res://imagenes/iconos/CanperoCA_icon.png",
 	"granadero": "res://imagenes/iconos/GranaderoCA_icon.png",
@@ -113,14 +113,18 @@ const ICONOS_PERSONAJE = {
 }
 
 # Mapeo de fondos temáticos dinámicos según el origen de la tropa
+# Fondo real del mapa de batalla correspondiente a la clase de la tropa — antes usaban una
+# imagen genérica de "portal" sin relación con el juego. Toon usa el fondo real de esa clase
+# (toonslFONDO.png); Pacífico (Tiburón/Calamar) no tiene un mapa de batalla propio todavía, así
+# que se queda con el placeholder de océano.
 const FONDOS_TEMATICOS = {
 	"tiburon": "res://imagenes/UI_Dialogo/FondoPortalOceano.jpg",
-	"calamar_gigante": "res://imagenes/UI_Dialogo/FondoPortalOceano.jpg",
-	"soldado_cartoon": "res://imagenes/UI_Dialogo/FondoPortalGuerra.jpg",
-	"campero": "res://imagenes/UI_Dialogo/FondoPortalGuerra.jpg",
-	"granadero": "res://imagenes/UI_Dialogo/FondoPortalGuerra.jpg",
-	"tanque": "res://imagenes/UI_Dialogo/FondoPortalGuerra.jpg",
-	"kabar": "res://imagenes/UI_Dialogo/FondoPortalGuerra.jpg"
+	"calamar": "res://imagenes/UI_Dialogo/FondoPortalOceano.jpg",
+	"soldado_cartoon": "res://imagenes/Escenarios/toonslFONDO.png",
+	"campero": "res://imagenes/Escenarios/toonslFONDO.png",
+	"granadero": "res://imagenes/Escenarios/toonslFONDO.png",
+	"tanque": "res://imagenes/Escenarios/toonslFONDO.png",
+	"kabar": "res://imagenes/Escenarios/toonslFONDO.png"
 }
 
 # Referencias a nodos principales
@@ -189,6 +193,12 @@ func _ready() -> void:
 	sprite_personaje.scale = Vector2.ZERO
 	sprite_personaje.modulate.a = 0.0
 	lbl_estado.text = ""
+
+	# El portal/personaje no se veían centrados en celular: la posición venía fija en X=960
+	# (mitad de 1920), pero con el estirado "keep_height" del proyecto el ancho REAL visible en
+	# un celular es más ancho que 1920 (pantallas 20:9), así que el centro real de la pantalla
+	# no cae en X=960. Se centra dinámico contra el viewport real en vez de un número fijo.
+	contenedor_anim.position.x = get_viewport_rect().size.x / 2.0
 
 	btn_escanear_nfc.pressed.connect(_simular_escaneo_nfc)
 	btn_sincronizar.pressed.connect(_on_sincronizar_pressed)
@@ -338,6 +348,9 @@ func _activar_invocacion_portal() -> void:
 	estado_actual = Estado.INVOCANDO
 	panel_input.visible = false
 
+	# Re-centrar por si el viewport cambió (rotación de pantalla, etc.)
+	contenedor_anim.position.x = get_viewport_rect().size.x / 2.0
+
 	# Textura del personaje según CardId
 	var card_id = carta_reclamada.get("cardId", "")
 	var ruta_sprite = SPRITES_PERSONAJE.get(card_id, "res://imagenes/MenuNuevo/BotonCartas.png")
@@ -362,8 +375,8 @@ func _activar_invocacion_portal() -> void:
 	tw.tween_property(sprite_portal, "scale", Vector2(2.15, 2.15), 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(sprite_portal, "modulate", Color(1.8, 1.8, 2.4), 0.4)
 
-	# Escala masiva (1.35x) para llenar la pantalla con gran presencia épica
-	tw.tween_property(sprite_personaje, "scale", Vector2(1.35, 1.35), 0.7).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Escala masiva (1.75x, antes 1.35x — se pidió más grande) para llenar la pantalla con gran presencia épica
+	tw.tween_property(sprite_personaje, "scale", Vector2(1.75, 1.75), 0.7).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(sprite_personaje, "modulate:a", 1.0, 0.45)
 
 	tw.chain().tween_property(sprite_portal, "scale", Vector2(1.85, 1.85), 0.4)

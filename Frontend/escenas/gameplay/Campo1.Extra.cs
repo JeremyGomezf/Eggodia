@@ -428,13 +428,22 @@ public partial class Campo1 : Node2D
 		AgregarJuiceBoton(btnBarajar);
 		AgregarJuiceBoton(_btnCambiarHechizo);
 		AgregarJuiceBoton(btnPausa);
+
+		if (btnSacrificio != null) _escalaOriginalBtnSacrificio = btnSacrificio.Scale;
 	}
+
+	// Escala "de reposo" de cada botón con juice — normalmente es su escala original del .tscn,
+	// pero código externo puede pisarla (ver ActualizarEscalaBotonSacrificio) para que el botón se
+	// quede agrandado de forma persistente mientras dure un estado (p. ej. modo sacrificio activo),
+	// sin que el hover/press de abajo lo hagan volver a la escala original de golpe.
+	private readonly Dictionary<TextureButton, Vector2> _escalaReposoBoton = new();
 
 	// ── JUICE DE BOTONES (hover / press) ──────────────────────────────────
 	private void AgregarJuiceBoton(TextureButton btn)
 	{
 		if (btn == null) return;
 		Vector2 escalaBase = btn.Scale;
+		_escalaReposoBoton[btn] = escalaBase;
 		btn.PivotOffset = btn.Size / 2f;
 
 		// Aura blanca sutil detrás del botón: mismo sprite en blanco con mezcla aditiva.
@@ -457,32 +466,50 @@ public partial class Campo1 : Node2D
 		{
 			// Bloqueado/desactivado: no reacciona al mouse ni crece.
 			if (btn.Disabled) return;
-			btn.CreateTween().TweenProperty(btn, "scale", escalaBase * 1.08f, 0.15f)
+			Vector2 reposo = _escalaReposoBoton[btn];
+			btn.CreateTween().TweenProperty(btn, "scale", reposo * 1.08f, 0.15f)
 				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-			aura.Scale = escalaBase * 1.1f;
+			aura.Scale = reposo * 1.1f;
 			aura.CreateTween().TweenProperty(aura, "self_modulate:a", 0.55f, 0.18f);
 		};
 		btn.MouseExited += () =>
 		{
-			// Siempre revierte (por si quedó agrandado/con aura justo antes de bloquearse).
-			btn.CreateTween().TweenProperty(btn, "scale", escalaBase, 0.15f)
+			// Siempre revierte a la escala de reposo ACTUAL (por si quedó agrandado/con aura justo
+			// antes de bloquearse) — normalmente la original, salvo que algo la haya pisado.
+			Vector2 reposo = _escalaReposoBoton[btn];
+			btn.CreateTween().TweenProperty(btn, "scale", reposo, 0.15f)
 				.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
 			aura.CreateTween().TweenProperty(aura, "self_modulate:a", 0.0f, 0.2f);
 		};
 		btn.ButtonDown += () =>
 		{
 			if (btn.Disabled) return;
+			Vector2 reposo = _escalaReposoBoton[btn];
 			Tween tw = btn.CreateTween().SetParallel(true);
-			tw.TweenProperty(btn, "scale", escalaBase * 0.92f, 0.06f);
+			tw.TweenProperty(btn, "scale", reposo * 0.92f, 0.06f);
 			tw.TweenProperty(btn, "modulate", new Color(0.7f, 0.7f, 0.7f), 0.06f);
 		};
 		btn.ButtonUp += () =>
 		{
+			Vector2 reposo = _escalaReposoBoton[btn];
 			Tween tw = btn.CreateTween().SetParallel(true);
-			tw.TweenProperty(btn, "scale", escalaBase, 0.12f)
+			tw.TweenProperty(btn, "scale", reposo, 0.12f)
 				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 			tw.TweenProperty(btn, "modulate", Colors.White, 0.12f);
 		};
+	}
+
+	// Se llama cada vez que cambia modoSacrificioActivo: el botón de sacrificio queda agrandado de
+	// forma persistente mientras el modo está activo (no solo mientras el mouse está encima), para
+	// que sea obvio en todo momento "estoy a punto de matar una tropa, no me confíe".
+	private void ActualizarEscalaBotonSacrificio()
+	{
+		if (btnSacrificio == null || !_escalaReposoBoton.ContainsKey(btnSacrificio)) return;
+		Vector2 escalaOriginal = _escalaOriginalBtnSacrificio;
+		Vector2 nuevoReposo = modoSacrificioActivo ? escalaOriginal * 1.18f : escalaOriginal;
+		_escalaReposoBoton[btnSacrificio] = nuevoReposo;
+		btnSacrificio.CreateTween().TweenProperty(btnSacrificio, "scale", nuevoReposo, 0.15f)
+			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 	}
 
 	private int  Gi(Node2D n, string p) { try { return (int)n.Get(p); } catch { return 0; } }
