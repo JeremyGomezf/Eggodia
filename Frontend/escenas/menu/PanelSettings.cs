@@ -19,8 +19,30 @@ public partial class PanelSettings : PanelContainer
 	// mostrar sus botones (CONTINUAR/OPCIONES/RENDIRSE), que se ocultan mientras se ven los ajustes.
 	public System.Action AlCerrar;
 
+	// Escala visual del panel (1 = tamaño normal). El menú principal lo pone un poco más chico; el
+	// menú de pausa (VS BOT) lo deja en 1. Se aplica centrado para no descolocar el panel.
+	private float _escala = 1f;
+
+	public void FijarEscala(float s)
+	{
+		_escala = s;
+		AplicarEscalaCentrada();
+	}
+
+	private void AplicarEscalaCentrada()
+	{
+		if (!IsInsideTree()) return;
+		PivotOffset = Size / 2f;                 // pivote al centro (tras el layout) → no se descentra
+		Scale = new Vector2(_escala, _escala);
+	}
+
 	public override void _Ready()
 	{
+		// Reaplicar la escala cuando el panel se dimensiona o se muestra (ahí ya tiene Size real y el
+		// pivote queda bien centrado).
+		Resized += AplicarEscalaCentrada;
+		VisibilityChanged += AplicarEscalaCentrada;
+
 		_sliderVolumen   = GetNodeOrNull<HSlider>("Margin/VBox/HBoxVolumen/SliderVolumen");
 		_btnMute         = GetNodeOrNull<Button>("Margin/VBox/BtnMute");
 		_btnCerrar       = GetNodeOrNull<Button>("Margin/VBox/BtnCerrar");

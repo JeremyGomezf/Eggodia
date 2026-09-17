@@ -34,7 +34,7 @@ public partial class MenuPrincipal : Control
 	private AnimatedSprite2D _reyHuevoAnimado;
 
 	private Label _lblCoins;
-	private PanelContainer _panelSettings;
+	private PanelSettings _panelSettings;
 	private PanelContainer _popupDialog;
 
 	// Posiciones iniciales
@@ -78,7 +78,9 @@ public partial class MenuPrincipal : Control
 		}
 
 		// 2. Obtener UI de ajustes y diálogos
-		_panelSettings = GetNodeOrNull<PanelContainer>("PanelSettings");
+		_panelSettings = GetNodeOrNull<PanelSettings>("PanelSettings");
+		// En el menú principal el panel de ajustes va un poco más chico que en la partida (VS BOT).
+		_panelSettings?.FijarEscala(0.9f);
 		_popupDialog   = GetNodeOrNull<PanelContainer>("PopupDialog");
 
 		// 3a. Botones del layout antiguo (VBoxContainer)
