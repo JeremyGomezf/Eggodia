@@ -11,7 +11,6 @@ public partial class PanelSettings : PanelContainer
 	private Button _btnCerrar;
 	private Button _btnComoJugar;
 	private Button _btnCerrarSesion;
-	private CheckButton _chkFullscreen;
 	private CheckButton _chkScreenShake;
 
 	public static bool ScreenShakeEnabled { get; set; } = true;
@@ -23,19 +22,23 @@ public partial class PanelSettings : PanelContainer
 		_btnCerrar       = GetNodeOrNull<Button>("Margin/VBox/BtnCerrar");
 		_btnComoJugar    = GetNodeOrNull<Button>("Margin/VBox/BtnComoJugar");
 		_btnCerrarSesion = GetNodeOrNull<Button>("Margin/VBox/BtnCerrarSesion");
-		_chkFullscreen   = GetNodeOrNull<CheckButton>("Margin/VBox/ChkFullscreen");
 		_chkScreenShake  = GetNodeOrNull<CheckButton>("Margin/VBox/ChkScreenShake");
 
 		if (_btnCerrar != null) _btnCerrar.Pressed += Ocultar;
 
 		// Disponibles sin importar si la sesión es de invitado o de una cuenta real.
+		// IMPORTANTE: este panel también se abre desde el menú de PAUSA (VS BOT), donde el árbol está
+		// PAUSADO (GetTree().Paused = true). Si se cambia de escena sin despausar, la escena nueva nace
+		// congelada y no responde a nada (no se puede tocar ni volver). Por eso se despausa SIEMPRE antes
+		// de navegar (en el menú principal no está pausado, así que despausar ahí no molesta).
 		if (_btnComoJugar != null)
-			_btnComoJugar.Pressed += () => GetTree().ChangeSceneToFile(RUTA_COMO_JUGAR);
+			_btnComoJugar.Pressed += () => { GetTree().Paused = false; GetTree().ChangeSceneToFile(RUTA_COMO_JUGAR); };
 
 		if (_btnCerrarSesion != null)
 			_btnCerrarSesion.Pressed += () =>
 			{
 				SesionJuego.Instance?.CerrarSesion();
+				GetTree().Paused = false;
 				GetTree().ChangeSceneToFile(RUTA_LOGIN);
 			};
 
@@ -56,17 +59,6 @@ public partial class PanelSettings : PanelContainer
 				};
 			}
 			ActualizarUI();
-		}
-
-		if (_chkFullscreen != null)
-		{
-			_chkFullscreen.ButtonPressed = DisplayServer.WindowGetMode() == DisplayServer.WindowMode.Fullscreen;
-			_chkFullscreen.Toggled += (on) =>
-			{
-				DisplayServer.WindowSetMode(on
-					? DisplayServer.WindowMode.Fullscreen
-					: DisplayServer.WindowMode.Windowed);
-			};
 		}
 
 		if (_chkScreenShake != null)
