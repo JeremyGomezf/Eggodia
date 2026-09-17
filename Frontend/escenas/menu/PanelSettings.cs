@@ -29,10 +29,10 @@ public partial class PanelSettings : PanelContainer
 		// Disponibles sin importar si la sesión es de invitado o de una cuenta real.
 		// IMPORTANTE: este panel también se abre desde el menú de PAUSA (VS BOT), donde el árbol está
 		// PAUSADO (GetTree().Paused = true). Si se cambia de escena sin despausar, la escena nueva nace
-		// congelada y no responde a nada (no se puede tocar ni volver). Por eso se despausa SIEMPRE antes
-		// de navegar (en el menú principal no está pausado, así que despausar ahí no molesta).
+		// congelada y no responde a nada. Y "Cómo jugar" desde una partida NO debe cambiar de escena
+		// (destruiría la partida y al volver caías al menú): se muestra como CAPA encima. Ver AbrirComoJugar.
 		if (_btnComoJugar != null)
-			_btnComoJugar.Pressed += () => { GetTree().Paused = false; GetTree().ChangeSceneToFile(RUTA_COMO_JUGAR); };
+			_btnComoJugar.Pressed += AbrirComoJugar;
 
 		if (_btnCerrarSesion != null)
 			_btnCerrarSesion.Pressed += () =>
@@ -66,6 +66,33 @@ public partial class PanelSettings : PanelContainer
 			_chkScreenShake.ButtonPressed = ScreenShakeEnabled;
 			_chkScreenShake.Toggled += (on) => ScreenShakeEnabled = on;
 		}
+	}
+
+	// Abre "Cómo jugar". Si venimos de una partida en curso (árbol pausado, p. ej. VS BOT desde la
+	// pausa), la muestra como CAPA encima de la partida SIN destruirla: "volver" cierra la capa y sigues
+	// en la partida. Desde el menú principal (no pausado) se comporta como antes: cambia de escena.
+	private void AbrirComoJugar()
+	{
+		var escena = GD.Load<PackedScene>(RUTA_COMO_JUGAR);
+
+		if (GetTree().Paused && escena != null)
+		{
+			// Capa que procesa AUNQUE el juego esté pausado (Always), por encima de todo.
+			var capa = new CanvasLayer { Layer = 400, ProcessMode = Node.ProcessModeEnum.Always };
+			var guia = escena.Instantiate<PantallaComoJugar>();
+			guia.EnModoCapa = true;
+			guia.AlVolver   = () => { if (Godot.GodotObject.IsInstanceValid(capa)) capa.QueueFree(); };
+			capa.AddChild(guia);
+			// Se cuelga de la escena actual (la partida): así, si la partida se cierra por lo que sea,
+			// la capa se libera con ella y no queda huérfana. Layer alto = por encima de todo.
+			Node destino = GetTree().CurrentScene ?? GetTree().Root;
+			destino.AddChild(capa);
+			return;
+		}
+
+		// Menú principal (sin partida): navegación normal.
+		GetTree().Paused = false;
+		GetTree().ChangeSceneToFile(RUTA_COMO_JUGAR);
 	}
 
 	private void ActualizarUI()
