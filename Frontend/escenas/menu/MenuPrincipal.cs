@@ -35,6 +35,7 @@ public partial class MenuPrincipal : Control
 
 	private Label _lblCoins;
 	private PanelSettings _panelSettings;
+	private ColorRect _bloqueadorAjustes; // backdrop modal: bloquea el menú mientras Opciones está abierto
 	private PanelContainer _popupDialog;
 
 	// Posiciones iniciales
@@ -835,7 +836,45 @@ public partial class MenuPrincipal : Control
 
 	private void MostrarSettings()
 	{
-		if (_panelSettings != null) _panelSettings.Visible = true;
+		if (_panelSettings == null) return;
+		// Modal: mientras Opciones esté abierto NO se puede tocar nada del menú detrás (hay que CERRAR).
+		MostrarBloqueadorAjustes();
+		_panelSettings.AlCerrar = OcultarBloqueadorAjustes; // al cerrar el panel, quitar el bloqueo
+		_panelSettings.Visible = true;
+	}
+
+	// Coloca (o reutiliza) un backdrop a pantalla completa JUSTO debajo del panel de Opciones: come
+	// todos los clics/toques (MouseFilter=Stop) → los botones del menú detrás quedan intocables hasta
+	// cerrar. También oscurece un poco para señalar que es modal.
+	private void MostrarBloqueadorAjustes()
+	{
+		Node padre = _panelSettings.GetParent();
+		if (padre == null) return;
+
+		if (_bloqueadorAjustes == null || !GodotObject.IsInstanceValid(_bloqueadorAjustes))
+		{
+			_bloqueadorAjustes = new ColorRect
+			{
+				Name        = "BloqueadorAjustes",
+				Color       = new Color(0.03f, 0.04f, 0.07f, 0.6f),
+				MouseFilter = Control.MouseFilterEnum.Stop
+			};
+			_bloqueadorAjustes.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+			padre.AddChild(_bloqueadorAjustes);
+		}
+
+		// Orden de dibujo (robusto en cada reapertura): el backdrop al tope y el panel justo encima de
+		// él. Así el backdrop tapa TODOS los botones del menú (hijos anteriores) y el panel queda visible
+		// por encima del backdrop.
+		padre.MoveChild(_bloqueadorAjustes, -1);
+		padre.MoveChild(_panelSettings, -1);
+		_bloqueadorAjustes.Visible = true;
+	}
+
+	private void OcultarBloqueadorAjustes()
+	{
+		if (_bloqueadorAjustes != null && GodotObject.IsInstanceValid(_bloqueadorAjustes))
+			_bloqueadorAjustes.Visible = false;
 	}
 
 	/// <summary>Antes esta validación pasaba al confirmar el mazo en el Constructor (botón
