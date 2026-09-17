@@ -17,31 +17,26 @@ using Godot;
 /// </summary>
 public partial class EscaladoPantalla : Node
 {
-	// Por debajo de este umbral se considera "pantalla no alargada" (PC/tablet) y se activa el
-	// letterbox; por encima (celulares largos tipo 20:9) se deja el comportamiento original.
-	private const float UMBRAL_ASPECTO_LARGO = 1.9f;
-
-	// Caja objetivo 20:9 real para el letterbox — misma proporción que window_width/height_override
-	// (1200x540) en project.godot, pero al doble de resolución para que no se vea borroso.
-	private static readonly Vector2I CAJA_20_9 = new Vector2I(2400, 1080);
+	// Base de diseño (la misma del viewport del proyecto). Con "Expand" y esta base, cualquier
+	// pantalla ANCHA (≥16:9: TODOS los celulares y los monitores 16:9) se comporta EXACTAMENTE igual
+	// que el "keep_height" del proyecto — o sea, los celulares no cambian nada.
+	private static readonly Vector2I BASE_DISENO = new Vector2I(1920, 1080);
 
 	public override void _Ready()
 	{
-		Vector2I tam = DisplayServer.ScreenGetSize();
-		float mayor = Mathf.Max(tam.X, tam.Y);
-		float menor = Mathf.Min(tam.X, tam.Y);
-		if (menor <= 0f) return;
-		float aspecto = mayor / menor;
+		// LLENAR SIEMPRE la pantalla, sin barras "modo cine", manteniendo la proporción de los
+		// elementos. "Expand" nunca distorsiona ni recorta la interfaz/botonera: en pantallas más
+		// cuadradas que 16:9 (PC, app de escritorio, tablets) simplemente muestra un poco más de área
+		// en lugar de poner barras negras. Reemplaza el letterbox anterior, que hacía que el combate
+		// (VS BOT y online) se viera "modo cine" en esas pantallas.
+		//
+		// Importante: para toda pantalla ≥16:9 (celulares 19.5:9/20:9, monitores 16:9) esto da el mismo
+		// resultado que el keep_height del proyecto → las posiciones, la botonera y la cámara del
+		// combate quedan idénticas; solo cambia (a mejor) en pantallas más cuadradas.
+		GetTree().Root.ContentScaleSize   = BASE_DISENO;
+		GetTree().Root.ContentScaleAspect = Window.ContentScaleAspectEnum.Expand;
 
-		if (aspecto < UMBRAL_ASPECTO_LARGO)
-		{
-			GetTree().Root.ContentScaleSize   = CAJA_20_9;
-			GetTree().Root.ContentScaleAspect = Window.ContentScaleAspectEnum.Keep;
-			GD.Print($"[EscaladoPantalla] Pantalla {tam.X}x{tam.Y} (aspecto {aspecto:0.00}) → letterbox 20:9 activado.");
-		}
-		else
-		{
-			GD.Print($"[EscaladoPantalla] Pantalla {tam.X}x{tam.Y} (aspecto {aspecto:0.00}) → sin cambios (celular largo).");
-		}
+		Vector2I tam = DisplayServer.ScreenGetSize();
+		GD.Print($"[EscaladoPantalla] Pantalla {tam.X}x{tam.Y} → Expand (llenar sin barras, sin distorsionar).");
 	}
 }
