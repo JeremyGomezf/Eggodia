@@ -93,6 +93,11 @@ public partial class PanelSettings : PanelContainer
 		{
 			_chkScreenShake.ButtonPressed = ScreenShakeEnabled;
 			_chkScreenShake.Toggled += (on) => ScreenShakeEnabled = on;
+			// El switch de Godot es chico y no se puede agrandar con icon_max_width (solo achica). Se
+			// agranda escalando el nodo (switch + texto) con el pivote al centro, sin desbordar. Se
+			// reaplica al redimensionarse para tener el tamaño real. Aplica a menú principal y VS BOT.
+			_chkScreenShake.Resized += AgrandarSwitchVibracion;
+			Callable.From(AgrandarSwitchVibracion).CallDeferred();
 		}
 	}
 
@@ -134,6 +139,14 @@ public partial class PanelSettings : PanelContainer
 
 	// Oculta el botón "CERRAR SESIÓN". Lo usa el menú de pausa (VS BOT): no tiene sentido cerrar sesión
 	// a mitad de una partida. En el menú principal el botón sigue visible.
+	private const float ESCALA_SWITCH_VIBRACION = 1.45f;
+	private void AgrandarSwitchVibracion()
+	{
+		if (_chkScreenShake == null) return;
+		_chkScreenShake.PivotOffset = _chkScreenShake.Size / 2f; // centro → escala sin descolocar
+		_chkScreenShake.Scale = new Vector2(ESCALA_SWITCH_VIBRACION, ESCALA_SWITCH_VIBRACION);
+	}
+
 	public void OcultarCerrarSesion()
 	{
 		if (_btnCerrarSesion == null)
