@@ -4,14 +4,14 @@ using System;
 public partial class MenuPausa : CanvasLayer
 {
 	private ColorRect _overlay;
-	private PanelContainer _panelSettings;
+	private PanelSettings _panelSettings;
 	private VBoxContainer _vboxPausa;
 	private PanelContainer _panelConfirmacion;
 
 	public override void _Ready()
 	{
 		_overlay = GetNode<ColorRect>("Overlay");
-		_panelSettings = GetNodeOrNull<PanelContainer>("PanelSettings");
+		_panelSettings = GetNodeOrNull<PanelSettings>("PanelSettings");
 		_vboxPausa = GetNode<VBoxContainer>("Overlay/VBox");
 		_panelConfirmacion = GetNode<PanelContainer>("Overlay/PanelConfirmacion");
 
@@ -40,7 +40,7 @@ public partial class MenuPausa : CanvasLayer
 			{
 				if (_panelSettings != null && _panelSettings.Visible)
 				{
-					_panelSettings.Visible = false;
+					CerrarSettings();
 				}
 				else if (_panelConfirmacion.Visible)
 				{
@@ -75,7 +75,22 @@ public partial class MenuPausa : CanvasLayer
 
 	private void AbrirSettings()
 	{
-		if (_panelSettings != null) _panelSettings.Visible = true;
+		if (_panelSettings == null) return;
+		// Ocultar los botones de pausa mientras se ven los ajustes (si no, asoman por detrás del panel).
+		_vboxPausa.Visible = false;
+		_panelSettings.AlCerrar = CerrarSettings; // al cerrar los ajustes, restaurar los botones de pausa
+		_panelSettings.Visible = true;
+	}
+
+	// Cierra el panel de ajustes y vuelve a mostrar los botones de pausa.
+	private void CerrarSettings()
+	{
+		if (_panelSettings != null)
+		{
+			_panelSettings.AlCerrar = null;       // evitar recursión si se cierra por el botón CERRAR
+			_panelSettings.Visible = false;
+		}
+		_vboxPausa.Visible = true;
 	}
 
 	private void MostrarConfirmacion()

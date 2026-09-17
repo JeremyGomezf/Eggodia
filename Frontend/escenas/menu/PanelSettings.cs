@@ -15,6 +15,10 @@ public partial class PanelSettings : PanelContainer
 
 	public static bool ScreenShakeEnabled { get; set; } = true;
 
+	// Se invoca al cerrar el panel (botón CERRAR / Ocultar). Lo usa el menú de pausa para volver a
+	// mostrar sus botones (CONTINUAR/OPCIONES/RENDIRSE), que se ocultan mientras se ven los ajustes.
+	public System.Action AlCerrar;
+
 	public override void _Ready()
 	{
 		_sliderVolumen   = GetNodeOrNull<HSlider>("Margin/VBox/HBoxVolumen/SliderVolumen");
@@ -112,5 +116,6 @@ public partial class PanelSettings : PanelContainer
 	public void Ocultar()
 	{
 		Visible = false;
+		AlCerrar?.Invoke();
 	}
 }
