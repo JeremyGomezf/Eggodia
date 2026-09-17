@@ -27,6 +27,8 @@ public partial class PanelSettings : PanelContainer
 	{
 		_escala = s;
 		AplicarEscalaCentrada();
+		// Reaplicar tras el primer layout (cuando ya hay Size real), por si se fijó estando oculto.
+		Callable.From(AplicarEscalaCentrada).CallDeferred();
 	}
 
 	private void AplicarEscalaCentrada()
