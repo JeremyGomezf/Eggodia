@@ -33,7 +33,7 @@ corner_radius_bottom_left = 12
 
 [node name="PanelSettings" type="PanelContainer"]
 process_mode = 3
-custom_minimum_size = Vector2(620, 0)
+custom_minimum_size = Vector2(760, 0)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -46,35 +46,35 @@ script = ExtResource("1_psett")
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 2
-theme_override_constants/margin_left = 44
-theme_override_constants/margin_top = 36
-theme_override_constants/margin_right = 44
-theme_override_constants/margin_bottom = 36
+theme_override_constants/margin_left = 52
+theme_override_constants/margin_top = 44
+theme_override_constants/margin_right = 52
+theme_override_constants/margin_bottom = 44
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 18
+theme_override_constants/separation = 22
 
 [node name="Titulo" type="Label" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 46
+theme_override_font_sizes/font_size = 54
 theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 text = "AJUSTES"
 horizontal_alignment = 1
 
 [node name="HBoxVolumen" type="HBoxContainer" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 56)
+custom_minimum_size = Vector2(0, 66)
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 26
 
 [node name="LabelVolumen" type="Label" parent="Margin/VBox/HBoxVolumen"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 34
 theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
 text = "Volumen:"
 
 [node name="SliderVolumen" type="HSlider" parent="Margin/VBox/HBoxVolumen"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -83,33 +83,35 @@ step = 0.05
 value = 0.5
 
 [node name="BtnMute" type="Button" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 66)
+custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 34
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "SILENCIAR"
 
 [node name="ChkScreenShake" type="CheckButton" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 62)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
 theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
+theme_override_constants/h_separation = 24
+theme_override_constants/icon_max_width = 110
+theme_override_font_sizes/font_size = 36
 text = "Vibración de pantalla"
 button_pressed = true
 
 [node name="BtnComoJugar" type="Button" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 66)
+custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 34
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
 text = "CÓMO JUGAR"
 
 [node name="BtnCerrarSesion" type="Button" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 66)
+custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 34
 theme_override_colors/font_color = Color(1, 0.6, 0.55, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
@@ -117,13 +119,13 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
 text = "CERRAR SESIÓN"
 
 [node name="Spacer" type="Control" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 10)
+custom_minimum_size = Vector2(0, 14)
 layout_mode = 2
 
 [node name="BtnCerrar" type="Button" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 70)
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 36
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")

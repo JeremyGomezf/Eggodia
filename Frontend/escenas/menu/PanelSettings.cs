@@ -108,6 +108,15 @@ public partial class PanelSettings : PanelContainer
 		_btnMute.SelfModulate = isMuted ? Colors.LightGreen : new Color(1f, 0.4f, 0.4f);
 	}
 
+	// Oculta el botón "CERRAR SESIÓN". Lo usa el menú de pausa (VS BOT): no tiene sentido cerrar sesión
+	// a mitad de una partida. En el menú principal el botón sigue visible.
+	public void OcultarCerrarSesion()
+	{
+		if (_btnCerrarSesion == null)
+			_btnCerrarSesion = GetNodeOrNull<Button>("Margin/VBox/BtnCerrarSesion");
+		if (_btnCerrarSesion != null) _btnCerrarSesion.Visible = false;
+	}
+
 	public void Mostrar()
 	{
 		Visible = true;

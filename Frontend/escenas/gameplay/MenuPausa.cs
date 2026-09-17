@@ -12,6 +12,9 @@ public partial class MenuPausa : CanvasLayer
 	{
 		_overlay = GetNode<ColorRect>("Overlay");
 		_panelSettings = GetNodeOrNull<PanelSettings>("PanelSettings");
+		// Dentro de una partida (VS BOT) no se puede cerrar sesión: se oculta ese botón. En el menú
+		// principal el mismo panel sí lo muestra.
+		_panelSettings?.OcultarCerrarSesion();
 		_vboxPausa = GetNode<VBoxContainer>("Overlay/VBox");
 		_panelConfirmacion = GetNode<PanelContainer>("Overlay/PanelConfirmacion");
 
