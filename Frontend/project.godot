@@ -14,9 +14,9 @@ config/name="Eggodia"
 config/version="1.0.8"
 run/main_scene="res://escenas/menu/PantallaCarga.tscn"
 config/features=PackedStringArray("4.7", "C#", "Mobile")
+run/max_fps=30
 config/icon="uid://d2fpu5k7c3qi6"
 config/windows_native_icon="res://Eggodia_ICONO.ico"
-run/max_fps=30
 
 [autoload]
 
