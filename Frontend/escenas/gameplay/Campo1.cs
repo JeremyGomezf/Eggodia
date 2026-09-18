@@ -102,10 +102,16 @@ public partial class Campo1 : Node2D
 	public  const int ENERGIA_MAXIMA   = 3; // fija, sin escalado por turno
 	public  bool esTurnoJugador        = true;
 	public  bool EsOnline              = false; // partida en línea (rival humano en vez de CPU)
-	// Modo "solo visual": cuando el rival REPRODUCE una jugada en línea, ejecuta la misma acción real
-	// (animaciones + efectos) pero SIN mutar el estado (daño/vida/muerte). Los números autoritativos
-	// llegan por el snapshot (ReconciliarLigero). Así el online se ve como VS BOT sin duplicar daño.
+	// Modo "solo visual": true durante TODO el turno del rival en línea. Mientras está activo, este
+	// cliente reproduce las jugadas del rival con sus animaciones/efectos reales pero NO muta el estado
+	// (RecibirDaño, muerte de tropas y avisos de texto quedan en no-op); los números autoritativos los
+	// pone el snapshot (ReconciliarLigero). Al ser por-turno (no solo durante la llamada síncrona)
+	// también cubre el daño DIFERIDO por fotograma de los efectos. Se resetea en _Ready de cada partida.
 	public static bool SoloVisualOnline = false;
+	// Suprime los avisos de texto SOLO durante la reproducción síncrona de una acción del rival (para
+	// que no salgan mensajes con la perspectiva del que actúa, "¡Envenenaste a…!"). Es transitorio, no
+	// por-turno, para NO ocultar avisos legítimos (ej. "el rival se desconectó"). Ver EjecutarVisualOnline.
+	public static bool SuprimiendoAvisosOnline = false;
 	public  int  movimientosRestantes  = ENERGIA_MAXIMA;
 	public  const int DURACION_TURNO_SEG = 30;
 	private int  tiempoTurnoActual     = DURACION_TURNO_SEG;
@@ -313,6 +319,12 @@ public partial class Campo1 : Node2D
 	// ══════════════════════════════════════════════════════════════════════
 	public override void _Ready()
 	{
+		// Pizarra limpia para el flag estático de reproducción online: cada partida (bot u online)
+		// arranca con el daño local ACTIVO. Sin esto, si una partida online quedó con el flag en true,
+		// se filtraría a la siguiente partida y no se aplicaría daño (romperia el bot).
+		SoloVisualOnline = false;
+		SuprimiendoAvisosOnline = false;
+
 		// La cámara manual (posición/zoom/rotación fijados en el editor) debe quedar
 		// activa siempre: el motor no la respeta si no se declara "current" en runtime.
 		GetNodeOrNull<Camera2D>("Camera2D")?.MakeCurrent();

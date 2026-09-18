@@ -163,7 +163,11 @@ public partial class Campo1 : Node2D
 
 	private void IniciarEsperaOnline()
 	{
-		MostrarAviso("Turno del rival…", new Color(1f, 0.85f, 0.4f));
+		MostrarAviso("Turno del rival…", new Color(1f, 0.85f, 0.4f)); // este aviso SÍ debe verse (aún no está el flag)
+		// A partir de acá y durante todo el turno del rival, este cliente NO aplica daño/muerte local: todo
+		// lo que llega del rival se reproduce SOLO visualmente y los números los pone el snapshot. Cubre
+		// también el daño diferido por fotograma de los efectos.
+		SoloVisualOnline = true;
 		if (_timerPollAcc != null && _timerPollAcc.IsStopped()) _timerPollAcc.Start();
 	}
 
@@ -194,15 +198,16 @@ public partial class Campo1 : Node2D
 		catch { }
 	}
 
-	// Corre una reproducción en modo "solo visual" (sin mutar estado) y SIEMPRE resetea el flag, aunque
-	// falle. Así una habilidad rara del rival no puede crashear ni dejar el flag pegado (que bloquearía
-	// el daño real en el resto de la partida).
+	// Corre una reproducción de la jugada del rival, capturando cualquier error para que una habilidad
+	// rara no crashee la partida. El modo "solo visual" NO se activa aquí: está activo durante TODO el
+	// turno del rival (SoloVisualOnline, ver IniciarEsperaOnline/IniciarMiTurnoOnline), para que también
+	// cubra el daño DIFERIDO por fotograma (efectos que golpean unos frames después de spawnearse).
 	private void EjecutarVisualOnline(Action accion)
 	{
-		SoloVisualOnline = true;
+		SuprimiendoAvisosOnline = true; // no mostrar toasts con la perspectiva del rival durante la repro
 		try { accion(); }
 		catch (Exception e) { GD.PrintErr($"[Online] Error reproduciendo efecto visual: {e.Message}"); }
-		finally { SoloVisualOnline = false; }
+		finally { SuprimiendoAvisosOnline = false; }
 	}
 
 	private void ReproducirAccion(string accionJson)
@@ -364,6 +369,8 @@ public partial class Campo1 : Node2D
 	{
 		if (_timerPollAcc != null && !_timerPollAcc.IsStopped()) _timerPollAcc.Stop();
 
+		// Empieza MI turno: vuelve a aplicarse el daño/estado local normal (yo soy el que actúa).
+		SoloVisualOnline = false;
 		esTurnoJugador = true;
 		_turnoFinalizando = false;
 		tiempoTurnoActual = DURACION_TURNO_SEG;
@@ -444,6 +451,7 @@ public partial class Campo1 : Node2D
 	// cualquier otro = perdí. Se usa tanto para desconexión (latido) como para fin normal (arbitraje).
 	private void ResolverResultadoOnline(string resultado)
 	{
+		SoloVisualOnline = false; // fin de la partida: se restablece el daño local normal
 		if (juegoTerminado) return;
 		if (_timerLatido != null && !_timerLatido.IsStopped()) _timerLatido.Stop();
 		if (_timerPollAcc != null && !_timerPollAcc.IsStopped()) _timerPollAcc.Stop();
