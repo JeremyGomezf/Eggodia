@@ -15,7 +15,15 @@ public partial class MenuPrincipal : Control
 		if (btnTrofeo == null) return;
 
 		AgregarAnimacionHover(btnTrofeo);
-		btnTrofeo.Pressed += MostrarPantallaTrofeos;
+		// Abre el ranking REAL del servidor (PanelRanking baja el top 20 y resalta al jugador). Antes
+		// abría una pantalla placeholder que solo te mostraba a ti y decía "próximamente". Ahora se ve
+		// para todos (invitados incluidos, aunque un invitado no aparece porque no tiene cuenta).
+		btnTrofeo.Pressed += () =>
+		{
+			var panel = new PanelRanking();
+			AddChild(panel);
+			panel.Mostrar();
+		};
 
 		// Difuminado morado claro detrás del botón + un par de estrellitas titilando delante,
 		// indicando "acá hay competencia".
