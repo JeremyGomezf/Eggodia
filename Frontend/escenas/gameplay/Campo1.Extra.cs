@@ -60,6 +60,9 @@ public partial class Campo1 : Node2D
 	// transformas") lo llaman desde afuera vía campo.Call("MostrarAviso", ...).
 	public void MostrarAviso(string texto, Color color)
 	{
+		// Durante la reproducción visual de una jugada del rival (online) NO se muestran avisos: el texto
+		// está escrito desde la perspectiva del que actúa ("¡Envenenaste a…!") y saldría al revés.
+		if (SoloVisualOnline) return;
 		// y=230: un poco más arriba que antes (300), pidiendo seguir debajo del bloque superior
 		// (barras HP, Tiempo, Turno) pero sin quedar tan abajo en el tablero.
 		MostrarAvisoCentrado(ConstruirToast(texto, color, 26), 230f, DURACION_TOAST);

@@ -102,6 +102,10 @@ public partial class Campo1 : Node2D
 	public  const int ENERGIA_MAXIMA   = 3; // fija, sin escalado por turno
 	public  bool esTurnoJugador        = true;
 	public  bool EsOnline              = false; // partida en línea (rival humano en vez de CPU)
+	// Modo "solo visual": cuando el rival REPRODUCE una jugada en línea, ejecuta la misma acción real
+	// (animaciones + efectos) pero SIN mutar el estado (daño/vida/muerte). Los números autoritativos
+	// llegan por el snapshot (ReconciliarLigero). Así el online se ve como VS BOT sin duplicar daño.
+	public static bool SoloVisualOnline = false;
 	public  int  movimientosRestantes  = ENERGIA_MAXIMA;
 	public  const int DURACION_TURNO_SEG = 30;
 	private int  tiempoTurnoActual     = DURACION_TURNO_SEG;

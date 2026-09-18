@@ -69,6 +69,31 @@ public partial class Campo1 : Node2D
 	// en Campo1.RoboCarta.cs porque no aplica un efecto directo sino que abre la mini-pantalla de
 	// robo. Devuelve false si el objetivo no era válido (para que quien llama pueda hacer que la
 	// carta regrese a la mano en vez de gastarse).
+	// Reproducción VISUAL (online) del efecto de un hechizo del rival, por Id, sobre el objetivo ya
+	// resuelto (carril espejado). Reusa los MISMOS helpers que el lanzamiento local; corre en modo
+	// SoloVisualOnline (sin daño real; los números vienen del snapshot; los avisos quedan suprimidos).
+	// Es ADITIVO: SOLO lo llama el rival al reproducir, nunca el juego local → no puede romper el bot.
+	public void ReproducirHechizoVisual(string id, Node2D objetivo)
+	{
+		if (!IsInstanceValid(objetivo)) return;
+		switch (id)
+		{
+			case "veneno":
+				objetivo.SetMeta("envenenado", true); objetivo.SetMeta("danoVeneno", 50); objetivo.SetMeta("turnosVeneno", 3);
+				objetivo.Modulate = COLOR_VENENO; ActualizarIconosEstado(objetivo); break;
+			case "bloqueo":
+				if (objetivo.HasMethod("AlSerBloqueado")) objetivo.Call("AlSerBloqueado");
+				objetivo.SetMeta("bloqueado", true); objetivo.SetMeta("turnosBloqueo", 2);
+				objetivo.Modulate = COLOR_BLOQUEO; ActualizarIconosEstado(objetivo); break;
+			case "curacion":     AplicarCuracion(objetivo);     break;
+			case "encebollado":  AplicarEncebollado(objetivo);  break;
+			case "desprotegido": AplicarDesprotegido(objetivo); break;
+			case "debil":        AplicarDebil(objetivo);        break;
+			case "escudo":       AplicarEscudo(objetivo);       break;
+			case "fuerza":       AplicarFuerza(objetivo);       break;
+		}
+	}
+
 	private bool AplicarHechizoADestino(int pi, Node2D objetivo)
 	{
 		if (pi < 0 || pi >= _poolActivo.Length) return false;

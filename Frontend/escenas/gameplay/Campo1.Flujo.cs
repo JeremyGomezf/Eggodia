@@ -130,11 +130,12 @@ public partial class Campo1 : Node2D
 		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
 		if (EstaBlockeada(tropaSeleccionada) || Gi(tropaSeleccionada, "escudoActual") <= 0)
 		{ menuAcciones.Visible = false; return; }
+		string carrilDef = tropaSeleccionada.HasMeta("carril") ? (string)tropaSeleccionada.GetMeta("carril") : "";
 		tropaSeleccionada.Call("EjecutarAccion", "preparar_defensa");
 		tropaSeleccionada.Call("SetActivo", false);
 		menuAcciones.Visible = false;
 		RegistrarGastoMovimiento();
-		if (EsOnline) EmitirAccionOnline("sync");
+		if (EsOnline) EmitirAccionOnline("defensa", new Godot.Collections.Dictionary { { "carrilDef", carrilDef } });
 	}
 
 	public void _on_btn_habilidad_pressed()
@@ -352,6 +353,9 @@ public partial class Campo1 : Node2D
 	public void EjecutarMuerteTropaSacrificada(Node2D tropa)
 	{
 		if (!IsInstanceValid(tropa)) return;
+		// En reproducción visual (online) no se mata nada: quién vive o muere lo decide el snapshot
+		// (ReconciliarLigero). Así una habilidad reproducida no elimina una tropa que sigue viva.
+		if (SoloVisualOnline) return;
 
 		// Si esta tropa estaba atrapada por los tentáculos del Calamar, se liberan de
 		// inmediato al morir (sin esperar al próximo tick de daño cada 10s).

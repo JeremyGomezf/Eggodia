@@ -173,7 +173,14 @@ public partial class Campo1 : Node2D
 		_hechizoUsadoEsteTurno = true;
 		AutoReemplazarHechizo(slotIdx);
 		RegistrarGastoMovimiento();
-		if (EsOnline) EmitirAccionOnline("sync"); // el snapshot lleva el efecto del hechizo al rival
+		if (EsOnline)
+		{
+			// Se envía el Id del hechizo y el carril del objetivo para que el rival reproduzca su efecto
+			// visual (color/ícono/animación), no solo el número del snapshot.
+			string carrilObj = objetivo.HasMeta("carril") ? (string)objetivo.GetMeta("carril") : "";
+			EmitirAccionOnline("hechizo", new Godot.Collections.Dictionary {
+				{ "hechizoId", _poolActivo[pi].Id }, { "carrilObjetivo", carrilObj } });
+		}
 		return true;
 	}
 

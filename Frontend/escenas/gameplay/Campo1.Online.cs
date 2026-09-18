@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
@@ -193,6 +194,17 @@ public partial class Campo1 : Node2D
 		catch { }
 	}
 
+	// Corre una reproducción en modo "solo visual" (sin mutar estado) y SIEMPRE resetea el flag, aunque
+	// falle. Así una habilidad rara del rival no puede crashear ni dejar el flag pegado (que bloquearía
+	// el daño real en el resto de la partida).
+	private void EjecutarVisualOnline(Action accion)
+	{
+		SoloVisualOnline = true;
+		try { accion(); }
+		catch (Exception e) { GD.PrintErr($"[Online] Error reproduciendo efecto visual: {e.Message}"); }
+		finally { SoloVisualOnline = false; }
+	}
+
 	private void ReproducirAccion(string accionJson)
 	{
 		if (string.IsNullOrEmpty(accionJson)) return;
@@ -207,13 +219,37 @@ public partial class Campo1 : Node2D
 		string tipo = acc.TryGetProperty("tipo", out var t) ? (t.GetString() ?? "") : "";
 		JsonElement datos = acc.TryGetProperty("datos", out var d) ? d : default;
 
-		// Animación específica del rival según la acción (el daño real llega en el snapshot).
+		// Reproducción VISUAL de la jugada del rival: se ejecuta la MISMA acción real (animación +
+		// efectos: proyectiles, fuego, misiles, etc.) pero en modo "solo visual" (SoloVisualOnline) →
+		// no aplica daño ni muerte; los números autoritativos llegan por el snapshot. Así el online se
+		// ve como VS BOT (ataques y habilidades con sus efectos) sin duplicar el daño.
 		if (tipo == "atacar" && datos.ValueKind == JsonValueKind.Object &&
 			datos.TryGetProperty("carrilAtacante", out var ca))
 		{
 			string carrilMio = EspejarCarril(ca.GetString() ?? "");
 			if (TropaEnCarril(carrilMio) is TropaBase atk && IsInstanceValid(atk))
-				atk.ReproducirSoloAnimacion("ataque");
+				EjecutarVisualOnline(() => atk.EjecutarAccion("atacar"));
+		}
+		else if (tipo == "habilidad" && datos.ValueKind == JsonValueKind.Object &&
+			datos.TryGetProperty("carrilHab", out var ch))
+		{
+			string carrilMio = EspejarCarril(ch.GetString() ?? "");
+			if (TropaEnCarril(carrilMio) is TropaBase hab && IsInstanceValid(hab))
+				EjecutarVisualOnline(() => hab.EjecutarAccion("usar_habilidad"));
+		}
+		else if (tipo == "hechizo" && datos.ValueKind == JsonValueKind.Object &&
+			datos.TryGetProperty("hechizoId", out var hid) && datos.TryGetProperty("carrilObjetivo", out var cobj))
+		{
+			string carrilMio = EspejarCarril(cobj.GetString() ?? "");
+			if (TropaEnCarril(carrilMio) is Node2D obj && IsInstanceValid(obj))
+				EjecutarVisualOnline(() => ReproducirHechizoVisual(hid.GetString() ?? "", obj));
+		}
+		else if (tipo == "defensa" && datos.ValueKind == JsonValueKind.Object &&
+			datos.TryGetProperty("carrilDef", out var cd))
+		{
+			string carrilMio = EspejarCarril(cd.GetString() ?? "");
+			if (TropaEnCarril(carrilMio) is TropaBase def && IsInstanceValid(def))
+				EjecutarVisualOnline(() => def.EjecutarAccion("preparar_defensa"));
 		}
 
 		// Reconciliar el tablero con el snapshot (la verdad): actualiza vidas, tropas y huevos.

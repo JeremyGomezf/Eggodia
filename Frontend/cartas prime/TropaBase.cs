@@ -166,6 +166,9 @@ public abstract partial class TropaBase : Area2D
 	public virtual void RecibirDaño(int cantidad)
 	{
 		if (_estaMuerto) return;
+		// En línea, cuando el rival REPRODUCE una jugada, no se aplica daño real ni muerte: solo corren
+		// los efectos/animaciones del atacante. La vida/estado autoritativos llegan por el snapshot.
+		if (Campo1.SoloVisualOnline) return;
 		EfectoGolpe();
 
 		if (_anim.Animation == "pre defensa")
