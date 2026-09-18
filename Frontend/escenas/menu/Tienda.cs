@@ -283,8 +283,13 @@ public partial class Tienda : Control
 		void ExitoLocal()
 		{
 			aplicarLocal();
-			MostrarMensaje($"¡{nombre} desbloqueado!", Colors.Gold);
-			GetTree().CreateTimer(1.2f).Timeout += () => GetTree().ReloadCurrentScene();
+			// El cartel tapa la pantalla mientras dura, y la recarga de la escena se dispara recién
+			// al final, con el fondo oscuro todavía puesto: así el "parpadeo" oscuro que antes
+			// aparecía suelto al recargar queda escondido detrás de un aviso que se ve a propósito.
+			MostrarAvisoDesbloqueo($"¡{nombre} desbloqueado!", () =>
+			{
+				if (IsInstanceValid(this)) GetTree()?.ReloadCurrentScene();
+			});
 		}
 		void SinMonedas() { MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; }
 
@@ -649,6 +654,54 @@ public partial class Tienda : Control
 
 		panel.AddChild(vbox);
 		return panel;
+	}
+
+	// Aviso grande de desbloqueo: fondo semioscuro a pantalla completa + texto grande con la
+	// misma tipografía de los botones del juego (Almendra-Bold). Dura ~1.5s visible y recién ahí
+	// llama a <paramref name="alTerminar"/> (la recarga de la tienda), de modo que el cambio de
+	// escena ocurre con la pantalla ya cubierta y no se ve como un parpadeo suelto.
+	private void MostrarAvisoDesbloqueo(string texto, Action alTerminar)
+	{
+		var capa = new CanvasLayer { Layer = 128 };
+		AddChild(capa);
+
+		var fondo = new ColorRect
+		{
+			Color = new Color(0f, 0f, 0f, 0.72f),
+			MouseFilter = Control.MouseFilterEnum.Stop, // bloquea clics mientras se muestra
+		};
+		fondo.SetAnchorsPreset(LayoutPreset.FullRect);
+		capa.AddChild(fondo);
+
+		var lbl = new Label
+		{
+			Text = texto,
+			HorizontalAlignment = HorizontalAlignment.Center,
+			VerticalAlignment = VerticalAlignment.Center,
+			AutowrapMode = TextServer.AutowrapMode.WordSmart,
+		};
+		lbl.SetAnchorsPreset(LayoutPreset.FullRect);
+		var fuente = ResourceLoader.Exists(RUTA_FUENTE_ALMENDRA) ? GD.Load<Font>(RUTA_FUENTE_ALMENDRA) : null;
+		if (fuente != null) lbl.AddThemeFontOverride("font", fuente);
+		lbl.AddThemeFontSizeOverride("font_size", 72);
+		lbl.AddThemeColorOverride("font_color", new Color(1f, 0.87f, 0.35f));
+		lbl.AddThemeConstantOverride("outline_size", 12);
+		lbl.AddThemeColorOverride("font_outline_color", new Color(0.1f, 0.05f, 0f, 0.95f));
+		capa.AddChild(lbl);
+
+		capa.Visible = true;
+		fondo.Modulate = new Color(1, 1, 1, 0);
+		lbl.Modulate   = new Color(1, 1, 1, 0);
+		lbl.Scale      = new Vector2(0.85f, 0.85f);
+		lbl.PivotOffset = lbl.Size / 2f;
+
+		var tw = CreateTween().SetParallel(true);
+		tw.TweenProperty(fondo, "modulate:a", 1f, 0.22f);
+		tw.TweenProperty(lbl, "modulate:a", 1f, 0.22f);
+		tw.TweenProperty(lbl, "scale", Vector2.One, 0.3f)
+			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		tw.Chain().TweenInterval(1.5f);
+		tw.Chain().TweenCallback(Callable.From(() => alTerminar?.Invoke()));
 	}
 
 	private async void MostrarMensaje(string texto, Color color)

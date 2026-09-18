@@ -69,7 +69,7 @@ public partial class MatchmakingOnline : Node
 		string cuerpo = JsonSerializer.Serialize(new {
 			jugadorId = _jugadorId,
 			nombre = _nombre,
-			skinIdx = Preferencias.SkinActivaIdx,
+			skinIdx = Preferencias.IndiceSkinParaOnline(), // incluye las skins exclusivas, no solo las de tienda
 			tronoIdx = Preferencias.TronoActivoIdx
 		});
 		string[] headers = { "Content-Type: application/json" };

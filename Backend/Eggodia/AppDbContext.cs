@@ -69,12 +69,14 @@ namespace Eggodia.API.Data
                 new Carta { Id=17, Nombre="Paper-Rex",       Tipo="Coloso",  Serie="Papeleo",  VidaMaxima=840, EscudoMaximo=0,   PuntosAtaque=370, RutaImagen="res://imagenes/CartasPng/PaperReXCart.png",  RutaEscena="res://cartas prime/PAPEL/TRex_prime.tscn",                Habilidad="Ignora cobertura/defensa, destroza la vida igual" }
             );
 
-            // ── SEED PROMO CODES (20 códigos: 10 Huevo Dorado + 10 Huevo Ecotec) ────
+            // ── SEED PROMO CODES (100 códigos: 50 Huevo Dorado + 50 Huevo Ecotec) ────
             modelBuilder.Entity<PromoCode>().HasData(GenerarCodigosPromo());
         }
 
-        // 20 códigos fijos: 10 para Huevo Dorado, 10 para Huevo Ecotec. Reemplaza el lote anterior
-        // de ~150 códigos genéricos — ver también CodigosSeed.TODOS (Program.cs), que aplica esta
+        // 100 códigos fijos: 50 para Huevo Dorado (dorado101huevo … dorado150huevo) y 50 para
+        // Huevo Ecotec (ecotec101huevo … ecotec150huevo). Los primeros 10 de cada uno son los
+        // mismos que ya existían, así que los códigos que ya se repartieron siguen valiendo — los
+        // nuevos son del 111 al 150. Ver también CodigosSeed.TODOS (Program.cs), que aplica esta
         // misma lista de forma idempotente contra una base de datos ya existente, porque HasData()
         // aquí solo siembra en una base creada desde cero (ver EnsureCreated en Program.cs).
         public static List<PromoCode> GenerarCodigosPromo()
@@ -82,7 +84,7 @@ namespace Eggodia.API.Data
             var codigos = new List<PromoCode>();
             int id = 1;
 
-            for (int i = 1; i <= 10; i++)
+            for (int i = 1; i <= 50; i++)
             {
                 codigos.Add(new PromoCode
                 {
@@ -95,7 +97,7 @@ namespace Eggodia.API.Data
                 });
             }
 
-            for (int i = 1; i <= 10; i++)
+            for (int i = 1; i <= 50; i++)
             {
                 codigos.Add(new PromoCode
                 {

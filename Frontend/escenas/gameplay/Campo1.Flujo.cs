@@ -494,8 +494,9 @@ public partial class Campo1 : Node2D
 	/// <summary>Skin real del rival humano, sincronizada al emparejar (ContextoOnline.RivalSkinIdx).</summary>
 	private PackedScene SkinRivalOnline()
 	{
-		int idx = Mathf.Clamp(ContextoOnline.RivalSkinIdx, 0, Preferencias.SKIN_ESCENAS.Length - 1);
-		string skinPath = Preferencias.SKIN_ESCENAS[idx];
+		// El índice puede apuntar tanto a una skin de tienda como a una EXCLUSIVA (dev o por
+		// código) — ver Preferencias.IndiceSkinParaOnline/EscenaSkinDesdeIndiceOnline.
+		string skinPath = Preferencias.EscenaSkinDesdeIndiceOnline(ContextoOnline.RivalSkinIdx);
 		return ResourceLoader.Exists(skinPath) ? GD.Load<PackedScene>(skinPath) : null;
 	}
 

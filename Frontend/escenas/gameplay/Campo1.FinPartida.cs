@@ -398,7 +398,7 @@ public partial class Campo1 : Node2D
 	// (_tarjetasHechizoCarta/_cooldownHechizo); llamarlas desde acá le gastaría una carta de hechizo
 	// AL JUGADOR por un hechizo que tiró el CPU.
 	private static readonly string[] CPU_HECHIZOS_IDS =
-		{ "veneno", "bloqueo", "curacion", "encebollado", "desprotegido", "escudo", "fuerza", "robar_carta" };
+		{ "veneno", "bloqueo", "curacion", "encebollado", "desprotegido", "escudo", "fuerza", "robar_carta", "debil" };
 
 	private void CPUUsarHechizo()
 	{
@@ -425,7 +425,7 @@ public partial class Campo1 : Node2D
 				objetivo.SetMeta("envenenado",   true);
 				objetivo.SetMeta("danoVeneno",   50);
 				objetivo.SetMeta("turnosVeneno", 3);
-				objetivo.Modulate = new Color(0.6f, 1f, 0.4f);
+				objetivo.Modulate = COLOR_VENENO;
 				break;
 			case "bloqueo":
 				if (objetivo.HasMethod("AlSerBloqueado")) objetivo.Call("AlSerBloqueado");
@@ -436,6 +436,7 @@ public partial class Campo1 : Node2D
 			case "curacion":      AplicarCuracion(objetivo);      break;
 			case "encebollado":   AplicarEncebollado(objetivo);   break;
 			case "desprotegido":  AplicarDesprotegido(objetivo);  break;
+			case "debil":         AplicarDebil(objetivo);         break;
 			case "escudo":        AplicarEscudo(objetivo);        break;
 			case "fuerza":        AplicarFuerza(objetivo);        break;
 		}

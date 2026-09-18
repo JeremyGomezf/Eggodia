@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Script" path="res://DatosCartas/CartaData.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bac2aukt02yn4" path="res://imagenes/HechizosPng/Debil_hechizo.png" id="2_img"]
+
+[resource]
+script = ExtResource("1_script")
+Nombre = "Débil"
+Categoria = 1
+Elemento = "Sombra"
+Era = "Era Medieval"
+Costo = 3
+Ataque = 0
+Defensa = 0
+Vida = 0
+Velocidad = "INSTANTÁNEA"
+Rango = "GLOBAL"
+FuerteContra = "Metal"
+DebilContra = "Naturaleza"
+Descripcion = "Debilita a una tropa rival: le quita 100 puntos de Ataque de forma permanente."
+RutaEscena = ""
+Imagen = ExtResource("2_img")
+IdHechizo = "debil"

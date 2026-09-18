@@ -191,6 +191,7 @@ public partial class Campo1 : Node2D
 		new HechizoDef { Id = "desprotegido", Nombre = "Desprotegido", Ruta = "res://imagenes/HechizosPng/Desprotegido_hechizo.png", Aliado = false },
 		new HechizoDef { Id = "escudo",       Nombre = "Escudo",       Ruta = "res://imagenes/HechizosPng/Escudo_hechizo.png",       Aliado = true  },
 		new HechizoDef { Id = "fuerza",       Nombre = "Fuerza",       Ruta = "res://imagenes/HechizosPng/Fuerza_hechizo.png",       Aliado = true  },
+		new HechizoDef { Id = "debil",        Nombre = "Débil",        Ruta = "res://imagenes/HechizosPng/Debil_hechizo.png",        Aliado = false },
 	};
 	private HechizoDef[] _poolActivo = POOL_HECHIZO_BASE;
 	private int[] _cooldownHechizo;

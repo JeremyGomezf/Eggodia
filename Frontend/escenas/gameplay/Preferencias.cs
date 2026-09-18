@@ -171,6 +171,36 @@ public static class Preferencias
 		("res://imagenes/RendersTropa/Huevo render/GonzaHuevo_Render.png",  "res://escenas/personajes/huevogonzalo1.tscn"),
 	};
 
+	// ── SKIN PARA EL RIVAL EN LÍNEA ──────────────────────────────────────────
+	// Por la red viaja un solo int con la skin equipada. Antes ese int solo podía apuntar a
+	// SKIN_ESCENAS (las estándar), así que si tenías una skin EXCLUSIVA equipada el rival te veía
+	// con un huevo común. Ahora el índice cubre los dos arreglos: 0..N-1 son las estándar y de N
+	// en adelante las exclusivas (N + posición en SKINS_EXCLUSIVAS_ESCENAS).
+	// Compatibilidad: un cliente viejo manda 0..N-1 y se lee igual que siempre; si recibe un
+	// índice extendido que no entiende, cae a una skin estándar en vez de romperse.
+	public static int IndiceSkinParaOnline()
+	{
+		string exclusiva = SkinExclusivaActiva;
+		if (!string.IsNullOrEmpty(exclusiva))
+		{
+			for (int i = 0; i < SKINS_EXCLUSIVAS_ESCENAS.Length; i++)
+				if (SKINS_EXCLUSIVAS_ESCENAS[i].textura == exclusiva)
+					return SKIN_ESCENAS.Length + i;
+		}
+		return SkinActivaIdx;
+	}
+
+	/// <summary>Ruta de escena de la skin que representa un índice recibido por la red (ver
+	/// IndiceSkinParaOnline). Devuelve una estándar si el índice no corresponde a ninguna exclusiva.</summary>
+	public static string EscenaSkinDesdeIndiceOnline(int idx)
+	{
+		int exclusivaIdx = idx - SKIN_ESCENAS.Length;
+		if (exclusivaIdx >= 0 && exclusivaIdx < SKINS_EXCLUSIVAS_ESCENAS.Length)
+			return SKINS_EXCLUSIVAS_ESCENAS[exclusivaIdx].escena;
+
+		return SKIN_ESCENAS[Mathf.Clamp(idx, 0, SKIN_ESCENAS.Length - 1)];
+	}
+
 	public static bool TieneSkinExclusiva(string ruta)
 	{
 		if (string.IsNullOrEmpty(ruta)) return false;
@@ -244,18 +274,19 @@ public static class Preferencias
 	};
 
 	public static readonly string[] TIENDA_HECHIZO_IDS = {
-		"escudo", "desprotegido", "encebollado"
+		"escudo", "desprotegido", "encebollado", "debil"
 	};
 	public static readonly string[] TIENDA_HECHIZO_NOMBRES = {
-		"Escudo", "Desprotegido", "Encebollado"
+		"Escudo", "Desprotegido", "Encebollado", "Débil"
 	};
 	public static readonly int[] TIENDA_HECHIZO_PRECIOS = {
-		300, 300, 400
+		300, 300, 400, 300
 	};
 	public static readonly string[] TIENDA_HECHIZO_ICONOS = {
 		"res://imagenes/HechizosPng/Escudo_hechizo.png",
 		"res://imagenes/HechizosPng/Desprotegido_hechizo.png",
-		"res://imagenes/HechizosPng/Encebo_hechizo.png"
+		"res://imagenes/HechizosPng/Encebo_hechizo.png",
+		"res://imagenes/HechizosPng/Debil_hechizo.png"
 	};
 
 	public static string NormalizarIdItem(string raw)

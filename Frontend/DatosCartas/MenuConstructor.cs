@@ -63,11 +63,12 @@ public partial class MenuConstructor : Control
 		{ "res://imagenes/RendersTropa/Renders Ardid/Veneno_Menu.png",       -110f },
 		{ "res://imagenes/RendersTropa/Renders Ardid/Bloqueo_Menu.png",      -110f },
 		{ "res://imagenes/RendersTropa/Renders Ardid/Curacion_Menu.png",     -110f },
-		{ "res://imagenes/RendersTropa/Renders Ardid/Encebollado_Menu.png",  -110f },
-		{ "res://imagenes/RendersTropa/Renders Ardid/Desprotegido_Menu.png", -110f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Encebollado_Menu.png",  -130f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Desprotegido_Menu.png", -90f },
 		{ "res://imagenes/RendersTropa/Renders Ardid/Escudo_Menu.png",       -110f },
 		{ "res://imagenes/RendersTropa/Renders Ardid/Fuerza_Menu.png",       -110f },
 		{ "res://imagenes/RendersTropa/Renders Ardid/Robar_Menu.png",        -110f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Debil_Menu.png",        -80f },
 	};
 
 	private const string RUTA_SOLDADO_REAL_MENU = "res://imagenes/RendersTropa/SoldadoReal_Menu.png";
@@ -75,8 +76,8 @@ public partial class MenuConstructor : Control
 
 	// Renders estáticos de ARDIDES/hechizos para el mismo showcase central (carpeta "Renders
 	// Ardid") — antes los hechizos solo mostraban su ícono chico ajustado a una caja; ahora se
-	// ven igual de grandes que las tropas. "Nuclear" y "Debil" quedan afuera a propósito: son
-	// arte conceptual de hechizos que todavía no están listos para jugarse.
+	// ven igual de grandes que las tropas. "Nuclear" queda afuera a propósito: es arte conceptual
+	// de un hechizo que todavía no está listo para jugarse.
 	private static readonly Dictionary<string, string> RENDERS_ARDID = new()
 	{
 		{ "veneno",       "res://imagenes/RendersTropa/Renders Ardid/Veneno_Menu.png" },
@@ -87,6 +88,7 @@ public partial class MenuConstructor : Control
 		{ "escudo",       "res://imagenes/RendersTropa/Renders Ardid/Escudo_Menu.png" },
 		{ "fuerza",       "res://imagenes/RendersTropa/Renders Ardid/Fuerza_Menu.png" },
 		{ "robar_carta",  "res://imagenes/RendersTropa/Renders Ardid/Robar_Menu.png" },
+		{ "debil",        "res://imagenes/RendersTropa/Renders Ardid/Debil_Menu.png" },
 	};
 
 	[ExportGroup("Texturas y Assets")]

@@ -16,9 +16,59 @@ public partial class Campo1 : Node2D
 		try { objetivo.Set("vidaMaxima", Mathf.Max(vidaMax, vida + 100)); } catch { }
 
 		MostrarDañoFlotante(objetivo.GlobalPosition, 100, true);
+		AplicarTinteEncebollado(objetivo);
+	}
+
+	// DÉBIL: le saca 100 de Ataque a una tropa rival, de forma permanente (no expira por turnos,
+	// a diferencia de Fuerza). Nunca baja de 0 para que no quede con ataque negativo.
+	private void AplicarDebil(Node2D objetivo)
+	{
+		int ata = 0;
+		try { ata = (int)objetivo.Get("puntosAtaque"); } catch { }
+		int nuevo = Mathf.Max(0, ata - 100);
+		try { objetivo.Set("puntosAtaque", nuevo); } catch { }
+
+		MostrarDañoFlotante(objetivo.GlobalPosition, ata - nuevo);
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", new Color(1.6f, 1.3f, 0.2f), 0.2f);
-		tw.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
+		tw.TweenProperty(objetivo, "modulate", COLOR_DEBIL, 0.3f);
+		tw.TweenProperty(objetivo, "modulate", Colors.White, 1.7f);
+	}
+
+	// Tinte en degradado del Encebollado (amarillo arriba → azul al medio → rojo abajo) usando un
+	// shader sobre el sprite de la tropa, mezclado de forma continua para que no se vea cortado.
+	// Si por lo que sea el shader no está disponible, cae a un tinte plano como antes.
+	private const string RUTA_SHADER_ENCEBOLLADO = "res://shaders/encebollado_tinte.gdshader";
+
+	private void AplicarTinteEncebollado(Node2D objetivo)
+	{
+		var anim = objetivo.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+		if (anim == null || !ResourceLoader.Exists(RUTA_SHADER_ENCEBOLLADO))
+		{
+			Tween twPlano = objetivo.CreateTween();
+			twPlano.TweenProperty(objetivo, "modulate", new Color(1.6f, 1.3f, 0.2f), 0.2f);
+			twPlano.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
+			return;
+		}
+
+		var mat = new ShaderMaterial { Shader = GD.Load<Shader>(RUTA_SHADER_ENCEBOLLADO) };
+
+		// El shader necesita el alto real del frame para repartir el degradado de punta a punta.
+		float altoPx = 200f;
+		var tex = anim.SpriteFrames?.GetFrameTexture(anim.Animation, anim.Frame);
+		if (tex != null && tex.GetHeight() > 0) altoPx = tex.GetHeight();
+		mat.SetShaderParameter("altura_px", altoPx);
+		mat.SetShaderParameter("intensidad", 0f);
+
+		Material materialPrevio = anim.Material;
+		anim.Material = mat;
+
+		Tween tw = anim.CreateTween();
+		tw.TweenProperty(mat, "shader_parameter/intensidad", 1f, 0.35f)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+		tw.TweenInterval(1.1f);
+		tw.TweenProperty(mat, "shader_parameter/intensidad", 0f, 0.6f)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		tw.TweenCallback(Callable.From(() => { if (IsInstanceValid(anim)) anim.Material = materialPrevio; }));
 	}
 
 	private void AplicarCuracion(Node2D objetivo)
@@ -30,7 +80,7 @@ public partial class Campo1 : Node2D
 		try { objetivo.Set("vidaActual", vida + curado); } catch { }
 		MostrarDañoFlotante(objetivo.GlobalPosition, curado, true);
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", new Color(0.3f,1.6f,0.5f), 0.2f);
+		tw.TweenProperty(objetivo, "modulate", COLOR_CURACION, 0.2f);
 		tw.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
 	}
 
@@ -39,6 +89,14 @@ public partial class Campo1 : Node2D
 	// Color de Bloqueo: oscuro/casi negro (antes azul) — el único estado cuyo tinte NO dura 2s
 	// sino hasta que expira el bloqueo en sí (ver TickBloqueo, Campo1.Turnos.cs).
 	private static readonly Color COLOR_BLOQUEO = new Color(0.12f, 0.12f, 0.15f);
+
+	// Paleta de los efectos sobre la tropa. Son multiplicadores de Modulate, por eso algunos
+	// canales pasan de 1.0 (eso los hace "brillar" en vez de solo oscurecer).
+	private static readonly Color COLOR_VENENO       = new Color(1.10f, 0.35f, 0.95f); // morado/rosado
+	private static readonly Color COLOR_DEBIL        = new Color(0.80f, 1.30f, 0.25f); // amarillo verdoso
+	private static readonly Color COLOR_DESPROTEGIDO = new Color(0.78f, 0.95f, 1.15f); // celeste semiblanco
+	private static readonly Color COLOR_ESCUDO       = new Color(0.20f, 0.40f, 1.00f); // azul
+	private static readonly Color COLOR_CURACION     = new Color(0.30f, 1.60f, 0.50f); // verde
 
 	// Aplica el efecto del hechizo en el slot pi (índice dentro de _poolActivo) sobre objetivo,
 	// validando que sea del bando correcto. "Robar Carta" no pasa por aquí: tiene su propio flujo
@@ -58,10 +116,10 @@ public partial class Campo1 : Node2D
 				objetivo.SetMeta("envenenado",   true);
 				objetivo.SetMeta("danoVeneno",   50);
 				objetivo.SetMeta("turnosVeneno", 3);
-				objetivo.Modulate = new Color(0.6f,1f,0.4f);
+				objetivo.Modulate = COLOR_VENENO;
 				MarcarHechizoUsado(pi);
 				ActualizarIconosEstado(objetivo);
-				MostrarAviso($"¡Envenenaste a {NombreCorto(objetivo)} del rival!", new Color(0.6f,1f,0.4f));
+				MostrarAviso($"¡Envenenaste a {NombreCorto(objetivo)} del rival!", COLOR_VENENO);
 				break;
 			case "bloqueo":
 				if (objetivo.HasMethod("AlSerBloqueado")) objetivo.Call("AlSerBloqueado");
@@ -85,12 +143,17 @@ public partial class Campo1 : Node2D
 			case "desprotegido":
 				AplicarDesprotegido(objetivo);
 				MarcarHechizoUsado(pi);
-				MostrarAviso($"¡Desprotegiste a {NombreCorto(objetivo)} del rival!", new Color(0.4f,0.8f,1f));
+				MostrarAviso($"¡Desprotegiste a {NombreCorto(objetivo)} del rival!", COLOR_DESPROTEGIDO);
+				break;
+			case "debil":
+				AplicarDebil(objetivo);
+				MarcarHechizoUsado(pi);
+				MostrarAviso($"¡{NombreCorto(objetivo)} del rival quedó debilitado!", COLOR_DEBIL);
 				break;
 			case "escudo":
 				AplicarEscudo(objetivo);
 				MarcarHechizoUsado(pi);
-				MostrarAviso($"¡{NombreCorto(objetivo)} recibió Escudo!", new Color(0.2f,0.4f,1f));
+				MostrarAviso($"¡{NombreCorto(objetivo)} recibió Escudo!", COLOR_ESCUDO);
 				break;
 			case "fuerza":
 				AplicarFuerza(objetivo);
@@ -118,7 +181,7 @@ public partial class Campo1 : Node2D
 
 		MostrarDañoFlotante(objetivo.GlobalPosition, esc - nuevo);
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", new Color(0.4f, 0.8f, 1f), 0.3f); // Celeste
+		tw.TweenProperty(objetivo, "modulate", COLOR_DESPROTEGIDO, 0.3f); // Celeste semiblanco
 		tw.TweenProperty(objetivo, "modulate", Colors.White, 1.7f); // 2s en total
 	}
 
@@ -132,7 +195,7 @@ public partial class Campo1 : Node2D
 
 		MostrarDañoFlotante(objetivo.GlobalPosition, nuevo - esc, true);
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", new Color(0.2f, 0.4f, 1f), 0.3f); // Azul
+		tw.TweenProperty(objetivo, "modulate", COLOR_ESCUDO, 0.3f); // Azul
 		tw.TweenProperty(objetivo, "modulate", Colors.White, 1.7f);
 	}
 
