@@ -20,8 +20,14 @@ public partial class MenuPrincipal : Control
 		// para todos (invitados incluidos, aunque un invitado no aparece porque no tiene cuenta).
 		btnTrofeo.Pressed += () =>
 		{
+			// En su propia CAPA (CanvasLayer) para garantizar que se dibuje ENCIMA de todo el menú y
+			// reciba los clics. Como Control suelto en la base podía quedar tapado por otras capas del
+			// menú (por eso "no se veía/no abría"). La capa se libera sola cuando el panel se cierra.
+			var capa = new CanvasLayer { Layer = 200 };
 			var panel = new PanelRanking();
-			AddChild(panel);
+			panel.TreeExited += () => { if (GodotObject.IsInstanceValid(capa)) capa.QueueFree(); };
+			capa.AddChild(panel);
+			AddChild(capa);
 			panel.Mostrar();
 		};
 
