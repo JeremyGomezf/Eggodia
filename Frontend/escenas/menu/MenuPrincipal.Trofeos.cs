@@ -1,4 +1,6 @@
 using Godot;
+using System.Text;
+using System.Text.Json;
 
 /// <summary>Interfaz de BtnTrofeo — tabla de mejores jugadores por victorias ("trofeos huevo").
 /// IMPORTANTE: el juego no tiene todavía un servidor de rankings online, así que esta lista solo
@@ -8,6 +10,8 @@ using Godot;
 public partial class MenuPrincipal : Control
 {
 	private CanvasLayer _capaTrofeos;
+	private VBoxContainer _listaTrofeos;     // la lista donde se pintan las filas del top
+	private Godot.HttpRequest _httpTrofeos;  // baja el ranking del servidor
 
 	private void ConectarBtnTrofeo()
 	{
@@ -74,7 +78,7 @@ public partial class MenuPrincipal : Control
 
 	private void MostrarPantallaTrofeos()
 	{
-		if (_capaTrofeos != null && IsInstanceValid(_capaTrofeos)) { _capaTrofeos.Visible = true; return; }
+		if (_capaTrofeos != null && IsInstanceValid(_capaTrofeos)) { _capaTrofeos.Visible = true; CargarTopTrofeos(); return; }
 
 		var capa = new CanvasLayer();
 		capa.Layer = 300;
@@ -146,25 +150,82 @@ public partial class MenuPrincipal : Control
 		lista.AddThemeConstantOverride("separation", 10);
 		lista.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		scroll.AddChild(lista);
+		_listaTrofeos = lista;
 
-		// Los trofeos son solo para jugadores registrados (no invitados) — un invitado no tiene
-		// cuenta donde guardar/mostrar un ranking, así que la tabla queda vacía para él.
+		// HTTP para bajar el top real del servidor (se pinta en la lista, ordenado por copas).
+		_httpTrofeos = new Godot.HttpRequest();
+		capa.AddChild(_httpTrofeos);
+		_httpTrofeos.RequestCompleted += OnTopTrofeosRecibido;
+
+		CargarTopTrofeos();
+	}
+
+	// Baja el top de jugadores del servidor (ordenado por victorias = copas) y lo pinta en tu tabla.
+	// Los invitados no tienen cuenta: se les muestra un aviso para iniciar sesión.
+	private void CargarTopTrofeos()
+	{
+		if (_listaTrofeos == null || !IsInstanceValid(_listaTrofeos)) return;
+		foreach (Node n in _listaTrofeos.GetChildren()) n.QueueFree();
+
 		bool registrado = SesionJuego.Instance?.EstaLogueado ?? false;
-		if (registrado)
+		if (!registrado)
 		{
-			string nombre = SesionJuego.Instance.NombreJugador;
-			lista.AddChild(CrearFilaTrofeo(1, nombre + " (tú)", Preferencias.TrofeosHuevo, true));
+			_listaTrofeos.AddChild(CrearAvisoTrofeos("Inicia sesión con una cuenta para tener copas y aparecer en la tabla."));
+			return;
 		}
 
-		var lblAviso = new Label();
-		lblAviso.Text = registrado
-			? "Los rankings con otros jugadores necesitan conexión en línea (próximamente)."
-			: "Inicia sesión con una cuenta para tener trofeos y aparecer en la tabla.";
-		lblAviso.AddThemeColorOverride("font_color", new Color(0.6f, 0.6f, 0.7f));
-		lblAviso.AddThemeFontSizeOverride("font_size", 16);
-		lblAviso.HorizontalAlignment = HorizontalAlignment.Center;
-		lblAviso.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		vbox.AddChild(lblAviso);
+		_listaTrofeos.AddChild(CrearAvisoTrofeos("⏳ Cargando top de jugadores..."));
+		if (_httpTrofeos == null || !IsInstanceValid(_httpTrofeos)) return;
+		if (_httpTrofeos.Request(ApiConfig.Ranking) != Error.Ok)
+		{
+			foreach (Node n in _listaTrofeos.GetChildren()) n.QueueFree();
+			_listaTrofeos.AddChild(CrearAvisoTrofeos("No se pudo conectar al servidor."));
+		}
+	}
+
+	private void OnTopTrofeosRecibido(long result, long code, string[] headers, byte[] body)
+	{
+		if (_listaTrofeos == null || !IsInstanceValid(_listaTrofeos)) return;
+		foreach (Node n in _listaTrofeos.GetChildren()) n.QueueFree();
+
+		if (result != (long)Godot.HttpRequest.Result.Success || code != 200)
+		{
+			_listaTrofeos.AddChild(CrearAvisoTrofeos("Sin conexión al servidor."));
+			return;
+		}
+		try
+		{
+			var arr = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(body));
+			if (arr.ValueKind != JsonValueKind.Array || arr.GetArrayLength() == 0)
+			{
+				_listaTrofeos.AddChild(CrearAvisoTrofeos("Aún no hay jugadores con copas."));
+				return;
+			}
+			int miId = SesionJuego.Instance?.UsuarioId ?? -1;
+			int pos = 1;
+			foreach (var e in arr.EnumerateArray())
+			{
+				int id       = e.TryGetProperty("id", out var pid) ? pid.GetInt32() : -1;
+				string nombre = e.TryGetProperty("nombre", out var pn) ? (pn.GetString() ?? "?") : "?";
+				int copas     = e.TryGetProperty("victorias", out var pv) ? pv.GetInt32() : 0;
+				bool esYo     = id == miId;
+				_listaTrofeos.AddChild(CrearFilaTrofeo(pos, esYo ? nombre + " (tú)" : nombre, copas, esYo));
+				pos++;
+			}
+		}
+		catch { _listaTrofeos.AddChild(CrearAvisoTrofeos("Error al procesar el top.")); }
+	}
+
+	// Aviso simple centrado dentro de la lista (mismo tono tenue que el original).
+	private Label CrearAvisoTrofeos(string texto)
+	{
+		var lbl = new Label();
+		lbl.Text = texto;
+		lbl.AddThemeColorOverride("font_color", new Color(0.6f, 0.6f, 0.7f));
+		lbl.AddThemeFontSizeOverride("font_size", 16);
+		lbl.HorizontalAlignment = HorizontalAlignment.Center;
+		lbl.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+		return lbl;
 	}
 
 	private Control CrearFilaTrofeo(int puesto, string nombre, int trofeos, bool esPropia)
