@@ -16,6 +16,7 @@ run/main_scene="res://escenas/menu/PantallaCarga.tscn"
 config/features=PackedStringArray("4.7", "C#", "Mobile")
 config/icon="uid://d2fpu5k7c3qi6"
 config/windows_native_icon="res://Eggodia_ICONO.ico"
+run/max_fps=30
 
 [autoload]
 
@@ -23,6 +24,7 @@ GestorCartas="*res://escenas/gameplay/GestorCartas.cs"
 SesionJuego="*res://escenas/gameplay/SesionJuego.cs"
 GlobalAudioManager="*res://scripts/GlobalAudioManager.cs"
 Economia="*res://escenas/gameplay/Economia.cs"
+EscaladoPantalla="*res://scripts/EscaladoPantalla.cs"
 
 [display]
 
@@ -31,7 +33,7 @@ window/size/viewport_height=1080
 window/size/window_width_override=1200
 window/size/window_height_override=540
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/stretch/aspect="keep_height"
 window/handheld/orientation="sensor_landscape"
 
 [dotnet]

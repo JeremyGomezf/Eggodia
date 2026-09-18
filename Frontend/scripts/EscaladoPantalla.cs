@@ -27,7 +27,17 @@ public partial class EscaladoPantalla : Node
 
 	public override void _Ready()
 	{
-		Vector2I tam = DisplayServer.ScreenGetSize();
+		// OJO: antes usaba DisplayServer.ScreenGetSize(), que devuelve la resolución del MONITOR
+		// físico, no la de la ventana real del juego. En un celular ambas coinciden (la ventana es
+		// pantalla completa), pero al probar en PC con "Sobrescribir" (Project Settings > Display >
+		// Window > Size) o con la ventana en un tamaño distinto al del monitor, ScreenGetSize()
+		// seguía viendo el monitor (normalmente 16:9) e ignoraba por completo la forma real de la
+		// ventana — activaba o dejaba de activar el letterbox según el monitor, no según lo que el
+		// juego en verdad estaba dibujando, y por eso Campo1 (que sí tiene una Camera2D pensada para
+		// una forma de canvas específica) se veía desalineado/ovalado con cualquier Sobrescribir.
+		// WindowGetSize() sí refleja el tamaño real de la ventana (el Sobrescribir en editor/PC, o
+		// la pantalla completa en un celular real), que es lo que esta lógica necesita mirar.
+		Vector2I tam = DisplayServer.WindowGetSize();
 		float mayor = Mathf.Max(tam.X, tam.Y);
 		float menor = Mathf.Min(tam.X, tam.Y);
 		if (menor <= 0f) return;
