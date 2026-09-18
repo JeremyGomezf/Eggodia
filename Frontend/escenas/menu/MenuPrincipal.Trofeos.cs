@@ -15,21 +15,7 @@ public partial class MenuPrincipal : Control
 		if (btnTrofeo == null) return;
 
 		AgregarAnimacionHover(btnTrofeo);
-		// Abre el ranking REAL del servidor (PanelRanking baja el top 20 y resalta al jugador). Antes
-		// abría una pantalla placeholder que solo te mostraba a ti y decía "próximamente". Ahora se ve
-		// para todos (invitados incluidos, aunque un invitado no aparece porque no tiene cuenta).
-		btnTrofeo.Pressed += () =>
-		{
-			// En su propia CAPA (CanvasLayer) para garantizar que se dibuje ENCIMA de todo el menú y
-			// reciba los clics. Como Control suelto en la base podía quedar tapado por otras capas del
-			// menú (por eso "no se veía/no abría"). La capa se libera sola cuando el panel se cierra.
-			var capa = new CanvasLayer { Layer = 200 };
-			var panel = new PanelRanking();
-			panel.TreeExited += () => { if (GodotObject.IsInstanceValid(capa)) capa.QueueFree(); };
-			capa.AddChild(panel);
-			AddChild(capa);
-			panel.Mostrar();
-		};
+		btnTrofeo.Pressed += MostrarPantallaTrofeos;
 
 		// Difuminado morado claro detrás del botón + un par de estrellitas titilando delante,
 		// indicando "acá hay competencia".
