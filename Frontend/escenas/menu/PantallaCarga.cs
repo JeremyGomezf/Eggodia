@@ -58,14 +58,6 @@ public partial class PantallaCarga : Control
 	private readonly List<string> _pendientes = new();
 	private int _total;
 
-	// Referencias vivas de todo lo precargado. SIN esto la precarga no servía de nada: el código
-	// pedía las escenas con LoadThreadedRequest y solo miraba el estado, pero nunca las retiraba
-	// con LoadThreadedGet ni se quedaba con una referencia — Godot las cargaba y las soltaba
-	// enseguida (nadie las tenía agarradas), así que en plena partida se volvían a leer del disco
-	// y por eso una tropa tardaba en aparecer. La lista es STATIC a propósito: esta pantalla se
-	// destruye al pasar al login, y si las referencias vivieran en el nodo se irían con él.
-	private static readonly List<Resource> _recursosPrecargados = new();
-
 	// ── Chequeo de actualización AL INICIO ────────────────────────────────────
 	// Apenas abre la app se consulta la versión del servidor. Si hay una versión nueva OBLIGATORIA,
 	// el aviso bloquea aquí mismo (antes del login) y no se avanza. Si no hay update / no hay conexión,
@@ -93,14 +85,12 @@ public partial class PantallaCarga : Control
 
 		CargarPeon();
 
-		// La precarga ahora corre TAMBIÉN en móvil. Antes se saltaba porque las ~30 escenas
-		// ocupaban ~2.6 GB de RAM y el sistema mataba la app (Low Memory Killer) — pero eso era
-		// con las hojas de sprite originales, que llegaban a 14508x7155 px (una sola textura podía
-		// pesar +400 MB en memoria). Ahora ninguna pasa de 2048 px y además van comprimidas a
-		// VRAM, así que el total es una fracción de aquello y entra sin problema.
-		bool yaEstabaPrecargado = _recursosPrecargados.Count > 0;
+		// En móvil, precargar las ~30 escenas a la vez consume ~2.6 GB de RAM y el sistema
+		// mata la app (Low Memory Killer). Se omite la precarga: cada escena se carga bajo
+		// demanda durante la partida (mucho menos memoria). En PC sí se precarga.
+		bool esMovil = OS.HasFeature("mobile");
 
-		if (!yaEstabaPrecargado)
+		if (!esMovil)
 		{
 			foreach (string ruta in RUTAS_A_PRECARGAR)
 			{
@@ -113,9 +103,10 @@ public partial class PantallaCarga : Control
 
 		if (_total == 0)
 		{
-			// Sin nada que precargar (ya estaba todo en memoria de una vuelta anterior, o no se
-			// pudo pedir): barra decorativa rápida y a login.
-			MostrarCargaDecorativa();
+			if (esMovil)
+				MostrarCargaDecorativa(); // barra animada 1.5s, sin precarga real
+			else
+				CallDeferred(nameof(CargaCompletada));
 		}
 	}
 
@@ -188,14 +179,6 @@ public partial class PantallaCarga : Control
 
 			if (estado == ResourceLoader.ThreadLoadStatus.Loaded || estado == ResourceLoader.ThreadLoadStatus.Failed)
 			{
-				// Retirar el recurso y GUARDAR la referencia: es lo que hace que la precarga
-				// realmente sirva. Si no se retiene, Godot lo suelta y en la partida se vuelve a
-				// leer del disco (que era justo el tirón al invocar una tropa).
-				if (estado == ResourceLoader.ThreadLoadStatus.Loaded)
-				{
-					var recurso = ResourceLoader.LoadThreadedGet(ruta);
-					if (recurso != null) _recursosPrecargados.Add(recurso);
-				}
 				_pendientes.RemoveAt(i); // pasa a contar como completado
 			}
 			else

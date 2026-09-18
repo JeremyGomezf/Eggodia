@@ -16,7 +16,9 @@ public partial class Campo1 : Node2D
 		try { objetivo.Set("vidaMaxima", Mathf.Max(vidaMax, vida + 100)); } catch { }
 
 		MostrarDañoFlotante(objetivo.GlobalPosition, 100, true);
-		AplicarTinteEncebollado(objetivo);
+		Tween tw = objetivo.CreateTween();
+		tw.TweenProperty(objetivo, "modulate", COLOR_ENCEBOLLADO, 0.2f);
+		tw.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
 	}
 
 	// DÉBIL: le saca 100 de Ataque a una tropa rival, de forma permanente (no expira por turnos,
@@ -32,43 +34,6 @@ public partial class Campo1 : Node2D
 		Tween tw = objetivo.CreateTween();
 		tw.TweenProperty(objetivo, "modulate", COLOR_DEBIL, 0.3f);
 		tw.TweenProperty(objetivo, "modulate", Colors.White, 1.7f);
-	}
-
-	// Tinte en degradado del Encebollado (amarillo arriba → azul al medio → rojo abajo) usando un
-	// shader sobre el sprite de la tropa, mezclado de forma continua para que no se vea cortado.
-	// Si por lo que sea el shader no está disponible, cae a un tinte plano como antes.
-	private const string RUTA_SHADER_ENCEBOLLADO = "res://shaders/encebollado_tinte.gdshader";
-
-	private void AplicarTinteEncebollado(Node2D objetivo)
-	{
-		var anim = objetivo.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-		if (anim == null || !ResourceLoader.Exists(RUTA_SHADER_ENCEBOLLADO))
-		{
-			Tween twPlano = objetivo.CreateTween();
-			twPlano.TweenProperty(objetivo, "modulate", new Color(1.6f, 1.3f, 0.2f), 0.2f);
-			twPlano.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
-			return;
-		}
-
-		var mat = new ShaderMaterial { Shader = GD.Load<Shader>(RUTA_SHADER_ENCEBOLLADO) };
-
-		// El shader necesita el alto real del frame para repartir el degradado de punta a punta.
-		float altoPx = 200f;
-		var tex = anim.SpriteFrames?.GetFrameTexture(anim.Animation, anim.Frame);
-		if (tex != null && tex.GetHeight() > 0) altoPx = tex.GetHeight();
-		mat.SetShaderParameter("altura_px", altoPx);
-		mat.SetShaderParameter("intensidad", 0f);
-
-		Material materialPrevio = anim.Material;
-		anim.Material = mat;
-
-		Tween tw = anim.CreateTween();
-		tw.TweenProperty(mat, "shader_parameter/intensidad", 1f, 0.35f)
-			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
-		tw.TweenInterval(1.1f);
-		tw.TweenProperty(mat, "shader_parameter/intensidad", 0f, 0.6f)
-			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-		tw.TweenCallback(Callable.From(() => { if (IsInstanceValid(anim)) anim.Material = materialPrevio; }));
 	}
 
 	private void AplicarCuracion(Node2D objetivo)
@@ -97,6 +62,7 @@ public partial class Campo1 : Node2D
 	private static readonly Color COLOR_DESPROTEGIDO = new Color(0.78f, 0.95f, 1.15f); // celeste semiblanco
 	private static readonly Color COLOR_ESCUDO       = new Color(0.20f, 0.40f, 1.00f); // azul
 	private static readonly Color COLOR_CURACION     = new Color(0.30f, 1.60f, 0.50f); // verde
+	private static readonly Color COLOR_ENCEBOLLADO  = new Color(1.60f, 1.30f, 0.20f); // amarillo
 
 	// Aplica el efecto del hechizo en el slot pi (índice dentro de _poolActivo) sobre objetivo,
 	// validando que sea del bando correcto. "Robar Carta" no pasa por aquí: tiene su propio flujo
