@@ -292,7 +292,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_oxc7a")
 }],
-"loop": 1,
+"loop": 0,
 "name": &"derrota",
 "speed": 11.0
 }, {
@@ -363,7 +363,7 @@ rotation = -0.037588008
 position = Vector2(54, -80)
 scale = Vector2(0.25, 0.25)
 sprite_frames = SubResource("SpriteFrames_ow3ik")
-animation = &"idle"
+animation = &"derrota"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=638377521]
 layout_mode = 3
