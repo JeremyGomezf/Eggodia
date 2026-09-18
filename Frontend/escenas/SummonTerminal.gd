@@ -250,6 +250,15 @@ func _es_tropa_ya_desbloqueada(card_id: String) -> bool:
 		return cfg.get_value("tienda_items", clave, false)
 	return false
 
+# Id de la cuenta logueada (autoload C# SesionJuego). -1 si es invitado o no está disponible.
+func _obtener_user_id() -> int:
+	var s = get_node_or_null("/root/SesionJuego")
+	if s != null:
+		var uid = s.get("UsuarioId")
+		if uid != null:
+			return int(uid)
+	return -1
+
 func _on_sincronizar_pressed() -> void:
 	var codigo = txt_codigo.text.strip_edges()
 	if codigo.is_empty():
@@ -270,9 +279,19 @@ func _on_sincronizar_pressed() -> void:
 	lbl_estado.text = "Sincronizando tarjeta con el portal..."
 	lbl_estado.modulate = Color(0.9, 0.9, 1.0)
 
+	# Sin cuenta (invitado) no hay dónde guardarla en el servidor → se resuelve local para esta sesión.
+	var user_id = _obtener_user_id()
+	if user_id <= 0:
+		_resolver_fallback_local(codigo)
+		return
+
+	# El backend (claim-physical-card) espera { Code, UserId }. Antes se mandaba { CardPin, NfcUid }
+	# sin UserId, así que el server lo rechazaba y solo quedaba el desbloqueo LOCAL (que además el
+	# aislamiento por cuenta borraba al cambiar de sesión). Con el payload correcto, la carta se
+	# GUARDA en la cuenta (tabla UserCards) y se restaura al iniciar sesión (ver Economia.CargarCartasFisicas).
 	var json_payload = JSON.stringify({
-		"CardPin": codigo,
-		"NfcUid": "NFC_" + codigo
+		"Code": codigo,
+		"UserId": user_id
 	})
 
 	var headers = [

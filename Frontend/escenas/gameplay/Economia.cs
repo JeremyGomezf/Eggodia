@@ -262,5 +262,40 @@ public partial class Economia : Node
 		if (doc.TryGetProperty("equipSkinIdx", out var esi))       Preferencias.SkinActivaIdx      = esi.GetInt32();
 		if (doc.TryGetProperty("equipTronoIdx", out var eti))      Preferencias.TronoActivoIdx     = eti.GetInt32();
 		if (doc.TryGetProperty("equipSkinExclusiva", out var ese)) Preferencias.SkinExclusivaActiva = ese.GetString() ?? "";
+
+		// Cartas físicas/NFC reclamadas por ESTA cuenta: se traen aparte (tabla UserCards del server)
+		// y se desbloquean localmente. Va después de limpiar/aplicar el resto para que no se borren.
+		if (_usuarioId > 0) CargarCartasFisicas(_usuarioId);
+	}
+
+	/// <summary>Trae las cartas físicas/NFC que la cuenta reclamó (GET /api/cartas/usuario/{id}) y las
+	/// desbloquea localmente con la misma clave que usa el terminal → persisten entre sesiones y no se
+	/// pierden al cambiar de cuenta. Es lo que faltaba: antes el canje NFC solo guardaba en el dispositivo
+	/// (y el aislamiento por cuenta lo borraba); ahora la verdad está en el servidor y se restaura al entrar.</summary>
+	public void CargarCartasFisicas(int usuarioId)
+	{
+		if (usuarioId <= 0) return;
+		var h = new HttpRequest();
+		AddChild(h);
+		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
+		{
+			if (r == (long)HttpRequest.Result.Success && c == 200)
+			{
+				try
+				{
+					var arr = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(b));
+					if (arr.ValueKind == JsonValueKind.Array)
+						foreach (var carta in arr.EnumerateArray())
+							if (carta.TryGetProperty("cardId", out var cid))
+							{
+								string cardId = cid.GetString() ?? "";
+								if (!string.IsNullOrEmpty(cardId)) Preferencias.DesbloquearTropa(cardId);
+							}
+				}
+				catch { }
+			}
+			if (IsInstanceValid(h)) h.QueueFree();
+		};
+		if (h.Request($"{ApiConfig.Base}/api/cartas/usuario/{usuarioId}") != Error.Ok && IsInstanceValid(h)) h.QueueFree();
 	}
 }
