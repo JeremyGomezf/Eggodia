@@ -7,7 +7,6 @@
 [ext_resource type="Texture2D" uid="uid://kf7oiropv673" path="res://imagenes/Escenarios/medievalFONDO.png" id="3_g8sj5"]
 [ext_resource type="PackedScene" uid="uid://mpausa123" path="res://escenas/gameplay/MenuPausa.tscn" id="3_mpausa"]
 [ext_resource type="Texture2D" uid="uid://dw12iugljdasy" path="res://imagenes/Escenarios/medieval-escenario.png" id="4_hdudg"]
-[ext_resource type="Texture2D" uid="uid://dct0ngd2aqcg2" path="res://imagenes/mano_cartas.png" id="4_mano"]
 [ext_resource type="Texture2D" uid="uid://c8ccxlebsbf1i" path="res://imagenes/botonescampo1/BotonSacrificio.png" id="10_hbhjk"]
 [ext_resource type="FontFile" uid="uid://duwyhi2s8cphn" path="res://Cinzel.ttf" id="11_qyt1l"]
 [ext_resource type="Texture2D" uid="uid://din5j31n0hxcg" path="res://imagenes/botonescampo1/BotonBaranjar.png" id="12_7c5g7"]
@@ -146,11 +145,6 @@ offset_left = 842.0
 offset_top = 795.0
 offset_right = 882.0
 offset_bottom = 833.0
-
-[node name="ManoVisual" type="Sprite2D" parent="ManoManual" unique_id=38472910]
-visible = false
-scale = Vector2(0.6, 0.6)
-texture = ExtResource("4_mano")
 
 [node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
 position = Vector2(-158, -11.999981)
