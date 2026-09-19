@@ -324,9 +324,27 @@ public partial class Campo1 : Node2D
 
 	private TronoCampo tronoJugador, tronoRival;
 
+	// Recicla memoria administrada: GC completo + finalizadores + GC. Suelta los wrappers C# de recursos
+	// que ya no se usan (escenas/texturas de la partida anterior), dejando que Godot libere su memoria
+	// nativa/VRAM. No altera nada visual — solo recicla lo que ya no está en uso.
+	private static void LiberarMemoriaDePartidaAnterior()
+	{
+		System.GC.Collect();
+		System.GC.WaitForPendingFinalizers();
+		System.GC.Collect();
+	}
+
 	// ══════════════════════════════════════════════════════════════════════
 	public override void _Ready()
 	{
+		// Liberar la memoria de la PARTIDA ANTERIOR antes de cargar esta. En celulares de gama baja
+		// (isLowMemoryDevice) los recursos de la 1ª partida (sprites/escenas cargados con GD.Load) no se
+		// soltaban solos y la 2ª acumulaba encima → el sistema mataba la app (Low Memory Killer, ~3.4 GB).
+		// El GC de .NET suelta los wrappers de esos recursos y así Godot libera la memoria/VRAM nativa.
+		// No cambia NADA visual: solo recicla lo que ya no está en pantalla. Va al arranque (momento de
+		// carga, un pequeño hitch acá no se nota) para que cada partida empiece con la memoria limpia.
+		LiberarMemoriaDePartidaAnterior();
+
 		// Pizarra limpia para el flag estático de reproducción online: cada partida (bot u online)
 		// arranca con el daño local ACTIVO. Sin esto, si una partida online quedó con el flag en true,
 		// se filtraría a la siguiente partida y no se aplicaría daño (romperia el bot).
