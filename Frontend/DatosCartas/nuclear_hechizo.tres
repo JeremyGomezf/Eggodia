@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CartaData" format=3]
+
+[ext_resource type="Script" path="res://DatosCartas/CartaData.cs" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://4l1uif4q502o" path="res://imagenes/HechizosPng/Nuclear_hechizo.png" id="2_img"]
+
+[resource]
+script = ExtResource("1_script")
+Nombre = "Nuclear"
+Categoria = 1
+Elemento = "Fuego"
+Era = "Era Moderna"
+Costo = 2
+Ataque = 300
+Defensa = 0
+Vida = 0
+Velocidad = "45 SEGUNDOS"
+Rango = "TODO EL CAMPO"
+FuerteContra = "Todos"
+DebilContra = "Muro / Pre-defensa"
+Descripcion = "Lanza una bomba que cae a los 45s. En los últimos 15s no podrás romper la defensa del rival aunque le pegues, pero sí le bajarás el escudo."
+RutaEscena = ""
+Imagen = ExtResource("2_img")
+IdHechizo = "nuclear"

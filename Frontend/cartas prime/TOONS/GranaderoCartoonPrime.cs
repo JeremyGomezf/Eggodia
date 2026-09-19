@@ -295,6 +295,9 @@ public partial class GranaderoCartoonPrime : TropaBase
 				{
 					if (IsInstanceValid(mRef)) mRef.QueueFree();
 					CrearExplosion(destino, esGranada: false);
+					// Mismo sacudón leve que el misil del Tanque, justo cuando el misil choca.
+					if (campoBloqueoMortero != null && campoBloqueoMortero.HasMethod("SacudonLeve"))
+						campoBloqueoMortero.Call("SacudonLeve");
 					if (IsInstanceValid(oRef))
 					{
 						oRef.Call("RecibirDaño", ATQ_MORTERO);

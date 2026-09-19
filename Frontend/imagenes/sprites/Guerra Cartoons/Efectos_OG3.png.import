@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dct0ngd2aqcg2"
-path="res://.godot/imported/mano_cartas.png-d1104e162eae4165fb7372b0cf65954e.ctex"
+uid="uid://wbgapvccx4it"
+path="res://.godot/imported/Efectos_OG3.png-4fea11c24c7bc92bb58871dd27e3d68c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://imagenes/mano_cartas.png"
-dest_files=["res://.godot/imported/mano_cartas.png-d1104e162eae4165fb7372b0cf65954e.ctex"]
+source_file="res://imagenes/sprites/Guerra Cartoons/Efectos_OG3.png"
+dest_files=["res://.godot/imported/Efectos_OG3.png-4fea11c24c7bc92bb58871dd27e3d68c.ctex"]
 
 [params]
 

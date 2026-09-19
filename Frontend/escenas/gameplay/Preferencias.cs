@@ -1,19 +1,94 @@
 using Godot;
 
 /// <summary>
-/// PREFERENCIAS — Helper estático de ajustes persistentes (user://preferencias.cfg).
+/// PREFERENCIAS — Helper estático de ajustes persistentes.
+///
+/// Se guardan en DOS lugares separados a propósito:
+///   • DISPOSITIVO (user://preferencias.cfg): solo la sesión recordada y ajustes del aparato
+///     (tutorial visto). No pertenece a ningún jugador.
+///   • PERFIL: todo lo que PERTENECE al jugador (skins, tronos, ítems, códigos, progreso, uso de
+///     cartas y monedas). El invitado y cada cuenta registrada tienen su PROPIO archivo, así nunca
+///     se mezclan: entrar a una cuenta no borra lo del invitado, ni al revés.
 /// </summary>
 public static class Preferencias
 {
-	private const string RUTA    = "user://preferencias.cfg";
+	private const string RUTA_DISPOSITIVO = "user://preferencias.cfg";
+	private const string SEC_DISPOSITIVO  = "dispositivo";
 	private const string SECCION = "progreso";
 	private const string SEC_SKINS = "skins";
 
+	// ── PERFILES (invitado / cuenta) ──────────────────────────────────────────
+	public static string RutaPerfilDe(int usuarioId) =>
+		usuarioId > 0 ? $"user://perfil_cuenta_{usuarioId}.cfg" : "user://perfil_invitado.cfg";
+
+	public static string RutaMazoDe(int usuarioId) =>
+		usuarioId > 0 ? $"user://mazo_cuenta_{usuarioId}.json" : "user://mazo_invitado.json";
+
+	/// <summary>Perfil ACTIVO: el de la cuenta logueada o el del invitado. Mientras SesionJuego
+	/// todavía no existe (arranque), se usa la sesión recordada en disco.</summary>
+	public static string RutaPerfil => RutaPerfilDe(SesionJuego.Instance?.UsuarioId ?? SesionUsuarioId);
+
+	private static string RutaDe(string sec) =>
+		sec == SEC_SESION || sec == SEC_DISPOSITIVO ? RUTA_DISPOSITIVO : RutaPerfil;
+
+	/// <summary>Migración ÚNICA al sistema de perfiles. Antes todo vivía mezclado en preferencias.cfg
+	/// (+ monedas en economia.cfg + mazo en mazo_guardado.json) y era de quien estuviera logueado en
+	/// ese momento. La primera vez que corre esta versión, eso se mueve al perfil de la sesión
+	/// recordada (cuenta o invitado), así nadie pierde su progreso. Después no vuelve a hacer nada.</summary>
+	public static void MigrarAPerfilesSiHaceFalta()
+	{
+		var disp = new ConfigFile();
+		disp.Load(RUTA_DISPOSITIVO); // si no existe (instalación nueva) queda vacío y solo se marca
+		if ((bool)disp.GetValue(SEC_DISPOSITIVO, "perfiles_migrados", false)) return;
+
+		int id = (int)disp.GetValue(SEC_SESION, "usuario_id", -1);
+		string rutaPerfil = RutaPerfilDe(id);
+		var perfil = new ConfigFile();
+		perfil.Load(rutaPerfil);
+
+		foreach (string sec in disp.GetSections())
+		{
+			if (sec == SEC_SESION || sec == SEC_DISPOSITIVO) continue;
+			foreach (string clave in disp.GetSectionKeys(sec))
+			{
+				Variant valor = disp.GetValue(sec, clave);
+				if (sec == SECCION && clave == "tutorial_visto")
+					disp.SetValue(SEC_DISPOSITIVO, clave, valor); // el tutorial es del aparato
+				else if (!perfil.HasSectionKey(sec, clave))
+					perfil.SetValue(sec, clave, valor);
+			}
+			disp.EraseSection(sec);
+		}
+
+		// Monedas: vivían en su propio archivo; ahora son una sección más del perfil ("jugador",
+		// la misma que usa Economia).
+		const string RUTA_ECONOMIA_VIEJA = "user://economia.cfg";
+		var eco = new ConfigFile();
+		if (eco.Load(RUTA_ECONOMIA_VIEJA) == Error.Ok)
+		{
+			if (!perfil.HasSectionKey("jugador", "monedas"))
+				perfil.SetValue("jugador", "monedas", eco.GetValue("jugador", "monedas", 0));
+			DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(RUTA_ECONOMIA_VIEJA));
+		}
+
+		const string RUTA_MAZO_VIEJA = "user://mazo_guardado.json";
+		if (FileAccess.FileExists(RUTA_MAZO_VIEJA) && !FileAccess.FileExists(RutaMazoDe(id)))
+			DirAccess.RenameAbsolute(ProjectSettings.GlobalizePath(RUTA_MAZO_VIEJA),
+			                         ProjectSettings.GlobalizePath(RutaMazoDe(id)));
+
+		perfil.Save(rutaPerfil);
+		disp.SetValue(SEC_DISPOSITIVO, "perfiles_migrados", true);
+		disp.Save(RUTA_DISPOSITIVO);
+		GD.Print($"[Preferencias] Datos migrados al perfil {rutaPerfil}");
+	}
+
 	// ── TUTORIAL ──────────────────────────────────────────────────────────────
+	// Es del DISPOSITIVO (no del perfil): quien ya lo vio en este aparato no lo vuelve a ver al
+	// cambiar de cuenta.
 	public static bool TutorialVisto
 	{
-		get => LeerBool("tutorial_visto", false);
-		set => EscribirBool("tutorial_visto", value);
+		get => LeerBoolEn(SEC_DISPOSITIVO, "tutorial_visto", false);
+		set => EscribirBoolEn(SEC_DISPOSITIVO, "tutorial_visto", value);
 	}
 
 	// ── NIVEL / EXPERIENCIA ──────────────────────────────────────────────────
@@ -90,7 +165,7 @@ public static class Preferencias
 	private static string MasUsadoEn(string seccion)
 	{
 		var cfg = new ConfigFile();
-		if (cfg.Load(RUTA) != Error.Ok || !cfg.HasSection(seccion)) return null;
+		if (cfg.Load(RutaDe(seccion)) != Error.Ok || !cfg.HasSection(seccion)) return null;
 		string mejor = null; int max = 0;
 		foreach (string clave in cfg.GetSectionKeys(seccion))
 		{
@@ -134,10 +209,17 @@ public static class Preferencias
 		"res://imagenes/RendersTropa/Huevo render/MajestadHuevo2_Render.png",
 	};
 
+	// Lo EQUIPADO (skin/exclusiva/trono) se sube a la cuenta en cada cambio: el servidor es quien lo
+	// devuelve al abrir la app (AplicarInventario). Antes nunca se subía y por eso siempre volvía el
+	// Rey Huevo al reiniciar.
 	public static int SkinActivaIdx
 	{
 		get => LeerIntEn(SEC_SKINS, "activa", 0);
-		set => EscribirIntEn(SEC_SKINS, "activa", Mathf.Clamp(value, 0, SKIN_ESCENAS.Length - 1));
+		set
+		{
+			EscribirIntEn(SEC_SKINS, "activa", Mathf.Clamp(value, 0, SKIN_ESCENAS.Length - 1));
+			Economia.Instance?.SolicitarSubirEquipado();
+		}
 	}
 
 	public static string RutaSkinActiva => SKIN_ESCENAS[SkinActivaIdx];
@@ -156,7 +238,11 @@ public static class Preferencias
 	public static string SkinExclusivaActiva
 	{
 		get => LeerStringEn(SEC_SKINS, "exclusiva_activa", "");
-		set => EscribirStringEn(SEC_SKINS, "exclusiva_activa", value ?? "");
+		set
+		{
+			EscribirStringEn(SEC_SKINS, "exclusiva_activa", value ?? "");
+			Economia.Instance?.SolicitarSubirEquipado();
+		}
 	}
 
 	// Mapeo textura exclusiva (la que usan MenuPrincipal/Tienda para mostrarla) → escena de
@@ -235,7 +321,11 @@ public static class Preferencias
 	public static int TronoActivoIdx
 	{
 		get => LeerIntEn(SEC_TRONOS, "activo", 0);
-		set => EscribirIntEn(SEC_TRONOS, "activo", Mathf.Clamp(value, 0, TRONO_TEXTURAS.Length - 1));
+		set
+		{
+			EscribirIntEn(SEC_TRONOS, "activo", Mathf.Clamp(value, 0, TRONO_TEXTURAS.Length - 1));
+			Economia.Instance?.SolicitarSubirEquipado();
+		}
 	}
 
 	public static string RutaTronoActiva => TRONO_TEXTURAS[TronoActivoIdx];
@@ -274,19 +364,20 @@ public static class Preferencias
 	};
 
 	public static readonly string[] TIENDA_HECHIZO_IDS = {
-		"escudo", "desprotegido", "encebollado", "debil"
+		"escudo", "desprotegido", "encebollado", "debil", "nuclear"
 	};
 	public static readonly string[] TIENDA_HECHIZO_NOMBRES = {
-		"Escudo", "Desprotegido", "Encebollado", "Débil"
+		"Escudo", "Desprotegido", "Encebollado", "Débil", "Nuclear"
 	};
 	public static readonly int[] TIENDA_HECHIZO_PRECIOS = {
-		300, 300, 400, 300
+		300, 300, 400, 300, 600
 	};
 	public static readonly string[] TIENDA_HECHIZO_ICONOS = {
 		"res://imagenes/HechizosPng/Escudo_hechizo.png",
 		"res://imagenes/HechizosPng/Desprotegido_hechizo.png",
 		"res://imagenes/HechizosPng/Encebo_hechizo.png",
-		"res://imagenes/HechizosPng/Debil_hechizo.png"
+		"res://imagenes/HechizosPng/Debil_hechizo.png",
+		"res://imagenes/HechizosPng/Nuclear_hechizo.png"
 	};
 
 	public static string NormalizarIdItem(string raw)
@@ -367,78 +458,63 @@ public static class Preferencias
 	public static void MarcarCodigoCanjeado(string codigo) => EscribirBoolEn(SEC_CODIGOS, codigo.ToUpperInvariant(), true);
 
 	// ── Internos ──────────────────────────────────────────────────────────────
-	private static bool LeerBool(string clave, bool porDefecto)
-	{
-		var cfg = new ConfigFile();
-		if (cfg.Load(RUTA) != Error.Ok) return porDefecto;
-		return (bool)cfg.GetValue(SECCION, clave, porDefecto);
-	}
-
-	private static void EscribirBool(string clave, bool valor)
-	{
-		var cfg = new ConfigFile();
-		cfg.Load(RUTA);
-		cfg.SetValue(SECCION, clave, valor);
-		cfg.Save(RUTA);
-	}
-
 	private static bool LeerBoolEn(string sec, string clave, bool porDefecto)
 	{
 		var cfg = new ConfigFile();
-		if (cfg.Load(RUTA) != Error.Ok) return porDefecto;
+		if (cfg.Load(RutaDe(sec)) != Error.Ok) return porDefecto;
 		return (bool)cfg.GetValue(sec, clave, porDefecto);
 	}
 
 	private static void EscribirBoolEn(string sec, string clave, bool valor)
 	{
 		var cfg = new ConfigFile();
-		cfg.Load(RUTA);
+		cfg.Load(RutaDe(sec));
 		cfg.SetValue(sec, clave, valor);
-		cfg.Save(RUTA);
+		cfg.Save(RutaDe(sec));
 	}
 
 	private static int LeerIntEn(string sec, string clave, int porDefecto)
 	{
 		var cfg = new ConfigFile();
-		if (cfg.Load(RUTA) != Error.Ok) return porDefecto;
+		if (cfg.Load(RutaDe(sec)) != Error.Ok) return porDefecto;
 		return (int)cfg.GetValue(sec, clave, porDefecto);
 	}
 
 	private static void EscribirIntEn(string sec, string clave, int valor)
 	{
 		var cfg = new ConfigFile();
-		cfg.Load(RUTA);
+		cfg.Load(RutaDe(sec));
 		cfg.SetValue(sec, clave, valor);
-		cfg.Save(RUTA);
+		cfg.Save(RutaDe(sec));
 	}
 
 	private static string LeerStringEn(string sec, string clave, string porDefecto)
 	{
 		var cfg = new ConfigFile();
-		if (cfg.Load(RUTA) != Error.Ok) return porDefecto;
+		if (cfg.Load(RutaDe(sec)) != Error.Ok) return porDefecto;
 		return (string)cfg.GetValue(sec, clave, porDefecto);
 	}
 
 	private static void EscribirStringEn(string sec, string clave, string valor)
 	{
 		var cfg = new ConfigFile();
-		cfg.Load(RUTA);
+		cfg.Load(RutaDe(sec));
 		cfg.SetValue(sec, clave, valor);
-		cfg.Save(RUTA);
+		cfg.Save(RutaDe(sec));
 	}
 
 	private static void BorrarSeccion(string sec)
 	{
 		var cfg = new ConfigFile();
-		cfg.Load(RUTA);
+		cfg.Load(RutaDe(sec));
 		if (cfg.HasSection(sec)) cfg.EraseSection(sec);
-		cfg.Save(RUTA);
+		cfg.Save(RutaDe(sec));
 	}
 
-	/// <summary>Borra TODO lo que es propiedad de la CUENTA (skins, tronos, ítems de tienda y caché de
-	/// códigos) del dispositivo. Se llama al CERRAR SESIÓN para que la siguiente cuenta empiece limpia y
-	/// no herede nada de la anterior. Las monedas se resetean aparte (Economia). Al iniciar sesión se
-	/// vuelve a cargar el inventario real desde el servidor.</summary>
+	/// <summary>Vacía skins, tronos, ítems de tienda y caché de códigos del PERFIL ACTIVO. Solo lo usa
+	/// Economia.AplicarInventario, justo antes de volver a llenarlo con lo que el servidor dice que tiene
+	/// la cuenta (el servidor es la verdad). Ya NO se llama al cerrar sesión: cada perfil tiene su propio
+	/// archivo, así que no hace falta borrar nada para que otra cuenta no lo herede.</summary>
 	public static void LimpiarDatosDeCuenta()
 	{
 		BorrarSeccion(SEC_SKINS);

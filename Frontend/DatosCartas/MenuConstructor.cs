@@ -69,6 +69,7 @@ public partial class MenuConstructor : Control
 		{ "res://imagenes/RendersTropa/Renders Ardid/Fuerza_Menu.png",       -110f },
 		{ "res://imagenes/RendersTropa/Renders Ardid/Robar_Menu.png",        -110f },
 		{ "res://imagenes/RendersTropa/Renders Ardid/Debil_Menu.png",        -80f },
+		{ "res://imagenes/RendersTropa/Renders Ardid/Nuclear_Menu.png",      -110f },
 	};
 
 	private const string RUTA_SOLDADO_REAL_MENU = "res://imagenes/RendersTropa/SoldadoReal_Menu.png";
@@ -76,8 +77,7 @@ public partial class MenuConstructor : Control
 
 	// Renders estáticos de ARDIDES/hechizos para el mismo showcase central (carpeta "Renders
 	// Ardid") — antes los hechizos solo mostraban su ícono chico ajustado a una caja; ahora se
-	// ven igual de grandes que las tropas. "Nuclear" queda afuera a propósito: es arte conceptual
-	// de un hechizo que todavía no está listo para jugarse.
+	// ven igual de grandes que las tropas.
 	private static readonly Dictionary<string, string> RENDERS_ARDID = new()
 	{
 		{ "veneno",       "res://imagenes/RendersTropa/Renders Ardid/Veneno_Menu.png" },
@@ -89,6 +89,7 @@ public partial class MenuConstructor : Control
 		{ "fuerza",       "res://imagenes/RendersTropa/Renders Ardid/Fuerza_Menu.png" },
 		{ "robar_carta",  "res://imagenes/RendersTropa/Renders Ardid/Robar_Menu.png" },
 		{ "debil",        "res://imagenes/RendersTropa/Renders Ardid/Debil_Menu.png" },
+		{ "nuclear",      "res://imagenes/RendersTropa/Renders Ardid/Nuclear_Menu.png" },
 	};
 
 	[ExportGroup("Texturas y Assets")]

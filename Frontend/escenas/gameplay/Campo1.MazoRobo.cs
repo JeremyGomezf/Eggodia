@@ -145,6 +145,8 @@ public partial class Campo1 : Node2D
 	{
 		if (i < 0 || i >= escenasTropas.Length) return false;
 		if (enMano.Contains(i)) return false;
+		// Mano nueva tras la bomba Nuclear: nada de lo que está en los carriles ni de lo que murió.
+		if (_excluirRepartoNuclear != null && _excluirRepartoNuclear.Contains(i)) return false;
 		if (_cooldownIndice[i] > 0) return false;
 		if (desplegados.Contains(i) && !_esEspecialIndice[i]) return false;
 		return true;
@@ -183,7 +185,7 @@ public partial class Campo1 : Node2D
 		var desplegados = IndicesDesplegados();
 		var cand = new List<int>();
 		for (int i = 0; i < escenasTropas.Length; i++)
-			if (!enMano.Contains(i) && !desplegados.Contains(i)) cand.Add(i);
+			if (!enMano.Contains(i) && !desplegados.Contains(i) && !(_excluirRepartoNuclear?.Contains(i) ?? false)) cand.Add(i);
 		if (cand.Count == 0)
 			for (int i = 0; i < escenasTropas.Length; i++) if (!enMano.Contains(i)) cand.Add(i);
 		return cand.Count == 0 ? -1 : cand[random.Next(cand.Count)];

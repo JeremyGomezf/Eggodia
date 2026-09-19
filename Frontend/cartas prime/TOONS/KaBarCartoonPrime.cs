@@ -164,12 +164,17 @@ public partial class KaBarCartoonPrime : TropaBase
 			_carrilNum = ((string)GetMeta("carril"))
 				.ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 
-		LiberarSpotOcupado();
+		// Muerto por la bomba Nuclear: el tablero lo tapa con el polvo (su derrota no se ve) y su
+		// carril sigue ocupado hasta que el polvo termina; recién ahí aparece el fantasma, igual que
+		// siempre (Campo1 llama a AparecerComoFantasmaTrasPolvo).
+		bool porNuclear = HasMeta("muerte_nuclear");
+		if (!porNuclear) LiberarSpotOcupado();
 
 		if (IsInGroup("tropas_jugador")) RemoveFromGroup("tropas_jugador");
 		if (IsInGroup("tropas_rival"))   RemoveFromGroup("tropas_rival");
 
 		_anim.Play("derrota");
+		if (porNuclear) return;
 
 		// Mismo efecto de desvanecido que el resto de las tropas al morir, pero desde el frame 19
 		// (pedido específico para Ka-Bar, no 17 como el resto) y sin liberar el nodo — sigue vivo
@@ -197,6 +202,15 @@ public partial class KaBarCartoonPrime : TropaBase
 	}
 
 	// ── APARICIÓN COMO FANTASMA ───────────────────────────────────────────────
+	/// <summary>Después del polvo de la bomba Nuclear: vuelve a ser visible (el polvo lo había ocultado)
+	/// y aparece como fantasma, igual que tras cualquier muerte en combate.</summary>
+	public void AparecerComoFantasmaTrasPolvo()
+	{
+		if (!IsInstanceValid(this) || _modoFantasma) return;
+		Visible = true;
+		AparecerComoFantasma();
+	}
+
 	private void AparecerComoFantasma()
 	{
 		if (!IsInstanceValid(this)) return;

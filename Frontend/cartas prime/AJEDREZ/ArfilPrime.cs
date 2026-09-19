@@ -21,6 +21,7 @@ public partial class ArfilPrime : TropaBase
 	private Vector2 _posicionOriginal;
 	private Node2D  _objetivoAtaque;
 	private bool    _volando         = false;
+	private Tween   _tweenMovimiento; // ida o regreso en curso (se corta si muere fuera de su carril)
 	private int     _zIndexOriginal;
 
 	private const int FRAME_DESPEGUE = 3; // 🎯 Despegue/Salto en Frame 3
@@ -162,6 +163,7 @@ public partial class ArfilPrime : TropaBase
 			_anim.Pause();
 
 			Tween tweenIda = CreateTween().SetParallel(true);
+			_tweenMovimiento = tweenIda;
 
 			tweenIda.TweenProperty(this, "global_position", posDestino, 0.38f)
 					.SetTrans(Tween.TransitionType.Sine)
@@ -201,12 +203,7 @@ public partial class ArfilPrime : TropaBase
 			// Si saltó por la habilidad, hace el viaje de regreso por Tween
 			if (_esAtaqueHabilidad && _volando)
 			{
-				Tween tweenRegreso = CreateTween();
-				tweenRegreso.TweenProperty(this, "global_position", ObtenerPosicionCarrilPropio(_posicionOriginal), 0.38f)
-							.SetTrans(Tween.TransitionType.Sine)
-							.SetEase(Tween.EaseType.InOut);
-
-				tweenRegreso.Finished += FinalizarTurnoAtaque;
+				RegresarAlCarril();
 			}
 			else
 			{
@@ -216,8 +213,31 @@ public partial class ArfilPrime : TropaBase
 		}
 		else if (_anim.Animation == "daño")
 		{
-			if (!_estaMuerto) ReproducirIdle();
+			if (_estaMuerto) return;
+			if (_volando) RegresarAlCarril(); else ReproducirIdle();
 		}
+	}
+
+	// Vuelve a su carril tras el salto de la habilidad. También se usa cuando lo golpean estando
+	// FUERA de su carril (p. ej. el contraataque del parry del Soldado Real): ese "daño" corta la
+	// animación de ataque, que era la que disparaba el regreso, y la pieza se quedaba trabada al lado
+	// del enemigo. Ahora hace su animación de daño y vuelve.
+	private void RegresarAlCarril()
+	{
+		_tweenMovimiento?.Kill();
+		_tweenMovimiento = CreateTween();
+		_tweenMovimiento.TweenProperty(this, "global_position", ObtenerPosicionCarrilPropio(_posicionOriginal), 0.38f)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.InOut);
+		_tweenMovimiento.Finished += FinalizarTurnoAtaque;
+	}
+
+	// Si muere lejos de su carril, muere AHÍ MISMO: se corta el vuelo para que no siga
+	// desplazándose mientras reproduce la derrota.
+	public override void ReproducirDerrota()
+	{
+		_tweenMovimiento?.Kill();
+		base.ReproducirDerrota();
 	}
 
 	private void FinalizarTurnoAtaque()

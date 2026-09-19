@@ -219,6 +219,9 @@ public partial class MenuPrincipal : Control
 		{
 			eco.MonedasCambiaron += OnMonedasCambiaron;
 			OnMonedasCambiaron(eco.Monedas);
+			// El inventario de la cuenta llega del servidor DESPUÉS de armar el menú: al llegar, se
+			// vuelve a pintar el huevo con la skin equipada de verdad.
+			eco.InventarioAplicado += ActualizarHuevoMenu;
 		}
 
 		// 7. Primer inicio del juego: abrir el tutorial automáticamente (una sola vez)
@@ -237,6 +240,7 @@ public partial class MenuPrincipal : Control
 		if (Economia.Instance != null)
 		{
 			Economia.Instance.MonedasCambiaron -= OnMonedasCambiaron;
+			Economia.Instance.InventarioAplicado -= ActualizarHuevoMenu;
 		}
 	}
 

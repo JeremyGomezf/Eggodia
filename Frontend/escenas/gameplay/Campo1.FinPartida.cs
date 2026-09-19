@@ -411,6 +411,7 @@ public partial class Campo1 : Node2D
 		{
 			if (!RobarCartaDelJugadorCPU()) return;
 			_hechizoUsadoEsteTurno = true;
+			_ardidesGastadosRival++; // al llegar a 2 se habilita su Nuclear
 			return;
 		}
 
@@ -418,6 +419,7 @@ public partial class Campo1 : Node2D
 		if (objetivo == null) return;
 
 		_hechizoUsadoEsteTurno = true;
+		_ardidesGastadosRival++; // al llegar a 2 se habilita su Nuclear
 
 		switch (id)
 		{

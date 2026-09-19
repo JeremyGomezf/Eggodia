@@ -125,8 +125,14 @@ public partial class Campo1 : Node2D
 			if (pi == excluirPi) continue;
 			if (_cooldownHechizo[pi] > 0) continue;
 			if (_poolActivo[pi].Id == "robar_carta" && _cartaRobadaPendiente) continue;
+			// Nuclear: recién después de gastar 2 ardides, y una sola vez por partida.
+			if (_poolActivo[pi].Id == "nuclear" && !NuclearHabilitadaJugador) continue;
 			candidatos.Add(pi);
 		}
+		// El momento en que se habilita, la Nuclear es la carta que aparece (la 3ª del jugador).
+		if (!_nuclearYaOfrecida)
+			foreach (int pi in candidatos)
+				if (_poolActivo[pi].Id == "nuclear") { _nuclearYaOfrecida = true; return pi; }
 		return candidatos.Count == 0 ? -1 : candidatos[random.Next(candidatos.Count)];
 	}
 
@@ -135,6 +141,7 @@ public partial class Campo1 : Node2D
 	{
 		if (pi < 0 || pi >= _cooldownHechizo.Length) return;
 		_cooldownHechizo[pi] = 5;
+		_ardidesGastadosJugador++; // al llegar a 2 se habilita la Nuclear (Campo1.Nuclear.cs)
 	}
 
 	// ── Puente entre Carta.cs (EsHechizo=true) y la lógica de hechizos ────────────────────────
@@ -142,7 +149,14 @@ public partial class Campo1 : Node2D
 	{
 		if (!ValidarHechizo() || EsHechizoUsado(slotIdx)) return false;
 		if (_hechizoUsadoEsteTurno) { MostrarAvisoHechizoLimite(); return false; }
-		MostrarResaltadoObjetivosHechizo(_hechizosMano[slotIdx]);
+		int piArrastre = _hechizosMano[slotIdx];
+		if (piArrastre >= 0 && piArrastre < _poolActivo.Length && _poolActivo[piArrastre].Id == "nuclear")
+		{
+			if (_nuclearUsadaJugador)                     { MostrarAvisoNuclearYaUsada(); return false; }
+			if (_nuclearEnCurso)                          { MostrarAvisoBombaEnCamino();  return false; }
+			if (movimientosRestantes < COSTO_NUCLEAR)     { MostrarAvisoEnergiaNuclear(); return false; }
+		}
+		MostrarResaltadoObjetivosHechizo(piArrastre);
 		return true;
 	}
 
@@ -155,6 +169,7 @@ public partial class Campo1 : Node2D
 	{
 		if (pi < 0 || pi >= _poolActivo.Length) return false;
 		if (_poolActivo[pi].Id == "robar_carta") return ResolverSueltaRoboDesdeCarta(slotIdx);
+		if (_poolActivo[pi].Id == "nuclear")     return ResolverSueltaNuclearDesdeCarta(slotIdx, pi);
 
 		Vector2 mouseMundo = GetGlobalMousePosition();
 		bool aliados = _poolActivo[pi].Aliado;
@@ -192,7 +207,8 @@ public partial class Campo1 : Node2D
 	{
 		LimpiarResaltadoObjetivosHechizo();
 		if (pi < 0 || pi >= _poolActivo.Length) return;
-		if (_poolActivo[pi].Id == "robar_carta")
+		// Robar y Nuclear se sueltan sobre el HUEVO rival: se resalta solo ese.
+		if (_poolActivo[pi].Id is "robar_carta" or "nuclear")
 		{
 			if (tronoRival != null && IsInstanceValid(tronoRival))
 				_resaltadosHechizoActivos.Add(CrearAroResaltadoHechizo(tronoRival, new Color(1f, 0.82f, 0.3f, 0.9f), 90f));

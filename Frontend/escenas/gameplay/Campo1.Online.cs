@@ -163,6 +163,8 @@ public partial class Campo1 : Node2D
 
 	private void IniciarEsperaOnline()
 	{
+		CancelarArrastresEnMano(); // terminó mi turno: una carta en pleno arrastre vuelve a la mano
+		DestrabarTropas();
 		MostrarAviso("Turno del rival…", new Color(1f, 0.85f, 0.4f)); // este aviso SÍ debe verse (aún no está el flag)
 		// A partir de acá y durante todo el turno del rival, este cliente NO aplica daño/muerte local: todo
 		// lo que llega del rival se reproduce SOLO visualmente y los números los pone el snapshot. Cubre
@@ -245,9 +247,18 @@ public partial class Campo1 : Node2D
 		else if (tipo == "hechizo" && datos.ValueKind == JsonValueKind.Object &&
 			datos.TryGetProperty("hechizoId", out var hid) && datos.TryGetProperty("carrilObjetivo", out var cobj))
 		{
-			string carrilMio = EspejarCarril(cobj.GetString() ?? "");
-			if (TropaEnCarril(carrilMio) is Node2D obj && IsInstanceValid(obj))
-				EjecutarVisualOnline(() => ReproducirHechizoVisual(hid.GetString() ?? "", obj));
+			if (hid.GetString() == "nuclear")
+			{
+				// Bomba del rival: se ve la secuencia completa y son MIS tropas y MI mano las que la
+				// sufren. El daño lo aplica quien tenga el turno cuando cae (ver ImpactoNuclear).
+				_ = EjecutarSecuenciaNuclear(lanzaJugador: false);
+			}
+			else
+			{
+				string carrilMio = EspejarCarril(cobj.GetString() ?? "");
+				if (TropaEnCarril(carrilMio) is Node2D obj && IsInstanceValid(obj))
+					EjecutarVisualOnline(() => ReproducirHechizoVisual(hid.GetString() ?? "", obj));
+			}
 		}
 		else if (tipo == "defensa" && datos.ValueKind == JsonValueKind.Object &&
 			datos.TryGetProperty("carrilDef", out var cd))
@@ -259,7 +270,20 @@ public partial class Campo1 : Node2D
 
 		// Reconciliar el tablero con el snapshot (la verdad): actualiza vidas, tropas y huevos.
 		if (acc.TryGetProperty("snapshot", out var snap) && snap.ValueKind == JsonValueKind.String)
-			ReconciliarLigero(snap.GetString() ?? "");
+		{
+			string foto = snap.GetString() ?? "";
+			if (tipo == "nuclear_impacto")
+			{
+				// Resultado de una Nuclear: si acá la explosión todavía no llegó al blanco total, se
+				// muestra en ese instante (las tropas desaparecen bajo el destello).
+				if (!RecibirImpactoNuclearOnline(foto)) ReconciliarLigero(foto);
+			}
+			else
+			{
+				DescartarSnapshotNuclearPendiente(); // esta foto es más nueva y ya lo incluye
+				ReconciliarLigero(foto);
+			}
+		}
 
 		if (tipo == "fin_turno" && !juegoTerminado)
 			IniciarMiTurnoOnline();
@@ -372,6 +396,8 @@ public partial class Campo1 : Node2D
 		// Empieza MI turno: vuelve a aplicarse el daño/estado local normal (yo soy el que actúa).
 		SoloVisualOnline = false;
 		esTurnoJugador = true;
+		// Si una Nuclear cayó justo en el cruce de turnos y nadie aplicó su daño, lo aplico yo ahora.
+		AplicarNuclearPendienteAlEmpezarTurno();
 		_turnoFinalizando = false;
 		tiempoTurnoActual = DURACION_TURNO_SEG;
 		movimientosRestantes = ENERGIA_MAXIMA;
@@ -397,7 +423,9 @@ public partial class Campo1 : Node2D
 		var tropas = new Godot.Collections.Array();
 		foreach (string z in ZONAS_ONLINE)
 		{
-			if (TropaEnCarril(z) is TropaBase tb && IsInstanceValid(tb))
+			// Una tropa ya muerta que sigue en su carril (el polvo de la Nuclear lo retiene hasta
+			// terminar) no cuenta como viva: el rival la tiene que ver morir.
+			if (TropaEnCarril(z) is TropaBase tb && IsInstanceValid(tb) && !tb.EstaMuerta && tb.vidaActual > 0)
 				tropas.Add(new Godot.Collections.Dictionary
 				{
 					{ "carril", z }, { "escena", tb.SceneFilePath },
@@ -525,11 +553,27 @@ public partial class Campo1 : Node2D
 		var ocup = zona?.GetNodeOrNull("Ocupado");
 		if (ocup == null) return;
 		Node2D tropa = ocup.HasMeta("tropa_instanciada") ? ocup.GetMeta("tropa_instanciada").AsGodotObject() as Node2D : null;
-		ocup.Free(); // el carril queda libre de inmediato para futuras reconciliaciones
-		if (tropa == null || !IsInstanceValid(tropa)) return;
+		bool tropaValida = tropa != null && IsInstanceValid(tropa);
 
-		var animSprite = tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
+		// Ya se está yendo en polvo por la bomba: no se repite nada (su carril se libera solo al
+		// terminar el polvo).
+		if (tropaValida && tropa.HasMeta(META_MUERTE_PROCESADA)) return;
+
+		var animSprite = tropaValida ? tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D") : null;
 		bool yaEnDerrota = animSprite != null && ((string)animSprite.Animation).Contains("derrota");
+
+		// Murió por la bomba Nuclear: igual que en la pantalla del lanzador, queda el polvo en vez de
+		// la derrota, y el carril (su círculo) sigue ocupado hasta que el polvo termina.
+		if (_nuclearEnCurso && tropaValida)
+		{
+			tropa.SetMeta(META_MUERTE_PROCESADA, true);
+			if (!yaEnDerrota && tropa.HasMethod("ReproducirDerrota")) tropa.Call("ReproducirDerrota");
+			ReemplazarPorPolvoNuclear(tropa, liberarCarril: true);
+			return;
+		}
+
+		ocup.Free(); // el carril queda libre de inmediato para futuras reconciliaciones
+		if (!tropaValida) return;
 		if (!yaEnDerrota && tropa.HasMethod("ReproducirDerrota")) tropa.Call("ReproducirDerrota");
 
 		// Mismo criterio que EjecutarMuerteTropaSacrificada: desvanecer desde el frame 17 de

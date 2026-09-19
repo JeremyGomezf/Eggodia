@@ -64,23 +64,83 @@ public partial class SoldadoRealPrime : TropaBase
 		IniciarAuraParrySuave();
 	}
 
-	// ── RECIBIR DAÑO: PARRY ABSOLUTO ──────────────────────────────────────────
+	// ── RECIBIR DAÑO: el parry SOLO responde al golpe directo de una tropa enemiga ──
+	// Veneno, hechizos, efectos (fuego, tentáculos, misiles...) NO lo disparan: esos le pegan normal
+	// y la Parada sigue activa. Antes cualquier daño lo hacía contraatacar, y como no sabía quién le
+	// había pegado, le devolvía el golpe a la tropa que estuviera en su carril aunque no fuera ella.
 	public override void RecibirDaño(int cantidad)
 	{
 		if (_estaMuerto) return;
 
 		if (_enParry)
 		{
-			LimpiarEstadoParry();
-			_esContraataque = true;
-
-			Node2D atacanteOCarril = BuscarAtacanteEnCarril() ?? BuscarObjetivoEnCarril();
-			_objetivo = BuscarMuroEnCarrilDe(atacanteOCarril) ?? atacanteOCarril;
-			_anim.Play("ataque");
+			Node2D atacante = BuscarAtacanteEnCarril();
+			if (atacante != null) Contraatacar(BuscarMuroEnCarrilDe(atacante) ?? atacante);
+			else                  RecibirDañoDeEfectoEnParry(cantidad);
 			return;
 		}
 
 		base.RecibirDaño(cantidad);
+	}
+
+	/// <summary>Golpe con atacante CONOCIDO (Dama, Arfil, Caballo y T-Rex llaman a esto). Las piezas de
+	/// ajedrez pueden llegar saltando DESDE OTRO CARRIL, así que el contraataque va directo contra la
+	/// pieza que le pegó (que está parada a su lado), no contra quien esté en su carril.</summary>
+	public void RecibirDañoDe(int cantidad, Node2D atacante)
+	{
+		if (_estaMuerto) return;
+
+		bool esEnemigo = atacante != null && IsInstanceValid(atacante) && atacante is TropaBase
+			&& atacante.IsInGroup("tropas_jugador") != IsInGroup("tropas_jugador");
+		if (!_enParry || !esEnemigo) { RecibirDaño(cantidad); return; }
+
+		// Si viene de MI carril y el rival tiene un muro ahí, el contraataque pega primero al muro
+		// (igual que antes); si llegó saltando desde otro carril, le pega directo a la pieza.
+		bool mismoCarril = atacante.HasMeta("carril") && HasMeta("carril")
+			&& NumeroCarril((string)atacante.GetMeta("carril")) == NumeroCarril((string)GetMeta("carril"));
+		Contraatacar(mismoCarril ? (BuscarMuroEnCarrilDe(atacante) ?? atacante) : atacante);
+	}
+
+	private static string NumeroCarril(string carril) =>
+		carril.ToLower().Replace("modrival", "").Replace("mod", "").Trim();
+
+	private void Contraatacar(Node2D objetivo)
+	{
+		LimpiarEstadoParry();
+		_esContraataque = true;
+		_objetivo       = objetivo;
+		_anim.Play("ataque");
+	}
+
+	// Daño de un EFECTO (no de una tropa) mientras está en Parada: le baja la vida normal, sin
+	// contraatacar y sin salir de la guardia (no pasa por la pre-defensa genérica de TropaBase, que
+	// lo sacaba de la pose de parry con la animación "defensa").
+	private void RecibirDañoDeEfectoEnParry(int cantidad)
+	{
+		if (Campo1.SoloVisualOnline) return;
+		EfectoGolpe();
+		if (cantidad > 0) vidaActual -= cantidad;
+		ActualizarBarrasUI();
+
+		if (vidaActual <= 0)
+		{
+			LimpiarEstadoParry();
+			var campo = GetTree().Root.FindChild("Campo1", true, false);
+			if (campo != null) campo.Call("EjecutarMuerteTropaSacrificada", this);
+		}
+	}
+
+	/// <summary>La bomba Nuclear lo agarra en Parada: se cubre (animación "defensa"), NO contraataca a
+	/// nadie, el escudo queda en 0 y vuelve a "idle" (lo hace OnAnimationFinished al terminar
+	/// "defensa"). No pierde vida. Devuelve false si no estaba en Parada (recibe el daño normal).</summary>
+	public bool CubrirseDeNuclear()
+	{
+		if (_estaMuerto || !_enParry) return false;
+		LimpiarEstadoParry();
+		escudoActual = 0;
+		ActualizarBarrasUI();
+		_anim.Play("defensa");
+		return true;
 	}
 
 	// El hechizo Bloqueo cancela la Parada igual que si lo golpearan mientras la tenía activa

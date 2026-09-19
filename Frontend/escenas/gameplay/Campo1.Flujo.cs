@@ -59,9 +59,16 @@ public partial class Campo1 : Node2D
 		if (tropaSeleccionada == tropa && menuAcciones.Visible) { _menuTropaRecienAbiertoEsteClic = true; return; }
 		tropaSeleccionada = tropa;
 
-		// Botón Ataque: siempre visible y habilitado
+		// Botón Ataque: siempre visible; bloqueado si en el carril de enfrente no hay tropa enemiga (se
+		// habilita solo cuando el rival vuelve a poner una ahí).
 		Button btnA = menuAcciones?.GetNodeOrNull<Button>("HBoxContainer/BtnAtaque");
-		if (btnA != null) { btnA.Visible = true; btnA.Disabled = false; btnA.Modulate = Colors.White; }
+		if (btnA != null)
+		{
+			bool sinObjetivo = !PuedeAtacarEnSuCarril(tropa, "tropas_rival");
+			btnA.Visible  = true;
+			btnA.Disabled = sinObjetivo;
+			btnA.Modulate = sinObjetivo ? new Color(1, 1, 1, 0.4f) : Colors.White;
+		}
 
 		// Botón Defensa: puede ocultarse completamente si la tropa no lo soporta
 		Button btnD = menuAcciones?.GetNodeOrNull<Button>("HBoxContainer/BtnDefensa");
@@ -116,6 +123,13 @@ public partial class Campo1 : Node2D
 	{
 		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
 		if (EstaBlockeada(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
+		if (!PuedeAtacarEnSuCarril(tropaSeleccionada, "tropas_rival"))
+		{
+			// El carril enemigo quedó vacío con el menú abierto: no se ataca ni se gasta energía.
+			MostrarAviso("No hay ninguna tropa enemiga en este carril", Colors.OrangeRed);
+			menuAcciones.Visible = false;
+			return;
+		}
 
 		string carrilAtk = tropaSeleccionada.HasMeta("carril") ? (string)tropaSeleccionada.GetMeta("carril") : "";
 		ProcesarCombateFrontal(tropaSeleccionada, "tropas_rival");
@@ -198,7 +212,7 @@ public partial class Campo1 : Node2D
 			Node m = punto.GetNodeOrNull("Ocupado");
 			if (m == null || !m.HasMeta("tropa_instanciada")) continue;
 			Node2D t = (Node2D)m.GetMeta("tropa_instanciada");
-			if (!IsInstanceValid(t)) continue;
+			if (!IsInstanceValid(t) || (t is TropaBase tb && tb.EstaMuerta)) continue; // ya está muriendo
 
 			if (_candidatoSacrificio == t)
 			{
@@ -357,6 +371,15 @@ public partial class Campo1 : Node2D
 		// (ReconciliarLigero). Así una habilidad reproducida no elimina una tropa que sigue viva.
 		if (SoloVisualOnline) return;
 
+		// Cada muerte se procesa UNA sola vez: el Granadero vuelve a avisar al terminar su propia
+		// derrota, y una tropa que está muriendo sigue en su carril hasta terminar la animación (no se
+		// puede volver a sacrificar ni cobrar su castigo dos veces).
+		if (tropa.HasMeta(META_MUERTE_PROCESADA)) return;
+		tropa.SetMeta(META_MUERTE_PROCESADA, true);
+
+		// Muerte por la bomba Nuclear: termina en polvo, no en la derrota normal.
+		bool porNuclear = tropa.HasMeta(META_MUERTE_NUCLEAR);
+
 		// Si esta tropa estaba atrapada por los tentáculos del Calamar, se liberan de
 		// inmediato al morir (sin esperar al próximo tick de daño cada 10s).
 		if (tropa.HasMeta("tentaculo_activo"))
@@ -395,12 +418,18 @@ public partial class Campo1 : Node2D
 			NotificarMuerteIndiceJugador(tropa);
 		}
 
-		if (tropa.HasMeta("carril"))
+		if (porNuclear)
 		{
-			string carril = (string)tropa.GetMeta("carril");
-			Node2D zona = GetTree().Root.FindChild(carril, true, false) as Node2D;
-			zona?.GetNodeOrNull("Ocupado")?.Free();
+			// Desaparece bajo el blanco y queda su polvo; el carril se libera cuando termina el polvo.
+			ReemplazarPorPolvoNuclear(tropa, liberarCarril: true);
+			CheckEstadoJuego(); ActualizarInterfaz();
+			return;
 		}
+
+		// El carril (su círculo de invocación) se habilita recién cuando TERMINA la derrota: al final
+		// del desvanecido, TropaBase.DesvanecerTrasFrameDerrota llama a LiberarCarrilDe. Igual para el
+		// jugador y para el bot. Si la derrota se trabara por algo, a los 5s se libera igual.
+		ProgramarLiberacionCarrilDeRespaldo(tropa, 5.0);
 
 		// Desvanecer desde el frame 17 de "derrota" (no un timer fijo): así la animación de
 		// derrota se aprecia completa antes de desaparecer, y el carril no queda "libre" tan
@@ -409,6 +438,23 @@ public partial class Campo1 : Node2D
 		int frameDesvanecer = tropa is KaBarCartoonPrime ? 19 : 17;
 		TropaBase.DesvanecerTrasFrameDerrota(tropa, animSprite, frameDesvanecer, 0.6f);
 		CheckEstadoJuego(); ActualizarInterfaz();
+	}
+
+	/// <summary>Red de seguridad del carril de una tropa que está muriendo: pasado el tiempo, si su marca
+	/// "Ocupado" sigue siendo de ella (o de una tropa que ya no existe), se borra para que el carril no
+	/// quede bloqueado para siempre. Si ya lo ocupa otra tropa viva, no toca nada.</summary>
+	private void ProgramarLiberacionCarrilDeRespaldo(Node2D tropa, double segundos)
+	{
+		if (!IsInstanceValid(tropa) || !tropa.HasMeta("carril")) return;
+		var zona = GetTree().Root.FindChild((string)tropa.GetMeta("carril"), true, false);
+		var ocup = zona?.GetNodeOrNull("Ocupado");
+		if (ocup == null) return;
+		GetTree().CreateTimer(segundos, false).Timeout += () =>
+		{
+			if (!IsInstanceValid(ocup) || ocup.IsQueuedForDeletion()) return;
+			GodotObject dueño = ocup.HasMeta("tropa_instanciada") ? ocup.GetMeta("tropa_instanciada").AsGodotObject() : null;
+			if (dueño == null || !IsInstanceValid(dueño) || dueño == tropa) ocup.Free();
+		};
 	}
 
 	// ── MAZO ──────────────────────────────────────────────────────────────

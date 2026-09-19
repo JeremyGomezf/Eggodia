@@ -1,0 +1,130 @@
+[gd_scene format=3 uid="uid://ca2iffq55qytp"]
+
+[ext_resource type="Texture2D" uid="uid://wbgapvccx4it" path="res://imagenes/sprites/Guerra Cartoons/Efectos_OG3.png" id="2_rr42m"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xr762"]
+size = Vector2(91.129005, 72.49999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cuo14"]
+atlas = ExtResource("2_rr42m")
+region = Rect2(1218, 1509, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a3m6o"]
+atlas = ExtResource("2_rr42m")
+region = Rect2(0, 2012, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r7hl2"]
+atlas = ExtResource("2_rr42m")
+region = Rect2(609, 2012, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0c2s3"]
+atlas = ExtResource("2_rr42m")
+region = Rect2(1218, 2012, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_68h5v"]
+atlas = ExtResource("2_rr42m")
+region = Rect2(0, 2515, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8ceci"]
+atlas = ExtResource("2_rr42m")
+region = Rect2(609, 2515, 609, 503)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_haj0f"]
+atlas = ExtResource("2_rr42m")
+region = Rect2(1218, 2515, 609, 503)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_shcb7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuo14")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a3m6o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r7hl2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0c2s3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_68h5v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8ceci")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_haj0f")
+}],
+"loop": 0,
+"name": &"polvo_efecto",
+"speed": 8.0
+}]
+
+[node name="polvo" type="Area2D" unique_id=1934137725]
+position = Vector2(0, -18)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1541430394]
+position = Vector2(4.500002, 19.500002)
+scale = Vector2(1.2400004, 1.2000002)
+shape = SubResource("RectangleShape2D_xr762")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=507399713]
+position = Vector2(3, 6)
+scale = Vector2(0.279, 0.271)
+sprite_frames = SubResource("SpriteFrames_shcb7")
+animation = &"polvo_efecto"
+frame_progress = 0.592851
+flip_h = true

@@ -10,6 +10,9 @@ public partial class Campo1 : Node2D
 		if (!IsInstanceValid(atacante) || EstaBlockeada(atacante)) return;
 		int    daño = Gi(atacante, "puntosAtaque");
 		Node2D obj  = BuscarObjetivoEnCarril(atacante, grupoEnemigo, ignorarMuro);
+		// Regla: si en el carril de enfrente no hay ninguna tropa enemiga (ni muro), no se ataca — ni al
+		// huevo. Recién se puede cuando el rival vuelve a poner una tropa ahí.
+		if (obj == null || !IsInstanceValid(obj)) return;
 		bool   autogestionado = false;
 		try { autogestionado = (bool)atacante.Call("AutogestionaDañoAtaque"); } catch { }
 
@@ -59,31 +62,12 @@ public partial class Campo1 : Node2D
 				}
 			}
 		}
-		else
-		{
-			// Carril enemigo vacío (la tropa que lo ocupaba murió): impacto directo fijo al
-			// Huevo enemigo, sin modificadores de crítico/era/tipo.
-			const int DAÑO_CARRIL_VACIO = 100;
-			if (grupoEnemigo == "tropas_rival")
-			{
-				vidaRival -= DAÑO_CARRIL_VACIO; if (vidaRival < 0) vidaRival = 0;
-				MostrarDañoFlotante(new Vector2(900, 200), DAÑO_CARRIL_VACIO);
-				_dañoTotalJugador += DAÑO_CARRIL_VACIO;
-				RegistrarDañoTropa(atacante, DAÑO_CARRIL_VACIO);
-				RegistrarEvento($"{NombreCorto(atacante)} golpea la base rival: {DAÑO_CARRIL_VACIO}", new Color(0.5f, 1f, 0.6f));
-			}
-			else
-			{
-				vidaJugador -= DAÑO_CARRIL_VACIO; if (vidaJugador < 0) vidaJugador = 0;
-				MostrarDañoFlotante(new Vector2(200, 200), DAÑO_CARRIL_VACIO);
-				_dañoTotalRival += DAÑO_CARRIL_VACIO;
-				RegistrarDañoTropa(atacante, DAÑO_CARRIL_VACIO);
-				RegistrarEvento($"{NombreCorto(atacante)} golpea tu base: {DAÑO_CARRIL_VACIO}", new Color(1f, 0.55f, 0.5f));
-			}
-			ScreenShake(6f);
-			CheckEstadoJuego();
-		}
 	}
+
+	/// <summary>¿Hay algo a lo que atacar en el carril de enfrente (tropa viva o muro)? Si no, el ataque
+	/// desde ese carril queda bloqueado.</summary>
+	private bool PuedeAtacarEnSuCarril(Node2D atacante, string grupoEnemigo) =>
+		IsInstanceValid(atacante) && atacante.HasMeta("carril") && BuscarObjetivoEnCarril(atacante, grupoEnemigo) != null;
 
 	private Node2D BuscarObjetivoEnCarril(Node2D atacante, string grupo, bool ignorarMuro = false)
 	{
@@ -105,6 +89,7 @@ public partial class Campo1 : Node2D
 			// "e == atacante" es una segunda barrera: bajo ninguna circunstancia el atacante
 			// puede terminar siendo su propio objetivo, sin importar el grupo al que pertenezca.
 			if (!(n is Node2D e) || !IsInstanceValid(e) || e == atacante || !e.HasMeta("carril")) continue;
+			if (e is TropaBase muriendo && muriendo.EstaMuerta) continue; // ya está haciendo su derrota
 			if (((string)e.GetMeta("carril")).ToLower().Replace("modrival","").Replace("mod","") != carril) continue;
 			int v = Gi(e,"vidaActual"); if (v < min) { min = v; mejor = e; }
 		}

@@ -101,14 +101,15 @@ public partial class Carta : Control
 		// 1. BUSCAMOS EL CAMPO PARA VALIDAR TURNO
 		var campo = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
 
-		// BLOQUEO SI EL JUEGO TERMINÓ O SI NO ES MI TURNO O NO HAY MOVIMIENTOS
-		if (campo != null)
-		{
-			if (campo.juegoTerminado || !campo.esTurnoJugador || campo.movimientosRestantes <= 0)
-				return;
-		}
+		// BLOQUEO SI EL JUEGO TERMINÓ O SI NO ES MI TURNO O NO HAY MOVIMIENTOS — pero SOLO para empezar
+		// a arrastrar. Una carta que YA se está arrastrando siempre procesa el soltar/mover: antes, si
+		// el turno terminaba en pleno arrastre, el "soltar" se ignoraba y la carta quedaba flotando para
+		// siempre, y las demás cartas (achicadas mientras dura un arrastre) no volvían a responder.
+		bool puedeJugar = campo == null
+			|| !(campo.juegoTerminado || !campo.esTurnoJugador || campo.movimientosRestantes <= 0);
+		if (!puedeJugar && !EstaArrastrando) return;
 
-		if (!EstaEnMano || _bloqueada) return;
+		if (!EstaEnMano || _bloqueada) { if (EstaArrastrando) CancelarArrastre(); return; }
 
 		if (@event is InputEventMouseButton mb && mb.ButtonIndex == MouseButton.Left)
 		{
@@ -137,6 +138,8 @@ public partial class Carta : Control
 			}
 			else if (EstaArrastrando)
 			{
+				// Se soltó cuando ya no se puede jugar (se acabó el turno, etc.): vuelve a su lugar.
+				if (!puedeJugar) { CancelarArrastre(); return; }
 				EstaArrastrando = false;
 				if (EsHechizo) campo?.FinalizarArrastreHechizo();
 				VerificarSoltado();
@@ -199,6 +202,23 @@ public partial class Carta : Control
 		}
 		NotificarHermanas(false);
 		return colocada;
+	}
+
+	/// <summary>Corta un arrastre en curso y devuelve la carta a su lugar en la mano (y desbloquea a las
+	/// demás cartas). Campo1 lo llama al terminar el turno.</summary>
+	public void CancelarArrastre()
+	{
+		if (!EstaArrastrando) return;
+		EstaArrastrando = false;
+		if (EsHechizo) (GetTree()?.Root.FindChild("Campo1", true, false) as Campo1)?.FinalizarArrastreHechizo();
+		RegresarAMano();
+	}
+
+	// Si la carta desaparece en pleno arrastre (p. ej. la bomba Nuclear destruye la mano), las hermanas
+	// no pueden quedar achicadas/bloqueadas esperando un "soltar" que nunca va a llegar.
+	public override void _ExitTree()
+	{
+		if (EstaArrastrando) { EstaArrastrando = false; NotificarHermanas(false); }
 	}
 
 	private void RegresarAMano()

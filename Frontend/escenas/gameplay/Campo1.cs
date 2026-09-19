@@ -95,7 +95,7 @@ public partial class Campo1 : Node2D
 	[Export] public int vidaJugador   = 2000;
 	[Export] public int vidaRival     = 2000;
 	public const   int vidaMaxJugador = 2000;
-	private int tiempoTotalPartida    = 300;
+	private int tiempoTotalPartida    = 180; // 3:00 por partida (VS BOT y online)
 	public  bool juegoTerminado       = false;
 
 	// ── TURNOS ────────────────────────────────────────────────────────────
@@ -112,8 +112,13 @@ public partial class Campo1 : Node2D
 	// que no salgan mensajes con la perspectiva del que actúa, "¡Envenenaste a…!"). Es transitorio, no
 	// por-turno, para NO ocultar avisos legítimos (ej. "el rival se desconectó"). Ver EjecutarVisualOnline.
 	public static bool SuprimiendoAvisosOnline = false;
+	// Últimos 15s antes de que caiga una bomba Nuclear: una tropa en pre-defensa que recibe un golpe
+	// NO pierde la guardia mientras le quede escudo (vuelve a "pre defensa" en vez de a "idle"). Solo
+	// la pierde si le bajan el escudo a 0. Lo usa TropaBase.ReproducirDefensa. Se resetea en _Ready.
+	public static bool GuardiaNuclearActiva = false;
+	public const  int  SEGUNDOS_GUARDIA_NUCLEAR = 15;
 	public  int  movimientosRestantes  = ENERGIA_MAXIMA;
-	public  const int DURACION_TURNO_SEG = 30;
+	public  const int DURACION_TURNO_SEG = 20; // segundos por turno
 	private int  tiempoTurnoActual     = DURACION_TURNO_SEG;
 	private bool _turnoFinalizando     = false; // evita doble CambiarTurno (energía agotada + reloj a la vez)
 	private Timer timerReloj;
@@ -202,6 +207,9 @@ public partial class Campo1 : Node2D
 		new HechizoDef { Id = "escudo",       Nombre = "Escudo",       Ruta = "res://imagenes/HechizosPng/Escudo_hechizo.png",       Aliado = true  },
 		new HechizoDef { Id = "fuerza",       Nombre = "Fuerza",       Ruta = "res://imagenes/HechizosPng/Fuerza_hechizo.png",       Aliado = true  },
 		new HechizoDef { Id = "debil",        Nombre = "Débil",        Ruta = "res://imagenes/HechizosPng/Debil_hechizo.png",        Aliado = false },
+		// Nuclear: se suelta sobre el HUEVO rival (como Robar), cuesta 2 de energía y tiene su propio
+		// flujo completo en Campo1.Nuclear.cs.
+		new HechizoDef { Id = "nuclear",      Nombre = "Nuclear",      Ruta = "res://imagenes/HechizosPng/Nuclear_hechizo.png",      Aliado = false },
 	};
 	private HechizoDef[] _poolActivo = POOL_HECHIZO_BASE;
 	private int[] _cooldownHechizo;
@@ -324,6 +332,7 @@ public partial class Campo1 : Node2D
 		// se filtraría a la siguiente partida y no se aplicaría daño (romperia el bot).
 		SoloVisualOnline = false;
 		SuprimiendoAvisosOnline = false;
+		GuardiaNuclearActiva = false;
 
 		// La cámara manual (posición/zoom/rotación fijados en el editor) debe quedar
 		// activa siempre: el motor no la respeta si no se declara "current" en runtime.
@@ -382,6 +391,10 @@ public partial class Campo1 : Node2D
 			}
 			if (elegidos.Count >= SesionJuego.MIN_ARDIDES_JUGAR) _poolActivo = elegidos.ToArray();
 		}
+		// Sin ardides elegidos se usa el catálogo completo, pero Nuclear (600 monedas) solo entra si
+		// el jugador ya lo compró — no se regala en el pool por defecto.
+		if (_poolActivo == POOL_HECHIZO_BASE && !Preferencias.TieneHechizoDesbloqueado("nuclear"))
+			_poolActivo = Array.FindAll(POOL_HECHIZO_BASE, d => d.Id != "nuclear");
 		_cooldownHechizo = new int[_poolActivo.Length];
 
 		_contenedorHechizos = GetNodeOrNull<Control>("ManoHechizos");

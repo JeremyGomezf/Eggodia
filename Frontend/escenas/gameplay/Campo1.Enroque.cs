@@ -108,7 +108,8 @@ public partial class Campo1 : Node2D
 		Node ocupado = zona.GetNodeOrNull("Ocupado");
 		if (ocupado == null || !ocupado.HasMeta("tropa_instanciada")) return null;
 		var tropa = ocupado.GetMeta("tropa_instanciada").As<TropaBase>();
-		return IsInstanceValid(tropa) ? tropa : null;
+		// Una tropa muriendo sigue ocupando su carril hasta que termina su derrota: no cuenta como aliado.
+		return IsInstanceValid(tropa) && !tropa.IsQueuedForDeletion() && !tropa.EstaMuerta ? tropa : null;
 	}
 
 	/// <summary>Llamado desde Campo1._Input (Campo1.Hechizos.cs) mientras hay una selección
@@ -203,7 +204,14 @@ public partial class Campo1 : Node2D
 
 		await ToSignal(tw, Tween.SignalName.Finished);
 
-		if (!IsInstanceValid(torre)) { FinalizarBloqueoTablero(); return; }
+		if (!IsInstanceValid(torre))
+		{
+			// La Torre murió en pleno Enroque: el aliado tiene que quedar destrabado. Antes se quedaba
+			// marcado como "procesando habilidad" para siempre y ya no respondía a los clics.
+			if (aliado != null && IsInstanceValid(aliado)) aliado.estaProcesandoHabilidad = false;
+			FinalizarBloqueoTablero();
+			return;
+		}
 
 		// 4) Reasignación lógica del "tablero" — solo tras terminar el Tween al 100%.
 		//    Se intercambia el carril y se reapuntan (nunca se destruyen) los

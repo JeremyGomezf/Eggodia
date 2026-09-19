@@ -137,11 +137,9 @@ public partial class PanelLogin : Control
 	// ── INVITADO ──────────────────────────────────────────────────────────
 	private void JugarComoInvitado()
 	{
-		if (SesionJuego.Instance != null)
-		{
-			SesionJuego.Instance.UsuarioId    = -1;
-			SesionJuego.Instance.NombreJugador = "Invitado";
-		}
+		// Perfil de invitado: sus cosas quedan en su propio archivo, aparte de cualquier cuenta. No se
+		// guarda como sesión recordada, así que al volver a abrir la app aparece otra vez este login.
+		SesionJuego.Instance?.ActivarPerfil(-1, "Invitado");
 		IrAlMenu();
 	}
 
@@ -205,11 +203,10 @@ public partial class PanelLogin : Control
 
 			if (usuario != null && SesionJuego.Instance != null)
 			{
-				SesionJuego.Instance.UsuarioId     = usuario.Id;
-				SesionJuego.Instance.NombreJugador  = usuario.Nombre;
 				Preferencias.GuardarSesion(usuario.Id, usuario.Nombre); // login persistente
-				// Cargar el inventario COMPLETO de la cuenta (monedas + skins + tronos + ítems + equipado),
-				// limpiando antes lo local → cada cuenta ve solo lo suyo, sin heredar de la anterior.
+				// Pasa al perfil de ESTA cuenta (su propio archivo: nada del invitado ni de otra cuenta)
+				// y trae del servidor su inventario completo (monedas + skins + tronos + ítems + equipado).
+				SesionJuego.Instance.ActivarPerfil(usuario.Id, usuario.Nombre);
 				Economia.Instancia()?.CargarInventarioCuenta(usuario.Id);
 				GD.Print($"[Login] ¡Bienvenido, {usuario.Nombre}! (ID: {usuario.Id}, monedas: {usuario.Monedas})");
 				IrAlMenu();

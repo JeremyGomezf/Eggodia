@@ -39,7 +39,12 @@ public partial class Campo1 : Node2D
 		while (_manoVisualCPU.Count < 3)
 		{
 			var candidatos = new List<int>();
-			for (int i = 0; i < escenasTropas.Length; i++) if (!_manoVisualCPU.Contains(i)) candidatos.Add(i);
+			// Tras la bomba Nuclear: sin repetir lo que el bot tiene en sus carriles ni lo que murió
+			// (si eso deja sin opciones, se relaja para no dejarlo nunca sin mano).
+			for (int i = 0; i < escenasTropas.Length; i++)
+				if (!_manoVisualCPU.Contains(i) && !(_excluirRepartoNuclearCPU?.Contains(i) ?? false)) candidatos.Add(i);
+			if (candidatos.Count == 0)
+				for (int i = 0; i < escenasTropas.Length; i++) if (!_manoVisualCPU.Contains(i)) candidatos.Add(i);
 			if (candidatos.Count == 0) break;
 			_manoVisualCPU.Add(candidatos[random.Next(candidatos.Count)]);
 		}

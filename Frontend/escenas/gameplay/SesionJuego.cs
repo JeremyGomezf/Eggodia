@@ -47,7 +47,8 @@ public partial class SesionJuego : Node
 	public int    DañoUltimaPartida { get; set; } = 0;
 	public int    RachaActual       { get; set; } = 0;
 
-	private const string RUTA_MAZO_GUARDADO = "user://mazo_guardado.json";
+	// El mazo también es del PERFIL (invitado o cuenta): cada uno arma y guarda el suyo.
+	private string RutaMazoGuardado => Preferencias.RutaMazoDe(UsuarioId);
 
 	// Ciclo de vida móvil: true mientras la app está en segundo plano.
 	private bool _appEnSegundoPlano = false;
@@ -55,15 +56,25 @@ public partial class SesionJuego : Node
 	public override void _Ready()
 	{
 		Instance = this;
-		CargarMazoDeDisco();
 
-		// Login persistente: si había una sesión guardada, se restaura (así el jugador sigue
-		// logueado entre reinicios y PanelLogin lo manda directo al menú).
+		// Una sola vez: pasa los datos del formato viejo (todo mezclado) al perfil que corresponde.
+		// Va ANTES que nada, porque todo lo demás ya lee desde los perfiles.
+		Preferencias.MigrarAPerfilesSiHaceFalta();
+
+		// Login persistente: SOLO una cuenta registrada queda recordada (así PanelLogin la manda
+		// directo al menú). El invitado nunca se recuerda → cada vez que abre la app ve el login.
 		int idGuardado = Preferencias.SesionUsuarioId;
 		if (idGuardado > 0)
 		{
 			UsuarioId     = idGuardado;
 			NombreJugador = Preferencias.SesionNombre;
+		}
+
+		// El mazo se lee DESPUÉS de restaurar la sesión: es el del perfil de esa cuenta.
+		CargarMazoDeDisco();
+
+		if (idGuardado > 0)
+		{
 			// Traer el saldo de monedas de la cuenta desde el servidor (diferido: Economia se autocarga
 			// después que SesionJuego en el orden de AutoLoad). Así el saldo que el admin ajustó aparece
 			// al reabrir la app aunque no se vuelva a iniciar sesión.
@@ -98,18 +109,30 @@ public partial class SesionJuego : Node
 		}
 	}
 
-	public void CerrarSesion()
+	/// <summary>Cambia el PERFIL activo (login, "jugar como invitado" o cerrar sesión). Cada perfil
+	/// tiene sus propios archivos, así que alcanza con apuntar al nuevo y recargar lo que está en
+	/// memoria (mazo y monedas) — nada del perfil anterior se borra ni se mezcla.</summary>
+	public void ActivarPerfil(int usuarioId, string nombre)
 	{
-		UsuarioId      = -1;
-		NombreJugador  = "Jugador";
+		UsuarioId     = usuarioId;
+		NombreJugador = string.IsNullOrEmpty(nombre) ? "Jugador" : nombre;
 		MazoSeleccionado.Clear();
 		ImagenesMazo.Clear();
 		ArdidesSeleccionados.Clear();
+		CargarMazoDeDisco();
+		Economia.Instancia()?.RecargarPerfil(usuarioId);
+	}
+
+	/// <summary>Ruta del archivo del perfil activo. Para scripts GDScript (SummonTerminal), que no
+	/// pueden leer la clase estática Preferencias.</summary>
+	public string RutaPerfilActivo() => Preferencias.RutaPerfil;
+
+	public void CerrarSesion()
+	{
 		Preferencias.CerrarSesionGuardada(); // el logout también se recuerda
-		// Aislamiento por cuenta: borrar del dispositivo skins/tronos/ítems/códigos y resetear monedas,
-		// para que la siguiente cuenta NO herede nada de esta (ni oro ni cosas).
-		Preferencias.LimpiarDatosDeCuenta();
-		Economia.Instance?.OlvidarCuenta();
+		// Pasa al perfil de invitado. Lo de la cuenta queda intacto en SU archivo (y en el servidor)
+		// para cuando vuelva a entrar; la próxima cuenta que entre usa el suyo propio.
+		ActivarPerfil(-1, "Jugador");
 	}
 
 	/// <summary>Guardar mazo desde el constructor antes de ir a la batalla o volver al menú.</summary>
@@ -133,7 +156,7 @@ public partial class SesionJuego : Node
 	{
 		try
 		{
-			using var file = FileAccess.Open(RUTA_MAZO_GUARDADO, FileAccess.ModeFlags.Write);
+			using var file = FileAccess.Open(RutaMazoGuardado, FileAccess.ModeFlags.Write);
 			if (file != null)
 			{
 				var data = new MazoPersistenteData
@@ -156,9 +179,9 @@ public partial class SesionJuego : Node
 	{
 		try
 		{
-			if (FileAccess.FileExists(RUTA_MAZO_GUARDADO))
+			if (FileAccess.FileExists(RutaMazoGuardado))
 			{
-				using var file = FileAccess.Open(RUTA_MAZO_GUARDADO, FileAccess.ModeFlags.Read);
+				using var file = FileAccess.Open(RutaMazoGuardado, FileAccess.ModeFlags.Read);
 				if (file != null)
 				{
 					string json = file.GetAsText();

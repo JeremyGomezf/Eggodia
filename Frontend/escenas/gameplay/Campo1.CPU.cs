@@ -67,6 +67,11 @@ public partial class Campo1 : Node2D
 		await ToSignal(GetTree().CreateTimer(delay * 0.4f), "timeout");
 		if (juegoTerminado) return;
 
+		// Ardid Nuclear: si le conviene, la tira al empezar su turno. El contador de 10s no lo frena:
+		// sigue jugando con la energía que le queda (antes de cada acción ya espera al tablero libre,
+		// así que no ataca mientras la bomba cae o la pantalla está blanca).
+		CPUIntentarNuclear();
+
 		int tropasEnCampo = 0;
 		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
 			if (IsInstanceValid(n as Node2D)) tropasEnCampo++;
@@ -96,17 +101,21 @@ public partial class Campo1 : Node2D
 				await EsperarTableroLibre();
 				if (juegoTerminado || !IsInstanceValid(tropa)) return;
 				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
+				// Si el carril del jugador está vacío no puede atacar (misma regla que el jugador).
+				bool puedeAtacar = objetivo != null;
 				bool intentaHabilidad = !HabilidadUsada(tropa) && !HabilidadBloqueadaTurno(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0;
 				if (intentaHabilidad && tropa is TorrePrime torreIA)
 				{
-					if (!await IntentarEnroqueIA(torreIA)) ProcesarCombateFrontal(tropa, "tropas_jugador");
+					if (!await IntentarEnroqueIA(torreIA) && puedeAtacar) ProcesarCombateFrontal(tropa, "tropas_jugador");
 				}
 				else if (intentaHabilidad)
 					tropa.Call("EjecutarAccion", "usar_habilidad");
 				else if (DebeDefender(tropa, objetivo))
 					tropa.Call("EjecutarAccion", "preparar_defensa");
-				else
+				else if (puedeAtacar)
 					ProcesarCombateFrontal(tropa, "tropas_jugador");
+				else
+					continue; // nada que hacer con esta tropa: no gasta energía
 				if (_dificultadCPU == 2 && random.Next(5) == 0) CPUUsarHechizo();
 				movimientosRestantes--;
 				ActualizarInterfaz();
@@ -162,17 +171,21 @@ public partial class Campo1 : Node2D
 				await EsperarTableroLibre();
 				if (juegoTerminado || !IsInstanceValid(tropa)) return;
 				Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
+				// Si el carril del jugador está vacío no puede atacar (misma regla que el jugador).
+				bool puedeAtacar = objetivo != null;
 				bool intentaHabilidad = !HabilidadUsada(tropa) && !HabilidadBloqueadaTurno(tropa) && _dificultadCPU >= 1 && random.Next(3) == 0;
 				if (intentaHabilidad && tropa is TorrePrime torreIA)
 				{
-					if (!await IntentarEnroqueIA(torreIA)) ProcesarCombateFrontal(tropa, "tropas_jugador");
+					if (!await IntentarEnroqueIA(torreIA) && puedeAtacar) ProcesarCombateFrontal(tropa, "tropas_jugador");
 				}
 				else if (intentaHabilidad)
 					tropa.Call("EjecutarAccion", "usar_habilidad");
 				else if (DebeDefender(tropa, objetivo))
 					tropa.Call("EjecutarAccion", "preparar_defensa");
-				else
+				else if (puedeAtacar)
 					ProcesarCombateFrontal(tropa, "tropas_jugador");
+				else
+					continue; // nada que hacer con esta tropa: no gasta energía
 				if (_dificultadCPU == 2 && random.Next(5) == 0) CPUUsarHechizo();
 				movimientosRestantes--;
 				ActualizarInterfaz();

@@ -245,10 +245,17 @@ func _es_tropa_ya_desbloqueada(card_id: String) -> bool:
 	if card_id.is_empty():
 		return false
 	var cfg = ConfigFile.new()
-	if cfg.load("user://preferencias.cfg") == OK:
+	if cfg.load(_ruta_perfil()) == OK:
 		var clave = "tropa_" + card_id.to_lower().replace("_", "").replace("-", "")
 		return cfg.get_value("tienda_items", clave, false)
 	return false
+
+# Archivo del PERFIL activo (invitado o cuenta): lo que se desbloquea queda solo en ese perfil.
+func _ruta_perfil() -> String:
+	var s = get_node_or_null("/root/SesionJuego")
+	if s != null and s.has_method("RutaPerfilActivo"):
+		return s.RutaPerfilActivo()
+	return "user://perfil_invitado.cfg"
 
 # Id de la cuenta logueada (autoload C# SesionJuego). -1 si es invitado o no está disponible.
 func _obtener_user_id() -> int:
@@ -354,11 +361,12 @@ func _finalizar_canje_exitoso() -> void:
 	# Registrar desbloqueo en preferencias locales
 	var card_id = carta_reclamada.get("cardId", "")
 	if card_id != "":
+		var ruta = _ruta_perfil()
 		var cfg = ConfigFile.new()
-		cfg.load("user://preferencias.cfg")
+		cfg.load(ruta)
 		var clave = "tropa_" + card_id.to_lower().replace("_", "").replace("-", "")
 		cfg.set_value("tienda_items", clave, true)
-		cfg.save("user://preferencias.cfg")
+		cfg.save(ruta)
 
 	# Iniciar invocación masiva del portal
 	_activar_invocacion_portal()

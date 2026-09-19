@@ -200,9 +200,9 @@ public partial class Campo1 : Node2D
 		tw.Finished += () => { if (IsInstanceValid(panel)) panel.QueueFree(); };
 	}
 
-	public void RegistrarGastoMovimiento()
+	public void RegistrarGastoMovimiento(int cantidad = 1)
 	{
-		movimientosRestantes--; ActualizarInterfaz();
+		movimientosRestantes = Mathf.Max(0, movimientosRestantes - cantidad); ActualizarInterfaz();
 		// Al llegar a EP:0/3 no se cambia de turno de inmediato: el panel de energía se queda
 		// en blanco (ya "gastado") 2s antes de que el turno realmente pase al rival.
 		if (movimientosRestantes <= 0 && !juegoTerminado && !_turnoFinalizando)
@@ -229,17 +229,10 @@ public partial class Campo1 : Node2D
 	// ── SCREEN SHAKE ──────────────────────────────────────────────────────
 	public void ScreenShake(float intensidad = 6f)
 	{
-		if (!PanelSettings.ScreenShakeEnabled) return;
-		Vector2 orig = Position;
-		Tween tw = CreateTween();
-		for (int i = 0; i < 4; i++)
-		{
-			Vector2 off = new Vector2(
-				(float)GD.RandRange(-intensidad, intensidad),
-				(float)GD.RandRange(-intensidad * 0.5f, intensidad * 0.5f));
-			tw.TweenProperty(this, "position", orig + off, 0.03f);
-		}
-		tw.TweenProperty(this, "position", orig, 0.03f);
+		// Mismo sistema que los sacudones de la Nuclear y de los misiles (Campo1.Nuclear.cs): así dos
+		// sacudidas seguidas nunca pelean por la posición del campo ni lo dejan corrido. Este es el
+		// golpecito corto de siempre (0.15s) y solo mueve el campo, no los botones.
+		Sacudir(0.15f, intensidad, 0f);
 	}
 
 	// ── GOLPE CRÍTICO (números dorados grandes) ──────────────────────────

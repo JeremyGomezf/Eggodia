@@ -8,6 +8,7 @@ public partial class Campo1 : Node2D
 	private void OnTickReloj()
 	{
 		if (juegoTerminado) return;
+
 		// En línea: mientras espero el turno del rival no corre el reloj (el turno no se me pasa solo).
 		if (EsOnline && !esTurnoJugador) return;
 		tiempoTotalPartida--;
@@ -19,6 +20,8 @@ public partial class Campo1 : Node2D
 
 	private void CambiarTurno()
 	{
+		CancelarArrastresEnMano(); // si justo arrastrabas una carta al acabarse el tiempo, vuelve a su lugar
+		DestrabarTropas();
 		_turnoFinalizando = false;
 		_turnosJugados++;
 
@@ -41,6 +44,7 @@ public partial class Campo1 : Node2D
 		// Cooldown de hechizos: 5 turnos "en general" (cuentan los del jugador y los del rival) —
 		// se descuenta en cada cambio de turno, no solo en el propio.
 		for (int i = 0; i < _cooldownHechizo.Length; i++) if (_cooldownHechizo[i] > 0) _cooldownHechizo[i]--;
+		if (_cooldownNuclearCPU > 0) _cooldownNuclearCPU--;
 		ActualizarEstadoCartaRobada(); // libera "Robar Carta" en cuanto se juegue la carta del Spot4
 
 		// Cooldown del botón de Ardid (2 rondas = 4 cambios de turno).
@@ -124,6 +128,27 @@ public partial class Campo1 : Node2D
 		ActualizarInterfaz();
 	}
 
+	/// <summary>Corta cualquier arrastre de carta (tropa o ardid) en curso y la devuelve a la mano.</summary>
+	private void CancelarArrastresEnMano()
+	{
+		foreach (Control mano in new[] { contenedorMano, _contenedorHechizos })
+		{
+			if (mano == null || !IsInstanceValid(mano)) continue;
+			foreach (Node n in mano.GetChildren())
+				if (n is Carta c && IsInstanceValid(c) && c.EstaArrastrando) c.CancelarArrastre();
+		}
+	}
+
+	/// <summary>Red de seguridad en cada cambio de turno: ninguna tropa viva puede quedar marcada como
+	/// "procesando habilidad" (eso la deja sin responder a los clics). Un Enroque dura menos de medio
+	/// segundo, así que a esta altura nunca hay uno legítimo en curso.</summary>
+	private void DestrabarTropas()
+	{
+		foreach (string grupo in new[] { "tropas_jugador", "tropas_rival" })
+			foreach (Node n in GetTree().GetNodesInGroup(grupo))
+				if (n is TropaBase t && IsInstanceValid(t)) t.estaProcesandoHabilidad = false;
+	}
+
 	// TurnoPanel/HBox/"turno o avisos": toast animado que vive fijo en el HUD (no se crea
 	// ni se destruye por turno). Cambia de texto/color y hace un rebote "gelatina" al cambiar
 	// de turno; el contador de segundos se refresca aparte, cada tick, en ActualizarContadorTurno.
@@ -150,6 +175,7 @@ public partial class Campo1 : Node2D
 	// sin repetir la animación de gelatina (esa es exclusiva del cambio de turno real).
 	private void ActualizarContadorTurno()
 	{
+
 		if (juegoTerminado || _lblTurnoAviso == null || string.IsNullOrEmpty(_turnoBaseTexto)) return;
 		int segundos = Mathf.Max(0, tiempoTurnoActual);
 		_lblTurnoAviso.Text = $"{_turnoBaseTexto} ({segundos}s)";

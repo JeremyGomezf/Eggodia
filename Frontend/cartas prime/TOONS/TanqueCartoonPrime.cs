@@ -178,9 +178,9 @@ public partial class TanqueCartoonPrime : TropaBase
 				objetivo.Call("RecibirDaño", puntosAtaque);
 				if (campo != null) campo.Call("RegistrarDañoTropa", this, puntosAtaque);
 			}
-			// Vibración de cámara al impacto
-			if (campo != null && campo.HasMethod("ScreenShake"))
-				campo.Call("ScreenShake", 7f);
+			// Sacudida leve al impacto del misil (campo + botones), para que se note el golpe.
+			if (campo != null && campo.HasMethod("SacudonLeve"))
+				campo.Call("SacudonLeve");
 			campo?.Call("FinalizarBloqueoTablero");
 		};
 	}

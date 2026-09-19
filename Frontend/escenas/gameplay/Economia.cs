@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Text;
 using System.Text.Json;
 
@@ -17,12 +18,16 @@ using System.Text.Json;
 /// </summary>
 public partial class Economia : Node
 {
-	private const string RUTA_GUARDADO = "user://economia.cfg";
-	private const string SECCION       = "jugador";
+	// Las monedas viven en el archivo del PERFIL activo (invitado o cuenta), ver Preferencias.RutaPerfil.
+	private const string SECCION = "jugador";
 
 	public static Economia Instance { get; private set; }
 
 	[Signal] public delegate void MonedasCambiaronEventHandler(int nuevoTotal);
+
+	// Se emite cuando llega (y se aplica) el inventario de la cuenta desde el servidor, para que las
+	// pantallas abiertas (ej. el huevo del menú) se refresquen con lo equipado de verdad.
+	[Signal] public delegate void InventarioAplicadoEventHandler();
 
 	private int _monedas = 0;
 	public int Monedas => _monedas;
@@ -113,7 +118,7 @@ public partial class Economia : Node
 	private void Cargar()
 	{
 		var cfg = new ConfigFile();
-		Error err = cfg.Load(RUTA_GUARDADO);
+		Error err = cfg.Load(Preferencias.RutaPerfil);
 		if (err == Error.Ok)
 			_monedas = (int)cfg.GetValue(SECCION, "monedas", 0);
 		else
@@ -122,9 +127,22 @@ public partial class Economia : Node
 
 	private void Guardar()
 	{
+		// El archivo del perfil guarda también skins/tronos/progreso: hay que cargarlo antes de
+		// escribir, o se pisaría todo lo demás con un archivo que solo tiene las monedas.
+		string ruta = Preferencias.RutaPerfil;
 		var cfg = new ConfigFile();
+		cfg.Load(ruta);
 		cfg.SetValue(SECCION, "monedas", _monedas);
-		cfg.Save(RUTA_GUARDADO);
+		cfg.Save(ruta);
+	}
+
+	/// <summary>Cambio de perfil (login, invitado o cerrar sesión): toma el saldo guardado en el
+	/// archivo del perfil NUEVO. No sube nada al servidor.</summary>
+	public void RecargarPerfil(int usuarioId)
+	{
+		_usuarioId = usuarioId;
+		Cargar();
+		EmitSignal(SignalName.MonedasCambiaron, _monedas);
 	}
 
 	/// <summary>Solo para pruebas/reset.</summary>
@@ -196,14 +214,43 @@ public partial class Economia : Node
 
 	// ── INVENTARIO POR CUENTA ─────────────────────────────────────────────────
 
-	/// <summary>Al CERRAR SESIÓN: olvida la cuenta y pone el saldo local en 0, SIN empujar 0 al
-	/// servidor (eso borraría las monedas de la cuenta). El saldo real se recarga al volver a entrar.</summary>
-	public void OlvidarCuenta()
+	// ── EQUIPADO (skin / exclusiva / trono) → servidor ────────────────────────
+	private bool _subidaEquipadoPendiente = false;
+	private bool _aplicandoInventario     = false;
+
+	/// <summary>Pide subir lo equipado a la cuenta. Se agrupa al final del frame: equipar una skin
+	/// cambia dos valores seguidos (exclusiva + índice) y así viaja un solo pedido con ambos.</summary>
+	public void SolicitarSubirEquipado()
 	{
-		_usuarioId = -1;
-		_monedas = 0;
-		Guardar();
-		EmitSignal(SignalName.MonedasCambiaron, _monedas);
+		// Los valores que llegan DEL servidor no se le devuelven; el invitado no tiene cuenta.
+		if (_aplicandoInventario || _subidaEquipadoPendiente) return;
+		if ((SesionJuego.Instance?.UsuarioId ?? -1) <= 0) return;
+		_subidaEquipadoPendiente = true;
+		CallDeferred(nameof(SubirEquipado));
+	}
+
+	private void SubirEquipado()
+	{
+		_subidaEquipadoPendiente = false;
+		int usuarioId = SesionJuego.Instance?.UsuarioId ?? -1;
+		if (usuarioId <= 0) return;
+		var h = new HttpRequest();
+		AddChild(h);
+		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
+		{
+			if (r != (long)HttpRequest.Result.Success || c != 200)
+				GD.PrintErr($"[Economia] No se pudo guardar lo equipado en la cuenta (HTTP {c}).");
+			if (IsInstanceValid(h)) h.QueueFree();
+		};
+		string cuerpo = JsonSerializer.Serialize(new
+		{
+			skinIdx       = Preferencias.SkinActivaIdx,
+			skinExclusiva = Preferencias.SkinExclusivaActiva,
+			tronoIdx      = Preferencias.TronoActivoIdx,
+		});
+		string[] hdr = { "Content-Type: application/json" };
+		if (h.Request($"{ApiConfig.Usuarios}/{usuarioId}/equipar", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok && IsInstanceValid(h))
+			h.QueueFree();
 	}
 
 	/// <summary>Carga el inventario COMPLETO de la cuenta desde el servidor (monedas + skins + tronos +
@@ -218,9 +265,16 @@ public partial class Economia : Node
 		AddChild(h);
 		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
 		{
-			if (r == (long)HttpRequest.Result.Success && c == 200)
+			// Si mientras viajaba el pedido el jugador cambió de perfil (cerró sesión / entró con
+			// otra cuenta), esta respuesta ya no es suya: se descarta para no escribir en otro perfil.
+			bool sigueSiendoSuya = (SesionJuego.Instance?.UsuarioId ?? -1) == usuarioId;
+			if (sigueSiendoSuya && r == (long)HttpRequest.Result.Success && c == 200)
 			{
-				try { AplicarInventario(Encoding.UTF8.GetString(b)); } catch { }
+				_aplicandoInventario = true;
+				try { AplicarInventario(Encoding.UTF8.GetString(b)); }
+				catch (Exception e) { GD.PrintErr($"[Economia] Inventario inválido: {e.Message}"); }
+				finally { _aplicandoInventario = false; }
+				EmitSignal(SignalName.InventarioAplicado);
 			}
 			if (IsInstanceValid(h)) h.QueueFree();
 		};
@@ -230,6 +284,11 @@ public partial class Economia : Node
 	private void AplicarInventario(string json)
 	{
 		var doc = JsonSerializer.Deserialize<JsonElement>(json);
+
+		// Lo equipado en este aparato ANTES de limpiar (ver más abajo por qué se necesita).
+		int    skinLocal      = Preferencias.SkinActivaIdx;
+		string exclusivaLocal = Preferencias.SkinExclusivaActiva;
+		int    tronoLocal     = Preferencias.TronoActivoIdx;
 
 		// Pizarra limpia: borra skins/tronos/ítems locales antes de poner los de ESTA cuenta.
 		Preferencias.LimpiarDatosDeCuenta();
@@ -259,9 +318,36 @@ public partial class Economia : Node
 			foreach (var e in exs.EnumerateArray())
 				Preferencias.DesbloquearSkinExclusiva(e.GetString() ?? "");
 
-		if (doc.TryGetProperty("equipSkinIdx", out var esi))       Preferencias.SkinActivaIdx      = esi.GetInt32();
-		if (doc.TryGetProperty("equipTronoIdx", out var eti))      Preferencias.TronoActivoIdx     = eti.GetInt32();
-		if (doc.TryGetProperty("equipSkinExclusiva", out var ese)) Preferencias.SkinExclusivaActiva = ese.GetString() ?? "";
+		int    skinServidor      = doc.TryGetProperty("equipSkinIdx", out var esi)       ? esi.GetInt32()          : 0;
+		int    tronoServidor     = doc.TryGetProperty("equipTronoIdx", out var eti)      ? eti.GetInt32()          : 0;
+		string exclusivaServidor = doc.TryGetProperty("equipSkinExclusiva", out var ese) ? (ese.GetString() ?? "") : "";
+
+		// Hasta esta versión el cliente NUNCA subía lo equipado, así que toda cuenta tiene en el
+		// servidor los valores por defecto (Rey Huevo / trono 0). Si el servidor está en el defecto
+		// pero este aparato tenía algo equipado que la cuenta SÍ posee, se respeta lo local y se sube
+		// (arregla a todos los jugadores actuales sin que pierdan su skin).
+		bool servidorEnDefecto = skinServidor == 0 && tronoServidor == 0 && exclusivaServidor == "";
+		bool localPropio =
+			(skinLocal == 0 || Preferencias.TieneSkin(skinLocal)) &&
+			(tronoLocal == 0 || Preferencias.TieneTrono(tronoLocal)) &&
+			(exclusivaLocal == "" || Preferencias.TieneSkinExclusiva(exclusivaLocal));
+		bool localDistinto = skinLocal != 0 || tronoLocal != 0 || exclusivaLocal != "";
+
+		if (servidorEnDefecto && localDistinto && localPropio)
+		{
+			Preferencias.SkinActivaIdx       = skinLocal;
+			Preferencias.TronoActivoIdx      = tronoLocal;
+			Preferencias.SkinExclusivaActiva = exclusivaLocal;
+			_aplicandoInventario = false; // este SÍ hay que subirlo
+			SolicitarSubirEquipado();
+			_aplicandoInventario = true;
+		}
+		else
+		{
+			Preferencias.SkinActivaIdx       = skinServidor;
+			Preferencias.TronoActivoIdx      = tronoServidor;
+			Preferencias.SkinExclusivaActiva = exclusivaServidor;
+		}
 
 		// Cartas físicas/NFC reclamadas por ESTA cuenta: se traen aparte (tabla UserCards del server)
 		// y se desbloquean localmente. Va después de limpiar/aplicar el resto para que no se borren.

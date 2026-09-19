@@ -30,6 +30,9 @@ public abstract partial class TropaBase : Area2D
 	// ── ESTADO ────────────────────────────────────────────────────────────
 	public  bool habilidadUsada  = false;
 	protected bool _estaMuerto   = false;
+	/// <summary>True desde que empieza su derrota (aunque muera por sacrificio, sin llegar a vida 0). Sigue
+	/// ocupando su carril hasta que termina la animación: esto la distingue de una tropa viva.</summary>
+	public bool EstaMuerta => _estaMuerto;
 	protected bool _yaActuo      = false;
 	private  Tween _tweenGolpe;
 
@@ -394,7 +397,12 @@ public abstract partial class TropaBase : Area2D
 			disparado = true;
 			Tween tw = tropa.CreateTween();
 			tw.TweenProperty(tropa, "modulate:a", 0.0f, duracion);
-			if (liberarAlTerminar) tw.Finished += () => { if (IsInstanceValid(tropa)) tropa.QueueFree(); };
+			if (liberarAlTerminar) tw.Finished += () =>
+			{
+				if (!IsInstanceValid(tropa)) return;
+				LiberarCarrilDe(tropa); // terminó su derrota → el carril queda habilitado sí o sí
+				tropa.QueueFree();
+			};
 		}
 
 		if (anim == null) { Disparar(); return; }
@@ -410,6 +418,19 @@ public abstract partial class TropaBase : Area2D
 			if (disparado || !IsInstanceValid(anim)) return;
 			if (((string)anim.Animation).Contains("derrota")) Disparar();
 		};
+	}
+
+	/// <summary>Red de seguridad al terminar una derrota (normal o por polvo nuclear): si el carril de
+	/// la tropa todavía tiene su marca "Ocupado" apuntando a ELLA, se borra para que el círculo de
+	/// invocación vuelva a estar disponible de inmediato (jugador y bot). Si el carril ya se liberó o
+	/// ya lo ocupa otra tropa, no toca nada.</summary>
+	public static void LiberarCarrilDe(Node2D tropa)
+	{
+		if (!IsInstanceValid(tropa) || !tropa.IsInsideTree() || !tropa.HasMeta("carril")) return;
+		var zona = tropa.GetTree().Root.FindChild((string)tropa.GetMeta("carril"), true, false);
+		var ocup = zona?.GetNodeOrNull("Ocupado");
+		if (ocup == null || !ocup.HasMeta("tropa_instanciada")) return;
+		if (ocup.GetMeta("tropa_instanciada").AsGodotObject() == tropa) ocup.Free();
 	}
 
 	/// <summary>Posición global de un Marker2D "spot" de lanzamiento (SpotFuego, SpotCañon,
@@ -531,6 +552,10 @@ public abstract partial class TropaBase : Area2D
 		if (_estaMuerto) return;
 		_anim.Play("defensa");
 		await ToSignal(_anim, "animation_finished");
+		if (!IsInstanceValid(this) || _estaMuerto) return;
+		// Últimos 15s antes de la bomba Nuclear: si todavía le queda escudo, el golpe no le rompe la
+		// guardia — vuelve a cubrirse. Solo con el escudo en 0 queda desprotegida.
+		if (Campo1.GuardiaNuclearActiva && escudoActual > 0) { ReproducirPreDefensa(); return; }
 		ReproducirIdle();
 	}
 
