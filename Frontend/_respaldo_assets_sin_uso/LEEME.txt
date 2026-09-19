@@ -1,0 +1,1 @@
+Assets sin uso restaurados como respaldo. Godot ignora esta carpeta (.gdignore): NO se importan, NO se referencian, NO van en el APK.
