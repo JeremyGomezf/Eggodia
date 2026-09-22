@@ -361,7 +361,9 @@ public partial class Campo1 : Node2D
 			var colososLibres = _colososCPU.FindAll(ruta => !yaEnCampo.Contains(ruta));
 			var poolColoso = colososLibres.Count > 0 ? colososLibres : _colososCPU;
 			string rutaColoso = poolColoso[random.Next(poolColoso.Count)];
-			_manoVisualCPU.Remove(Array.IndexOf(escenasTropas, rutaColoso)); // si lo tenía en mano, lo gasta
+			int idxColosoJugado = Array.IndexOf(escenasTropas, rutaColoso);
+			_manoVisualCPU.Remove(idxColosoJugado); // si lo tenía en mano, lo gasta
+			RegistrarCartaGastadaCPU(idxColosoJugado);
 			var pc = GD.Load<PackedScene>(rutaColoso);
 			if (pc != null) return pc;
 		}
@@ -376,6 +378,7 @@ public partial class Campo1 : Node2D
 			{
 				int idxElegido = enMano[random.Next(enMano.Count)];
 				_manoVisualCPU.Remove(idxElegido); // la gasta: sale de su mano
+				RegistrarCartaGastadaCPU(idxElegido);
 				var deMano = GD.Load<PackedScene>(escenasTropas[idxElegido]);
 				if (deMano != null) return deMano;
 			}
@@ -397,11 +400,21 @@ public partial class Campo1 : Node2D
 	// y tamaño normales — nunca se queda "como 4 pegadas pareciendo 3".
 	// Desplazado un poco arriba e izquierda respecto al centro de ManoManual, para que las 4
 	// cartas queden mejor centradas en pantalla (antes se veían corridas a la derecha/abajo).
-	private static readonly Vector2[] LAYOUT_4_CENTROS = {
-		new Vector2(-220, -55), new Vector2(-115, -81), new Vector2(-15, -81), new Vector2(90, -55)
-	};
-	private static readonly float[] LAYOUT_4_ROT = { -0.16f, -0.05f, 0.05f, 0.16f };
-	private const float ESCALA_MANO_COMPACTA = 0.78f;
+	// ── ABANICO SIMÉTRICO CENTRADO (RearrangeHand) ─────────────────────────
+	// Recalcula posición Y rotación de cada carta cada vez que cambia la cantidad en la mano (jugar,
+	// gastar o robar). Una sola fórmula para 1 a 4 cartas, centrada en Spot2 (el punto medio de la
+	// zona de mano ya calibrado en el editor — hace de "centro X de pantalla en la zona inferior"):
+	//   offset = i - (n-1)/2        →  0 con 1 carta; ±0.5 con 2; -1,0,1 con 3; -1.5,-0.5,0.5,1.5 con 4
+	//   posición.x = centro.x + offset * ESPACIADO
+	//   rotación   = offset * ROTACION_PASO           (abanico: negativo a la izquierda, positivo a la derecha)
+	// Un solo abanico (mismo solape marcado en todas las cantidades, como en la referencia): los
+	// valores base son los que ya estaban afinados a mano para 4 cartas, y se escalan junto con el
+	// tamaño de la carta (escalaMult) para que el solape se vea igual de parejo con 1, 2, 3 o 4.
+	private const float ABANICO_ESPACIADO_BASE = 103f;  // separación horizontal entre cartas
+	private const float ABANICO_ROTACION_PASO  = 0.103f; // radianes de giro por "paso" de offset
+	private const float ABANICO_ARCO_Y_BASE    = 26f;   // el centro del abanico queda más arriba
+	private const float ABANICO_DURACION       = 0.25f; // Tween, EaseOut/Cubic — ver ReubicarEnMano en Carta.cs
+	private const float ESCALA_MANO_COMPACTA   = 0.78f; // 4 cartas
 	private bool _enModoManoCompacta = false;
 
 	private void ReacomodarManoTropas()
@@ -416,55 +429,49 @@ public partial class Campo1 : Node2D
 		// terminar reasignada a la posición de otra carta y las dos "saltaban" de lugar al reacomodar.
 		cartas.Sort((a, b) => Array.IndexOf(SPOTS_MANO, a.NombreSpot).CompareTo(Array.IndexOf(SPOTS_MANO, b.NombreSpot)));
 
-		if (cartas.Count >= 4)
+		// La carta robada (si sigue en mano) va siempre última ("mía, mía, robada"). Se rastrea por
+		// REFERENCIA, no por spot, así "Robar Carta" sigue bloqueada hasta que esa carta se juegue de
+		// verdad (ver ActualizarEstadoCartaRobada).
+		if (_cartaRobada != null && (!IsInstanceValid(_cartaRobada) || !_cartaRobada.EstaEnMano || _cartaRobada.IsQueuedForDeletion()))
+			_cartaRobada = null;
+		if (_cartaRobada != null && cartas.Contains(_cartaRobada))
 		{
-			Vector2 escCompacta = new Vector2(ESCALA_MANO_COMPACTA, ESCALA_MANO_COMPACTA);
-			for (int i = 0; i < cartas.Count && i < 4; i++)
-			{
-				Vector2 localPos = LAYOUT_4_CENTROS[i] - (cartas[i].Size * escCompacta / 2f);
-				cartas[i].ReubicarEnMano(localPos, escCompacta, LAYOUT_4_ROT[i]);
-			}
-			_enModoManoCompacta = true;
+			cartas.Remove(_cartaRobada);
+			cartas.Add(_cartaRobada);
 		}
-		else
+
+		int cantidad = cartas.Count;
+		if (cantidad == 0) { _enModoManoCompacta = false; return; }
+
+		Marker2D centro = contenedorMano.GetNodeOrNull<Marker2D>("Spot2");
+		Vector2 puntoCentral = centro?.Position ?? Vector2.Zero;
+
+		bool compacto = cantidad >= 4;
+		// Más grande cuantas menos cartas quedan (da más visibilidad con 1-2), más chica y compacta con 4.
+		float escalaMult = compacto ? ESCALA_MANO_COMPACTA / ESCALA_MANO_NORMAL
+			: cantidad == 1 ? 1.25f : cantidad == 2 ? 1.12f : 1f;
+		Vector2 esc = new Vector2(ESCALA_MANO_NORMAL * escalaMult, ESCALA_MANO_NORMAL * escalaMult);
+		// El espaciado y el arco escalan junto con el tamaño de carta: mismo solape marcado (como en
+		// la referencia) sin importar si hay 1, 2, 3 o 4 cartas.
+		float espaciado = ABANICO_ESPACIADO_BASE * escalaMult;
+		float rotPaso   = ABANICO_ROTACION_PASO;
+		float arcoY     = ABANICO_ARCO_Y_BASE * escalaMult;
+
+		float maxOffset = Mathf.Max(0.5f, (cantidad - 1) / 2f); // evita dividir por 0 con 1 sola carta
+		for (int i = 0; i < cantidad; i++)
 		{
-			// 1-3 cartas: se reparten CENTRADAS sobre la línea de los 3 spots y, cuantas menos queden,
-			// un poco más grandes — con 2 cartas van a los puntos medios y con 1 al centro justo. Así la
-			// mano siempre se ve pareja y bien visible. La carta robada va siempre última ("mía, mía,
-			// robada") y todas recuperan un NombreSpot real de Spot1/2/3, clave para que
-			// RellenarManoObjetivo las cuente bien y no duplique ni deje huecos.
-			if (_cartaRobada != null && (!IsInstanceValid(_cartaRobada) || !_cartaRobada.EstaEnMano || _cartaRobada.IsQueuedForDeletion()))
-				_cartaRobada = null;
-			if (_cartaRobada != null && cartas.Contains(_cartaRobada))
-			{
-				cartas.Remove(_cartaRobada);
-				cartas.Add(_cartaRobada);
-			}
+			float offset = i - (cantidad - 1) / 2f;
+			float t = offset / maxOffset; // -1..1, para el arco del abanico (0 si cantidad==1)
 
-			var spots = new List<Marker2D>();
-			foreach (string nombre in SPOTS_MANO)
-				if (contenedorMano.GetNodeOrNull<Marker2D>(nombre) is Marker2D m) spots.Add(m);
-			if (spots.Count == 0) { _enModoManoCompacta = false; return; }
+			Vector2 puntoCarta = puntoCentral + new Vector2(offset * espaciado, -arcoY * (1f - t * t));
+			float rotacion = offset * rotPaso;
 
-			float aumento = cartas.Count <= 1 ? 1.25f : cartas.Count == 2 ? 1.12f : 1f;
-			Vector2 esc = new Vector2(ESCALA_MANO_NORMAL * aumento, ESCALA_MANO_NORMAL * aumento);
-			float centro = (spots.Count - 1) / 2f;
-
-			for (int i = 0; i < cartas.Count && i < SPOTS_MANO.Length; i++)
-			{
-				// t = "posición" sobre la línea de spots (0 = primero, spots.Count-1 = último).
-				float t = Mathf.Clamp(centro + (i - (cartas.Count - 1) / 2f), 0f, spots.Count - 1);
-				int baseIdx = Mathf.FloorToInt(t);
-				int sigIdx  = Mathf.Min(baseIdx + 1, spots.Count - 1);
-				float frac  = t - baseIdx;
-				Vector2 posSpot = spots[baseIdx].Position.Lerp(spots[sigIdx].Position, frac);
-				float rotSpot   = Mathf.LerpAngle(spots[baseIdx].Rotation, spots[sigIdx].Rotation, frac);
-
-				cartas[i].NombreSpot = SPOTS_MANO[i];
-				cartas[i].ReubicarEnMano(posSpot - (cartas[i].Size * esc / 2f), esc, rotSpot);
-			}
-			_enModoManoCompacta = false;
+			string spotDestino = i < SPOTS_MANO.Length ? SPOTS_MANO[i] : "Spot4";
+			cartas[i].NombreSpot = spotDestino;
+			cartas[i].ZIndex = 10 + i; // superposiciócantidad del abanico: la de más a la derecha, encima
+			cartas[i].ReubicarEnMano(puntoCarta - (cartas[i].Size * esc / 2f), esc, rotacion, ABANICO_DURACION);
 		}
+		_enModoManoCompacta = compacto;
 	}
 
 	// ── LIMPIEZA DE CARRILES FANTASMA ─────────────────────────────────────

@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public partial class Campo1 : Node2D
@@ -69,34 +70,84 @@ public partial class Campo1 : Node2D
 	private void InicializarManoVisualCPU()
 	{
 		_manoVisualCPU.Clear();
-		var fuente = new List<string>(_mazoCPU);
-		BarajarLista(fuente);
-		foreach (string ruta in fuente)
-		{
-			if (_manoVisualCPU.Count >= 3) break;
-			int idx = Array.IndexOf(escenasTropas, ruta);
-			if (idx >= 0 && !_manoVisualCPU.Contains(idx)) _manoVisualCPU.Add(idx);
-		}
 		RellenarManoVisualCPUSiFalta();
 	}
 
+	// ── MISMAS REGLAS DE COMPOSICIÓN QUE EL JUGADOR (pedido) ────────────────
+	// 2 tácticos + 1 asesino (o al revés, alternando cada reparto) y colosos recién desde la ronda 3
+	// y después de que el rival haya gastado 5 cartas de otro tipo — nunca dos colosos juntos en la
+	// mano. Usa las MISMAS clasificaciones ya calculadas (_idxTactico/_idxAsesino/_idxColoso), que
+	// están indexadas sobre escenasTropas igual que _manoVisualCPU.
+	private int _manosRepartidasCPU        = 0;
+	private int _cartasNoColosoGastadasCPU = 0;
+
+	private bool HayColosoEnManoCPU() =>
+		_tipoIndice != null && _manoVisualCPU.Exists(i => i >= 0 && i < _tipoIndice.Length && _tipoIndice[i] == TipoTropa.Coloso);
+
+	/// <summary>Cuenta una carta que el rival gastó de su mano visual (para habilitar sus colosos a
+	/// las 5), llamado desde ElegirTropaCPUDeck justo cuando la saca de _manoVisualCPU.</summary>
+	private void RegistrarCartaGastadaCPU(int idx)
+	{
+		if (_tipoIndice == null || idx < 0 || idx >= _tipoIndice.Length) return;
+		if (_tipoIndice[idx] != TipoTropa.Coloso) _cartasNoColosoGastadasCPU++;
+	}
+
 	// Repone hasta 3 cartas — se llama al empezar cada turno del rival, igual que la mano del
-	// jugador se completa al empezar el suyo (CompletarManoAlInicio).
+	// jugador se completa al empezar el suyo (CompletarManoAlInicio / RellenarManoObjetivo).
 	private void RellenarManoVisualCPUSiFalta()
 	{
-		if (escenasTropas == null || escenasTropas.Length == 0) return;
+		if (escenasTropas == null || escenasTropas.Length == 0 || _tipoIndice == null) return;
+		if (_manoVisualCPU.Count >= 3) return;
+
+		int turnoNum = _turnosJugados / 2 + 1; // misma ronda global que usa el jugador
+		bool colosoHabilitado = _idxColoso.Count > 0 && turnoNum >= RONDA_MINIMA_COLOSO
+			&& _cartasNoColosoGastadasCPU >= CARTAS_PARA_COLOSO && !HayColosoEnManoCPU();
+
+		int ocupTac = 0, ocupAse = 0, ocupCol = 0;
+		foreach (int idx in _manoVisualCPU)
+		{
+			if (idx < 0 || idx >= _tipoIndice.Length) continue;
+			switch (_tipoIndice[idx])
+			{
+				case TipoTropa.Tactico: ocupTac++; break;
+				case TipoTropa.Asesino: ocupAse++; break;
+				case TipoTropa.Coloso:  ocupCol++; break;
+			}
+		}
+
+		bool manoDeAsesinos = _manosRepartidasCPU % 2 == 1;
+		int tgtTac = colosoHabilitado ? 1 : (manoDeAsesinos ? 1 : 2);
+		int tgtAse = colosoHabilitado ? 1 : (manoDeAsesinos ? 2 : 1);
+		int tgtCol = colosoHabilitado ? 1 : 0;
+		_manosRepartidasCPU++;
+
+		int needTac = Math.Max(0, tgtTac - ocupTac);
+		int needAse = Math.Max(0, tgtAse - ocupAse);
+		int needCol = Math.Max(0, tgtCol - ocupCol);
+
 		while (_manoVisualCPU.Count < 3)
 		{
-			var candidatos = new List<int>();
-			// Tras la bomba Nuclear: sin repetir lo que el bot tiene en sus carriles ni lo que murió
-			// (si eso deja sin opciones, se relaja para no dejarlo nunca sin mano).
-			for (int i = 0; i < escenasTropas.Length; i++)
-				if (!_manoVisualCPU.Contains(i) && !(_excluirRepartoNuclearCPU?.Contains(i) ?? false)) candidatos.Add(i);
-			if (candidatos.Count == 0)
-				for (int i = 0; i < escenasTropas.Length; i++) if (!_manoVisualCPU.Contains(i)) candidatos.Add(i);
-			if (candidatos.Count == 0) break;
-			_manoVisualCPU.Add(candidatos[random.Next(candidatos.Count)]);
+			int idx = -1;
+			if (needCol > 0) { idx = ElegirIndiceCPU(_idxColoso); if (idx >= 0) needCol--; }
+			if (idx < 0 && needTac > 0) { idx = ElegirIndiceCPU(_idxTactico); if (idx >= 0) needTac--; }
+			if (idx < 0 && needAse > 0) { idx = ElegirIndiceCPU(_idxAsesino); if (idx >= 0) needAse--; }
+			if (idx < 0) idx = ElegirIndiceCPU(null); // cualquiera, sin importar el tipo
+			if (idx < 0) break; // no queda nada elegible: se corta acá, no se traba
+			_manoVisualCPU.Add(idx);
 		}
+	}
+
+	/// <summary>Un índice elegible para la mano visual del rival, dentro de "pool" (o de todas las
+	/// tropas si pool es null) — nunca repite lo que ya tiene en mano ni lo que la Nuclear excluyó.</summary>
+	private int ElegirIndiceCPU(List<int> pool)
+	{
+		var candidatos = new List<int>();
+		IEnumerable<int> fuente = pool ?? Enumerable.Range(0, escenasTropas.Length);
+		foreach (int i in fuente)
+			if (!_manoVisualCPU.Contains(i) && !(_excluirRepartoNuclearCPU?.Contains(i) ?? false)) candidatos.Add(i);
+		if (candidatos.Count == 0) // red de seguridad: se relaja el filtro de la Nuclear antes de rendirse
+			foreach (int i in fuente) if (!_manoVisualCPU.Contains(i)) candidatos.Add(i);
+		return candidatos.Count == 0 ? -1 : candidatos[random.Next(candidatos.Count)];
 	}
 
 	// Se suelta la carta "Robar Carta" sobre el huevo rival (tronoRival) — único objetivo válido;

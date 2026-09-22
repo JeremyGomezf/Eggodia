@@ -66,18 +66,12 @@ public partial class Campo1 : Node2D
 		if (_cacheIlustraciones.TryGetValue(ruta, out var tex) && tex != null) return tex;
 
 		// Fallback: si la carta no tiene Imagen asignada en su .tres (o no se encontró match),
-		// usamos el propio sprite de la tropa en el tablero en vez de dejar el MVT en blanco.
-		return ObtenerTexturaDesdeNodo(tropa);
-	}
-
-	private Texture2D ObtenerTexturaDesdeNodo(Node2D tropa)
-	{
-		var sprite = tropa.GetNodeOrNull<Sprite2D>("Sprite2D");
-		if (sprite?.Texture != null) return sprite.Texture;
-
-		var animado = tropa.GetNodeOrNull<AnimatedSprite2D>("AnimatedSprite2D");
-		if (animado?.SpriteFrames != null && !string.IsNullOrEmpty(animado.Animation))
-			return animado.SpriteFrames.GetFrameTexture(animado.Animation, 0);
+		// usamos la ilustración grande de batalla (la misma que la mano de cartas), NUNCA un frame
+		// en vivo del sprite animado — eso es lo que causaba el ícono roto en Victoria/Derrota
+		// (se agarraba el frame de ESE instante, que podía caer a mitad de un ataque).
+		var info = ClasificacionCartas.Clasificar(ruta);
+		if (!string.IsNullOrEmpty(info.CartaPng) && ResourceLoader.Exists(info.CartaPng))
+			return GD.Load<Texture2D>(info.CartaPng);
 
 		return null;
 	}

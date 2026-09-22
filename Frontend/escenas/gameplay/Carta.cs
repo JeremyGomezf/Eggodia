@@ -71,9 +71,13 @@ public partial class Carta : Control
 		if (EstaArrastrando || _achicadaPorOtra) return;
 		_tweenAnim?.Kill();
 		_tweenAnim = CreateTween().SetParallel(true);
-		_tweenAnim.TweenProperty(this, "position", nuevaPosicionLocal, duracion);
-		_tweenAnim.TweenProperty(this, "scale", nuevaEscala, duracion);
-		_tweenAnim.TweenProperty(this, "rotation", nuevaRotacion, duracion);
+		// Cubic/EaseOut (pedido): entra rápido y frena suave al llegar, sin saltos secos.
+		_tweenAnim.TweenProperty(this, "position", nuevaPosicionLocal, duracion)
+			.SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+		_tweenAnim.TweenProperty(this, "scale", nuevaEscala, duracion)
+			.SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+		_tweenAnim.TweenProperty(this, "rotation", nuevaRotacion, duracion)
+			.SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
 	}
 
 	public void AsignarDatos(string rutaImg, string rutaTropa, int id)
