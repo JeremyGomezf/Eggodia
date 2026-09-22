@@ -217,6 +217,26 @@ public partial class Campo1 : Node2D
 		}
 
 		if (modoSacrificioActivo && @event is InputEventMouseButton mb2 && mb2.Pressed && mb2.ButtonIndex == MouseButton.Left)
+		{
+			// Si el clic cayó sobre el propio botón de Sacrificar (o Pausa, que también sigue vivo en
+			// este modo), NO se toca: antes esto lo consumía SIEMPRE, así que apretar de nuevo
+			// Sacrificar para cancelar nunca le llegaba al botón — el modo quedaba pegado para siempre.
+			if (ClicSobreBotonVivo(mb2.Position)) return;
+
+			// Se consume ACÁ: si no, el mismo clic sigue de largo hasta el Area2D de la tropa
+			// (_InputEvent en TropaBase) y abre además su menú de Atacar/Defender/Habilidad.
 			VerificarSacrificioEnCampo(GetGlobalMousePosition());
+			GetViewport().SetInputAsHandled();
+		}
+	}
+
+	/// <summary>¿El clic (en coordenadas de pantalla) cae sobre el botón de Sacrificar o el de Pausa?
+	/// Son los dos únicos botones que el modo sacrificio deja vivos — sus clics no se pueden robar.</summary>
+	private bool ClicSobreBotonVivo(Vector2 posPantalla)
+	{
+		foreach (Control btn in new Control[] { btnSacrificio, CapaHUD()?.GetNodeOrNull<Control>("PausaButton") })
+			if (btn != null && IsInstanceValid(btn) && btn.GetGlobalRect().HasPoint(posPantalla))
+				return true;
+		return false;
 	}
 }

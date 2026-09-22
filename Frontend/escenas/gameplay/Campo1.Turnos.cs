@@ -7,6 +7,7 @@ public partial class Campo1 : Node2D
 	// ── RELOJ ─────────────────────────────────────────────────────────────
 	private void OnTickReloj()
 	{
+		if (IntroEnCurso) return; // la intro cinemática congela el reloj de la partida
 		if (juegoTerminado) return;
 
 		// En línea: mientras espero el turno del rival no corre el reloj (el turno no se me pasa solo).

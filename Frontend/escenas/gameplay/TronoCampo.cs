@@ -4,6 +4,9 @@ using System;
 public partial class TronoCampo : StaticBody2D
 {
 	private Node2D huevoInstancia;
+	/// <summary>El personaje-huevo posado en este trono (null si CargarHuevo todavía no corrió). Lo usa
+	/// la intro cinemática (Campo1.Intro.cs) para la caída desde el cielo.</summary>
+	public Node2D Huevo => huevoInstancia;
 
 	// Los 8 PNG de Tronos/ son 570x427. Escala agrandada a pedido (antes 0.27 se veía chico en el
 	// tablero) — ajustar visualmente en editor si hace falta afinar más.

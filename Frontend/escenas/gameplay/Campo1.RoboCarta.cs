@@ -17,6 +17,55 @@ public partial class Campo1 : Node2D
 	private const float ROBO_CARD_W = 260f;
 	private const float ROBO_CARD_H = 364f;
 
+	// ── MANO REAL DEL RIVAL ───────────────────────────────────────────────
+	// VS BOT: es _manoVisualCPU, y el bot juega DE AHÍ (robarle una se la quita de verdad).
+	// ONLINE: es la mano real del otro jugador, que viaja en cada snapshot ("mano").
+	private readonly List<string> _manoRivalOnline = new();
+
+	/// <summary>Cartas que el rival tiene ahora mismo en la mano: (índice en mi mazo o -1, escena).</summary>
+	private List<(int idx, string escena)> CartasEnManoDelRival()
+	{
+		var lista = new List<(int, string)>();
+		if (EsOnline)
+		{
+			foreach (string escena in _manoRivalOnline)
+				if (!string.IsNullOrEmpty(escena)) lista.Add((Array.IndexOf(escenasTropas, escena), escena));
+		}
+		else
+		{
+			foreach (int i in _manoVisualCPU)
+				if (i >= 0 && i < escenasTropas.Length) lista.Add((i, escenasTropas[i]));
+		}
+		return lista;
+	}
+
+	/// <summary>Escenas de las cartas de MI mano (para que el rival en línea vea qué robarme).</summary>
+	private Godot.Collections.Array MisCartasEnManoOnline()
+	{
+		var arr = new Godot.Collections.Array();
+		if (contenedorMano == null) return arr;
+		foreach (Node n in contenedorMano.GetChildren())
+			if (n is Carta c && c.EstaEnMano && !c.IsQueuedForDeletion() && c.EscenaTropa != null)
+				arr.Add(c.EscenaTropa.ResourcePath);
+		return arr;
+	}
+
+	/// <summary>Online: el rival me robó esta carta — se va de mi mano de verdad.</summary>
+	private void PerderCartaPorRoboOnline(string escena)
+	{
+		if (contenedorMano == null || string.IsNullOrEmpty(escena)) return;
+		foreach (Node n in contenedorMano.GetChildren())
+		{
+			if (n is not Carta c || !c.EstaEnMano || c.IsQueuedForDeletion()) continue;
+			if (c.EscenaTropa == null || c.EscenaTropa.ResourcePath != escena) continue;
+			c.NombreSpot = "X";
+			c.QueueFree();
+			ReacomodarManoTropas();
+			MostrarAviso("¡El rival te robó una carta de la mano!", new Color(1f, 0.45f, 0.4f));
+			return;
+		}
+	}
+
 	private void InicializarManoVisualCPU()
 	{
 		_manoVisualCPU.Clear();
@@ -61,9 +110,9 @@ public partial class Campo1 : Node2D
 			&& tronoRival.GlobalPosition.DistanceTo(mouseMundo) < 160f;
 		if (!sobreHuevoRival) return false;
 
-		if (_manoVisualCPU.Count < 3)
+		if (CartasEnManoDelRival().Count == 0)
 		{
-			MostrarAviso("El rival todavía no tiene su mano completa", new Color(1f, 0.6f, 0.3f));
+			MostrarAviso("El rival no tiene cartas en la mano", new Color(1f, 0.6f, 0.3f));
 			return false;
 		}
 
@@ -128,10 +177,12 @@ public partial class Campo1 : Node2D
 		centro.AddChild(hbox);
 
 		var resuelto = new bool[] { false }; // referencia compartida entre los 3 closures de abajo
-		for (int i = 0; i < _manoVisualCPU.Count && i < 3; i++)
+		var manoRival = CartasEnManoDelRival();
+		for (int i = 0; i < manoRival.Count && i < 4; i++) // hasta 4: puede tener una robada
 		{
-			int idxTropa = _manoVisualCPU[i];
-			var carta = CrearCartaVisualRobo(idxTropa);
+			int    idxTropa   = manoRival[i].idx;
+			string escenaRival = manoRival[i].escena;
+			var carta = CrearCartaVisualRobo(idxTropa, escenaRival);
 			hbox.AddChild(carta);
 
 			var ultimoClic = new double[] { -10 };
@@ -144,7 +195,7 @@ public partial class Campo1 : Node2D
 					if (ahora - ultimoClic[0] < 0.45)
 					{
 						resuelto[0] = true;
-						ResolverRobo(idxTropa);
+						ResolverRobo(idxTropa, escenaRival);
 					}
 					else
 					{
@@ -161,7 +212,7 @@ public partial class Campo1 : Node2D
 		twIn.TweenProperty(fondo, "modulate:a", 1f, 0.25f);
 	}
 
-	private Panel CrearCartaVisualRobo(int idxTropa)
+	private Panel CrearCartaVisualRobo(int idxTropa, string escena = "")
 	{
 		var panel = new Panel();
 		panel.CustomMinimumSize = new Vector2(ROBO_CARD_W, ROBO_CARD_H);
@@ -184,8 +235,12 @@ public partial class Campo1 : Node2D
 		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
 		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 		tex.MouseFilter = Control.MouseFilterEnum.Ignore;
-		if (idxTropa >= 0 && idxTropa < imagenesCartas.Length && ResourceLoader.Exists(imagenesCartas[idxTropa]))
-			tex.Texture = GD.Load<Texture2D>(imagenesCartas[idxTropa]);
+		// La carta del rival en línea puede no estar en MI mazo: su imagen se saca de su escena.
+		string imagen = idxTropa >= 0 && idxTropa < imagenesCartas.Length
+			? imagenesCartas[idxTropa]
+			: ClasificacionCartas.ImagenBatalla(escena);
+		if (!string.IsNullOrEmpty(imagen) && ResourceLoader.Exists(imagen))
+			tex.Texture = GD.Load<Texture2D>(imagen);
 		panel.AddChild(tex);
 
 		Tween tw = panel.CreateTween().SetLoops();
@@ -197,9 +252,16 @@ public partial class Campo1 : Node2D
 	// Si ya hay un slot libre en la mano (Spot1/2/3, porque jugaste una carta este turno y todavía
 	// no se rellenó), la carta robada ocupa ESE lugar y la mano se sigue viendo de 3. Solo cuando
 	// los 3 están ocupados de verdad se usa Spot4 y entra el modo compacto de 4 cartas.
-	private void ResolverRobo(int idxTropa)
+	private void ResolverRobo(int idxTropa, string escenaRival = "")
 	{
-		_manoVisualCPU.Remove(idxTropa);
+		// Se la saca de la mano del rival DE VERDAD: el bot ya no la puede jugar, y en línea se le
+		// quita de su mano en su propia pantalla (acción "robar").
+		if (EsOnline)
+		{
+			_manoRivalOnline.Remove(escenaRival);
+			EmitirAccionOnline("robar", new Godot.Collections.Dictionary { { "escena", escenaRival } });
+		}
+		else _manoVisualCPU.Remove(idxTropa);
 
 		string spotDestino = "Spot4";
 		float escalaDestino = ESCALA_MANO_ROBADA;
@@ -211,11 +273,34 @@ public partial class Campo1 : Node2D
 			if (!ocupado) { spotDestino = s; escalaDestino = ESCALA_MANO_NORMAL; break; }
 		}
 
-		_cartaRobada = CrearCartaConIndice(spotDestino, idxTropa, escalaDestino);
+		_cartaRobada = idxTropa >= 0
+			? CrearCartaConIndice(spotDestino, idxTropa, escalaDestino)
+			: CrearCartaDeOtroMazo(spotDestino, escenaRival, escalaDestino); // carta que no está en mi mazo
 		_cartaRobadaPendiente = true; // "Robar Carta" no vuelve a estar disponible hasta jugar esta
 		if (spotDestino == "Spot4") ReacomodarManoTropas(); // ahora sí hay 4: modo compacto
 		MostrarAviso("¡Le robaste una carta al rival!", new Color(1f, 0.85f, 0.3f));
 		CerrarPantallaRobo();
+	}
+
+	/// <summary>Crea en la mano una carta que NO pertenece a mi mazo (robada a un rival en línea): se
+	/// arma con su escena y su imagen de batalla, con IdCarta -1 (no entra en los cooldowns del mazo).</summary>
+	private Carta CrearCartaDeOtroMazo(string spot, string escena, float escalaBase)
+	{
+		if (juegoTerminado || escenaCartaBase == null || contenedorMano == null) return null;
+		if (string.IsNullOrEmpty(escena) || !ResourceLoader.Exists(escena)) return null;
+		Marker2D marcador = contenedorMano.GetNodeOrNull<Marker2D>(spot);
+		if (marcador == null) return null;
+
+		Carta n = (Carta)escenaCartaBase.Instantiate();
+		n.NombreSpot = spot;
+		contenedorMano.AddChild(n);
+		n.Rotation = marcador.Rotation;
+		Vector2 esc = new Vector2(escalaBase, escalaBase);
+		n.Scale = esc;
+		n.GlobalPosition = marcador.GlobalPosition - (n.Size * esc / 2);
+		n.GuardarEstadoOriginal();
+		n.AsignarDatos(ClasificacionCartas.ImagenBatalla(escena), escena, -1);
+		return n;
 	}
 
 	// "Robar Carta" no puede volver a ofrecerse mientras la carta robada anterior (Spot4) siga

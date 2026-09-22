@@ -116,6 +116,9 @@ public partial class Campo1 : Node2D
 	// NO pierde la guardia mientras le quede escudo (vuelve a "pre defensa" en vez de a "idle"). Solo
 	// la pierde si le bajan el escudo a 0. Lo usa TropaBase.ReproducirDefensa. Se resetea en _Ready.
 	public static bool GuardiaNuclearActiva = false;
+	// Bando protegido: SOLO el que va a recibir la bomba. Quien la lanza no se beneficia de su propia
+	// bomba (si no, tiraba la bomba y encima sus tropas quedaban intocables).
+	public static string GrupoGuardiaNuclear = "";
 	public const  int  SEGUNDOS_GUARDIA_NUCLEAR = 15;
 	public  int  movimientosRestantes  = ENERGIA_MAXIMA;
 	public  const int DURACION_TURNO_SEG = 20; // segundos por turno
@@ -351,6 +354,7 @@ public partial class Campo1 : Node2D
 		SoloVisualOnline = false;
 		SuprimiendoAvisosOnline = false;
 		GuardiaNuclearActiva = false;
+		GrupoGuardiaNuclear = "";
 
 		// La cámara manual (posición/zoom/rotación fijados en el editor) debe quedar
 		// activa siempre: el motor no la respeta si no se declara "current" en runtime.
@@ -472,9 +476,13 @@ public partial class Campo1 : Node2D
 
 		// Aviso inicial único: el bot ya está listo para pelear. Con un pequeño retraso para no
 		// pisar el toast "TU TURNO" que AnunciarTurno() acaba de mostrar en el mismo instante.
+		// Intro cinemática: arranca ya, en el mismo frame, para que la partida empiece enfocada y con
+		// las barras de cine puestas (ver Campo1.Intro.cs). Nada se puede jugar hasta que termina.
+		IniciarIntroCinematica();
+
 		GetTree().CreateTimer(1.2f).Timeout += () =>
 		{
-			if (!juegoTerminado) MostrarAviso("¡El rival está listo para la batalla!", new Color(1f, 0.75f, 0.35f));
+			if (!juegoTerminado && !IntroEnCurso) MostrarAviso("¡El rival está listo para la batalla!", new Color(1f, 0.75f, 0.35f));
 		};
 	}
 

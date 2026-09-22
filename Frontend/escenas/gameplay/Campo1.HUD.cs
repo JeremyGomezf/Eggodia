@@ -153,7 +153,7 @@ public partial class Campo1 : Node2D
 		if (piArrastre >= 0 && piArrastre < _poolActivo.Length && _poolActivo[piArrastre].Id == "nuclear")
 		{
 			if (_nuclearUsadaJugador)                     { MostrarAvisoNuclearYaUsada(); return false; }
-			if (_nuclearEnCurso)                          { MostrarAvisoBombaEnCamino();  return false; }
+
 			if (movimientosRestantes < COSTO_NUCLEAR)     { MostrarAvisoEnergiaNuclear(); return false; }
 		}
 		MostrarResaltadoObjetivosHechizo(piArrastre);
@@ -272,7 +272,7 @@ public partial class Campo1 : Node2D
 		if (_btnCambiarHechizo != null)
 		{
 			_btnCambiarHechizo.Disabled = true;
-			_btnCambiarHechizo.Modulate = new Color(0.55f, 0.55f, 0.55f);
+			_btnCambiarHechizo.Modulate = new Color(1f, 1f, 1f, 0.4f); // semitransparente = bloqueado
 		}
 	}
 

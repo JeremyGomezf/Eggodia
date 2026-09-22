@@ -260,6 +260,12 @@ public partial class Campo1 : Node2D
 					EjecutarVisualOnline(() => ReproducirHechizoVisual(hid.GetString() ?? "", obj));
 			}
 		}
+		else if (tipo == "robar" && datos.ValueKind == JsonValueKind.Object &&
+			datos.TryGetProperty("escena", out var escRobada))
+		{
+			// El rival me robó esta carta: se va de mi mano de verdad (el aviso SÍ se muestra).
+			PerderCartaPorRoboOnline(escRobada.GetString() ?? "");
+		}
 		else if (tipo == "defensa" && datos.ValueKind == JsonValueKind.Object &&
 			datos.TryGetProperty("carrilDef", out var cd))
 		{
@@ -298,6 +304,15 @@ public partial class Campo1 : Node2D
 		// Espejo de la vida de los huevos.
 		if (doc.TryGetProperty("vidaRival", out var vr)) vidaJugador = vr.GetInt32();
 		if (doc.TryGetProperty("vidaJugador", out var vj)) vidaRival = vj.GetInt32();
+
+		// Mano real del rival: es la que se ve (y se roba) en la pantalla de "Robar Carta".
+		if (doc.TryGetProperty("mano", out var manoRival) && manoRival.ValueKind == JsonValueKind.Array)
+		{
+			_manoRivalOnline.Clear();
+			foreach (var carta in manoRival.EnumerateArray())
+				if (carta.GetString() is string escenaCarta && !string.IsNullOrEmpty(escenaCarta))
+					_manoRivalOnline.Add(escenaCarta);
+		}
 
 		// Mapa carril-destino (mi frame) → datos de la tropa que debería estar ahí.
 		var deseado = new Dictionary<string, JsonElement>();
@@ -438,7 +453,8 @@ public partial class Campo1 : Node2D
 		var dic = new Godot.Collections.Dictionary
 		{
 			{ "vidaJugador", vidaJugador }, { "vidaRival", vidaRival },
-			{ "faseApertura", _faseApertura }, { "tropas", tropas }
+			{ "faseApertura", _faseApertura }, { "tropas", tropas },
+			{ "mano", MisCartasEnManoOnline() } // para que el rival vea qué cartas puede robarme
 		};
 		return Json.Stringify(dic);
 	}

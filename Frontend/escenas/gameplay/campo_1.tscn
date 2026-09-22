@@ -147,14 +147,14 @@ offset_right = 882.0
 offset_bottom = 833.0
 
 [node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
-position = Vector2(-158, -11.999981)
+position = Vector2(-165, -40.999985)
 rotation = -0.22
 
 [node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
 position = Vector2(-34, -49)
 
 [node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
-position = Vector2(89, -47.999985)
+position = Vector2(92, -36.999985)
 rotation = 0.22
 
 [node name="Spot4" type="Marker2D" parent="ManoManual" unique_id=184729106]
@@ -366,6 +366,49 @@ theme_override_constants/outline_size = 32
 theme_override_fonts/font = ExtResource("15_gg5bv")
 theme_override_font_sizes/font_size = 50
 text = "tostal banner"
+vertical_alignment = 1
+
+[node name="AvisoArdidPanel" type="TextureRect" parent="." unique_id=438604896]
+custom_minimum_size = Vector2(480, 145)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 380.99997
+offset_top = 142.99998
+offset_right = 861.0
+offset_bottom = 288.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.357, 0.448)
+expand_mode = 1
+
+[node name="avisos de ardid" type="Label" parent="AvisoArdidPanel" unique_id=842065078]
+layout_mode = 0
+offset_left = 58.812256
+offset_top = 36.767853
+offset_right = 422.81226
+offset_bottom = 102.76785
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 32
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 50
+text = "conteo de bomba"
+vertical_alignment = 1
+
+[node name="numero" type="Label" parent="AvisoArdidPanel" unique_id=2500019]
+layout_mode = 0
+offset_left = 64.425896
+offset_top = 93.75003
+offset_right = 428.4259
+offset_bottom = 159.75003
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 32
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 50
+text = "90"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="TextureProgressBar_User" type="TextureProgressBar" parent="." unique_id=456251343]

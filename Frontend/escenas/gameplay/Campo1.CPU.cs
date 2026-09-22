@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public partial class Campo1 : Node2D
 {
@@ -23,6 +24,10 @@ public partial class Campo1 : Node2D
 
 		// En partida en línea no hay CPU: el turno del rival lo maneja el jugador remoto.
 		if (EsOnline) { EsperarRivalOnline(); return; }
+
+		// La intro cinemática bloquea la partida: el bot espera a que termine.
+		while (IntroEnCurso && !juegoTerminado) await ToSignal(GetTree().CreateTimer(0.2f), "timeout");
+		if (juegoTerminado) return;
 
 		// Fase de apertura: la CPU llena sus 3 carriles sin atacar
 		if (_faseApertura)
@@ -207,7 +212,47 @@ public partial class Campo1 : Node2D
 			if (juegoTerminado) return;
 		}
 
+		// Última pasada: ninguna tropa se queda parada sin hacer nada (sobre todo las que acaba de
+		// invocar). Mientras le quede energía, cada una ataca, usa su habilidad o se cubre.
+		await AccionesPendientesCPU(delay);
+
 		if (!esTurnoJugador && !juegoTerminado) CambiarTurno();
+	}
+
+	/// <summary>Recorre las tropas del rival que todavía no hicieron nada este turno y les hace tomar la
+	/// mejor decisión disponible: habilidad si la tiene lista, ataque si hay a quién, o cubrirse si le
+	/// queda escudo. Antes las tropas recién invocadas (o las que no podían atacar) quedaban quietas.</summary>
+	private async Task AccionesPendientesCPU(float delay)
+	{
+		var pendientes = new List<TropaBase>();
+		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+			if (n is TropaBase t && IsInstanceValid(t) && !t.EstaMuerta && !t.YaActuo && !EstaBlockeada(t))
+				pendientes.Add(t);
+
+		foreach (TropaBase tropa in pendientes)
+		{
+			if (movimientosRestantes <= 0 || juegoTerminado) return;
+			if (!IsInstanceValid(tropa) || tropa.EstaMuerta || tropa.YaActuo) continue;
+			await EsperarTableroLibre();
+			if (!IsInstanceValid(tropa) || juegoTerminado) return;
+
+			Node2D objetivo = BuscarObjetivoEnCarril(tropa, "tropas_jugador");
+			bool habilidadLista = !HabilidadUsada(tropa) && !HabilidadBloqueadaTurno(tropa);
+
+			if (habilidadLista && tropa is TorrePrime torre)
+			{
+				if (!await IntentarEnroqueIA(torre) && objetivo != null) ProcesarCombateFrontal(tropa, "tropas_jugador");
+				else if (objetivo == null) continue;
+			}
+			else if (habilidadLista)                      tropa.EjecutarAccion("usar_habilidad");
+			else if (objetivo != null)                    ProcesarCombateFrontal(tropa, "tropas_jugador");
+			else if (Gi(tropa, "escudoActual") > 0)       tropa.EjecutarAccion("preparar_defensa");
+			else continue; // no hay nada útil que hacer con esta: no gasta energía
+
+			movimientosRestantes--;
+			ActualizarInterfaz();
+			await ToSignal(GetTree().CreateTimer(delay * 0.8f), "timeout");
+		}
 	}
 
 	/// <summary>Prioridad 3 de la IA: prefiere atacar cuando su objetivo de carril es un

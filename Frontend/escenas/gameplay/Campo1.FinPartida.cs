@@ -497,6 +497,9 @@ public partial class Campo1 : Node2D
 		if (candidatas.Count == 0) return false;
 
 		var elegida = candidatas[random.Next(candidatas.Count)];
+		// La carta pasa DE VERDAD a la mano del rival: la va a poder jugar, y vos se la podés robar
+		// de vuelta (por eso su mano puede llegar a 4).
+		if (elegida.IdCarta >= 0 && !_manoVisualCPU.Contains(elegida.IdCarta)) _manoVisualCPU.Add(elegida.IdCarta);
 		elegida.NombreSpot = "X";
 		elegida.QueueFree();
 		// Colapsa de 4→3 cartas si correspondía (mismo criterio que al jugar cualquier carta) y dejar

@@ -369,6 +369,73 @@ public partial class Campo1 : Node2D
 		c.Scale    = t.Scale;
 	}
 
+	// ── AVISOS DE BOMBA (uno por bando) ───────────────────────────────────
+	// "AvisoArdidPanel" (el de la escena, al lado de MI barra de vida) muestra la cuenta de MI bomba,
+	// usando las DOS labels que ya están puestas a mano en el editor, directamente bajo el panel (ya
+	// no adentro de un HBox): "avisos de ardid" es el título/aviso de arriba, "numero" es la cuenta de
+	// abajo. Para la del rival se clona ese mismo panel (con esas dos labels ya adentro) y se ubica
+	// espejado, junto a SU barra de vida.
+	private const float ESCALA_EXTRA_PANEL_BOMBA = 1.3f;  // "un poco más grande" (letras chicas, pedido)
+	private const int   FUENTE_TITULO_BOMBA      = 42;    // antes 50 en la escena, pero a esta escala se
+	private const int   FUENTE_NUMERO_BOMBA      = 66;    // veía chico — se agranda por código
+	private Control _avisoBombaJugador, _avisoBombaRival;
+	private Label   _lblTituloBombaJugador, _lblTituloBombaRival;
+	private Label   _lblBombaJugador,       _lblBombaRival;
+
+	private void PrepararAvisosDeBomba(CanvasLayer capa)
+	{
+		_avisoBombaJugador = capa.GetNodeOrNull<Control>("AvisoArdidPanel");
+		if (_avisoBombaJugador == null) return;
+		_avisoBombaJugador.Scale *= ESCALA_EXTRA_PANEL_BOMBA;
+
+		_lblTituloBombaJugador = _avisoBombaJugador.GetNodeOrNull<Label>("avisos de ardid");
+		_lblBombaJugador       = _avisoBombaJugador.GetNodeOrNull<Label>("numero");
+		AgrandarLetraBomba(_lblTituloBombaJugador, FUENTE_TITULO_BOMBA);
+		AgrandarLetraBomba(_lblBombaJugador, FUENTE_NUMERO_BOMBA);
+
+		_avisoBombaRival = (Control)_avisoBombaJugador.Duplicate();
+		_avisoBombaRival.Name = "AvisoArdidPanelRival";
+		capa.AddChild(_avisoBombaRival);
+		_lblTituloBombaRival = _avisoBombaRival.GetNodeOrNull<Label>("avisos de ardid");
+		_lblBombaRival        = _avisoBombaRival.GetNodeOrNull<Label>("numero");
+
+		// Espejado horizontal respecto del centro de la pantalla, a la altura de la barra del rival.
+		float ancho = _avisoBombaJugador.Size.X * _avisoBombaJugador.Scale.X;
+		float x = GetViewport().GetVisibleRect().Size.X - _avisoBombaJugador.Position.X - ancho;
+		float y = _avisoBombaJugador.Position.Y;
+		if (_barraHPJugador != null && _barraHPRival != null)
+			y = _barraHPRival.Position.Y + (_avisoBombaJugador.Position.Y - _barraHPJugador.Position.Y);
+		_avisoBombaRival.Position = new Vector2(x, y);
+
+		_avisoBombaJugador.Visible = false; // solo se ven mientras hay una bomba en cuenta regresiva
+		_avisoBombaRival.Visible   = false;
+	}
+
+	private static void AgrandarLetraBomba(Label lbl, int tamaño)
+	{
+		if (lbl == null || !IsInstanceValid(lbl)) return;
+		lbl.AddThemeFontSizeOverride("font_size", tamaño);
+	}
+
+	/// <summary>Muestra/oculta la cuenta de una bomba en el panel del bando que la lanzó: título arriba
+	/// ("avisos de ardid"), número grande abajo ("numero") — las dos labels reales de la escena.</summary>
+	public void MostrarCuentaBombaEnPanel(bool esMia, int segundos)
+	{
+		Control panel  = esMia ? _avisoBombaJugador       : _avisoBombaRival;
+		Label   titulo = esMia ? _lblTituloBombaJugador   : _lblTituloBombaRival;
+		Label   numero = esMia ? _lblBombaJugador         : _lblBombaRival;
+		if (panel == null || !IsInstanceValid(panel)) return;
+
+		if (segundos <= 0) { panel.Visible = false; return; }
+		panel.Visible = true;
+		if (titulo != null && IsInstanceValid(titulo))
+			titulo.Text = esMia ? "¡TU BOMBA NUCLEAR!" : "¡BOMBA NUCLEAR DEL RIVAL!";
+		if (numero == null || !IsInstanceValid(numero)) return;
+		numero.Text = segundos.ToString();
+		numero.AddThemeColorOverride("font_color",
+			segundos <= 15 ? new Color(1f, 0.3f, 0.2f) : new Color(1f, 0.75f, 0.2f));
+	}
+
 	private void ConfigurarInterfazNueva()
 	{
 		var capa = CapaHUD();
@@ -381,9 +448,11 @@ public partial class Campo1 : Node2D
 		MoverACanvasInmune(GetNodeOrNull<Control>("TurnoPanel"), capa);
 		MoverACanvasInmune(GetNodeOrNull<Control>("TextureProgressBar_User"), capa);
 		MoverACanvasInmune(GetNodeOrNull<Control>("TextureProgressBar_Rival"), capa);
+		MoverACanvasInmune(GetNodeOrNull<Control>("AvisoArdidPanel"), capa);
 
 		_barraHPJugador = capa.GetNodeOrNull<TextureProgressBar>("TextureProgressBar_User");
 		_barraHPRival   = capa.GetNodeOrNull<TextureProgressBar>("TextureProgressBar_Rival");
+		PrepararAvisosDeBomba(capa); // usa la posición de ambas barras, por eso va después
 
 		_lblUsuario = _barraHPJugador?.GetNodeOrNull<Label>("usuariolabel");
 		_lblCPU     = _barraHPRival?.GetNodeOrNull<Label>("CPUlabel");
@@ -400,7 +469,10 @@ public partial class Campo1 : Node2D
 		// Escala real ya calculada por MoverACanvasInmune (incluye el factor de la cámara):
 		// el "rebote" de AnunciarTurno debe volver a ESTA escala, no a la del .tscn original.
 		if (_lblTurnoAviso?.GetParent()?.GetParent() is Control turnoPanel)
+		{
+			turnoPanel.Scale *= 1.22f; // "un poco más grande" (pedido)
 			_turnoPanelEscalaBase = turnoPanel.Scale;
+		}
 
 		// Botones con textura nueva: se conectan por código, igual que el resto del HUD dinámico.
 		btnBarajar    = capa.GetNodeOrNull<TextureButton>("BarajarButton");
@@ -492,12 +564,97 @@ public partial class Campo1 : Node2D
 			tw.TweenProperty(btn, "scale", reposo, 0.12f)
 				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 			tw.TweenProperty(btn, "modulate", Colors.White, 0.12f);
+			// Si este mismo clic dejó el botón bloqueado (p. ej. Ardid Barajar entra en cooldown al
+			// soltarlo), el tween de arriba lo pisaría de vuelta a blanco opaco — se corrige al terminar,
+			// así el semitransparente de "bloqueado" no desaparece un instante después de aparecer.
+			tw.Chain().TweenCallback(Callable.From(() =>
+			{
+				if (IsInstanceValid(btn) && btn.Disabled) btn.Modulate = new Color(1f, 1f, 1f, 0.4f);
+			}));
 		};
 	}
 
 	// Se llama cada vez que cambia modoSacrificioActivo: el botón de sacrificio queda agrandado de
 	// forma persistente mientras el modo está activo (no solo mientras el mouse está encima), para
 	// que sea obvio en todo momento "estoy a punto de matar una tropa, no me confíe".
+	// ── MODO SACRIFICIO: todo atenuado y bloqueado, menos Pausa ───────────
+	// Mientras está activo, el resto del HUD y las dos manos quedan semitransparentes y sin responder
+	// (así se ve clarísimo que estás eligiendo a quién sacrificar). El botón de Pausa NUNCA se bloquea.
+	private readonly List<(CanvasItem nodo, Color modulate, bool eraDisabled, Control.MouseFilterEnum filtro)> _atenuadosSacrificio = new();
+	private Tween _tweenBaileSacrificio;
+
+	private void AplicarModoSacrificioVisual(bool activo)
+	{
+		if (!activo) { RestaurarAtenuadosSacrificio(); BailarBotonSacrificio(false); return; }
+
+		RestaurarAtenuadosSacrificio();
+		var capa = CapaHUD();
+		foreach (Node n in capa.GetChildren())
+		{
+			if (n is not CanvasItem ci || !IsInstanceValid(ci)) continue;
+			if (n.Name == "PausaButton" || ci == btnSacrificio) continue; // Pausa y Sacrificio siguen vivos
+			AtenuarParaSacrificio(ci);
+		}
+		foreach (Control mano in new[] { contenedorMano, _contenedorHechizos })
+		{
+			if (mano == null || !IsInstanceValid(mano)) continue;
+			AtenuarParaSacrificio(mano);
+			foreach (Node n in mano.GetChildren())
+				if (n is Carta c && IsInstanceValid(c)) c.BloquearPorModo(true);
+		}
+
+		BailarBotonSacrificio(true);
+		MostrarAviso("Escoge a cuál sacrificarás", Colors.OrangeRed);
+	}
+
+	private void AtenuarParaSacrificio(CanvasItem ci)
+	{
+		bool eraDisabled = ci is BaseButton bb && bb.Disabled;
+		var filtroPrevio = ci is Control ctrl ? ctrl.MouseFilter : Control.MouseFilterEnum.Ignore;
+		_atenuadosSacrificio.Add((ci, ci.Modulate, eraDisabled, filtroPrevio));
+		ci.Modulate = new Color(ci.Modulate.R, ci.Modulate.G, ci.Modulate.B, 0.35f);
+		if (ci is BaseButton btn) btn.Disabled = true;
+		if (ci is Control c) c.MouseFilter = Control.MouseFilterEnum.Ignore;
+	}
+
+	private void RestaurarAtenuadosSacrificio()
+	{
+		foreach (var (ci, modulate, eraDisabled, filtroPrevio) in _atenuadosSacrificio)
+		{
+			if (!IsInstanceValid(ci)) continue;
+			ci.Modulate = modulate;
+			if (ci is BaseButton btn) btn.Disabled = eraDisabled;
+			if (ci is Control c) c.MouseFilter = filtroPrevio;
+		}
+		_atenuadosSacrificio.Clear();
+		foreach (Control mano in new[] { contenedorMano, _contenedorHechizos })
+		{
+			if (mano == null || !IsInstanceValid(mano)) continue;
+			foreach (Node n in mano.GetChildren())
+				if (n is Carta c && IsInstanceValid(c)) c.BloquearPorModo(false);
+		}
+	}
+
+	// Balanceo del botón mientras el modo está activo: se inclina de un lado al otro sin moverse de su
+	// lugar, para que se note que está "encendido".
+	private void BailarBotonSacrificio(bool bailar)
+	{
+		_tweenBaileSacrificio?.Kill();
+		_tweenBaileSacrificio = null;
+		if (btnSacrificio == null || !IsInstanceValid(btnSacrificio)) return;
+		if (!bailar) { btnSacrificio.Rotation = 0f; btnSacrificio.ZIndex = 0; return; }
+
+		btnSacrificio.PivotOffset = btnSacrificio.Size / 2f;
+		btnSacrificio.ZIndex = 50; // por delante de Barajar (y del resto del HUD atenuado)
+		_tweenBaileSacrificio = btnSacrificio.CreateTween().SetLoops();
+		_tweenBaileSacrificio.TweenProperty(btnSacrificio, "rotation", Mathf.DegToRad(2.5f), 0.18f)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		_tweenBaileSacrificio.TweenProperty(btnSacrificio, "rotation", Mathf.DegToRad(-2.5f), 0.36f)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		_tweenBaileSacrificio.TweenProperty(btnSacrificio, "rotation", 0f, 0.18f)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+	}
+
 	private void ActualizarEscalaBotonSacrificio()
 	{
 		if (btnSacrificio == null || !_escalaReposoBoton.ContainsKey(btnSacrificio)) return;

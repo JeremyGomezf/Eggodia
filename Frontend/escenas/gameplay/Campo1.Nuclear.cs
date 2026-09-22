@@ -62,7 +62,12 @@ public partial class Campo1 : Node2D
 	private bool _nuclearYaOfrecida       = false; // la primera vez que se habilita, sale sí o sí
 
 	private bool NuclearHabilitadaJugador => !_nuclearUsadaJugador && _ardidesGastadosJugador >= ARDIDES_PARA_NUCLEAR;
-	private bool _nuclearEnCurso          = false;
+	// Puede haber DOS bombas en cuenta regresiva a la vez (una por bando). Lo que nunca se solapa es la
+	// parte visual: mientras una está cayendo/explotando (_bombaEnVuelo), la otra cuenta se CONGELA y
+	// sigue en cuanto termina, así los dos sprites no chocan.
+	private int  _nuclearesEnCurso        = 0;
+	private bool _bombaEnVuelo            = false;
+	private bool _nuclearEnCurso => _nuclearesEnCurso > 0;
 	private bool _impactoNuclearHecho     = false;
 	private bool _destelloNuclearIniciado = false;
 	private bool _destelloNuclearActivo   = false; // hay blanco en pantalla (el polvo espera quieto)
@@ -95,8 +100,8 @@ public partial class Campo1 : Node2D
 		bool sobreHuevoRival = tronoRival != null && IsInstanceValid(tronoRival)
 			&& tronoRival.GlobalPosition.DistanceTo(mouseMundo) < 160f;
 		if (!sobreHuevoRival) return false;
+		// Se puede lanzar aunque el rival tenga su cuenta corriendo (cada uno ve la suya en su panel).
 		if (_nuclearUsadaJugador) { MostrarAvisoNuclearYaUsada(); return false; }
-		if (_nuclearEnCurso)      { MostrarAvisoBombaEnCamino();  return false; }
 		if (movimientosRestantes < COSTO_NUCLEAR)
 		{
 			MostrarAvisoEnergiaNuclear();
@@ -148,7 +153,7 @@ public partial class Campo1 : Node2D
 	/// turno con la energía que le queda.</summary>
 	private bool CPUIntentarNuclear()
 	{
-		if (EsOnline || _faseApertura || juegoTerminado || _nuclearUsadaRival || _nuclearEnCurso || _hechizoUsadoEsteTurno) return false;
+		if (EsOnline || _faseApertura || juegoTerminado || _nuclearUsadaRival || _hechizoUsadoEsteTurno) return false;
 		if (_ardidesGastadosRival < ARDIDES_PARA_NUCLEAR) return false; // antes tiene que gastar 2 ardides
 		if (_cooldownNuclearCPU > 0 || movimientosRestantes < COSTO_NUCLEAR) return false;
 
@@ -182,9 +187,8 @@ public partial class Campo1 : Node2D
 	/// false = la tiró el bot o el rival en línea (la sufro yo: mis tropas y mi mano).</param>
 	private async Task EjecutarSecuenciaNuclear(bool lanzaJugador)
 	{
-		if (_nuclearEnCurso) return;
 		MarcarNuclearUsada(lanzaJugador);
-		_nuclearEnCurso               = true;
+		_nuclearesEnCurso++;
 		_impactoNuclearHecho          = false;
 		_destelloNuclearIniciado      = false;
 		_impactoNuclearRemotoRecibido = false;
@@ -198,13 +202,20 @@ public partial class Campo1 : Node2D
 			CrearCapaNuclear();
 			for (int s = SEGUNDOS_CUENTA_NUCLEAR; s > 0; s--)
 			{
-				// Últimos 15s: quien se cubre no pierde la guardia por un golpe (salvo escudo en 0).
+				// Si la otra bomba está cayendo o explotando, esta cuenta se congela hasta que termine.
+				while (_bombaEnVuelo) { if (!await EsperarNuclear(0.2)) return; }
+				// Últimos 15s: el bando que VA A RECIBIR la bomba no pierde la guardia por un golpe
+				// (salvo que le bajen el escudo a 0). El que la lanzó no tiene esa ventaja.
 				GuardiaNuclearActiva = s <= SEGUNDOS_GUARDIA_NUCLEAR;
+				GrupoGuardiaNuclear  = lanzaJugador ? "tropas_rival" : "tropas_jugador";
 				ActualizarCuentaNuclear(s, esMia: lanzaJugador);
 				if (!await EsperarNuclear(1.0)) return;
 				if (juegoTerminado) return;
 			}
 			OcultarCuentaNuclear();
+
+			while (_bombaEnVuelo) { if (!await EsperarNuclear(0.2)) return; } // espera su turno de caer
+			_bombaEnVuelo = true;
 
 			// 2) Recién ahora aparece la bomba y cae rápido. Desde acá hasta que se va el blanco, la IA
 			//    espera (no ataca bajo la pantalla blanca).
@@ -237,6 +248,7 @@ public partial class Campo1 : Node2D
 				if (!await EsperarNuclear(0.1)) return;
 			FinalizarBloqueoTablero();
 			tableroBloqueado = false;
+			_bombaEnVuelo = false; // ya no hay nada volando: la otra cuenta (si hay) sigue
 
 			// Los polvos siguen solos (cada uno libera su carril al terminar); se espera a que terminen
 			// solo para no permitir otra Nuclear mientras quedan restos de esta.
@@ -248,6 +260,7 @@ public partial class Campo1 : Node2D
 			if (IsInstanceValid(this))
 			{
 				if (tableroBloqueado) FinalizarBloqueoTablero();
+				_bombaEnVuelo = false;
 				TerminarSecuenciaNuclear(bomba);
 			}
 		}
@@ -261,7 +274,7 @@ public partial class Campo1 : Node2D
 		_capaNuclear      = null;
 		OcultarCuentaNuclear();
 		GuardiaNuclearActiva = false;
-		_nuclearEnCurso   = false;
+		_nuclearesEnCurso = Math.Max(0, _nuclearesEnCurso - 1);
 		ActualizarInterfaz();
 	}
 
@@ -781,69 +794,23 @@ public partial class Campo1 : Node2D
 		foreach (Action reproducir in pendientes) reproducir();
 	}
 
-	// ── CONTADOR ──────────────────────────────────────────────────────────
-	// Capa propia por encima del HUD (capa 1) y del blanco, debajo del menú de pausa (capa 100): lleva
-	// el contador y las cartas negras de MI mano. No intercepta clics (durante el contador se juega normal).
-	private Label _lblCuentaNuclear;
-
+	// ── CONTADOR (en el AvisoArdidPanel de cada bando) ────────────────────
+	// Capa propia SOLO para las cartas negras de MI mano (por encima del blanco, debajo de la pausa).
 	private void CrearCapaNuclear()
 	{
 		if (_capaNuclear != null && IsInstanceValid(_capaNuclear)) _capaNuclear.QueueFree();
 		_capaNuclear = new CanvasLayer { Name = "CapaNuclear", Layer = 5 };
 		AddChild(_capaNuclear);
-
-		Rect2 vis = GetViewport().GetVisibleRect();
-		var caja = new VBoxContainer { Name = "Contador", MouseFilter = Control.MouseFilterEnum.Ignore };
-		caja.AddThemeConstantOverride("separation", -14);
-		_capaNuclear.AddChild(caja);
-		caja.Position = new Vector2(vis.Position.X, vis.Position.Y + vis.Size.Y * 0.2f);
-		caja.Size     = new Vector2(vis.Size.X, 0);
-
-		var fuente = GD.Load<Font>("res://Almendra-Bold.ttf");
-		Label CrearTexto(string texto, int tam, Color color)
-		{
-			var l = new Label
-			{
-				Text = texto,
-				HorizontalAlignment = HorizontalAlignment.Center,
-				MouseFilter = Control.MouseFilterEnum.Ignore,
-			};
-			if (fuente != null) l.AddThemeFontOverride("font", fuente);
-			l.AddThemeFontSizeOverride("font_size", tam);
-			l.AddThemeColorOverride("font_color", color);
-			l.AddThemeColorOverride("font_outline_color", new Color(0.08f, 0.02f, 0f));
-			l.AddThemeConstantOverride("outline_size", tam / 6);
-			caja.AddChild(l);
-			return l;
-		}
-		_lblTituloCuentaNuclear = CrearTexto("¡BOMBA NUCLEAR!", 36, new Color(1f, 0.55f, 0.15f));
-		_lblCuentaNuclear       = CrearTexto("", 92, new Color(1f, 0.9f, 0.25f));
 	}
 
-	private Label _lblTituloCuentaNuclear;
-
-	private void ActualizarCuentaNuclear(int segundos, bool esMia)
-	{
-		if (_lblCuentaNuclear == null || !IsInstanceValid(_lblCuentaNuclear)) return;
-		if (_lblTituloCuentaNuclear != null && IsInstanceValid(_lblTituloCuentaNuclear))
-			_lblTituloCuentaNuclear.Text = esMia ? "¡TU BOMBA NUCLEAR!" : "¡BOMBA NUCLEAR DEL RIVAL!";
-		_lblCuentaNuclear.Text = segundos.ToString();
-		// Latido en cada segundo (en rojo los últimos 3).
-		_lblCuentaNuclear.PivotOffset = _lblCuentaNuclear.Size / 2f;
-		_lblCuentaNuclear.AddThemeColorOverride("font_color",
-			segundos <= 3 ? new Color(1f, 0.3f, 0.2f) : new Color(1f, 0.9f, 0.25f));
-		Tween tw = _lblCuentaNuclear.CreateTween();
-		tw.TweenProperty(_lblCuentaNuclear, "scale", new Vector2(1.25f, 1.25f), 0.08f);
-		tw.TweenProperty(_lblCuentaNuclear, "scale", Vector2.One, 0.3f)
-			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-	}
+	// La cuenta se muestra en el panel de avisos del bando que lanzó la bomba (el mío al lado de mi
+	// barra de vida; el del rival, espejado del suyo). Ver PrepararAvisosDeBomba en Campo1.Extra.cs.
+	private void ActualizarCuentaNuclear(int segundos, bool esMia) => MostrarCuentaBombaEnPanel(esMia, segundos);
 
 	private void OcultarCuentaNuclear()
 	{
-		if (_lblCuentaNuclear != null && IsInstanceValid(_lblCuentaNuclear))
-			_lblCuentaNuclear.GetParent<Control>().Visible = false;
-		_lblCuentaNuclear       = null;
-		_lblTituloCuentaNuclear = null;
+		MostrarCuentaBombaEnPanel(true, 0);
+		MostrarCuentaBombaEnPanel(false, 0);
 	}
 
 	// ── MANO DEL QUE LA SUFRE: NEGRO MATE → DESAPARECE → MANO NUEVA A LOS 3s ─

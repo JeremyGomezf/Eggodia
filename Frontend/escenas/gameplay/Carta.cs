@@ -21,6 +21,16 @@ public partial class Carta : Control
 	private Vector2 _posicionOriginal;
 	private float   _rotacionOriginal;
 	private bool _bloqueada = false;
+
+	/// <summary>Bloquea/desbloquea la carta desde el juego (modo sacrificio): queda semitransparente y
+	/// no responde a toques, pero se sigue viendo.</summary>
+	public void BloquearPorModo(bool bloquear)
+	{
+		_bloqueada  = bloquear;
+		MouseFilter = bloquear ? Control.MouseFilterEnum.Ignore : Control.MouseFilterEnum.Stop;
+		Modulate    = bloquear ? new Color(1, 1, 1, 0.35f) : Colors.White;
+		if (bloquear && EstaArrastrando) CancelarArrastre();
+	}
 	private Vector2 _offsetMouse;
 	private Tween   _tweenAnim;
 
@@ -106,7 +116,7 @@ public partial class Carta : Control
 		// el turno terminaba en pleno arrastre, el "soltar" se ignoraba y la carta quedaba flotando para
 		// siempre, y las demás cartas (achicadas mientras dura un arrastre) no volvían a responder.
 		bool puedeJugar = campo == null
-			|| !(campo.juegoTerminado || !campo.esTurnoJugador || campo.movimientosRestantes <= 0);
+			|| !(campo.juegoTerminado || campo.IntroEnCurso || !campo.esTurnoJugador || campo.movimientosRestantes <= 0);
 		if (!puedeJugar && !EstaArrastrando) return;
 
 		if (!EstaEnMano || _bloqueada) { if (EstaArrastrando) CancelarArrastre(); return; }
@@ -149,7 +159,20 @@ public partial class Carta : Control
 		if (@event is InputEventMouseMotion mm && EstaArrastrando)
 		{
 			GlobalPosition = GetGlobalMousePosition() - _offsetMouse;
+			_segundosSinMover = 0f; // se sigue moviendo: no la devolvemos
 		}
+	}
+
+	// Si la carta queda agarrada y quieta (no se suelta ni se mueve), a 1.5s vuelve sola a su lugar
+	// con la misma animación de regreso de siempre.
+	private const float SEGUNDOS_PARA_REGRESAR = 1.5f;
+	private float _segundosSinMover = 0f;
+
+	public override void _Process(double delta)
+	{
+		if (!EstaArrastrando) { _segundosSinMover = 0f; return; }
+		_segundosSinMover += (float)delta;
+		if (_segundosSinMover >= SEGUNDOS_PARA_REGRESAR) CancelarArrastre();
 	}
 
 	private void VerificarSoltado()
@@ -292,7 +315,14 @@ public partial class Carta : Control
 			if (EstaArrastrando) return;
 			_tweenAnim?.Kill();
 			_tweenAnim = CreateTween().SetParallel(true);
+			// Volver también a Position/Rotation (no solo Scale): mientras esta carta estaba achicada
+			// por el hover de una hermana, ReubicarEnMano pudo haber reacomodado toda la mano (p. ej.
+			// al jugarse otra carta) — actualiza el destino guardado pero, por estar achicada, SE
+			// SALTABA la animación de posición (solo tocaba Scale acá). La carta quedaba con el tamaño
+			// correcto pero en el lugar VIEJO: eso era el desorden al mirar la mano para elegir.
 			_tweenAnim.TweenProperty(this, "scale", _escalaNormalMano, 0.12f);
+			_tweenAnim.TweenProperty(this, "position", _posicionOriginal, 0.12f);
+			_tweenAnim.TweenProperty(this, "rotation", _rotacionOriginal, 0.12f);
 		}
 	}
 }

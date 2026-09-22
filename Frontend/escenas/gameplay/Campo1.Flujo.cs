@@ -30,6 +30,8 @@ public partial class Campo1 : Node2D
 	// ── MENÚ TROPA ────────────────────────────────────────────────────────
 	public void MostrarMenuTropa(Node2D tropa)
 	{
+		if (modoSacrificioActivo) return; // clic en modo sacrificio: NUNCA abre el menú de acciones
+		if (IntroEnCurso) return; // todavía está corriendo la intro cinemática
 		if (!esTurnoJugador || movimientosRestantes <= 0 || juegoTerminado || tropa.IsInGroup("tropas_rival")) return;
 
 		// Fase de apertura: obligatorio colocar 3 cartas antes de poder atacar
@@ -173,6 +175,7 @@ public partial class Campo1 : Node2D
 	// ── BARAJAR / SACRIFICIO ──────────────────────────────────────────────
 	public void _on_barajar_pressed()
 	{
+		if (modoSacrificioActivo) return; // el modo sacrificio bloquea todo el HUD, este botón también
 		if (!esTurnoJugador || movimientosRestantes <= 0 || usosBarajar >= MAX_BARAJAR || _faseApertura) return;
 		usosBarajar++; EjecutarBarajadoLogico(); RegistrarGastoMovimiento();
 	}
@@ -202,6 +205,7 @@ public partial class Campo1 : Node2D
 		modoSacrificioActivo = !modoSacrificioActivo;
 		Input.SetCustomMouseCursor(modoSacrificioActivo ? iconoCursorSacrificio : null);
 		ActualizarEscalaBotonSacrificio();
+		AplicarModoSacrificioVisual(modoSacrificioActivo);
 	}
 
 	private void VerificarSacrificioEnCampo(Vector2 p)
@@ -239,6 +243,7 @@ public partial class Campo1 : Node2D
 		_candidatoSacrificio = null;
 		Input.SetCustomMouseCursor(null);
 		ActualizarEscalaBotonSacrificio();
+		AplicarModoSacrificioVisual(modoSacrificioActivo);
 	}
 
 	// ── INVOCACIÓN Y TRANSFORMACIÓN ───────────────────────────────────────
@@ -264,7 +269,8 @@ public partial class Campo1 : Node2D
 
 		tropasInvocadasTurno++;
 		faseInvocacion = false;
-		ReacomodarManoTropas(); // por si se jugó la carta robada (Spot4) y hay que volver a 3
+		RegistrarCartaGastada(idxMazo);  // cuenta para habilitar los colosos (hacen falta 5)
+		ReacomodarManoTropas();          // reacomoda/agranda las cartas que quedan en la mano
 
 		// Nota: la reposición de mano NO se hace acá al instante (se probó y se sentía como un bug —
 		// una carta nueva aparecía de golpe apenas jugabas una sola carta, en medio del turno). Se

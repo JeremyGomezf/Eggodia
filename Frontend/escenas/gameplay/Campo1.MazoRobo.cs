@@ -15,6 +15,31 @@ public partial class Campo1 : Node2D
 	//    2 rondas sin importar si su tropa está viva o muerta.
 	// ══════════════════════════════════════════════════════════════════════
 
+	// Reglas de reparto: la mano alterna "2 tácticos + 1 asesino" y "2 asesinos + 1 táctico", y los
+	// colosos recién entran cuando ya se gastaron 5 cartas de otro tipo (y nunca dos a la vez).
+	private const int RONDA_MINIMA_COLOSO  = 3;
+	private const int CARTAS_PARA_COLOSO   = 5;
+	private int _manosRepartidas        = 0;
+	private int _cartasNoColosoGastadas = 0;
+
+	/// <summary>¿Ya hay un coloso esperando en la mano? Solo se permite uno a la vez.</summary>
+	private bool HayColosoEnMano()
+	{
+		if (contenedorMano == null || _tipoIndice == null) return false;
+		foreach (Node n in contenedorMano.GetChildren())
+			if (n is Carta c && c.EstaEnMano && !c.IsQueuedForDeletion()
+				&& c.IdCarta >= 0 && c.IdCarta < _tipoIndice.Length && _tipoIndice[c.IdCarta] == TipoTropa.Coloso)
+				return true;
+		return false;
+	}
+
+	/// <summary>Cuenta una carta jugada por el jugador (para habilitar los colosos a las 5).</summary>
+	public void RegistrarCartaGastada(int idxMazo)
+	{
+		if (_tipoIndice == null || idxMazo < 0 || idxMazo >= _tipoIndice.Length) return;
+		if (_tipoIndice[idxMazo] != TipoTropa.Coloso) _cartasNoColosoGastadas++;
+	}
+
 	private const int COOLDOWN_NORMAL   = 1; // rondas para reaparecer tras morir
 	private const int COOLDOWN_ESPECIAL = 2; // cadencia fija de reaparición
 
@@ -240,10 +265,20 @@ public partial class Campo1 : Node2D
 		if (vacios.Count == 0) return;
 
 		int turnoNum = _turnosJugados / 2 + 1;
-		bool colosoTurn = (turnoNum % 3 == 0) && _idxColoso.Count > 0;
-		int tgtTac = colosoTurn ? 1 : 2;
-		int tgtAse = 1;
+
+		// COLOSOS: no pueden salir de entrada. Hacen falta 3 rondas Y haber gastado 5 cartas de otro
+		// tipo, y nunca puede haber dos colosos juntos en la mano (uno solo ya cambia la partida).
+		bool colosoHabilitado = _idxColoso.Count > 0 && turnoNum >= RONDA_MINIMA_COLOSO
+			&& _cartasNoColosoGastadas >= CARTAS_PARA_COLOSO && !HayColosoEnMano();
+		bool colosoTurn = colosoHabilitado && (turnoNum % 3 == 0);
+
+		// La mano arranca SIEMPRE con 2 tácticos + 1 asesino; la siguiente trae los del otro tipo
+		// (2 asesinos + 1 táctico), y así alternando.
+		bool manoDeAsesinos = _manosRepartidas % 2 == 1;
+		int tgtTac = colosoTurn ? 1 : (manoDeAsesinos ? 1 : 2);
+		int tgtAse = colosoTurn ? 1 : (manoDeAsesinos ? 2 : 1);
 		int tgtCol = colosoTurn ? 1 : 0;
+		_manosRepartidas++;
 
 		int needTac = Math.Max(0, tgtTac - ocupTac);
 		int needAse = Math.Max(0, tgtAse - ocupAse);
@@ -263,6 +298,7 @@ public partial class Campo1 : Node2D
 			if (idx < 0) idx = ElegirRelajado();
 			if (idx >= 0) CrearCartaConIndice(s, idx);
 		}
+		ReacomodarManoTropas(); // las nuevas se acomodan según cuántas quedaron en la mano
 	}
 
 	// ── CREACIÓN DE CARTA CON ÍNDICE ──────────────────────────────────────
@@ -324,8 +360,25 @@ public partial class Campo1 : Node2D
 			_cpuColosoPendiente = false;
 			var colososLibres = _colososCPU.FindAll(ruta => !yaEnCampo.Contains(ruta));
 			var poolColoso = colososLibres.Count > 0 ? colososLibres : _colososCPU;
-			var pc = GD.Load<PackedScene>(poolColoso[random.Next(poolColoso.Count)]);
+			string rutaColoso = poolColoso[random.Next(poolColoso.Count)];
+			_manoVisualCPU.Remove(Array.IndexOf(escenasTropas, rutaColoso)); // si lo tenía en mano, lo gasta
+			var pc = GD.Load<PackedScene>(rutaColoso);
 			if (pc != null) return pc;
+		}
+
+		// El rival juega LAS CARTAS DE SU MANO (la que se ve en la pantalla de Robar): si le robás una,
+		// deja de tenerla de verdad. La mano se le repone al empezar su turno.
+		if (_manoVisualCPU.Count > 0)
+		{
+			var enMano = _manoVisualCPU.FindAll(i => i >= 0 && i < escenasTropas.Length && !yaEnCampo.Contains(escenasTropas[i]));
+			if (enMano.Count == 0) enMano = _manoVisualCPU.FindAll(i => i >= 0 && i < escenasTropas.Length);
+			if (enMano.Count > 0)
+			{
+				int idxElegido = enMano[random.Next(enMano.Count)];
+				_manoVisualCPU.Remove(idxElegido); // la gasta: sale de su mano
+				var deMano = GD.Load<PackedScene>(escenasTropas[idxElegido]);
+				if (deMano != null) return deMano;
+			}
 		}
 
 		var fuenteBase = _mazoCPU.Count > 0 ? _mazoCPU : new List<string>(TODAS_LAS_TROPAS_CPU);
@@ -358,6 +411,11 @@ public partial class Campo1 : Node2D
 		foreach (Node n in contenedorMano.GetChildren())
 			if (n is Carta c && c.EstaEnMano && !c.IsQueuedForDeletion()) cartas.Add(c);
 
+		// Orden estable IZQUIERDA→DERECHA por su spot ACTUAL (no por orden de creación): sin esto, una
+		// carta nueva (que Godot agrega siempre como ÚLTIMO hijo, sin importar qué Spot le tocó) podía
+		// terminar reasignada a la posición de otra carta y las dos "saltaban" de lugar al reacomodar.
+		cartas.Sort((a, b) => Array.IndexOf(SPOTS_MANO, a.NombreSpot).CompareTo(Array.IndexOf(SPOTS_MANO, b.NombreSpot)));
+
 		if (cartas.Count >= 4)
 		{
 			Vector2 escCompacta = new Vector2(ESCALA_MANO_COMPACTA, ESCALA_MANO_COMPACTA);
@@ -368,28 +426,42 @@ public partial class Campo1 : Node2D
 			}
 			_enModoManoCompacta = true;
 		}
-		else if (_enModoManoCompacta)
+		else
 		{
-			// Volvemos a la disposición normal de 3 slots. La carta robada (si sigue en mano) se
-			// coloca SIEMPRE de última ("mía, mía, robada") y TODAS recuperan un NombreSpot real de
-			// Spot1/2/3 — clave para que RellenarManoObjetivo las cuente bien y no duplique ni deje
-			// huecos. La robada se sigue rastreando por referencia (_cartaRobada), no por el spot,
-			// así "Robar Carta" sigue bloqueada hasta que esa carta se juegue de verdad.
+			// 1-3 cartas: se reparten CENTRADAS sobre la línea de los 3 spots y, cuantas menos queden,
+			// un poco más grandes — con 2 cartas van a los puntos medios y con 1 al centro justo. Así la
+			// mano siempre se ve pareja y bien visible. La carta robada va siempre última ("mía, mía,
+			// robada") y todas recuperan un NombreSpot real de Spot1/2/3, clave para que
+			// RellenarManoObjetivo las cuente bien y no duplique ni deje huecos.
 			if (_cartaRobada != null && (!IsInstanceValid(_cartaRobada) || !_cartaRobada.EstaEnMano || _cartaRobada.IsQueuedForDeletion()))
 				_cartaRobada = null;
 			if (_cartaRobada != null && cartas.Contains(_cartaRobada))
 			{
 				cartas.Remove(_cartaRobada);
-				cartas.Add(_cartaRobada); // robada al final
+				cartas.Add(_cartaRobada);
 			}
-			Vector2 esc = new Vector2(ESCALA_MANO_NORMAL, ESCALA_MANO_NORMAL);
+
+			var spots = new List<Marker2D>();
+			foreach (string nombre in SPOTS_MANO)
+				if (contenedorMano.GetNodeOrNull<Marker2D>(nombre) is Marker2D m) spots.Add(m);
+			if (spots.Count == 0) { _enModoManoCompacta = false; return; }
+
+			float aumento = cartas.Count <= 1 ? 1.25f : cartas.Count == 2 ? 1.12f : 1f;
+			Vector2 esc = new Vector2(ESCALA_MANO_NORMAL * aumento, ESCALA_MANO_NORMAL * aumento);
+			float centro = (spots.Count - 1) / 2f;
+
 			for (int i = 0; i < cartas.Count && i < SPOTS_MANO.Length; i++)
 			{
-				Marker2D spot = contenedorMano.GetNodeOrNull<Marker2D>(SPOTS_MANO[i]);
-				if (spot == null) continue;
-				cartas[i].NombreSpot = SPOTS_MANO[i]; // reasigna el spot real
-				Vector2 localPos = spot.Position - (cartas[i].Size * esc / 2f);
-				cartas[i].ReubicarEnMano(localPos, esc, spot.Rotation);
+				// t = "posición" sobre la línea de spots (0 = primero, spots.Count-1 = último).
+				float t = Mathf.Clamp(centro + (i - (cartas.Count - 1) / 2f), 0f, spots.Count - 1);
+				int baseIdx = Mathf.FloorToInt(t);
+				int sigIdx  = Mathf.Min(baseIdx + 1, spots.Count - 1);
+				float frac  = t - baseIdx;
+				Vector2 posSpot = spots[baseIdx].Position.Lerp(spots[sigIdx].Position, frac);
+				float rotSpot   = Mathf.LerpAngle(spots[baseIdx].Rotation, spots[sigIdx].Rotation, frac);
+
+				cartas[i].NombreSpot = SPOTS_MANO[i];
+				cartas[i].ReubicarEnMano(posSpot - (cartas[i].Size * esc / 2f), esc, rotSpot);
 			}
 			_enModoManoCompacta = false;
 		}

@@ -228,7 +228,9 @@ public partial class KaBarCartoonPrime : TropaBase
 		Vector2 posRival = EncontrarPosicionRival();
 		float offsetX    = _eraJugador ? -80f : 80f;
 		GlobalPosition   = posRival + new Vector2(offsetX, 0f);
-		ZIndex = 60;
+		// Respeta el nivel visual de SU carril: va por delante de lo de su carril, pero nunca por
+		// delante de los carriles que van más al frente (1 → 10, 2 → 50, 3 → 100).
+		ZIndex = (_carrilNum switch { "3" => 100, "2" => 50, _ => 10 }) + 5;
 
 		_anim.Stop();
 		_anim.Animation = "respawn_fantasma";
@@ -271,6 +273,9 @@ public partial class KaBarCartoonPrime : TropaBase
 		foreach (Node n in GetTree().GetNodesInGroup(grupoRival))
 		{
 			if (!(n is Node2D e) || !IsInstanceValid(e) || !e.HasMeta("carril")) continue;
+			// Una tropa que ya arrancó su derrota cuenta como eliminada: así el fantasma festeja apenas
+			// empieza a morir, no cuando termina de desvanecerse.
+			if (e is TropaBase muriendo && muriendo.EstaMuerta) continue;
 			string c = ((string)e.GetMeta("carril"))
 				.ToLower().Replace("modrival", "").Replace("mod", "").Trim();
 			if (c == _carrilNum) return e;

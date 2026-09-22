@@ -137,10 +137,10 @@ public partial class PeonPrime : TropaBase
 		estiloPanel.CornerRadiusTopRight = 8;
 		estiloPanel.CornerRadiusBottomLeft = 8;
 		estiloPanel.CornerRadiusBottomRight = 8;
-		estiloPanel.ContentMarginLeft = 12;
-		estiloPanel.ContentMarginRight = 12;
-		estiloPanel.ContentMarginTop = 10;
-		estiloPanel.ContentMarginBottom = 10;
+		estiloPanel.ContentMarginLeft = 22;
+		estiloPanel.ContentMarginRight = 22;
+		estiloPanel.ContentMarginTop = 18;
+		estiloPanel.ContentMarginBottom = 18;
 		estiloPanel.BorderWidthLeft = 2;
 		estiloPanel.BorderWidthRight = 2;
 		estiloPanel.BorderWidthTop = 2;
@@ -149,13 +149,14 @@ public partial class PeonPrime : TropaBase
 		panel.AddThemeStyleboxOverride("panel", estiloPanel);
 
 		VBoxContainer vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 6);
+		vbox.AddThemeConstantOverride("separation", 12);
 		panel.AddChild(vbox);
 
 		Label titulo = new Label();
 		titulo.Text = "⚡ PROMOCIÓN ⚡";
 		titulo.HorizontalAlignment = HorizontalAlignment.Center;
 		titulo.AddThemeColorOverride("font_color", new Color(1.0f, 0.84f, 0.0f));
+		titulo.AddThemeFontSizeOverride("font_size", 34); // se lee bien, era muy chico
 		vbox.AddChild(titulo);
 
 		Button btnTorre   = CrearBotonOpcion("🏰 TORRE", RUTA_TORRE);
@@ -173,7 +174,8 @@ public partial class PeonPrime : TropaBase
 	{
 		Button btn = new Button();
 		btn.Text = texto;
-		btn.CustomMinimumSize = new Vector2(130, 32);
+		btn.CustomMinimumSize = new Vector2(300, 74); // botones grandes: se elige con el dedo en celular
+		btn.AddThemeFontSizeOverride("font_size", 30);
 		btn.Pressed += () => { TransformarEnPieza(rutaEscena); };
 		return btn;
 	}

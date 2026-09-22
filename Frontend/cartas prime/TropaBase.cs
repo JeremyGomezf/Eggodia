@@ -34,6 +34,8 @@ public abstract partial class TropaBase : Area2D
 	/// ocupando su carril hasta que termina la animación: esto la distingue de una tropa viva.</summary>
 	public bool EstaMuerta => _estaMuerto;
 	protected bool _yaActuo      = false;
+	/// <summary>True si ya hizo su acción en este turno (atacar/defender/habilidad).</summary>
+	public bool YaActuo => _yaActuo;
 	private  Tween _tweenGolpe;
 
 	/// <summary>Turno propio de esta tropa: 0 al entrar al tablero (el turno de invocación
@@ -555,7 +557,8 @@ public abstract partial class TropaBase : Area2D
 		if (!IsInstanceValid(this) || _estaMuerto) return;
 		// Últimos 15s antes de la bomba Nuclear: si todavía le queda escudo, el golpe no le rompe la
 		// guardia — vuelve a cubrirse. Solo con el escudo en 0 queda desprotegida.
-		if (Campo1.GuardiaNuclearActiva && escudoActual > 0) { ReproducirPreDefensa(); return; }
+		if (Campo1.GuardiaNuclearActiva && escudoActual > 0 && IsInGroup(Campo1.GrupoGuardiaNuclear))
+		{ ReproducirPreDefensa(); return; }
 		ReproducirIdle();
 	}
 
