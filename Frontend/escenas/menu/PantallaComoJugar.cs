@@ -36,12 +36,18 @@ public partial class PantallaComoJugar : Control
 		}
 	}
 
-	// Agranda las letras de todos los controles con texto (labels y botones) para móvil.
+	// Tipografía del juego (la misma del menú/login). Se aplica a toda la pantalla para que "Cómo Jugar"
+	// combine con el resto del juego en vez de usar la fuente por defecto de Godot.
+	private static readonly Font FuenteJuego =
+		ResourceLoader.Exists("res://Almendra-Bold.ttf") ? GD.Load<Font>("res://Almendra-Bold.ttf") : null;
+
+	// Aplica la fuente del juego y agranda las letras de todos los controles con texto (para móvil).
 	private void EscalarFuentes(Node nodo)
 	{
 		if (nodo is Label || nodo is Button)
 		{
 			var c = (Control)nodo;
+			if (FuenteJuego != null) c.AddThemeFontOverride("font", FuenteJuego); // misma tipografía del juego
 			int actual = c.GetThemeFontSize("font_size");
 			if (actual > 0)
 				c.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(actual * EscalaFuenteMovil));
