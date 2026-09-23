@@ -92,26 +92,29 @@ public partial class ChequeoActualizacion : Node
 		fondo.MouseFilter = Control.MouseFilterEnum.Stop;
 		capa.AddChild(fondo);
 
+		// Panel "vidrio oscuro" del juego (en vez de texto flotante sobre negro).
+		var panel = new PanelContainer();
+		panel.SetAnchorsPreset(Control.LayoutPreset.Center);
+		panel.OffsetLeft = -460; panel.OffsetRight = 460; panel.OffsetTop = -240; panel.OffsetBottom = 240;
+		EstiloUI.Panel(panel);
+		fondo.AddChild(panel);
+
 		var caja = new VBoxContainer();
-		caja.SetAnchorsPreset(Control.LayoutPreset.Center);
 		caja.AddThemeConstantOverride("separation", 30);
-		caja.OffsetLeft = -440; caja.OffsetRight = 440; caja.OffsetTop = -220; caja.OffsetBottom = 220;
-		fondo.AddChild(caja);
+		panel.AddChild(caja);
 
 		var titulo = new Label();
 		titulo.Text = "Hay una actualización disponible";
 		titulo.HorizontalAlignment = HorizontalAlignment.Center;
 		titulo.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		titulo.AddThemeFontSizeOverride("font_size", 54);
-		titulo.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
+		EstiloUI.Titulo(titulo, 54);
 		caja.AddChild(titulo);
 
 		var texto = new Label();
 		texto.Text = "¿Deseas descargar la nueva versión?\nNecesitas actualizar para seguir jugando.";
 		texto.HorizontalAlignment = HorizontalAlignment.Center;
 		texto.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		texto.AddThemeFontSizeOverride("font_size", 34);
-		texto.AddThemeColorOverride("font_color", new Color(0.9f, 0.93f, 0.98f));
+		EstiloUI.Texto(texto, 34, EstiloUI.TextoClaro);
 		caja.AddChild(texto);
 
 		var btnFila = new HBoxContainer();
@@ -122,7 +125,7 @@ public partial class ChequeoActualizacion : Node
 		var btnDescargar = new Button();
 		btnDescargar.Text = "DESCARGAR";
 		btnDescargar.CustomMinimumSize = new Vector2(300, 90);
-		btnDescargar.AddThemeFontSizeOverride("font_size", 36);
+		EstiloUI.Boton(btnDescargar, 36);
 		btnDescargar.Pressed += () => { if (!string.IsNullOrEmpty(info.Url)) OS.ShellOpen(info.Url); };
 		btnFila.AddChild(btnDescargar);
 
@@ -132,7 +135,7 @@ public partial class ChequeoActualizacion : Node
 			var btnOmitir = new Button();
 			btnOmitir.Text = "OMITIR / CANCELAR";
 			btnOmitir.CustomMinimumSize = new Vector2(300, 90);
-			btnOmitir.AddThemeFontSizeOverride("font_size", 32);
+			EstiloUI.Boton(btnOmitir, 32);
 			btnOmitir.Pressed += () => capa.QueueFree();
 			btnFila.AddChild(btnOmitir);
 		}

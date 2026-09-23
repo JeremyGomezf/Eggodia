@@ -167,15 +167,13 @@ public partial class Campo1 : Node2D
 		var titulo = new Label();
 		titulo.Text = $"INVOCACIÓN NFC: {nombre.ToUpper()}";
 		titulo.HorizontalAlignment = HorizontalAlignment.Center;
-		titulo.AddThemeFontSizeOverride("font_size", 34);
-		titulo.AddThemeColorOverride("font_color", new Color(1f, 0.88f, 0.35f));
+		EstiloUI.Titulo(titulo, 34);
 		caja.AddChild(titulo);
 
 		var subtexto = new Label();
 		subtexto.Text = "Selecciona la casilla donde deseas desplegar tu tropa:";
 		subtexto.HorizontalAlignment = HorizontalAlignment.Center;
-		subtexto.AddThemeFontSizeOverride("font_size", 22);
-		subtexto.AddThemeColorOverride("font_color", new Color(0.9f, 0.94f, 1f));
+		EstiloUI.Texto(subtexto, 22, EstiloUI.TextoClaro);
 		caja.AddChild(subtexto);
 
 		var hboxBotones = new HBoxContainer();
@@ -196,7 +194,7 @@ public partial class Campo1 : Node2D
 			var btnSpot = new Button();
 			btnSpot.Text = nombreCarril;
 			btnSpot.CustomMinimumSize = new Vector2(210, 80);
-			btnSpot.AddThemeFontSizeOverride("font_size", 22);
+			EstiloUI.Boton(btnSpot, 22);
 
 			var spotRef = spot;
 			btnSpot.Pressed += () =>
@@ -211,7 +209,7 @@ public partial class Campo1 : Node2D
 		btnCancelar.Text = "CANCELAR";
 		btnCancelar.CustomMinimumSize = new Vector2(180, 56);
 		btnCancelar.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-		btnCancelar.AddThemeFontSizeOverride("font_size", 18);
+		EstiloUI.Boton(btnCancelar, 18, rojo: true);
 		btnCancelar.Pressed += () => capa.QueueFree();
 		caja.AddChild(btnCancelar);
 	}

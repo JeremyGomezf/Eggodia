@@ -43,6 +43,7 @@ public partial class PanelRanking : Control
 		panel.SetAnchorsPreset(LayoutPreset.Center);
 		panel.CustomMinimumSize = new Vector2(550, 480);
 		panel.Position          = new Vector2(-275, -240);
+		EstiloUI.Panel(panel);   // panel "vidrio oscuro" del juego (antes: gris por defecto)
 		AddChild(panel);
 
 		var vbox = new VBoxContainer();
@@ -52,9 +53,8 @@ public partial class PanelRanking : Control
 		// Título
 		var titulo = new Label();
 		titulo.Text = "🏆 RANKING — EGGODIA";
-		titulo.AddThemeColorOverride("font_color", Colors.Gold);
-		titulo.AddThemeFontSizeOverride("font_size", 22);
 		titulo.HorizontalAlignment = HorizontalAlignment.Center;
+		EstiloUI.Titulo(titulo, 22);
 		vbox.AddChild(titulo);
 
 		vbox.AddChild(new HSeparator());
@@ -74,7 +74,7 @@ public partial class PanelRanking : Control
 		var btnCerrar = new Button();
 		btnCerrar.Text              = "✕ Cerrar";
 		btnCerrar.CustomMinimumSize = new Vector2(150, 40);
-		btnCerrar.AddThemeFontSizeOverride("font_size", 16);
+		EstiloUI.Boton(btnCerrar, 16);
 		btnCerrar.Pressed += () => QueueFree();
 
 		var hboxCerrar = new HBoxContainer();
@@ -201,6 +201,7 @@ public partial class PanelRanking : Control
 		var lbl = new Label();
 		lbl.Text              = texto;
 		lbl.CustomMinimumSize = new Vector2(ancho, 0);
+		if (EstiloUI.Fuente != null) lbl.AddThemeFontOverride("font", EstiloUI.Fuente); // fuente del juego
 		lbl.AddThemeColorOverride("font_color", color);
 		if (negrita) lbl.AddThemeFontSizeOverride("font_size", 15);
 		parent.AddChild(lbl);

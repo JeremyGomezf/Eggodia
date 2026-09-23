@@ -319,6 +319,7 @@ public partial class Campo1 : Node2D
 		btnReinicio.Text              = "Jugar de nuevo";
 		btnReinicio.Position          = new Vector2(50, 300);
 		btnReinicio.CustomMinimumSize = new Vector2(190, 48);
+		EstiloUI.Boton(btnReinicio, 20);
 		btnReinicio.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ReloadCurrentScene(); };
 		// "Jugar de nuevo" NO tiene sentido en línea: recargar la escena volvería a leer el ContextoOnline
 		// (MatchId/Semilla de la partida YA terminada) y re-entraría a la misma partida muerta. En online
@@ -329,6 +330,7 @@ public partial class Campo1 : Node2D
 		btnMenu.Text              = "Menú Principal";
 		btnMenu.Position          = EsOnline ? new Vector2(152, 300) : new Vector2(255, 300);
 		btnMenu.CustomMinimumSize = new Vector2(190, 48);
+		EstiloUI.Boton(btnMenu, 20);
 		btnMenu.Pressed += () =>
 		{
 			LimpiezaEfectos.LimpiarEfectosDeCampo();
@@ -345,7 +347,8 @@ public partial class Campo1 : Node2D
 			btnRanking.Text              = "Ver Ranking";
 			btnRanking.Position          = new Vector2(50, 358);
 			btnRanking.CustomMinimumSize = new Vector2(395, 44);
-			btnRanking.SelfModulate      = Colors.Gold;
+			EstiloUI.Boton(btnRanking, 18);
+			btnRanking.AddThemeColorOverride("font_color", EstiloUI.Dorado); // acento dorado (es el destacado)
 			btnRanking.Pressed += () =>
 			{
 				var panel = new PanelRanking();
