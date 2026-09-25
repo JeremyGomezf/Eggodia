@@ -141,21 +141,45 @@ public partial class Campo1 : Node2D
 		tw.Finished += () => { if (IsInstanceValid(host)) host.QueueFree(); };
 	}
 
+	// Marco de cristal del juego (el mismo del HUD "TIEMPO"), cargado una sola vez.
+	private static readonly Texture2D _texMarcoToast =
+		ResourceLoader.Exists("res://imagenes/botonescampo1/ContadorTurno.png")
+			? GD.Load<Texture2D>("res://imagenes/botonescampo1/ContadorTurno.png") : null;
+
 	// Panel/texto agrandados para lectura cómoda en móvil.
 	private PanelContainer ConstruirToast(string texto, Color acento, int fontSize, string badge = null)
 	{
 		var panel = new PanelContainer();
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.06f, 0.08f, 0.13f, 0.94f);
-		sb.BorderWidthLeft = 5;
-		sb.BorderColor = acento;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 26;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 14;
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
-		sb.ShadowColor = new Color(0, 0, 0, 0.4f);
-		sb.ShadowSize = 6;
-		panel.AddThemeStyleboxOverride("panel", sb);
+
+		if (_texMarcoToast != null)
+		{
+			// Reutiliza el MARCO REAL del juego (cristal azul de ContadorTurno.png) como fondo, con
+			// nine-patch (StyleBoxTexture): el borde ornamentado NO se deforma aunque el texto sea largo
+			// o corto — solo se estira el interior negro. Así deja de verse como una caja "genérica".
+			var st = new StyleBoxTexture { Texture = _texMarcoToast };
+			// Nine-patch: cuánto del borde (px de la imagen) se mantiene sin estirar en cada lado.
+			st.TextureMarginLeft = st.TextureMarginRight = 60;
+			st.TextureMarginTop  = 46; st.TextureMarginBottom = 50;
+			// Padding para que el texto quede dentro del interior negro, no bajo el cristal.
+			st.ContentMarginLeft = st.ContentMarginRight = 52;
+			st.ContentMarginTop  = 26; st.ContentMarginBottom = 32;
+			panel.AddThemeStyleboxOverride("panel", st);
+		}
+		else
+		{
+			// Respaldo (si faltara la imagen): la caja dibujada por código de antes.
+			var sb = new StyleBoxFlat();
+			sb.BgColor = new Color(0.06f, 0.08f, 0.13f, 0.94f);
+			sb.BorderWidthLeft = 5;
+			sb.BorderColor = acento;
+			sb.ContentMarginLeft = sb.ContentMarginRight = 26;
+			sb.ContentMarginTop  = sb.ContentMarginBottom = 14;
+			sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
+			sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
+			sb.ShadowColor = new Color(0, 0, 0, 0.4f);
+			sb.ShadowSize = 6;
+			panel.AddThemeStyleboxOverride("panel", sb);
+		}
 
 		var hb = new HBoxContainer();
 		hb.AddThemeConstantOverride("separation", 12);
@@ -165,6 +189,7 @@ public partial class Campo1 : Node2D
 		{
 			var b = new Label();
 			b.Text = badge;
+			if (EstiloUI.Fuente != null) b.AddThemeFontOverride("font", EstiloUI.Fuente); // fuente del juego
 			b.AddThemeColorOverride("font_color", acento);
 			b.AddThemeFontSizeOverride("font_size", fontSize + 6);
 			b.VerticalAlignment = VerticalAlignment.Center;
@@ -173,6 +198,8 @@ public partial class Campo1 : Node2D
 
 		var lbl = new Label();
 		lbl.Text = texto;
+		// Fuente del juego (Almendra-Bold), igual que el resto de la UI — antes usaba la de Godot.
+		if (EstiloUI.Fuente != null) lbl.AddThemeFontOverride("font", EstiloUI.Fuente);
 		// Texto blanco + borde negro grueso + sombra oscura difuminada por detrás (legibilidad
 		// total sobre cualquier fondo del campo de batalla).
 		lbl.AddThemeColorOverride("font_color", Colors.White);

@@ -52,6 +52,21 @@ public partial class PanelSettings : PanelContainer
 		_btnCerrarSesion = GetNodeOrNull<Button>("Margin/VBox/BtnCerrarSesion");
 		_chkScreenShake  = GetNodeOrNull<CheckButton>("Margin/VBox/ChkScreenShake");
 
+		// Marco DORADO del juego aplicado por CÓDIGO (además del de la escena): garantiza que se vea
+		// aunque el editor tenga la .tscn cacheada. padTop alto para que el título quede bajo la gema.
+		EstiloUI.MarcoDorado(this, padX: 24, padTop: 118, padBottom: 24);
+
+		// Estilo del juego (fuente Almendra + botones nuestros) sobre la UI de la escena, que venía con
+		// la fuente/estilo por defecto de Godot. Solo apariencia: no cambia la lógica.
+		EstiloUI.Boton(_btnMute, 34);
+		EstiloUI.Boton(_btnComoJugar, 34);
+		EstiloUI.Boton(_btnCerrar, 36);
+		EstiloUI.Boton(_btnCerrarSesion, 34, rojo: true);
+		EstiloUI.Titulo(GetNodeOrNull<Label>("Margin/VBox/Titulo"), 54);
+		EstiloUI.Texto(GetNodeOrNull<Label>("Margin/VBox/HBoxVolumen/LabelVolumen"), 34, EstiloUI.TextoClaro);
+		if (_chkScreenShake != null && EstiloUI.Fuente != null)
+			_chkScreenShake.AddThemeFontOverride("font", EstiloUI.Fuente);
+
 		if (_btnCerrar != null) _btnCerrar.Pressed += Ocultar;
 
 		// Disponibles sin importar si la sesión es de invitado o de una cuenta real.

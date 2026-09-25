@@ -25,6 +25,17 @@ public partial class MenuPausa : CanvasLayer
 		var btnCancelar = GetNode<Button>("Overlay/PanelConfirmacion/VBox/HBox/BtnCancelar");
 		var btnConfirmar = GetNode<Button>("Overlay/PanelConfirmacion/VBox/HBox/BtnConfirmar");
 
+		// Estilo del juego (fuente Almendra + botones/paneles nuestros) en vez del gris por defecto.
+		// Por código para que se vea siempre, sin depender de la .tscn.
+		EstiloUI.Boton(btnContinue, 42);
+		EstiloUI.Boton(btnSettings, 42);
+		EstiloUI.Boton(btnExit, 42, rojo: true);      // RENDIRSE en rojo
+		EstiloUI.Boton(btnCancelar, 32);
+		EstiloUI.Boton(btnConfirmar, 32, rojo: true); // SALIR en rojo
+		EstiloUI.Titulo(GetNodeOrNull<Label>("Overlay/VBox/Titulo"), 68);
+		EstiloUI.Texto(GetNodeOrNull<Label>("Overlay/PanelConfirmacion/VBox/Label"), 34, EstiloUI.TextoClaro);
+		EstiloUI.MarcoCristal(_panelConfirmacion); // panel de "¿rendirse?" con el marco de cristal del combate
+
 		btnContinue.Pressed += Reanudar;
 		btnSettings.Pressed += AbrirSettings;
 		btnExit.Pressed += MostrarConfirmacion;

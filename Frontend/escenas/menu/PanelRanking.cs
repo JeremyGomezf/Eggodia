@@ -38,12 +38,13 @@ public partial class PanelRanking : Control
 		fondo.MouseFilter = MouseFilterEnum.Stop;
 		AddChild(fondo);
 
-		// Panel central
+		// Panel central — MARCO DORADO del juego (el del login, con la gema de huevo).
 		var panel = new PanelContainer();
 		panel.SetAnchorsPreset(LayoutPreset.Center);
-		panel.CustomMinimumSize = new Vector2(550, 480);
-		panel.Position          = new Vector2(-275, -240);
-		EstiloUI.Panel(panel);   // panel "vidrio oscuro" del juego (antes: gris por defecto)
+		panel.CustomMinimumSize = new Vector2(620, 580);
+		panel.GrowHorizontal = GrowDirection.Both;   // se auto-centra aunque el marco crezca
+		panel.GrowVertical   = GrowDirection.Both;
+		EstiloUI.MarcoDorado(panel, padX: 44);
 		AddChild(panel);
 
 		var vbox = new VBoxContainer();

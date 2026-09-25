@@ -96,30 +96,23 @@ public partial class MenuPrincipal : Control
 		// lejos del panel real según la resolución).
 		var marco = new Control();
 		marco.SetAnchorsPreset(LayoutPreset.Center);
-		marco.OffsetLeft = -370; marco.OffsetRight = 370;
-		marco.OffsetTop  = -320; marco.OffsetBottom = 320;
+		marco.OffsetLeft = -380; marco.OffsetRight = 380;
+		marco.OffsetTop  = -350; marco.OffsetBottom = 350;
 		fondo.AddChild(marco);
 
+		// MARCO DORADO del juego (el del login, con la gema de huevo) en vez del panel morado de código.
 		var panel = new PanelContainer();
 		panel.SetAnchorsPreset(LayoutPreset.FullRect);
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.10f, 0.07f, 0.18f, 0.98f);
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 3;
-		sb.BorderColor = new Color(0.65f, 0.55f, 1f, 0.85f);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 20;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 32;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 26;
-		sb.ShadowColor = new Color(0.4f, 0.2f, 0.8f, 0.4f); sb.ShadowSize = 14;
-		panel.AddThemeStyleboxOverride("panel", sb);
+		EstiloUI.MarcoDorado(panel, padX: 40, padBottom: 40);
 		marco.AddChild(panel);
 
-		var btnCerrar = CrearBotonCerrarRojo();
-		btnCerrar.CustomMinimumSize = new Vector2(56, 56);
-		btnCerrar.AddThemeFontSizeOverride("font_size", 26);
-		btnCerrar.SetAnchorsPreset(LayoutPreset.TopRight);
-		btnCerrar.OffsetLeft = -24; btnCerrar.OffsetTop = -24;
-		btnCerrar.OffsetRight = 32; btnCerrar.OffsetBottom = 32;
+		// X DORADA arriba y al centro, sobre la gema de huevo del marco (pedido).
+		var btnCerrar = CrearBotonCerrarDorado();
+		btnCerrar.CustomMinimumSize = new Vector2(60, 60);
+		btnCerrar.AddThemeFontSizeOverride("font_size", 30);
+		btnCerrar.SetAnchorsPreset(LayoutPreset.CenterTop);
+		btnCerrar.OffsetLeft = -30; btnCerrar.OffsetRight = 30;
+		btnCerrar.OffsetTop  = 18;  btnCerrar.OffsetBottom = 78;
 		btnCerrar.Pressed += () => _capaTrofeos.Visible = false;
 		marco.AddChild(btnCerrar);
 
@@ -129,16 +122,14 @@ public partial class MenuPrincipal : Control
 
 		var lblTitulo = new Label();
 		lblTitulo.Text = "EL MEJOR JUGADOR";
-		lblTitulo.AddThemeColorOverride("font_color", new Color(0.75f, 0.65f, 1f));
-		lblTitulo.AddThemeFontSizeOverride("font_size", 38);
 		lblTitulo.HorizontalAlignment = HorizontalAlignment.Center;
+		EstiloUI.Titulo(lblTitulo, 38);   // fuente del juego + dorado
 		vbox.AddChild(lblTitulo);
 
 		var lblSub = new Label();
 		lblSub.Text = "Trofeos huevo ganados en partidas";
-		lblSub.AddThemeColorOverride("font_color", new Color(0.55f, 0.85f, 1f));
-		lblSub.AddThemeFontSizeOverride("font_size", 19);
 		lblSub.HorizontalAlignment = HorizontalAlignment.Center;
+		EstiloUI.Texto(lblSub, 19, EstiloUI.Acento);
 		vbox.AddChild(lblSub);
 
 		var scroll = new ScrollContainer();
@@ -231,15 +222,7 @@ public partial class MenuPrincipal : Control
 	private Control CrearFilaTrofeo(int puesto, string nombre, int trofeos, bool esPropia)
 	{
 		var fila = new PanelContainer();
-		var sb = new StyleBoxFlat();
-		sb.BgColor = esPropia ? new Color(0.35f, 0.25f, 0.6f, 0.6f) : new Color(0.18f, 0.15f, 0.3f, 0.5f);
-		sb.BorderWidthLeft = 3;
-		sb.BorderColor = new Color(0.6f, 0.85f, 1f, 0.8f);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 10;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 16;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 10;
-		fila.AddThemeStyleboxOverride("panel", sb);
+		fila.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado(esPropia)); // paleta nuestra (azul+oro / verde si eres tú)
 
 		var hbox = new HBoxContainer();
 		hbox.AddThemeConstantOverride("separation", 14);
@@ -247,39 +230,56 @@ public partial class MenuPrincipal : Control
 
 		var lblPuesto = new Label();
 		lblPuesto.Text = $"#{puesto}";
-		lblPuesto.AddThemeColorOverride("font_color", new Color(0.85f, 0.75f, 1f));
+		if (EstiloUI.Fuente != null) lblPuesto.AddThemeFontOverride("font", EstiloUI.Fuente);
+		lblPuesto.AddThemeColorOverride("font_color", EstiloUI.Dorado);
 		lblPuesto.AddThemeFontSizeOverride("font_size", 23);
 		lblPuesto.CustomMinimumSize = new Vector2(50, 0);
 		hbox.AddChild(lblPuesto);
 
 		var lblNombre = new Label();
 		lblNombre.Text = nombre;
-		lblNombre.AddThemeColorOverride("font_color", Colors.White);
+		if (EstiloUI.Fuente != null) lblNombre.AddThemeFontOverride("font", EstiloUI.Fuente);
+		lblNombre.AddThemeColorOverride("font_color", esPropia ? EstiloUI.VerdeOk : Colors.White);
 		lblNombre.AddThemeFontSizeOverride("font_size", 23);
 		lblNombre.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		hbox.AddChild(lblNombre);
 
 		var lblTrofeos = new Label();
 		lblTrofeos.Text = $"🏆 {trofeos}";
-		lblTrofeos.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
+		if (EstiloUI.Fuente != null) lblTrofeos.AddThemeFontOverride("font", EstiloUI.Fuente);
+		lblTrofeos.AddThemeColorOverride("font_color", EstiloUI.Dorado);
 		lblTrofeos.AddThemeFontSizeOverride("font_size", 23);
 		hbox.AddChild(lblTrofeos);
 
 		return fila;
 	}
 
-	private static Button CrearBotonCerrarRojo()
+	// Botón de cerrar con la X DORADA, en un círculo oscuro para que resalte sobre la gema del marco.
+	private static Button CrearBotonCerrarDorado()
 	{
 		var btn = new Button();
 		btn.Text = "✕";
+		if (EstiloUI.Fuente != null) btn.AddThemeFontOverride("font", EstiloUI.Fuente);
+		btn.AddThemeColorOverride("font_color", EstiloUI.Dorado);
+		btn.AddThemeColorOverride("font_hover_color", new Color(1f, 0.92f, 0.55f));
+		btn.AddThemeColorOverride("font_pressed_color", EstiloUI.Dorado);
+		btn.AddThemeColorOverride("font_focus_color", EstiloUI.Dorado);
+
 		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.85f, 0.2f, 0.2f, 0.95f);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
+		sb.BgColor = new Color(0.05f, 0.04f, 0.02f, 0.88f); // círculo oscuro para contraste sobre el oro
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 30;
+		sb.BorderColor = EstiloUI.Dorado;
+		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
 		btn.AddThemeStyleboxOverride("normal", sb);
+
 		var sbH = new StyleBoxFlat();
-		sbH.BgColor = new Color(1f, 0.3f, 0.3f, 1f);
-		sbH.CornerRadiusTopLeft = sbH.CornerRadiusTopRight = sbH.CornerRadiusBottomLeft = sbH.CornerRadiusBottomRight = 12;
+		sbH.BgColor = new Color(0.16f, 0.11f, 0.02f, 0.96f);
+		sbH.CornerRadiusTopLeft = sbH.CornerRadiusTopRight = sbH.CornerRadiusBottomLeft = sbH.CornerRadiusBottomRight = 30;
+		sbH.BorderColor = new Color(1f, 0.9f, 0.5f);
+		sbH.BorderWidthLeft = sbH.BorderWidthTop = sbH.BorderWidthRight = sbH.BorderWidthBottom = 2;
 		btn.AddThemeStyleboxOverride("hover", sbH);
+		btn.AddThemeStyleboxOverride("pressed", sbH);
+		btn.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
 		return btn;
 	}
 }

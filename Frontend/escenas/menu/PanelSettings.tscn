@@ -1,21 +1,18 @@
 [gd_scene format=3 uid="uid://psettings123"]
 
 [ext_resource type="Script" path="res://escenas/menu/PanelSettings.cs" id="1_psett"]
+[ext_resource type="Texture2D" path="res://imagenes/login/login_panel.png" id="2_marco"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glass"]
-bg_color = Color(0.12, 0.16, 0.22, 0.9)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.4, 0.6, 0.9, 0.6)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-shadow_color = Color(0, 0, 0, 0.4)
-shadow_size = 15
-shadow_offset = Vector2(0, 8)
+[sub_resource type="StyleBoxTexture" id="StyleBoxFlat_glass"]
+texture = ExtResource("2_marco")
+texture_margin_left = 92.0
+texture_margin_top = 150.0
+texture_margin_right = 92.0
+texture_margin_bottom = 92.0
+content_margin_left = 24.0
+content_margin_top = 118.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
 bg_color = Color(0.2, 0.25, 0.35, 1)

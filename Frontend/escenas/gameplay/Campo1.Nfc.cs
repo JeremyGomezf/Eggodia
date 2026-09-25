@@ -157,12 +157,18 @@ public partial class Campo1 : Node2D
 		fondo.MouseFilter = Control.MouseFilterEnum.Stop;
 		capa.AddChild(fondo);
 
+		// Marco de CRISTAL del HUD (ContadorTurno.png) detrás del popup, para que combine con la batalla.
+		var marco = new PanelContainer();
+		marco.SetAnchorsPreset(Control.LayoutPreset.Center);
+		marco.GrowHorizontal = Control.GrowDirection.Both;
+		marco.GrowVertical   = Control.GrowDirection.Both;
+		marco.CustomMinimumSize = new Vector2(780, 420);
+		EstiloUI.MarcoCristal(marco);
+		fondo.AddChild(marco);
+
 		var caja = new VBoxContainer();
-		caja.SetAnchorsPreset(Control.LayoutPreset.Center);
 		caja.AddThemeConstantOverride("separation", 24);
-		caja.OffsetLeft = -380; caja.OffsetRight = 380;
-		caja.OffsetTop = -200; caja.OffsetBottom = 200;
-		fondo.AddChild(caja);
+		marco.AddChild(caja);
 
 		var titulo = new Label();
 		titulo.Text = $"INVOCACIÓN NFC: {nombre.ToUpper()}";

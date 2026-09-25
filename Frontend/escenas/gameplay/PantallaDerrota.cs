@@ -36,11 +36,36 @@ public partial class PantallaDerrota : CanvasLayer
 				GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
 			};
 
+		// Estilo del juego: botones, marcos (paneles) y título (en rojo) con nuestra paleta/fuente.
+		EstiloUI.Boton(btnReintentar);
+		EstiloUI.Boton(btnMenu);
+		EstiloUI.Texto(GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/Titulo"), 0, EstiloUI.Peligro);
+		var pStats = GetNodeOrNull<PanelContainer>("Overlay/CentroVBox/VBox/PanelStats");
+		if (pStats != null) pStats.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado());
+		var pMvt = GetNodeOrNull<PanelContainer>("Overlay/CentroVBox/VBox/PanelMVT");
+		if (pMvt != null) pMvt.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado());
+
 		// Animación de aparición
 		var overlay = GetNode<ColorRect>("Overlay");
 		overlay.Modulate = new Color(1, 1, 1, 0);
 		Tween tw = CreateTween();
 		tw.TweenProperty(overlay, "modulate:a", 1.0f, 1.5f);
+
+		CallDeferred(nameof(AjustarParticulasAnchoPantalla));
+	}
+
+	// La lluvia usaba ancho fijo (±700 px) centrada en x=640: en pantallas anchas ("keep_height")
+	// solo cubría parte. Se recalcula al ancho REAL visible para que caiga en toda la pantalla.
+	private void AjustarParticulasAnchoPantalla()
+	{
+		var p = GetNodeOrNull<CpuParticles2D>("Overlay/Lluvia");
+		if (p == null) return;
+		var overlay = GetNodeOrNull<Control>("Overlay");
+		float w = (overlay != null && overlay.Size.X > 100f) ? overlay.Size.X : GetViewport().GetVisibleRect().Size.X;
+		if (w < 100f) w = 1080f;
+		p.Position = new Vector2(w / 2f, p.Position.Y);
+		p.EmissionRectExtents = new Vector2(w / 2f + 140f, p.EmissionRectExtents.Y);
+		p.Amount = Mathf.Max(p.Amount, (int)(w / 8f));
 	}
 
 	private void MostrarStats()

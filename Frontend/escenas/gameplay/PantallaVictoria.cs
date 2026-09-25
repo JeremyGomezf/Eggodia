@@ -30,8 +30,33 @@ public partial class PantallaVictoria : CanvasLayer
 		if (btnJugar != null) btnJugar.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ReloadCurrentScene(); };
 		if (btnMenu  != null) btnMenu.Pressed  += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn"); };
 
+		// Estilo del juego: botones, marcos (paneles) y título con nuestra paleta/fuente.
+		EstiloUI.Boton(btnJugar);
+		EstiloUI.Boton(btnMenu);
+		EstiloUI.Titulo(GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/Titulo"), 0);
+		var pStats = GetNodeOrNull<PanelContainer>("Overlay/CentroVBox/VBox/PanelStats");
+		if (pStats != null) pStats.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado());
+		var pMvt = GetNodeOrNull<PanelContainer>("Overlay/CentroVBox/VBox/PanelMVT");
+		if (pMvt != null) pMvt.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado());
+
 		MostrarRecompensa();
 		AnimarEntrada();
+		CallDeferred(nameof(AjustarParticulasAnchoPantalla));
+	}
+
+	// El confeti/lluvia usaba un ancho fijo (±700 px) centrado en x=640, así que en pantallas anchas
+	// (el juego usa "keep_height", el ancho visible cambia por dispositivo) solo cubría una parte.
+	// Aquí se recalcula al ancho REAL visible para que caiga en toda la pantalla, en cualquier celular.
+	private void AjustarParticulasAnchoPantalla()
+	{
+		var p = GetNodeOrNull<CpuParticles2D>("Overlay/Confetti");
+		if (p == null) return;
+		var overlay = GetNodeOrNull<Control>("Overlay");
+		float w = (overlay != null && overlay.Size.X > 100f) ? overlay.Size.X : GetViewport().GetVisibleRect().Size.X;
+		if (w < 100f) w = 1080f;
+		p.Position = new Vector2(w / 2f, p.Position.Y);
+		p.EmissionRectExtents = new Vector2(w / 2f + 140f, p.EmissionRectExtents.Y);
+		p.Amount = Mathf.Max(p.Amount, (int)(w / 10f)); // densidad acorde al ancho
 	}
 
 	private void MostrarRecompensa()

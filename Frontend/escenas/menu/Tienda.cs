@@ -126,19 +126,19 @@ public partial class Tienda : Control
 		scroll.AddChild(_contenidoScroll);
 
 		// Sección 1: Skins de huevo
-		AgregarSeccion("SKINS DE HUEVO 🥚", new Color(1f, 0.65f, 0.25f));
+		AgregarSeccion("SKINS DE HUEVO", new Color(1f, 0.65f, 0.25f));
 		AgregarGridSkins();
 
 		// Sección 2: Tronos
-		AgregarSeccion("TRONOS 🪑", new Color(0.85f, 0.7f, 1f));
+		AgregarSeccion("TRONOS", new Color(0.85f, 0.7f, 1f));
 		AgregarGridTronos();
 
 		// Sección 3: Tropas de combate
-		AgregarSeccion("TROPAS DISPONIBLES ⚔️", new Color(0.95f, 0.45f, 0.35f));
+		AgregarSeccion("TROPAS DISPONIBLES", new Color(0.95f, 0.45f, 0.35f));
 		AgregarGridTropasTienda();
 
 		// Sección 4: Ardides y Hechizos
-		AgregarSeccion("ARDIDES Y HECHIZOS ✨", new Color(0.55f, 0.85f, 1f));
+		AgregarSeccion("ARDIDES Y HECHIZOS", new Color(0.55f, 0.85f, 1f));
 		AgregarGridHechizosTienda();
 	}
 
@@ -146,6 +146,7 @@ public partial class Tienda : Control
 	{
 		var lbl = new Label();
 		lbl.Text = titulo;
+		if (EstiloUI.Fuente != null) lbl.AddThemeFontOverride("font", EstiloUI.Fuente);
 		lbl.AddThemeColorOverride("font_color", color);
 		lbl.AddThemeFontSizeOverride("font_size", 26);
 		lbl.AddThemeConstantOverride("outline_size", 4);
@@ -209,19 +210,7 @@ public partial class Tienda : Control
 
 		var panel = new PanelContainer();
 		panel.CustomMinimumSize = new Vector2(230, 320);
-
-		var sbNormal = new StyleBoxFlat();
-		sbNormal.BgColor = poseida
-			? new Color(0.14f, 0.22f, 0.10f, 0.97f)
-			: new Color(0.09f, 0.11f, 0.22f, 0.96f);
-		sbNormal.BorderWidthLeft = sbNormal.BorderWidthTop = sbNormal.BorderWidthRight = sbNormal.BorderWidthBottom = 2;
-		sbNormal.BorderColor = poseida ? new Color(0.4f, 1f, 0.4f) : new Color(0.85f, 0.45f, 0.35f);
-		sbNormal.CornerRadiusTopLeft = sbNormal.CornerRadiusTopRight =
-		sbNormal.CornerRadiusBottomLeft = sbNormal.CornerRadiusBottomRight = 12;
-		sbNormal.ContentMarginLeft = sbNormal.ContentMarginRight =
-		sbNormal.ContentMarginTop  = sbNormal.ContentMarginBottom = 14;
-		sbNormal.ShadowColor = new Color(0, 0, 0, 0.4f); sbNormal.ShadowSize = 6;
-		panel.AddThemeStyleboxOverride("panel", sbNormal);
+		panel.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado(poseida)); // paleta nuestra (azul+oro)
 
 		var vbox = new VBoxContainer();
 		vbox.AddThemeConstantOverride("separation", 10);
@@ -237,6 +226,7 @@ public partial class Tienda : Control
 
 		var lblNombre = new Label();
 		lblNombre.Text = Preferencias.TIENDA_TROPA_NOMBRES[idx];
+		if (EstiloUI.Fuente != null) lblNombre.AddThemeFontOverride("font", EstiloUI.Fuente);
 		lblNombre.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
 		lblNombre.AddThemeFontSizeOverride("font_size", 18);
 		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
@@ -341,19 +331,7 @@ public partial class Tienda : Control
 
 		var panel = new PanelContainer();
 		panel.CustomMinimumSize = new Vector2(230, 320);
-
-		var sbNormal = new StyleBoxFlat();
-		sbNormal.BgColor = poseido
-			? new Color(0.14f, 0.22f, 0.10f, 0.97f)
-			: new Color(0.09f, 0.11f, 0.22f, 0.96f);
-		sbNormal.BorderWidthLeft = sbNormal.BorderWidthTop = sbNormal.BorderWidthRight = sbNormal.BorderWidthBottom = 2;
-		sbNormal.BorderColor = poseido ? new Color(0.4f, 1f, 0.4f) : new Color(0.35f, 0.75f, 0.95f);
-		sbNormal.CornerRadiusTopLeft = sbNormal.CornerRadiusTopRight =
-		sbNormal.CornerRadiusBottomLeft = sbNormal.CornerRadiusBottomRight = 12;
-		sbNormal.ContentMarginLeft = sbNormal.ContentMarginRight =
-		sbNormal.ContentMarginTop  = sbNormal.ContentMarginBottom = 14;
-		sbNormal.ShadowColor = new Color(0, 0, 0, 0.4f); sbNormal.ShadowSize = 6;
-		panel.AddThemeStyleboxOverride("panel", sbNormal);
+		panel.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado(poseido)); // paleta nuestra (azul+oro)
 
 		var vbox = new VBoxContainer();
 		vbox.AddThemeConstantOverride("separation", 10);
@@ -369,6 +347,7 @@ public partial class Tienda : Control
 
 		var lblNombre = new Label();
 		lblNombre.Text = Preferencias.TIENDA_HECHIZO_NOMBRES[idx];
+		if (EstiloUI.Fuente != null) lblNombre.AddThemeFontOverride("font", EstiloUI.Fuente);
 		lblNombre.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
 		lblNombre.AddThemeFontSizeOverride("font_size", 18);
 		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
@@ -419,19 +398,7 @@ public partial class Tienda : Control
 
 		var panel = new PanelContainer();
 		panel.CustomMinimumSize = new Vector2(230, 320);
-
-		var sbNormal = new StyleBoxFlat();
-		sbNormal.BgColor = activa
-			? new Color(0.14f, 0.22f, 0.10f, 0.97f)
-			: new Color(0.09f, 0.11f, 0.22f, 0.96f);
-		sbNormal.BorderWidthLeft = sbNormal.BorderWidthTop = sbNormal.BorderWidthRight = sbNormal.BorderWidthBottom = 2;
-		sbNormal.BorderColor = activa ? new Color(0.4f, 1f, 0.4f) : new Color(0.70f, 0.55f, 0.25f);
-		sbNormal.CornerRadiusTopLeft = sbNormal.CornerRadiusTopRight =
-		sbNormal.CornerRadiusBottomLeft = sbNormal.CornerRadiusBottomRight = 12;
-		sbNormal.ContentMarginLeft = sbNormal.ContentMarginRight =
-		sbNormal.ContentMarginTop  = sbNormal.ContentMarginBottom = 14;
-		sbNormal.ShadowColor = new Color(0,0,0,0.4f); sbNormal.ShadowSize = 6;
-		panel.AddThemeStyleboxOverride("panel", sbNormal);
+		panel.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado(activa)); // paleta nuestra (azul+oro)
 
 		var vbox = new VBoxContainer();
 		vbox.AddThemeConstantOverride("separation", 10);
@@ -448,6 +415,7 @@ public partial class Tienda : Control
 
 		var lblNombre = new Label();
 		lblNombre.Text = Preferencias.SKIN_NOMBRES[idx];
+		if (EstiloUI.Fuente != null) lblNombre.AddThemeFontOverride("font", EstiloUI.Fuente);
 		lblNombre.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
 		lblNombre.AddThemeFontSizeOverride("font_size", 18);
 		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
@@ -521,19 +489,7 @@ public partial class Tienda : Control
 
 		var panel = new PanelContainer();
 		panel.CustomMinimumSize = new Vector2(230, 320);
-
-		var sbNormal = new StyleBoxFlat();
-		sbNormal.BgColor = activo
-			? new Color(0.14f, 0.22f, 0.10f, 0.97f)
-			: new Color(0.09f, 0.11f, 0.22f, 0.96f);
-		sbNormal.BorderWidthLeft = sbNormal.BorderWidthTop = sbNormal.BorderWidthRight = sbNormal.BorderWidthBottom = 2;
-		sbNormal.BorderColor = activo ? new Color(0.4f, 1f, 0.4f) : new Color(0.70f, 0.55f, 0.25f);
-		sbNormal.CornerRadiusTopLeft = sbNormal.CornerRadiusTopRight =
-		sbNormal.CornerRadiusBottomLeft = sbNormal.CornerRadiusBottomRight = 12;
-		sbNormal.ContentMarginLeft = sbNormal.ContentMarginRight =
-		sbNormal.ContentMarginTop  = sbNormal.ContentMarginBottom = 14;
-		sbNormal.ShadowColor = new Color(0,0,0,0.4f); sbNormal.ShadowSize = 6;
-		panel.AddThemeStyleboxOverride("panel", sbNormal);
+		panel.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado(activo)); // paleta nuestra (azul+oro)
 
 		var vbox = new VBoxContainer();
 		vbox.AddThemeConstantOverride("separation", 10);
@@ -549,6 +505,7 @@ public partial class Tienda : Control
 
 		var lblNombre = new Label();
 		lblNombre.Text = Preferencias.TRONO_NOMBRES[idx];
+		if (EstiloUI.Fuente != null) lblNombre.AddThemeFontOverride("font", EstiloUI.Fuente);
 		lblNombre.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
 		lblNombre.AddThemeFontSizeOverride("font_size", 18);
 		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
@@ -607,17 +564,7 @@ public partial class Tienda : Control
 	{
 		var panel = new PanelContainer();
 		panel.CustomMinimumSize = new Vector2(260, 320);
-
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.09f, 0.11f, 0.22f, 0.96f);
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
-		sb.BorderColor = new Color(0.45f, 0.45f, 0.55f);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
-		sb.ContentMarginLeft = sb.ContentMarginRight =
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 14;
-		sb.ShadowColor = new Color(0, 0, 0, 0.35f); sb.ShadowSize = 6;
-		panel.AddThemeStyleboxOverride("panel", sb);
+		panel.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado()); // paleta nuestra (azul+oro)
 		panel.Modulate = new Color(0.6f, 0.6f, 0.6f);
 
 		var vbox = new VBoxContainer();
