@@ -4,12 +4,17 @@ using Godot;
 public partial class SoldadoCartoonPrime : TropaBase
 {
 	public override string Tipo => Tipos.METAL;
-	protected override int TurnoDesbloqueoHabilidad => 3;
+	protected override int TurnoDesbloqueoHabilidad => 2;
 
 	// ── ESTADO HABILIDAD ──────────────────────────────────────────────────────
 	private bool   _habilidadActiva = false;
 	private bool   _derrotaIniciada = false;
 	private Timer  _timerHabilidad;
+	// Si lo golpean durante "pre defensa" (antes del primer disparo), la habilidad se cancela sin
+	// haber hecho nada. El veneno y la quemadura del Dragón tiquean por TIEMPO REAL (cada 2-10s),
+	// no por turno, así que pueden caer justo en ese instante — la habilidad quedaba "gastada" para
+	// siempre sin haber disparado ni una vez. Con esto, si nunca llegó a disparar, se le devuelve.
+	private bool   _disparoRealizado = false;
 
 	// ── OBJETIVOS ─────────────────────────────────────────────────────────────
 	private Node2D _objetivoAtaque;   // objetivo almacenado al inicio del ataque normal
@@ -41,6 +46,13 @@ public partial class SoldadoCartoonPrime : TropaBase
 	/// <summary>La ráfaga (4×50 en los frames 2/4/6/8) se aplica sola vía OnFrameChanged;
 	/// el llamador no debe sumar "puntosAtaque" aparte o se duplicaría el daño.</summary>
 	public override bool AutogestionaDañoAtaque() => true;
+
+	// El botón de habilidad en Campo1 solo mira HabilidadBloqueada() para decidir si se ve gris o no
+	// (nunca chequea el escudo por su cuenta). Sin este override, si el escudo ya estaba en 0 el botón
+	// se quedaba brillante y clickeable, pero UsarHabilidadPropia() de abajo hacía return en silencio:
+	// el click no hacía NADA y no había ningún aviso. Ahora el botón se ve gris apenas se queda sin
+	// escudo, que es justo la condición real para poder usarla.
+	public override bool HabilidadBloqueada() => base.HabilidadBloqueada() || escudoActual <= 0;
 
 	// ── ACCIONES ──────────────────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)
@@ -87,8 +99,9 @@ public partial class SoldadoCartoonPrime : TropaBase
 		_objetivoRafaga = BuscarObjetivoEnCarril();
 		if (_objetivoRafaga == null) return;
 
-		_habilidadActiva = true;
-		habilidadUsada   = true;
+		_habilidadActiva   = true;
+		habilidadUsada     = true;
+		_disparoRealizado  = false;
 
 		// Paso 1: Transición vía "pre defensa" (al terminar OnAnimationFinished iniciará "habilidad")
 		_anim.Play("pre defensa");
@@ -120,6 +133,11 @@ public partial class SoldadoCartoonPrime : TropaBase
 		_habilidadActiva = false;
 		if (_timerHabilidad != null && !_timerHabilidad.IsStopped())
 			_timerHabilidad.Stop();
+
+		// Si lo golpearon ANTES del primer disparo (típicamente durante "pre defensa", por un tick de
+		// veneno/quemadura que cae en tiempo real justo en ese instante), la habilidad nunca llegó a
+		// hacer nada: se le devuelve para que no quede gastada sin efecto.
+		if (!_disparoRealizado) habilidadUsada = false;
 
 		// "defensa" → "idle" automáticamente (TropaBase.ReproducirDefensa es async)
 		ReproducirDefensa();
@@ -166,6 +184,7 @@ public partial class SoldadoCartoonPrime : TropaBase
 			}
 			else
 			{
+				_disparoRealizado = true; // ya disparó: si lo cancelan de acá en más, la habilidad quedó gastada con razón
 				// CORREGIDO: Se llama solo a RecibirDaño para no romper la postura defensiva del objetivo
 				_objetivoRafaga.Call("RecibirDaño", 50);
 				var campo = GetTree().Root.FindChild("Campo1", true, false);

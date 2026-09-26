@@ -141,6 +141,10 @@ public partial class Campo1 : Node2D
 		Node2D zonaDestino = GetTree().Root.FindChild(carrilDestino, true, false) as Node2D;
 		if (zonaDestino == null) return;
 
+		// El enroque se concretó: recién acá se cobra el movimiento (mientras elegías carril no se
+		// cobraba nada, así si el turno se iba no perdías ni la habilidad ni el turno).
+		ConfirmarHabilidadPendiente(torre);
+
 		_ = EjecutarEnroque(torre, AliadoEnZona(zonaDestino), carrilDestino);
 	}
 
@@ -153,6 +157,10 @@ public partial class Campo1 : Node2D
 		}
 		_carrilesEnroqueValidos.Clear();
 	}
+
+	/// <summary>¿Esta torre es la que está esperando que elijas carril? Lo consulta TorrePrime para
+	/// avisarle a Campo1 que su habilidad sigue pendiente (y por eso no se cobra el movimiento).</summary>
+	public bool EsperandoEnroqueDe(Node2D t) => _torreEnroque != null && _torreEnroque == t;
 
 	public void CancelarSeleccionEnroque()
 	{

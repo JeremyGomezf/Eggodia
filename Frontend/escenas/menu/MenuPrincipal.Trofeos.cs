@@ -96,20 +96,24 @@ public partial class MenuPrincipal : Control
 		// lejos del panel real según la resolución).
 		var marco = new Control();
 		marco.SetAnchorsPreset(LayoutPreset.Center);
-		marco.OffsetLeft = -380; marco.OffsetRight = 380;
-		marco.OffsetTop  = -350; marco.OffsetBottom = 350;
+		marco.OffsetLeft = -560; marco.OffsetRight = 560;
+		marco.OffsetTop  = -480; marco.OffsetBottom = 480;
 		fondo.AddChild(marco);
 
 		// MARCO DORADO del juego (el del login, con la gema de huevo) en vez del panel morado de código.
 		var panel = new PanelContainer();
 		panel.SetAnchorsPreset(LayoutPreset.FullRect);
-		EstiloUI.MarcoDorado(panel, padX: 40, padBottom: 40);
+		// Marco login_panel2 — pedido explícito para la pantalla de competitivo/trofeos.
+		// padX/padBottom 100 (no 40): el borde dorado de la imagen ocupa 92 px por lado (es el
+		// nine-patch de MarcoDorado). Con 40, la tabla se metía 52 px DENTRO del marco y se veía
+		// salida del cuadro por los costados y por abajo.
+		EstiloUI.MarcoDorado(panel, padX: 100, padBottom: 100, textura: EstiloUI.MarcoAjustes);
 		marco.AddChild(panel);
 
 		// X DORADA arriba y al centro, sobre la gema de huevo del marco (pedido).
 		var btnCerrar = CrearBotonCerrarDorado();
-		btnCerrar.CustomMinimumSize = new Vector2(60, 60);
-		btnCerrar.AddThemeFontSizeOverride("font_size", 30);
+		btnCerrar.CustomMinimumSize = new Vector2(78, 78);
+		btnCerrar.AddThemeFontSizeOverride("font_size", 40);
 		btnCerrar.SetAnchorsPreset(LayoutPreset.CenterTop);
 		btnCerrar.OffsetLeft = -30; btnCerrar.OffsetRight = 30;
 		btnCerrar.OffsetTop  = 18;  btnCerrar.OffsetBottom = 78;
@@ -133,7 +137,7 @@ public partial class MenuPrincipal : Control
 		vbox.AddChild(lblSub);
 
 		var scroll = new ScrollContainer();
-		scroll.CustomMinimumSize = new Vector2(0, 340);
+		scroll.CustomMinimumSize = new Vector2(0, 520);
 		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
 		vbox.AddChild(scroll);
 
@@ -213,7 +217,7 @@ public partial class MenuPrincipal : Control
 		var lbl = new Label();
 		lbl.Text = texto;
 		lbl.AddThemeColorOverride("font_color", new Color(0.6f, 0.6f, 0.7f));
-		lbl.AddThemeFontSizeOverride("font_size", 16);
+		lbl.AddThemeFontSizeOverride("font_size", 22);
 		lbl.HorizontalAlignment = HorizontalAlignment.Center;
 		lbl.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		return lbl;
@@ -232,7 +236,7 @@ public partial class MenuPrincipal : Control
 		lblPuesto.Text = $"#{puesto}";
 		if (EstiloUI.Fuente != null) lblPuesto.AddThemeFontOverride("font", EstiloUI.Fuente);
 		lblPuesto.AddThemeColorOverride("font_color", EstiloUI.Dorado);
-		lblPuesto.AddThemeFontSizeOverride("font_size", 23);
+		lblPuesto.AddThemeFontSizeOverride("font_size", 30);
 		lblPuesto.CustomMinimumSize = new Vector2(50, 0);
 		hbox.AddChild(lblPuesto);
 
@@ -240,7 +244,7 @@ public partial class MenuPrincipal : Control
 		lblNombre.Text = nombre;
 		if (EstiloUI.Fuente != null) lblNombre.AddThemeFontOverride("font", EstiloUI.Fuente);
 		lblNombre.AddThemeColorOverride("font_color", esPropia ? EstiloUI.VerdeOk : Colors.White);
-		lblNombre.AddThemeFontSizeOverride("font_size", 23);
+		lblNombre.AddThemeFontSizeOverride("font_size", 30);
 		lblNombre.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		hbox.AddChild(lblNombre);
 
@@ -248,7 +252,7 @@ public partial class MenuPrincipal : Control
 		lblTrofeos.Text = $"🏆 {trofeos}";
 		if (EstiloUI.Fuente != null) lblTrofeos.AddThemeFontOverride("font", EstiloUI.Fuente);
 		lblTrofeos.AddThemeColorOverride("font_color", EstiloUI.Dorado);
-		lblTrofeos.AddThemeFontSizeOverride("font_size", 23);
+		lblTrofeos.AddThemeFontSizeOverride("font_size", 30);
 		hbox.AddChild(lblTrofeos);
 
 		return fila;

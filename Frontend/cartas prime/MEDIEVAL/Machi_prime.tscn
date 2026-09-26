@@ -374,15 +374,14 @@ position = Vector2(94, -1)
 position = Vector2(6.999999, -40)
 scale = Vector2(0.3, 0.3)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"derrota"
+animation = &"idle"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 121.999985
-offset_top = -18.0
-offset_right = 161.99998
-offset_bottom = 22.0
+offset_left = -118.00003
+offset_top = -40.0
+offset_right = -78.00003
 scale = Vector2(0.91999876, 0.7599994)
 
 [node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=642872417]

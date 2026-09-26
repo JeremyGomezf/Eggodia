@@ -488,10 +488,10 @@ animation = &"derrota"
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 121.999985
-offset_top = -18.0
-offset_right = 161.99998
-offset_bottom = 22.0
+offset_left = -104.999985
+offset_top = -38.0
+offset_right = -64.999985
+offset_bottom = 2.0
 scale = Vector2(0.91999876, 0.7599994)
 
 [node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=642872417]

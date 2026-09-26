@@ -50,11 +50,17 @@ public partial class PanelSettings : PanelContainer
 		_btnCerrar       = GetNodeOrNull<Button>("Margin/VBox/BtnCerrar");
 		_btnComoJugar    = GetNodeOrNull<Button>("Margin/VBox/BtnComoJugar");
 		_btnCerrarSesion = GetNodeOrNull<Button>("Margin/VBox/BtnCerrarSesion");
-		_chkScreenShake  = GetNodeOrNull<CheckButton>("Margin/VBox/ChkScreenShake");
+		_chkScreenShake  = GetNodeOrNull<CheckButton>("Margin/VBox/HBoxVibracion/MarcoSwitch/ChkScreenShake");
+		_marcoSwitch     = GetNodeOrNull<Control>("Margin/VBox/HBoxVibracion/MarcoSwitch");
 
 		// Marco DORADO del juego aplicado por CÓDIGO (además del de la escena): garantiza que se vea
 		// aunque el editor tenga la .tscn cacheada. padTop alto para que el título quede bajo la gema.
-		EstiloUI.MarcoDorado(this, padX: 24, padTop: 118, padBottom: 24);
+		// Marco propio de CONFIGURACIÓN (login_panel2). El de login_panel.png queda reservado para la
+		// escena de login; acá y en el panel de pausa va este otro.
+		// padBottom 100: el borde dorado de la imagen ocupa ~92px abajo. Con los 24 de antes, el botón
+		// CERRAR se montaba sobre el marco y parecía que la interfaz "no llegaba". Ahora el marco se
+		// extiende por debajo del último botón y queda bien encuadrado.
+		EstiloUI.MarcoDorado(this, padX: 24, padTop: 118, padBottom: 100, textura: EstiloUI.MarcoAjustes);
 
 		// Estilo del juego (fuente Almendra + botones nuestros) sobre la UI de la escena, que venía con
 		// la fuente/estilo por defecto de Godot. Solo apariencia: no cambia la lógica.
@@ -64,8 +70,10 @@ public partial class PanelSettings : PanelContainer
 		EstiloUI.Boton(_btnCerrarSesion, 34, rojo: true);
 		EstiloUI.Titulo(GetNodeOrNull<Label>("Margin/VBox/Titulo"), 54);
 		EstiloUI.Texto(GetNodeOrNull<Label>("Margin/VBox/HBoxVolumen/LabelVolumen"), 34, EstiloUI.TextoClaro);
-		if (_chkScreenShake != null && EstiloUI.Fuente != null)
-			_chkScreenShake.AddThemeFontOverride("font", EstiloUI.Fuente);
+		// El texto de la vibración ya NO vive dentro del CheckButton: es un Label aparte, con la misma
+		// fuente y el mismo tamaño (34) que "Volumen:" y el resto. Así nunca lo afecta la escala que se
+		// le aplica al toggle, que era el motivo por el que se veía diminuto.
+		EstiloUI.Texto(GetNodeOrNull<Label>("Margin/VBox/HBoxVibracion/LblVibracion"), 34, EstiloUI.TextoClaro);
 
 		if (_btnCerrar != null) _btnCerrar.Pressed += Ocultar;
 
@@ -154,12 +162,34 @@ public partial class PanelSettings : PanelContainer
 
 	// Oculta el botón "CERRAR SESIÓN". Lo usa el menú de pausa (VS BOT): no tiene sentido cerrar sesión
 	// a mitad de una partida. En el menú principal el botón sigue visible.
+	// El switch de Godot no se puede agrandar por tema (icon_max_width solo achica), así que la única
+	// vía es escalar el nodo. Ahora el CheckButton NO tiene texto —el texto es un Label aparte—, así
+	// que se puede escalar fuerte sin que las letras se deformen ni crezcan con él.
+	// Vale para el panel del menú principal y para el de la pausa de campo_1: es la MISMA escena.
 	private const float ESCALA_SWITCH_VIBRACION = 1.45f;
+	private Control _marcoSwitch;                     // hueco que le reserva el sitio al toggle escalado
+	private Vector2 _tamNaturalSwitch = Vector2.Zero; // tamaño del toggle SIN escalar (se mide una vez)
+
+	// El CheckButton se escala desde su esquina (0,0) DENTRO de un Control que le reserva el hueco ya
+	// agrandado. Antes se escalaba estando suelto en el HBox: el contenedor calculaba el layout con el
+	// tamaño sin escalar, así que el toggle se montaba sobre el texto y encima quedaba descolocado.
 	private void AgrandarSwitchVibracion()
 	{
-		if (_chkScreenShake == null) return;
-		_chkScreenShake.PivotOffset = _chkScreenShake.Size / 2f; // centro → escala sin descolocar
-		_chkScreenShake.Scale = new Vector2(ESCALA_SWITCH_VIBRACION, ESCALA_SWITCH_VIBRACION);
+		if (_chkScreenShake == null || _marcoSwitch == null) return;
+
+		// Se mide una sola vez: después de escalar, releer el tamaño devolvería el valor ya inflado y
+		// el switch crecería un poco más en cada pasada.
+		if (_tamNaturalSwitch == Vector2.Zero)
+		{
+			Vector2 natural = _chkScreenShake.GetCombinedMinimumSize();
+			if (natural == Vector2.Zero) return; // todavía sin layout: se reintenta en el próximo Resized
+			_tamNaturalSwitch = natural;
+		}
+
+		_marcoSwitch.CustomMinimumSize = _tamNaturalSwitch * ESCALA_SWITCH_VIBRACION;
+		_chkScreenShake.Position       = Vector2.Zero;
+		_chkScreenShake.PivotOffset    = Vector2.Zero; // crece hacia la derecha/abajo, sin descolocarse
+		_chkScreenShake.Scale          = new Vector2(ESCALA_SWITCH_VIBRACION, ESCALA_SWITCH_VIBRACION);
 	}
 
 	public void OcultarCerrarSesion()

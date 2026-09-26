@@ -204,10 +204,19 @@ public partial class CampoPruebas : Node2D
 		hbxH1.AddChild(MkBtn("🧅 Encebollado", UsarEncebollado, new Color(1f, 0.7f, 0.1f)));
 		hbxH1.AddChild(MkBtn("💚 Curación",    UsarCuracion,    new Color(0.2f, 0.9f, 0.3f)));
 
+		hbxH1.AddChild(MkBtn("🛡 Escudo",  UsarEscudo,  new Color(0.3f, 0.5f, 1f)));
+		hbxH1.AddChild(MkBtn("💪 Fuerza",  UsarFuerza,  new Color(1f, 0.55f, 0.1f)));
+
 		var hbxH2 = new HBoxContainer(); vbox.AddChild(hbxH2);
 		hbxH2.AddChild(MkBtn("☠  Veneno",  UsarVeneno,  new Color(0.5f, 0.9f, 0.3f)));
 		hbxH2.AddChild(MkBtn("🔒 Bloqueo", UsarBloqueo, new Color(0.3f, 0.5f, 1f)));
 		hbxH2.AddChild(MkBtn("🃏 Robo",    UsarRobo,    new Color(0.3f, 0.7f, 1f)));
+
+		// Los 5 que faltaban: ahora el banco cubre los 10 hechizos del juego.
+		var hbxH3 = new HBoxContainer(); vbox.AddChild(hbxH3);
+		hbxH3.AddChild(MkBtn("🔻 Desprotegido", UsarDesprotegido, new Color(0.78f, 0.95f, 1.15f)));
+		hbxH3.AddChild(MkBtn("🔽 Débil",        UsarDebil,        new Color(0.8f, 1.3f, 0.25f)));
+		hbxH3.AddChild(MkBtn("☢  Nuclear",      UsarNuclear,      new Color(1f, 0.4f, 0.2f)));
 
 		// === CAMPO ===
 		Separador(vbox, "CAMPO", new Color(0.8f, 0.8f, 0.8f));
@@ -406,15 +415,116 @@ public partial class CampoPruebas : Node2D
 	{
 		var t = ObtenerObjetivoHechizo();
 		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
+		// Mismos valores que en partida (ver AplicarEncebollado en Campo1.Hechizos.cs): +50 Ataque,
+		// +50 Escudo y +100 Vida. El banco de pruebas tenía +100 Atk/Esc y nada de vida — quedaba
+		// desalineado con el hechizo real y las pruebas no servían para medirlo.
 		int ata = Gi(t, "puntosAtaque"), esc = Gi(t, "escudoActual"), escMax = Gi(t, "escudoMaximo");
-		try { t.Set("puntosAtaque", ata + 100); }                      catch { }
-		try { t.Set("escudoActual", esc + 100); }                      catch { }
-		try { t.Set("escudoMaximo", Mathf.Max(escMax, esc + 100)); }  catch { }
+		int vida = Gi(t, "vidaActual"), vidaMax = Gi(t, "vidaMaxima");
+		try { t.Set("puntosAtaque", ata + 50); }                     catch { }
+		try { t.Set("escudoActual", esc + 50); }                     catch { }
+		try { t.Set("escudoMaximo", Mathf.Max(escMax, esc + 50)); }  catch { }
+		try { t.Set("vidaActual", vida + 100); }                     catch { }
+		try { t.Set("vidaMaxima", Mathf.Max(vidaMax, vida + 100)); } catch { }
 		MostrarDaño(t.GlobalPosition, 100, true);
 		var tw = t.CreateTween();
 		tw.TweenProperty(t, "modulate", new Color(1.6f, 1.3f, 0.2f), 0.2f);
 		tw.TweenProperty(t, "modulate", Colors.White, 0.5f);
-		Log($"🧅 Encebollado: +100 Atk/Esc en {TipoNombre(t)}");
+		Log($"🧅 Encebollado: +50 Atk, +50 Esc, +100 Vida en {TipoNombre(t)}");
+	}
+
+	// ── HECHIZOS QUE FALTABAN EN EL BANCO ─────────────────────────────────
+	// Mismos valores que en partida (ver Campo1.Hechizos.cs). Si acá se probaran con otros números,
+	// el banco no serviría para medir lo que realmente pasa en el juego.
+
+	private void UsarDesprotegido()
+	{
+		var t = ObtenerObjetivoHechizo();
+		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
+		int esc = Gi(t, "escudoActual"), escMax = Gi(t, "escudoMaximo");
+		if (escMax <= 0) { Log($"❌ {TipoNombre(t)} no tiene escudo (Tanque/Paperex): el hechizo no aplica"); return; }
+
+		float mitadMax = escMax * 0.5f;
+		float quitar = esc > mitadMax ? mitadMax : esc * 0.75f;
+		int nuevo = Mathf.Max(0, esc - Mathf.RoundToInt(quitar));
+		try { t.Set("escudoActual", nuevo); } catch { }
+		RefrescarFacetaGranadero(t);
+		MostrarDaño(t.GlobalPosition, esc - nuevo);
+		TintarBreve(t, new Color(0.78f, 0.95f, 1.15f));
+		Log($"🔻 Desprotegido: escudo {esc} → {nuevo} en {TipoNombre(t)}");
+	}
+
+	private void UsarEscudo()
+	{
+		var t = ObtenerObjetivoHechizo();
+		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
+		int esc = Gi(t, "escudoActual"), escMax = Gi(t, "escudoMaximo");
+		if (escMax <= 0) { Log($"❌ {TipoNombre(t)} no tiene escudo (Tanque/Paperex): el hechizo no aplica"); return; }
+
+		int nuevo = Mathf.Min(escMax, esc + Mathf.RoundToInt(escMax * 0.5f));
+		try { t.Set("escudoActual", nuevo); } catch { }
+		RefrescarFacetaGranadero(t);
+		MostrarDaño(t.GlobalPosition, nuevo - esc, true);
+		TintarBreve(t, new Color(0.2f, 0.4f, 1f));
+		Log($"🛡 Escudo: {esc} → {nuevo} en {TipoNombre(t)}");
+	}
+
+	private void UsarFuerza()
+	{
+		var t = ObtenerObjetivoHechizo();
+		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
+		int ata = Gi(t, "puntosAtaque");
+		try { t.Set("puntosAtaque", ata + 100); } catch { }
+		t.SetMeta("fuerzaActiva", true);
+		t.SetMeta("turnosFuerza", 2);
+		TintarBreve(t, new Color(1f, 0.55f, 0.1f));
+		Log($"💪 Fuerza: Ataque {ata} → {ata + 100} en {TipoNombre(t)} (2 turnos)");
+	}
+
+	private void UsarDebil()
+	{
+		var t = ObtenerObjetivoHechizo();
+		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
+		int ata = Gi(t, "puntosAtaque");
+		int nuevo = Mathf.Max(0, ata - 100);
+		try { t.Set("puntosAtaque", nuevo); } catch { }
+		MostrarDaño(t.GlobalPosition, ata - nuevo);
+		TintarBreve(t, new Color(0.8f, 1.3f, 0.25f));
+		Log($"🔽 Débil: Ataque {ata} → {nuevo} en {TipoNombre(t)} (permanente)");
+	}
+
+	// En partida la Nuclear es una bomba con cuenta regresiva de 45s que estalla en área. Acá se
+	// aplica su EFECTO directo (300 a todas las tropas del bando contrario al elegido), que es lo
+	// que interesa medir en el banco; la cuenta regresiva y el destello no se reproducen.
+	private void UsarNuclear()
+	{
+		var t = ObtenerObjetivoHechizo();
+		if (t == null || !IsInstanceValid(t)) { Log("❌ Sin objetivo"); return; }
+
+		string grupo = t.IsInGroup("tropas_jugador") ? "tropas_jugador" : "tropas_rival";
+		int alcanzadas = 0;
+		foreach (Node n in GetTree().GetNodesInGroup(grupo))
+		{
+			if (!(n is Node2D obj) || !IsInstanceValid(obj)) continue;
+			MostrarDaño(obj.GlobalPosition, 300);
+			obj.Call("RecibirDaño", 300);
+			alcanzadas++;
+		}
+		ManejarMuerte();
+		Log($"☢  Nuclear: 300 de daño a {alcanzadas} tropa(s) de {grupo}");
+	}
+
+	/// <summary>El Granadero cambia de faceta según su escudo; tras tocárselo hay que refrescarla o
+	/// se queda dibujado como estaba (igual que en partida, ver Campo1.Hechizos.cs).</summary>
+	private static void RefrescarFacetaGranadero(Node2D t)
+	{
+		if (t is GranaderoCartoonPrime g && IsInstanceValid(g)) g.RefrescarFaceta();
+	}
+
+	private static void TintarBreve(Node2D t, Color color)
+	{
+		var tw = t.CreateTween();
+		tw.TweenProperty(t, "modulate", color, 0.2f);
+		tw.TweenProperty(t, "modulate", Colors.White, 0.5f);
 	}
 
 	private void UsarCuracion()

@@ -62,10 +62,13 @@ public partial class FuegoMaguinPrime : Area2D
 		}
 
 		// Modulación de quemadura: rojo encendido 0.5s sobre la tropa alcanzada.
-		Color colorBase = objetivo.Modulate;
+		// Se lee del SPRITE (no de la raíz): con el fix de más abajo la raíz siempre queda blanca, así
+		// que leer de ahí perdería un tinte de estado activo (veneno/bloqueo) que sí vive en el sprite.
+		Node2D visual = TropaBase.NodoParaTinte(objetivo);
+		Color colorBase = visual.Modulate;
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", new Color(1.5f, 0.4f, 0.4f), 0.1f);
-		tw.TweenProperty(objetivo, "modulate", colorBase, 0.4f);
+		tw.TweenProperty(visual, "modulate", new Color(1.5f, 0.4f, 0.4f), 0.1f);
+		tw.TweenProperty(visual, "modulate", colorBase, 0.4f);
 	}
 
 	private void OnAnimationFinished()

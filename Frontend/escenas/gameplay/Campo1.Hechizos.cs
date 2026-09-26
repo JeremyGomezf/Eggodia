@@ -5,20 +5,32 @@ using System.Collections.Generic;
 public partial class Campo1 : Node2D
 {
 	// ── HECHIZOS ──────────────────────────────────────────────────────────
+	// Encebollado: +50 Ataque, +50 Escudo y +100 Vida, todo permanente sobre un aliado.
+	private const int ENCEBOLLADO_ATAQUE = 50;
+	private const int ENCEBOLLADO_ESCUDO = 50;
+	private const int ENCEBOLLADO_VIDA   = 100;
+
 	private void AplicarEncebollado(Node2D objetivo)
 	{
-		int ata = 0, vida = 0, vidaMax = 0;
+		int ata = 0, vida = 0, vidaMax = 0, esc = 0, escMax = 0;
 		try { ata     = (int)objetivo.Get("puntosAtaque"); } catch { }
 		try { vida    = (int)objetivo.Get("vidaActual"); } catch { }
 		try { vidaMax = (int)objetivo.Get("vidaMaxima"); } catch { }
-		try { objetivo.Set("puntosAtaque", ata + 100); }                   catch { }
-		try { objetivo.Set("vidaActual", vida + 100); }                    catch { }
-		try { objetivo.Set("vidaMaxima", Mathf.Max(vidaMax, vida + 100)); } catch { }
+		try { esc     = (int)objetivo.Get("escudoActual"); } catch { }
+		try { escMax  = (int)objetivo.Get("escudoMaximo"); } catch { }
 
-		MostrarDañoFlotante(objetivo.GlobalPosition, 100, true);
+		try { objetivo.Set("puntosAtaque", ata + ENCEBOLLADO_ATAQUE); } catch { }
+		try { objetivo.Set("vidaActual", vida + ENCEBOLLADO_VIDA); }    catch { }
+		try { objetivo.Set("vidaMaxima", Mathf.Max(vidaMax, vida + ENCEBOLLADO_VIDA)); } catch { }
+		// El escudo sube el máximo TAMBIÉN, si no el +50 se perdería en cuanto algo lo recalcule.
+		try { objetivo.Set("escudoActual", esc + ENCEBOLLADO_ESCUDO); } catch { }
+		try { objetivo.Set("escudoMaximo", Mathf.Max(escMax, esc + ENCEBOLLADO_ESCUDO)); } catch { }
+		RefrescarFacetaSiAplica(objetivo);
+
+		MostrarDañoFlotante(objetivo.GlobalPosition, ENCEBOLLADO_VIDA, true);
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", COLOR_ENCEBOLLADO, 0.2f);
-		tw.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", COLOR_ENCEBOLLADO, 0.2f);
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", Colors.White, 0.5f);
 	}
 
 	// DÉBIL: le saca 100 de Ataque a una tropa rival, de forma permanente (no expira por turnos,
@@ -32,8 +44,8 @@ public partial class Campo1 : Node2D
 
 		MostrarDañoFlotante(objetivo.GlobalPosition, ata - nuevo);
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", COLOR_DEBIL, 0.3f);
-		tw.TweenProperty(objetivo, "modulate", Colors.White, 1.7f);
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", COLOR_DEBIL, 0.3f);
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", Colors.White, 1.7f);
 	}
 
 	private void AplicarCuracion(Node2D objetivo)
@@ -45,8 +57,26 @@ public partial class Campo1 : Node2D
 		try { objetivo.Set("vidaActual", vida + curado); } catch { }
 		MostrarDañoFlotante(objetivo.GlobalPosition, curado, true);
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", COLOR_CURACION, 0.2f);
-		tw.TweenProperty(objetivo, "modulate", Colors.White, 0.5f);
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", COLOR_CURACION, 0.2f);
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", Colors.White, 0.5f);
+	}
+
+	/// <summary>Tras devolverle escudo a una tropa, le avisa si tiene facetas por escudo (el Granadero)
+	/// para que vuelva a verse con los bloques que le corresponden y no quede rota con la barra llena.</summary>
+	private static void RefrescarFacetaSiAplica(Node2D objetivo)
+	{
+		if (objetivo is GranaderoCartoonPrime granadero && IsInstanceValid(granadero))
+			granadero.RefrescarFaceta();
+	}
+
+	/// <summary>Tropas SIN escudo (Tanque y Paperex tienen escudoMaximo 0). Escudo y Desprotegido no
+	/// hacen absolutamente nada sobre ellas, así que no se dejan elegir y la carta vuelve a la mano en
+	/// vez de gastarse en la nada.</summary>
+	private static bool SinEscudo(Node2D objetivo)
+	{
+		int escMax = 0;
+		try { escMax = (int)objetivo.Get("escudoMaximo"); } catch { return false; }
+		return escMax <= 0;
 	}
 
 	private bool ValidarHechizo() => esTurnoJugador && movimientosRestantes > 0 && !juegoTerminado && !_faseApertura;
@@ -80,11 +110,11 @@ public partial class Campo1 : Node2D
 		{
 			case "veneno":
 				objetivo.SetMeta("envenenado", true); objetivo.SetMeta("danoVeneno", 50); objetivo.SetMeta("turnosVeneno", 3);
-				objetivo.Modulate = COLOR_VENENO; ActualizarIconosEstado(objetivo); break;
+				TropaBase.NodoParaTinte(objetivo).Modulate = COLOR_VENENO; ActualizarIconosEstado(objetivo); break;
 			case "bloqueo":
 				if (objetivo.HasMethod("AlSerBloqueado")) objetivo.Call("AlSerBloqueado");
 				objetivo.SetMeta("bloqueado", true); objetivo.SetMeta("turnosBloqueo", 2);
-				objetivo.Modulate = COLOR_BLOQUEO; ActualizarIconosEstado(objetivo); break;
+				TropaBase.NodoParaTinte(objetivo).Modulate = COLOR_BLOQUEO; ActualizarIconosEstado(objetivo); break;
 			case "curacion":     AplicarCuracion(objetivo);     break;
 			case "encebollado":  AplicarEncebollado(objetivo);  break;
 			case "desprotegido": AplicarDesprotegido(objetivo); break;
@@ -101,13 +131,22 @@ public partial class Campo1 : Node2D
 		string grupoEsperado = def.Aliado ? "tropas_jugador" : "tropas_rival";
 		if (!IsInstanceValid(objetivo) || !objetivo.IsInGroup(grupoEsperado)) return false;
 
+		// Escudo y Desprotegido solo tienen sentido sobre tropas CON escudo. Sobre Tanque o Paperex
+		// (escudoMaximo 0) no harían nada, así que se rechaza el objetivo: la carta vuelve a la mano
+		// y no se pierde ni el hechizo ni el movimiento.
+		if ((def.Id == "escudo" || def.Id == "desprotegido") && SinEscudo(objetivo))
+		{
+			MostrarAviso($"{NombreCorto(objetivo)} no tiene escudo: elegí otra tropa", COLOR_DESPROTEGIDO);
+			return false;
+		}
+
 		switch (def.Id)
 		{
 			case "veneno":
 				objetivo.SetMeta("envenenado",   true);
 				objetivo.SetMeta("danoVeneno",   50);
 				objetivo.SetMeta("turnosVeneno", 3);
-				objetivo.Modulate = COLOR_VENENO;
+				TropaBase.NodoParaTinte(objetivo).Modulate = COLOR_VENENO;
 				MarcarHechizoUsado(pi);
 				ActualizarIconosEstado(objetivo);
 				MostrarAviso($"¡Envenenaste a {NombreCorto(objetivo)} del rival!", COLOR_VENENO);
@@ -116,7 +155,7 @@ public partial class Campo1 : Node2D
 				if (objetivo.HasMethod("AlSerBloqueado")) objetivo.Call("AlSerBloqueado");
 				objetivo.SetMeta("bloqueado",     true);
 				objetivo.SetMeta("turnosBloqueo", 2);
-				objetivo.Modulate = COLOR_BLOQUEO;
+				TropaBase.NodoParaTinte(objetivo).Modulate = COLOR_BLOQUEO;
 				MarcarHechizoUsado(pi);
 				ActualizarIconosEstado(objetivo);
 				MostrarAviso($"¡Bloqueaste a {NombreCorto(objetivo)} del rival!", new Color(0.4f,0.7f,1f));
@@ -169,11 +208,14 @@ public partial class Campo1 : Node2D
 		float quitar = esc > mitadMax ? mitadMax : esc * 0.75f;
 		int nuevo = Mathf.Max(0, esc - Mathf.RoundToInt(quitar));
 		try { objetivo.Set("escudoActual", nuevo); } catch { }
+		// También al PERDER escudo: si el Granadero baja de umbral (o se queda en 0), tiene que pasar
+		// a la faceta que le corresponde, igual que si se lo hubieran roto a golpes.
+		RefrescarFacetaSiAplica(objetivo);
 
 		MostrarDañoFlotante(objetivo.GlobalPosition, esc - nuevo);
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", COLOR_DESPROTEGIDO, 0.3f); // Celeste semiblanco
-		tw.TweenProperty(objetivo, "modulate", Colors.White, 1.7f); // 2s en total
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", COLOR_DESPROTEGIDO, 0.3f); // Celeste semiblanco
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", Colors.White, 1.7f); // 2s en total
 	}
 
 	private void AplicarEscudo(Node2D objetivo)
@@ -183,11 +225,12 @@ public partial class Campo1 : Node2D
 		try { escMax = (int)objetivo.Get("escudoMaximo"); } catch { }
 		int nuevo = Mathf.Min(escMax, esc + Mathf.RoundToInt(escMax * 0.5f));
 		try { objetivo.Set("escudoActual", nuevo); } catch { }
+		RefrescarFacetaSiAplica(objetivo);
 
 		MostrarDañoFlotante(objetivo.GlobalPosition, nuevo - esc, true);
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", COLOR_ESCUDO, 0.3f); // Azul
-		tw.TweenProperty(objetivo, "modulate", Colors.White, 1.7f);
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", COLOR_ESCUDO, 0.3f); // Azul
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", Colors.White, 1.7f);
 	}
 
 	private void AplicarFuerza(Node2D objetivo)
@@ -199,8 +242,8 @@ public partial class Campo1 : Node2D
 		objetivo.SetMeta("turnosFuerza", 2);
 
 		Tween tw = objetivo.CreateTween();
-		tw.TweenProperty(objetivo, "modulate", new Color(1f, 0.55f, 0.1f), 0.3f); // Naranja
-		tw.TweenProperty(objetivo, "modulate", Colors.White, 1.7f);
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", new Color(1f, 0.55f, 0.1f), 0.3f); // Naranja
+		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", Colors.White, 1.7f);
 	}
 
 	// ── INPUT ─────────────────────────────────────────────────────────────

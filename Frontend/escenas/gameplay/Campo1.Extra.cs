@@ -54,7 +54,9 @@ public partial class Campo1 : Node2D
 	}
 
 	private Control _avisoActual;
-	private const float DURACION_TOAST = 2.5f; // exigido: exactamente 2.5s visible antes de desaparecer
+	// Se pidió que el aviso dure 1.5s, salga en el CENTRO exacto de la pantalla y bien grande.
+	private const float DURACION_TOAST   = 1.5f;
+	private const int   FUENTE_TOAST     = 40;
 
 	// Público: algunas cartas (p. ej. MaguinPrime, con su modo de selección "decide a cuál
 	// transformas") lo llaman desde afuera vía campo.Call("MostrarAviso", ...).
@@ -63,14 +65,14 @@ public partial class Campo1 : Node2D
 		// Durante la reproducción visual de una jugada del rival (online) NO se muestran avisos: el texto
 		// está escrito desde la perspectiva del que actúa ("¡Envenenaste a…!") y saldría al revés.
 		if (SuprimiendoAvisosOnline) return;
-		// y=230: un poco más arriba que antes (300), pidiendo seguir debajo del bloque superior
-		// (barras HP, Tiempo, Turno) pero sin quedar tan abajo en el tablero.
-		MostrarAvisoCentrado(ConstruirToast(texto, color, 26), 230f, DURACION_TOAST);
+		// top = null → CenterContainer a pantalla completa: queda en el centro exacto, como se pidió.
+		// No tapa nada: el host es MouseFilter.Ignore y los botones de tropa van por encima (capa HUD).
+		MostrarAvisoCentrado(ConstruirToast(texto, color, FUENTE_TOAST), null, DURACION_TOAST);
 	}
 
 	private void MostrarAvisoFase(string msg)
 	{
-		MostrarAvisoCentrado(ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), 26), 230f, DURACION_TOAST);
+		MostrarAvisoCentrado(ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), FUENTE_TOAST), null, DURACION_TOAST);
 	}
 
 	// Frase burlona/celebratoria de fin de partida — SIN panel/caja de fondo, solo la letra:
@@ -142,9 +144,13 @@ public partial class Campo1 : Node2D
 	}
 
 	// Marco de cristal del juego (el mismo del HUD "TIEMPO"), cargado una sola vez.
+	// Marco propio del aviso de batalla (406×47: filo negro + línea dorada de ~11px y relleno azul
+	// marino). Si faltara, cae al marco de cristal del HUD y, en última instancia, a la caja por código.
 	private static readonly Texture2D _texMarcoToast =
-		ResourceLoader.Exists("res://imagenes/botonescampo1/ContadorTurno.png")
-			? GD.Load<Texture2D>("res://imagenes/botonescampo1/ContadorTurno.png") : null;
+		ResourceLoader.Exists("res://imagenes/login/aviso_panel.png")
+			? GD.Load<Texture2D>("res://imagenes/login/aviso_panel.png")
+			: (ResourceLoader.Exists("res://imagenes/botonescampo1/ContadorTurno.png")
+				? GD.Load<Texture2D>("res://imagenes/botonescampo1/ContadorTurno.png") : null);
 
 	// Panel/texto agrandados para lectura cómoda en móvil.
 	private PanelContainer ConstruirToast(string texto, Color acento, int fontSize, string badge = null)
@@ -157,12 +163,13 @@ public partial class Campo1 : Node2D
 			// nine-patch (StyleBoxTexture): el borde ornamentado NO se deforma aunque el texto sea largo
 			// o corto — solo se estira el interior negro. Así deja de verse como una caja "genérica".
 			var st = new StyleBoxTexture { Texture = _texMarcoToast };
-			// Nine-patch: cuánto del borde (px de la imagen) se mantiene sin estirar en cada lado.
-			st.TextureMarginLeft = st.TextureMarginRight = 60;
-			st.TextureMarginTop  = 46; st.TextureMarginBottom = 50;
-			// Padding para que el texto quede dentro del interior negro, no bajo el cristal.
-			st.ContentMarginLeft = st.ContentMarginRight = 52;
-			st.ContentMarginTop  = 26; st.ContentMarginBottom = 32;
+			// Nine-patch medido sobre aviso_panel.png (406×47): el filo negro + la línea dorada ocupan
+			// ~11px por lado, así que se reservan 14 para que NUNCA se deformen; solo estira el azul.
+			st.TextureMarginLeft = st.TextureMarginRight = 14;
+			st.TextureMarginTop  = st.TextureMarginBottom = 13;
+			// Padding: deja el texto holgado dentro del azul, sin montarse sobre el borde dorado.
+			st.ContentMarginLeft = st.ContentMarginRight = 38;
+			st.ContentMarginTop  = st.ContentMarginBottom = 20;
 			panel.AddThemeStyleboxOverride("panel", st);
 		}
 		else
@@ -242,14 +249,14 @@ public partial class Campo1 : Node2D
 	public void AplicarVenenoMeta(Node2D t, int daño, int turnos)
 	{
 		t.SetMeta("envenenado", true); t.SetMeta("danoVeneno", daño); t.SetMeta("turnosVeneno", turnos);
-		t.Modulate = new Color(0.6f, 1f, 0.4f);
+		TropaBase.NodoParaTinte(t).Modulate = new Color(0.6f, 1f, 0.4f);
 		ActualizarIconosEstado(t);
 	}
 
 	public void AplicarBloqueoMeta(Node2D t, int turnos)
 	{
 		t.SetMeta("bloqueado", true); t.SetMeta("turnosBloqueo", turnos);
-		t.Modulate = new Color(0.4f, 0.6f, 1.4f);
+		TropaBase.NodoParaTinte(t).Modulate = new Color(0.4f, 0.6f, 1.4f);
 		ActualizarIconosEstado(t);
 	}
 
@@ -428,7 +435,8 @@ public partial class Campo1 : Node2D
 
 		// Espejado horizontal respecto del centro de la pantalla, a la altura de la barra del rival.
 		float ancho = _avisoBombaJugador.Size.X * _avisoBombaJugador.Scale.X;
-		float x = GetViewport().GetVisibleRect().Size.X - _avisoBombaJugador.Position.X - ancho;
+		const float AJUSTE_IZQUIERDA = 48f; // un poco más hacia el centro (antes 24, pidió un poco más)
+		float x = GetViewport().GetVisibleRect().Size.X - _avisoBombaJugador.Position.X - ancho - AJUSTE_IZQUIERDA;
 		float y = _avisoBombaJugador.Position.Y;
 		if (_barraHPJugador != null && _barraHPRival != null)
 			y = _barraHPRival.Position.Y + (_avisoBombaJugador.Position.Y - _barraHPJugador.Position.Y);
@@ -456,7 +464,10 @@ public partial class Campo1 : Node2D
 		if (segundos <= 0) { panel.Visible = false; return; }
 		panel.Visible = true;
 		if (titulo != null && IsInstanceValid(titulo))
-			titulo.Text = esMia ? "¡TU BOMBA NUCLEAR!" : "¡BOMBA NUCLEAR DEL RIVAL!";
+			// "¡BOMBA NUCLEAR DEL RIVAL!" (25 caracteres) no entraba en la misma caja fija que sí le
+			// entra bien a "¡TU BOMBA NUCLEAR!" (18) — se veía desbordado/roto. "¡SU BOMBA NUCLEAR!"
+			// tiene el MISMO largo (18) que la frase propia, así que entra exactamente igual de bien.
+			titulo.Text = esMia ? "¡TU BOMBA NUCLEAR!" : "¡SU BOMBA NUCLEAR!";
 		if (numero == null || !IsInstanceValid(numero)) return;
 		numero.Text = segundos.ToString();
 		numero.AddThemeColorOverride("font_color",

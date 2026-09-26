@@ -53,6 +53,18 @@ public abstract partial class TropaBase : Area2D
 	protected AnimatedSprite2D _anim;
 	protected Control          _contenedorStats;
 
+	/// <summary>El sprite visual de la tropa, para teñirlo directamente (veneno, bloqueo, golpe,
+	/// curación, etc.) SIN afectar las barras de vida/escudo. El sprite y StatsTropa son HERMANOS en
+	/// la escena (los dos hijos directos de la tropa): si el tinte se pone en "this.Modulate", Godot
+	/// lo propaga a TODOS los hijos por igual, y las barras terminaban tiñéndose también — ese era el
+	/// bug real. Usar esto en vez de Modulate en la raíz es lo que lo evita.</summary>
+	public AnimatedSprite2D SpriteVisual => _anim;
+
+	/// <summary>El nodo correcto para aplicarle un tinte de color a "n": su sprite si es una tropa (así
+	/// nunca le pinta las barras), o el propio nodo si no lo es (efectos, muros, etc., que no tienen
+	/// barras de vida/escudo como hijos).</summary>
+	public static Node2D NodoParaTinte(Node2D n) => n is TropaBase tb && tb.SpriteVisual != null ? tb.SpriteVisual : n;
+
 	// ══════════════════════════════════════════════════════════════════════
 	// MÉTODOS DE PLANTILLA (Template Method Pattern)
 	// Las subclases sobreescriben solo lo que cambia.
@@ -214,14 +226,32 @@ public abstract partial class TropaBase : Area2D
 	/// <summary>Tipo elemental de la tropa. Subclases lo sobreescriben. Ver Tipos.cs para matchups.</summary>
 	public virtual string Tipo => Tipos.NEUTRO;
 
+	// Color "de reposo" al que EfectoGolpe debe volver: se captura SOLO cuando no hay un flash en
+	// curso. Con golpes muy seguidos (la ráfaga del Soldado Cartoon pega 4 veces en fracciones de
+	// segundo), cada golpe mataba el tween anterior A MITAD del flash y leía el Modulate de ESE
+	// instante (todavía rojizo) como "el color al que hay que volver" — el color real se perdía golpe
+	// a golpe. Si la tropa estaba bloqueada (tinte oscuro) o envenenada (tinte verde), ese tinte se
+	// pisaba con rojo/blanco y desaparecía para siempre. Ahora el color de reposo se fija una sola vez
+	// al INICIO de una tanda de golpes y se reusa igual en todos, así el resultado final es siempre el
+	// tinte de estado real, sin importar cuántos golpes rápidos hayan pegado en el medio.
+	private Color? _colorReposoGolpe;
+
 	protected void EfectoGolpe()
 	{
-		if (_estaMuerto) return;
+		if (_estaMuerto || _anim == null) return;
+
+		// Tiñe el SPRITE, no la raíz de la tropa: la raíz propaga el Modulate a TODOS sus hijos por
+		// igual, incluida StatsTropa (las barras de vida/escudo) — así el flash rojo del golpe las
+		// pintaba también. El sprite es hermano de StatsTropa, así que teñirlo a él nunca las toca.
+		bool hayFlashEnCurso = _tweenGolpe != null && _tweenGolpe.IsValid() && _tweenGolpe.IsRunning();
+		if (!hayFlashEnCurso) _colorReposoGolpe = _anim.Modulate; // color limpio, sin flash a mitad de camino
+
 		_tweenGolpe?.Kill();
-		Color antes = Modulate;
+		Color antes = _colorReposoGolpe ?? _anim.Modulate;
 		_tweenGolpe = CreateTween();
-		_tweenGolpe.TweenProperty(this, "modulate", new Color(3f, 0.4f, 0.4f, 1f), 0.05f);
-		_tweenGolpe.TweenProperty(this, "modulate", antes, 0.15f);
+		_tweenGolpe.TweenProperty(_anim, "modulate", new Color(3f, 0.4f, 0.4f, 1f), 0.05f);
+		_tweenGolpe.TweenProperty(_anim, "modulate", antes, 0.15f);
+		_tweenGolpe.Finished += () => _colorReposoGolpe = null; // tanda terminada: el próximo golpe vuelve a capturar
 	}
 
 	/// <summary>Polimorfismo: las subclases pueden extender este método.</summary>
@@ -258,6 +288,22 @@ public abstract partial class TropaBase : Area2D
 	/// le corresponde a este turno — sin gastar la habilidad (nunca llegó a marcarse usada), pero
 	/// con el aro de aviso brillando para siempre.</summary>
 	public virtual void CancelarSeleccionPendiente() { }
+
+	/// <summary>¿La habilidad quedó ESPERANDO que el jugador elija algo (objetivo, carril, pieza) y
+	/// todavía no se concretó? Campo1 lo consulta justo después de pulsar HABILIDAD: mientras esté
+	/// pendiente NO se gasta el movimiento ni se marca la tropa como "ya actuó", así que si el turno
+	/// se va sin elegir, la habilidad sigue disponible y no se pierde el turno (pedido explícito).
+	/// El movimiento se cobra recién al confirmar, vía Campo1.ConfirmarHabilidadPendiente.</summary>
+	public virtual bool SeleccionPendiente => false;
+
+	/// <summary>La llama la propia carta cuando el jugador YA confirmó la selección: recién ahí se
+	/// cobra el movimiento y la tropa pasa a "ya actuó".</summary>
+	protected void AvisarHabilidadConfirmada()
+	{
+		var campo = GetTree()?.Root?.FindChild("Campo1", true, false);
+		if (campo != null && campo.HasMethod("ConfirmarHabilidadPendiente"))
+			campo.Call("ConfirmarHabilidadPendiente", this);
+	}
 
 	/// <summary>Campo1 lo llama al aplicarle el hechizo Bloqueo a esta tropa. Por defecto solo la
 	/// deja en "idle" — toda tropa bloqueada queda congelada en reposo, nunca a mitad de una
@@ -456,8 +502,8 @@ public abstract partial class TropaBase : Area2D
 	protected void DestelloHabilidad()
 	{
 		Tween tw = CreateTween();
-		tw.TweenProperty(this, "modulate", new Color(1.6f, 1.5f, 0.4f), 0.35f);
-		tw.TweenProperty(this, "modulate", Colors.White, 0.65f);
+		tw.TweenProperty(_anim, "modulate", new Color(1.6f, 1.5f, 0.4f), 0.35f);
+		tw.TweenProperty(_anim, "modulate", Colors.White, 0.65f);
 	}
 
 	/// <summary>

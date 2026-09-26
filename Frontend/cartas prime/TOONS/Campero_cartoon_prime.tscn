@@ -440,10 +440,10 @@ animation = &"pre defensa"
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 101.0
-offset_top = -72.0
-offset_right = 141.0
-offset_bottom = -32.0
+offset_left = -108.00003
+offset_top = -34.0
+offset_right = -68.00003
+offset_bottom = 6.0
 scale = Vector2(0.91999876, 0.7599994)
 
 [node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=642872417]

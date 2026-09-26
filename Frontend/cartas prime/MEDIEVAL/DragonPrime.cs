@@ -225,13 +225,13 @@ public partial class DragonPrime : TropaBase
 					return;
 				}
 
-				ocupante.Modulate = new Color(1f, 0.3f, 0.3f);
+				TropaBase.NodoParaTinte(ocupante).Modulate = new Color(1f, 0.3f, 0.3f);
 			}
 
 			int restantes = ticksRestantes - 1;
 			if (restantes <= 0)
 			{
-				if (ocupante != null && IsInstanceValid(ocupante)) ocupante.Modulate = Colors.White;
+				if (ocupante != null && IsInstanceValid(ocupante)) TropaBase.NodoParaTinte(ocupante).Modulate = Colors.White;
 				if (IsInstanceValid(efecto)) efecto.QueueFree();
 			}
 			else

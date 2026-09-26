@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://psettings123"]
 
 [ext_resource type="Script" path="res://escenas/menu/PanelSettings.cs" id="1_psett"]
-[ext_resource type="Texture2D" path="res://imagenes/login/login_panel.png" id="2_marco"]
+[ext_resource type="Texture2D" path="res://imagenes/login/login_panel2.png" id="2_marco"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxFlat_glass"]
 texture = ExtResource("2_marco")
@@ -12,7 +12,7 @@ texture_margin_bottom = 92.0
 content_margin_left = 24.0
 content_margin_top = 118.0
 content_margin_right = 24.0
-content_margin_bottom = 24.0
+content_margin_bottom = 100.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
 bg_color = Color(0.2, 0.25, 0.35, 1)
@@ -36,6 +36,8 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
+offset_top = -30.0
+offset_bottom = -30.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_glass")
@@ -86,14 +88,26 @@ theme_override_font_sizes/font_size = 34
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "SILENCIAR"
 
-[node name="ChkScreenShake" type="CheckButton" parent="Margin/VBox"]
+[node name="HBoxVibracion" type="HBoxContainer" parent="Margin/VBox"]
 custom_minimum_size = Vector2(0, 74)
 layout_mode = 2
 size_flags_horizontal = 4
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="LblVibracion" type="Label" parent="Margin/VBox/HBoxVibracion"]
+layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 1)
-theme_override_constants/h_separation = 20
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 34
 text = "Vibración de pantalla"
+vertical_alignment = 1
+
+[node name="MarcoSwitch" type="Control" parent="Margin/VBox/HBoxVibracion"]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="ChkScreenShake" type="CheckButton" parent="Margin/VBox/HBoxVibracion/MarcoSwitch"]
+layout_mode = 0
 button_pressed = true
 
 [node name="BtnComoJugar" type="Button" parent="Margin/VBox"]
@@ -114,10 +128,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
 text = "CERRAR SESIÓN"
-
-[node name="Spacer" type="Control" parent="Margin/VBox"]
-custom_minimum_size = Vector2(0, 14)
-layout_mode = 2
 
 [node name="BtnCerrar" type="Button" parent="Margin/VBox"]
 custom_minimum_size = Vector2(0, 88)

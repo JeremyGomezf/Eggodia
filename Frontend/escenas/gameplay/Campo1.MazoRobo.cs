@@ -114,6 +114,42 @@ public partial class Campo1 : Node2D
 		return res;
 	}
 
+	// ── CARTAS DEL RIVAL, SEPARADAS DE LAS MÍAS ───────────────────────────
+	// La mano visible del bot (la que se ve en "Robar Carta") se indexaba sobre escenasTropas, que es
+	// MI mazo: por eso al rival le salían siempre MIS mismas 8 cartas. Ahora se indexa sobre este
+	// arreglo, que son las 18 tropas del juego, y el bot reparte SOLO desde el mazo que le tocó a él.
+	private string[]  _cartasCPU;        // espacio de índices propio del rival (las 18 tropas)
+	private TipoTropa[] _tipoIndiceCPU;  // tipo de cada carta de _cartasCPU
+	private List<int> _idxTacticoCPU = new(), _idxAsesinoCPU = new(), _idxColosoCPU = new();
+
+	/// <summary>Índice dentro de _cartasCPU de una escena concreta (-1 si no está).</summary>
+	private int IndiceCPUDe(string rutaEscena) =>
+		_cartasCPU == null || string.IsNullOrEmpty(rutaEscena) ? -1 : Array.IndexOf(_cartasCPU, rutaEscena);
+
+	/// <summary>Clasifica el mazo QUE LE TOCÓ AL BOT dentro de su propio espacio de índices. Solo
+	/// entran sus cartas, así que su mano nunca puede repetir el mazo del jugador salvo coincidencia.</summary>
+	private void InicializarClasificacionCPU()
+	{
+		_cartasCPU = TODAS_LAS_TROPAS_CPU;
+		_tipoIndiceCPU = new TipoTropa[_cartasCPU.Length];
+		for (int i = 0; i < _cartasCPU.Length; i++)
+			_tipoIndiceCPU[i] = ClasificacionCartas.TipoDe(_cartasCPU[i]);
+
+		_idxTacticoCPU.Clear(); _idxAsesinoCPU.Clear(); _idxColosoCPU.Clear();
+		foreach (string ruta in _mazoCPU)
+		{
+			int i = IndiceCPUDe(ruta);
+			if (i < 0) continue;
+			if (_tipoIndiceCPU[i] == TipoTropa.Tactico) _idxTacticoCPU.Add(i);
+			else if (_tipoIndiceCPU[i] == TipoTropa.Asesino) _idxAsesinoCPU.Add(i);
+		}
+		foreach (string ruta in _colososCPU)
+		{
+			int i = IndiceCPUDe(ruta);
+			if (i >= 0) _idxColosoCPU.Add(i);
+		}
+	}
+
 	private void InicializarMazoCPU()
 	{
 		_mazoCPU.Clear(); _colososCPU.Clear();
@@ -136,6 +172,8 @@ public partial class Campo1 : Node2D
 			foreach (string r in TODAS_LAS_TROPAS_CPU) if (ClasificacionCartas.TipoDe(r) != TipoTropa.Coloso) _mazoCPU.Add(r);
 		if (_colososCPU.Count == 0)
 			foreach (string r in TODAS_LAS_TROPAS_CPU) if (ClasificacionCartas.TipoDe(r) == TipoTropa.Coloso) _colososCPU.Add(r);
+
+		InicializarClasificacionCPU(); // su mano visible se reparte desde ESTE mazo, no desde el mío
 	}
 
 	private void BarajarLista(List<string> l)
@@ -361,7 +399,7 @@ public partial class Campo1 : Node2D
 			var colososLibres = _colososCPU.FindAll(ruta => !yaEnCampo.Contains(ruta));
 			var poolColoso = colososLibres.Count > 0 ? colososLibres : _colososCPU;
 			string rutaColoso = poolColoso[random.Next(poolColoso.Count)];
-			int idxColosoJugado = Array.IndexOf(escenasTropas, rutaColoso);
+			int idxColosoJugado = IndiceCPUDe(rutaColoso);
 			_manoVisualCPU.Remove(idxColosoJugado); // si lo tenía en mano, lo gasta
 			RegistrarCartaGastadaCPU(idxColosoJugado);
 			var pc = GD.Load<PackedScene>(rutaColoso);
@@ -372,14 +410,14 @@ public partial class Campo1 : Node2D
 		// deja de tenerla de verdad. La mano se le repone al empezar su turno.
 		if (_manoVisualCPU.Count > 0)
 		{
-			var enMano = _manoVisualCPU.FindAll(i => i >= 0 && i < escenasTropas.Length && !yaEnCampo.Contains(escenasTropas[i]));
-			if (enMano.Count == 0) enMano = _manoVisualCPU.FindAll(i => i >= 0 && i < escenasTropas.Length);
+			var enMano = _manoVisualCPU.FindAll(i => i >= 0 && i < _cartasCPU.Length && !yaEnCampo.Contains(_cartasCPU[i]));
+			if (enMano.Count == 0) enMano = _manoVisualCPU.FindAll(i => i >= 0 && i < _cartasCPU.Length);
 			if (enMano.Count > 0)
 			{
 				int idxElegido = enMano[random.Next(enMano.Count)];
 				_manoVisualCPU.Remove(idxElegido); // la gasta: sale de su mano
 				RegistrarCartaGastadaCPU(idxElegido);
-				var deMano = GD.Load<PackedScene>(escenasTropas[idxElegido]);
+				var deMano = GD.Load<PackedScene>(_cartasCPU[idxElegido]);
 				if (deMano != null) return deMano;
 			}
 		}

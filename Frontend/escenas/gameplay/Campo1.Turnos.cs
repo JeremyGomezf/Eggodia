@@ -9,6 +9,9 @@ public partial class Campo1 : Node2D
 	{
 		if (IntroEnCurso) return; // la intro cinemática congela el reloj de la partida
 		if (juegoTerminado) return;
+		// Tutorial: el reloj no corre — el avance de la partida lo maneja la secuencia guiada, no un
+		// límite de tiempo. La pantalla se congela en 0:00 (ver ActualizarInterfaz).
+		if (ModoTutorial) return;
 
 		// En línea: mientras espero el turno del rival no corre el reloj (el turno no se me pasa solo).
 		if (EsOnline && !esTurnoJugador) return;
@@ -93,6 +96,12 @@ public partial class Campo1 : Node2D
 			{
 				if (n.HasMethod("SetActivo")) n.Call("SetActivo", true);
 				if (!(n is Node2D tropa) || !IsInstanceValid(tropa)) continue;
+				// Una tropa que ya está muriendo (jugando su animación de derrota) sigue un ratito en
+				// el grupo "tropas_jugador" hasta que se libera del todo. Sin este chequeo, el aviso de
+				// "¡ya tiene su habilidad lista!" podía saltar justo cuando la carta se está muriendo
+				// (p. ej. el Maguín, si moría el mismo turno en que se desbloqueaba) — un aviso inútil
+				// para una carta que ya no está en juego.
+				if (tropa is TropaBase tbAviso && tbAviso.EstaMuerta) continue;
 
 				bool bloqueadaAntes = false;
 				try { bloqueadaAntes = (bool)tropa.Call("HabilidadBloqueada"); } catch { }
@@ -266,7 +275,7 @@ public partial class Campo1 : Node2D
 		MostrarDañoFlotante(t.GlobalPosition, daño);
 		if (t.HasMethod("RecibirDaño")) t.Call("RecibirDaño", daño);
 		turnos--;
-		if (turnos <= 0) { t.SetMeta("envenenado", false); t.Modulate = Colors.White; }
+		if (turnos <= 0) { t.SetMeta("envenenado", false); TropaBase.NodoParaTinte(t).Modulate = Colors.White; }
 		else             t.SetMeta("turnosVeneno", turnos);
 		ActualizarIconosEstado(t);
 	}
@@ -278,7 +287,7 @@ public partial class Campo1 : Node2D
 		if (!bl) return;
 		int turnos = t.HasMeta("turnosBloqueo") ? (int)t.GetMeta("turnosBloqueo") : 1;
 		turnos--;
-		if (turnos <= 0) { t.SetMeta("bloqueado", false); t.Modulate = Colors.White; }
+		if (turnos <= 0) { t.SetMeta("bloqueado", false); TropaBase.NodoParaTinte(t).Modulate = Colors.White; }
 		else             t.SetMeta("turnosBloqueo", turnos);
 		ActualizarIconosEstado(t);
 	}
@@ -297,7 +306,7 @@ public partial class Campo1 : Node2D
 			t.SetMeta("fuerzaActiva", false);
 			int ata = 0; try { ata = (int)t.Get("puntosAtaque"); } catch { }
 			try { t.Set("puntosAtaque", Mathf.Max(0, ata - 100)); } catch { }
-			t.Modulate = Colors.White;
+			TropaBase.NodoParaTinte(t).Modulate = Colors.White;
 		}
 		else t.SetMeta("turnosFuerza", turnos);
 	}

@@ -56,6 +56,7 @@ public partial class Campo1 : Node2D
 	private const float ALTO_BARRA_ARRIBA = 0.13f;
 	private const float ALTO_BARRA_ABAJO  = 0.30f;
 	private const float SEG_BARRAS           = 0.4f;
+	private const float SEG_FADE_NOMBRE      = 0.3f; // lo que tarda el cartel en desvanecerse
 	private const float SEG_ESPERA_TRONO_VACIO = 0.35f; // se ve el trono vacío antes de que caiga el huevo
 	private const float SEG_HOLD_NOMBRE      = 1.5f;    // cuánto se queda cada nombre en pantalla (pedido: 1.5s)
 	private const float SEG_VIAJE_AL_RIVAL   = 1.1f;
@@ -141,6 +142,10 @@ public partial class Campo1 : Node2D
 			MostrarNombreIntro(nombreRival, tronoRival, true);
 			if (!await EsperarIntro(SEG_HOLD_NOMBRE)) return;
 			MostrarNombreIntro(nombreRival, tronoRival, false);
+			// El nombre tarda SEG_FADE_NOMBRE en desvanecerse. Sin esta espera, las barras empezaban a
+			// abrirse con el cartel todavía visible y se veía raro: primero se va el nombre, después el
+			// recuadro negro.
+			if (!await EsperarIntro(SEG_FADE_NOMBRE)) return;
 
 			// 6) Barras afuera, cámara de vuelta a la vista completa del campo.
 			MostrarBarrasCine(false);
@@ -386,7 +391,7 @@ public partial class Campo1 : Node2D
 		}
 
 		Tween tw = _lblNombreIntro.CreateTween();
-		tw.TweenProperty(_lblNombreIntro, "modulate:a", mostrar ? 1f : 0f, 0.3f);
+		tw.TweenProperty(_lblNombreIntro, "modulate:a", mostrar ? 1f : 0f, SEG_FADE_NOMBRE);
 	}
 
 	private void UbicarEtiquetaNombre(TronoCampo trono)

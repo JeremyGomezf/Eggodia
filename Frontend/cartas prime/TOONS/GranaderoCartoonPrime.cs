@@ -79,6 +79,22 @@ public partial class GranaderoCartoonPrime : TropaBase
 
 	private string AF(string b) => $"{b} {_faceta}";
 
+	/// <summary>Recalcula la faceta a partir del escudo que tiene AHORA y vuelve a su idle con ella.
+	/// Hace falta porque la faceta solo avanzaba al recibir daño (1→2→3) y nunca volvía: si un hechizo
+	/// le devolvía el escudo (Escudo o Encebollado), seguía viéndose con los bloques rotos aunque su
+	/// barra estuviera llena. La llama Campo1 después de aplicar esos hechizos.
+	/// Los umbrales son los MISMOS que usa RecibirDaño, así que la ida y la vuelta siempre coinciden.</summary>
+	public void RefrescarFaceta()
+	{
+		if (_estaMuerto || _anim == null) return;
+
+		int nueva = escudoActual > 300 ? 1 : escudoActual > 0 ? 2 : 3;
+		if (nueva == _faceta) return;
+
+		_faceta = nueva;
+		_anim.Play(AF("idle")); // se reconstruye visualmente en la faceta que le corresponde
+	}
+
 	// ── ACCIONES ──────────────────────────────────────────────────────────────
 	public override void EjecutarAccion(string accion)
 	{

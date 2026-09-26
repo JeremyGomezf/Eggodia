@@ -67,6 +67,27 @@ public partial class Campo1 : Node2D
 
 	private void ElegirEscenarioBatalla()
 	{
+		// Tutorial: escenario Medieval fijo (coincide con las 3 tropas fijas de Campo1.Tutorial.cs) —
+		// nunca al azar.
+		if (ModoTutorial)
+		{
+			int idxMedieval = Array.FindIndex(ESCENARIOS_BATALLA, e => e.Nombre == "medieval");
+			if (idxMedieval >= 0)
+			{
+				_idxEscenarioActual = idxMedieval;
+				var escMedieval = ESCENARIOS_BATALLA[idxMedieval];
+				_segundoDerrotaMusica  = escMedieval.SegundoDerrota;
+				_volumenExtraEscenario = escMedieval.VolumenExtraDb;
+
+				var fondoNodeM     = GetNodeOrNull<Sprite2D>("FONDO");
+				var escenarioNodeM = GetNodeOrNull<Sprite2D>("ESCENARIO");
+				if (fondoNodeM != null && ResourceLoader.Exists(escMedieval.Fondo))         fondoNodeM.Texture     = GD.Load<Texture2D>(escMedieval.Fondo);
+				if (escenarioNodeM != null && ResourceLoader.Exists(escMedieval.Escenario)) escenarioNodeM.Texture = GD.Load<Texture2D>(escMedieval.Escenario);
+				if (ResourceLoader.Exists(escMedieval.Musica)) _musicaPartida = GD.Load<AudioStream>(escMedieval.Musica);
+				return;
+			}
+		}
+
 		float total = 0f;
 		foreach (var e in ESCENARIOS_BATALLA) total += e.Peso;
 		float r = (float)ObtenerRandomEscenario().NextDouble() * total;
@@ -232,6 +253,12 @@ public partial class Campo1 : Node2D
 
 	// ── CPU ADAPTATIVA ────────────────────────────────────────────────────
 	private int  _dificultadCPU       = 1; // 0=fácil, 1=medio, 2=difícil
+
+	/// <summary>True solo en campo_tutorial.tscn (mismo script, distinto valor exportado por
+	/// escena). Congela el reloj en 0:00, no reproduce música, y arranca con una mano fija de 3
+	/// tropas (1 táctico + 1 asesino + 1 coloso) en vez del mazo/mano normales. Ver Campo1.Tutorial.cs
+	/// para el resto de la secuencia guiada.</summary>
+	[Export] public bool ModoTutorial = false;
 	private int  _victoriasJugador    = 0;
 	private int  _derrotasJugador     = 0;
 	private int  _turnosJugados       = 0;
@@ -360,10 +387,11 @@ public partial class Campo1 : Node2D
 		// activa siempre: el motor no la respeta si no se declara "current" en runtime.
 		GetNodeOrNull<Camera2D>("Camera2D")?.MakeCurrent();
 
-		// Sortea el escenario visual+musical de esta partida, silencia el menú e inicia su música
+		// Sortea el escenario visual+musical de esta partida, silencia el menú e inicia su música.
+		// Tutorial: sin música, a pedido explícito (por ahora).
 		ElegirEscenarioBatalla();
 		SilenciarOtrasMusicas();
-		IniciarMusicaPartida();
+		if (!ModoTutorial) IniciarMusicaPartida();
 
 		// Escenario "toon": mismo filtro "1930s Cartoon Aesthetic" de MenuConstructor. Se queda
 		// activo TODA la partida (incluida la frase y pantalla de Victoria/Derrota) y solo se
@@ -434,8 +462,11 @@ public partial class Campo1 : Node2D
 		else
 			contenedorMano.ZIndex = 150;
 
+		// Tutorial: mazo fijo (Golem, Maguín, Soldado Real) en vez del mazo real de la sesión —
+		// así el tutorial se ve siempre igual sin importar qué mazo tenga armado el jugador.
+		if (ModoTutorial) { ForzarMazoTutorial(); }
 		// Mazo desde sesión del jugador
-		if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
+		else if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
 		{
 			escenasTropas  = SesionJuego.Instance.MazoSeleccionado.ToArray();
 			// Imagen grande de batalla (CartasPng) derivada de la escena de cada tropa —
@@ -457,9 +488,12 @@ public partial class Campo1 : Node2D
 		InicializarManoVisualCPU();
 		// Se sortea acá (antes de CrearEscenaDeBatalla) para que la skin del rival pueda usar este
 		// mismo nombre — ver SkinPorNombreCPU(). En online no aplica: ahí se usa ContextoOnline.RivalNombre.
-		_nombreCPUElegido = NOMBRES_CPU[random.Next(NOMBRES_CPU.Length)];
+		_nombreCPUElegido = ModoTutorial ? "Sargento Huevo" : NOMBRES_CPU[random.Next(NOMBRES_CPU.Length)];
 		CrearEscenaDeBatalla();
-		BarajarMazoInicial();
+		// Tutorial: la mano NO se llena acá — la propia secuencia guiada (Campo1.Tutorial.cs) la
+		// puebla recién después del splash de bienvenida y los 3 mensajes de introducción, para que
+		// las cartas no aparezcan antes de que el jugador sepa qué son.
+		if (!ModoTutorial) BarajarMazoInicial();
 		_faseApertura  = true;
 		faseInvocacion = true;
 		ConfigurarInterfazNueva();
@@ -467,6 +501,7 @@ public partial class Campo1 : Node2D
 		ActualizarInterfaz();
 		AnunciarTurno(); // muestra "TU TURNO" desde el primer instante, no solo al cambiar de turno
 		ConfigurarModoOnline();
+		if (ModoTutorial) IniciarInterfazTutorial();
 
 		// Mejora estética integrada de zonas de invocación (del amigo)
 		EstilizarIndicadoresInvocacion();
@@ -478,7 +513,8 @@ public partial class Campo1 : Node2D
 		// pisar el toast "TU TURNO" que AnunciarTurno() acaba de mostrar en el mismo instante.
 		// Intro cinemática: arranca ya, en el mismo frame, para que la partida empiece enfocada y con
 		// las barras de cine puestas (ver Campo1.Intro.cs). Nada se puede jugar hasta que termina.
-		IniciarIntroCinematica();
+		// En el tutorial se salta entera: el jugador tiene que poder jugar la mano fija ya mismo.
+		if (!ModoTutorial) IniciarIntroCinematica();
 
 		GetTree().CreateTimer(1.2f).Timeout += () =>
 		{

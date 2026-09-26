@@ -342,7 +342,6 @@ offset_top = 186.0
 offset_right = -1858.57
 offset_bottom = 306.0
 grow_horizontal = 0
-tooltip_text = "Panel de Desarrollador / Pruebas"
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("21_btn_dev")
 ignore_texture_size = true

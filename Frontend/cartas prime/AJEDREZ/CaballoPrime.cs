@@ -16,6 +16,10 @@ public partial class CaballoPrime : TropaBase
 
 	// ── ESTADOS Y SELECCIÓN POR CLIC ──────────────────────────────────────────
 	private bool   _esperandoSeleccion = false;
+
+	/// <summary>Mientras espera el clic del jugador la habilidad NO está gastada: si el turno se va,
+	/// sigue disponible y no se pierde el movimiento.</summary>
+	public override bool SeleccionPendiente => _esperandoSeleccion;
 	private bool   _esAtaqueHabilidad  = false;
 	private Tween  _tweenAviso;
 	private Vector2 _posicionOriginal;
@@ -65,6 +69,7 @@ public partial class CaballoPrime : TropaBase
 				GetViewport().SetInputAsHandled();
 
 				DetenerEfectoAviso();
+				AvisarHabilidadConfirmada(); // recién acá se cobra el movimiento
 				EjecutarHabilidadConfirmada();
 			}
 		}
@@ -138,8 +143,8 @@ public partial class CaballoPrime : TropaBase
 				// 👤 El Jugador Humano selecciona mediante clic entre Carril Rival 1 y 3
 				_esperandoSeleccion = true;
 				_tweenAviso = CreateTween().SetLoops();
-				_tweenAviso.TweenProperty(this, "modulate", new Color(1.8f, 1.5f, 0.6f), 0.3f);
-				_tweenAviso.TweenProperty(this, "modulate", Colors.White, 0.3f);
+				_tweenAviso.TweenProperty(_anim, "modulate", new Color(1.8f, 1.5f, 0.6f), 0.3f);
+				_tweenAviso.TweenProperty(_anim, "modulate", Colors.White, 0.3f);
 			}
 		}
 		else

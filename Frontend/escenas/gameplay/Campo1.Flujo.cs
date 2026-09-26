@@ -34,6 +34,10 @@ public partial class Campo1 : Node2D
 		if (IntroEnCurso) return; // todavía está corriendo la intro cinemática
 		if (!esTurnoJugador || movimientosRestantes <= 0 || juegoTerminado || tropa.IsInGroup("tropas_rival")) return;
 
+		// Tutorial: transición en curso (el rival apareciendo, el mensaje "¡Bien hecho!...") — no
+		// se abre nada y no se muestra ningún aviso, para no interrumpir esa lectura.
+		if (ModoTutorial && _tutorialBloqueoTotal) return;
+
 		// Fase de apertura: obligatorio colocar 3 cartas antes de poder atacar
 		if (_faseApertura)
 		{
@@ -57,9 +61,21 @@ public partial class Campo1 : Node2D
 			return;
 		}
 
+		// Tutorial: mientras hay un paso guionado activo, solo se puede abrir el menú de LA tropa
+		// que el cuadro está indicando — tocar cualquier otra no hace nada (con un aviso).
+		if (ModoTutorial && _tropaForzadaTutorial != null && tropa.GetType() != _tropaForzadaTutorial)
+		{
+			MostrarAviso("Sigue la indicación del cuadro de arriba", Colors.Gold);
+			return;
+		}
+
 		// Evitar refresco redundante si el menú ya está abierto para esta misma tropa
 		if (tropaSeleccionada == tropa && menuAcciones.Visible) { _menuTropaRecienAbiertoEsteClic = true; return; }
 		tropaSeleccionada = tropa;
+
+		// Tutorial: el cuadro Guia (si estaba explicando "presiona al personaje...") se corre en
+		// cuanto el menú de acciones realmente se abre, para no tapar los botones que señala.
+		if (ModoTutorial) OcultarGuiaTutorial();
 
 		// Botón Ataque: siempre visible; bloqueado si en el carril de enfrente no hay tropa enemiga (se
 		// habilita solo cuando el rival vuelve a poner una ahí).
@@ -116,6 +132,19 @@ public partial class Campo1 : Node2D
 				btnHabilidad.Modulate = deshabilitar ? new Color(1, 1, 1, 0.4f) : Colors.White;
 			}
 		}
+		// Tutorial: dentro del paso guionado actual, solo el botón indicado (atacar/defender/
+		// habilidad) queda habilitado — los otros dos se fuerzan a bloqueados, aunque las reglas
+		// normales de arriba los hubiesen dejado disponibles.
+		if (ModoTutorial && _accionForzadaTutorial != AccionForzadaTutorial.Ninguna)
+		{
+			if (_accionForzadaTutorial != AccionForzadaTutorial.Atacar && btnA != null)
+			{ btnA.Disabled = true; btnA.Modulate = new Color(1, 1, 1, 0.4f); }
+			if (_accionForzadaTutorial != AccionForzadaTutorial.Defender && btnD != null)
+			{ btnD.Disabled = true; btnD.Modulate = new Color(1, 1, 1, 0.4f); }
+			if (_accionForzadaTutorial != AccionForzadaTutorial.Habilidad && btnHabilidad != null)
+			{ btnHabilidad.Disabled = true; btnHabilidad.Modulate = new Color(1, 1, 1, 0.4f); }
+		}
+
 		menuAcciones.GlobalPosition = tropa.GetGlobalTransformWithCanvas().Origin + new Vector2(-50, -110);
 		menuAcciones.Visible = true;
 		_menuTropaRecienAbiertoEsteClic = true;
@@ -139,6 +168,7 @@ public partial class Campo1 : Node2D
 		menuAcciones.Visible = false;
 		RegistrarGastoMovimiento();
 		if (EsOnline) EmitirAccionOnline("atacar", new Godot.Collections.Dictionary { { "carrilAtacante", carrilAtk } });
+		if (ModoTutorial) AvanzarPasoForzadoTutorial(AccionForzadaTutorial.Atacar);
 	}
 
 	public void _on_btn_defensa_pressed()
@@ -152,6 +182,7 @@ public partial class Campo1 : Node2D
 		menuAcciones.Visible = false;
 		RegistrarGastoMovimiento();
 		if (EsOnline) EmitirAccionOnline("defensa", new Godot.Collections.Dictionary { { "carrilDef", carrilDef } });
+		if (ModoTutorial) AvanzarPasoForzadoTutorial(AccionForzadaTutorial.Defender);
 	}
 
 	public void _on_btn_habilidad_pressed()
@@ -162,11 +193,36 @@ public partial class Campo1 : Node2D
 		// usar su habilidad antes de cumplir su turno propio de desbloqueo, sin excepciones.
 		if (HabilidadBloqueadaTurno(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
 		string carrilHab = tropaSeleccionada.HasMeta("carril") ? (string)tropaSeleccionada.GetMeta("carril") : "";
-		tropaSeleccionada.Call("EjecutarAccion", "usar_habilidad");
-		tropaSeleccionada.Call("SetActivo", false);
+		var tropaHab = tropaSeleccionada;
+		tropaHab.Call("EjecutarAccion", "usar_habilidad");
 		menuAcciones.Visible = false;
+
+		// Si la habilidad quedó esperando que elijas algo (Dama, Caballo en carril 2, Maguín, Torre,
+		// Peón), NO se cobra nada todavía: si el turno se va sin elegir, la habilidad sigue intacta y
+		// no perdiste el movimiento. Se cobra al confirmar (ConfirmarHabilidadPendiente).
+		if (tropaHab is TropaBase tb && tb.SeleccionPendiente) { _habilidadPendienteCarril = carrilHab; return; }
+
+		tropaHab.Call("SetActivo", false);
 		RegistrarGastoMovimiento();
 		if (EsOnline) EmitirAccionOnline("habilidad", new Godot.Collections.Dictionary { { "carrilHab", carrilHab } });
+		if (ModoTutorial) AvanzarPasoForzadoTutorial(AccionForzadaTutorial.Habilidad);
+	}
+
+	// Carril de la tropa cuya habilidad quedó esperando selección (para emitirlo al confirmar, en online).
+	private string _habilidadPendienteCarril = "";
+
+	/// <summary>La llama la carta cuando el jugador confirmó la selección que tenía pendiente: recién
+	/// ahí se cobra el movimiento y la tropa pasa a "ya actuó". Si el turno se fue antes, no se llama
+	/// nunca y por eso no se pierde ni la habilidad ni el movimiento.</summary>
+	public void ConfirmarHabilidadPendiente(Node2D tropa)
+	{
+		if (tropa == null || !IsInstanceValid(tropa)) return;
+		tropa.Call("SetActivo", false);
+		RegistrarGastoMovimiento();
+		if (EsOnline)
+			EmitirAccionOnline("habilidad", new Godot.Collections.Dictionary { { "carrilHab", _habilidadPendienteCarril } });
+		_habilidadPendienteCarril = "";
+		if (ModoTutorial) AvanzarPasoForzadoTutorial(AccionForzadaTutorial.Habilidad);
 	}
 
 	private bool HabilidadUsada(Node2D t) { try { return (bool)t.Get("habilidadUsada"); } catch { return false; } }
@@ -283,6 +339,10 @@ public partial class Campo1 : Node2D
 		// Fase de apertura: pasar turno automáticamente al llenar los 3 carriles
 		if (_faseApertura && TodosSpotsOcupados())
 		{
+			// Tutorial: no es una partida real — nada de "la CPU prepara sus fuerzas". El rival
+			// aparece directo con sus 3 tropas fijas, espejadas por carril (ver Campo1.Tutorial.cs).
+			if (ModoTutorial) { InvocarRivalTutorial(); return true; }
+
 			string quien = EsOnline ? "El rival" : "La CPU";
 			MostrarAviso($"Tropas listas. {quien} prepara sus fuerzas...", Colors.LightGreen);
 			GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) CambiarTurno(); };
@@ -382,6 +442,10 @@ public partial class Campo1 : Node2D
 		// puede volver a sacrificar ni cobrar su castigo dos veces).
 		if (tropa.HasMeta(META_MUERTE_PROCESADA)) return;
 		tropa.SetMeta(META_MUERTE_PROCESADA, true);
+
+		// El huevo del dueño acusa el golpe: tiembla de lado a lado, más fuerte cuanto más pesada era
+		// la tropa que cayó (táctico < asesino < coloso). Vale igual para el jugador y para el bot.
+		SacudirHuevoPorMuerteDeTropa(tropa);
 
 		// Muerte por la bomba Nuclear: termina en polvo, no en la derrota normal.
 		bool porNuclear = tropa.HasMeta(META_MUERTE_NUCLEAR);
@@ -499,12 +563,37 @@ public partial class Campo1 : Node2D
 		// batalla siempre aparecía Rey Huevo. SkinExclusivaEquipadaEscena() prueba primero la
 		// exclusiva equipada; si no hay ninguna (o no tiene escena de batalla mapeada), cae a la
 		// estándar de siempre.
-		var skinJugador = SkinExclusivaEquipadaEscena() ?? SkinEstandarEquipada();
-		tronoJugador.CargarHuevo(skinJugador ?? escenaReyHuevoRef, false);
-		tronoJugador.CambiarTrono(GD.Load<Texture2D>(Preferencias.RutaTronoActiva));
+		if (ModoTutorial)
+		{
+			// Tutorial: nosotros = Huevo Rey + trono real, siempre — nunca la skin/trono equipados
+			// de la cuenta real (para que el tutorial se vea igual para cualquiera que lo abra).
+			tronoJugador.CargarHuevo(escenaReyHuevoRef, false);
+			if (ResourceLoader.Exists(RUTA_TRONO_REAL_TUTORIAL))
+				tronoJugador.CambiarTrono(GD.Load<Texture2D>(RUTA_TRONO_REAL_TUTORIAL));
+		}
+		else
+		{
+			var skinJugador = SkinExclusivaEquipadaEscena() ?? SkinEstandarEquipada();
+			tronoJugador.CargarHuevo(skinJugador ?? escenaReyHuevoRef, false);
+			tronoJugador.CambiarTrono(GD.Load<Texture2D>(Preferencias.RutaTronoActiva));
+		}
 
 		tronoRival = (TronoCampo)escenaTronoRef.Instantiate(); AddChild(tronoRival);
 		tronoRival.GlobalPosition = m2.GlobalPosition;
+
+		if (ModoTutorial)
+		{
+			// Rival fijo del tutorial ("Sargento Huevo") + trono bomba. No existe todavía un PNG de
+			// personaje llamado literalmente "Sargento Huevo" en el proyecto — se usa Coronel Huevo
+			// (el skin militar más parecido que ya existe) como reemplazo hasta que haya arte propio.
+			PackedScene skinSargento = ResourceLoader.Exists(RUTA_SKIN_SARGENTO_TUTORIAL)
+				? GD.Load<PackedScene>(RUTA_SKIN_SARGENTO_TUTORIAL) : escenaDinoHuevoRef;
+			tronoRival.CargarHuevo(skinSargento, true);
+			if (ResourceLoader.Exists(RUTA_TRONO_BOMBA_TUTORIAL))
+				tronoRival.CambiarTrono(GD.Load<Texture2D>(RUTA_TRONO_BOMBA_TUTORIAL), true);
+			return;
+		}
+
 		// En línea, el "rival" es un jugador real: se muestra su skin/trono REALES (sincronizados al
 		// emparejar), no un sorteo — ConfigurarModoOnline() recién fija EsOnline al final de _Ready,
 		// así que acá se consulta ContextoOnline.Activo directamente (ya está fijado antes del cambio
@@ -516,6 +605,10 @@ public partial class Campo1 : Node2D
 		tronoRival.CargarHuevo(skinRival ?? escenaDinoHuevoRef, true);
 		tronoRival.CambiarTrono(GD.Load<Texture2D>(esOnlineAhora ? TronoRivalOnline() : TronoAleatorio()), true);
 	}
+
+	private const string RUTA_TRONO_REAL_TUTORIAL     = "res://imagenes/Tronos/TronoReal.png";
+	private const string RUTA_TRONO_BOMBA_TUTORIAL    = "res://imagenes/Tronos/BombaTrono.png";
+	private const string RUTA_SKIN_SARGENTO_TUTORIAL  = "res://escenas/personajes/coronelhuevo1.tscn";
 
 	/// <summary>Escena de la skin EXCLUSIVA equipada (dev o por código), si hay alguna equipada y
 	/// tiene una escena de batalla mapeada en Preferencias.SKINS_EXCLUSIVAS_ESCENAS. Null si no hay
@@ -598,10 +691,14 @@ public partial class Campo1 : Node2D
 		if (btnBarajar != null)    { bool b = !esTurnoJugador || usosBarajar >= MAX_BARAJAR || movimientosRestantes <= 0; btnBarajar.Disabled = b; btnBarajar.Modulate = b ? new Color(1, 1, 1, 0.4f) : Colors.White; }
 		if (btnSacrificio != null) { bool s = !esTurnoJugador || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500 || movimientosRestantes <= 0; btnSacrificio.Disabled = s; btnSacrificio.Modulate = s ? new Color(1, 1, 1, 0.4f) : Colors.White; }
 
-		if (_barraHPJugador != null) _barraHPJugador.Value = (float)vidaJugador / vidaMaxJugador * 100;
-		if (_barraHPRival   != null) _barraHPRival.Value   = (float)vidaRival   / vidaMaxJugador * 100;
+		if (_barraHPJugador != null) _barraHPJugador.Value = PorcentajeBarraVida(vidaJugador);
+		if (_barraHPRival   != null) _barraHPRival.Value   = PorcentajeBarraVida(vidaRival);
 
-		if (!juegoTerminado && _lblTiempo != null) { int m = tiempoTotalPartida / 60, s = tiempoTotalPartida % 60; _lblTiempo.Text = $"{m}:{s:00}"; }
+		if (!juegoTerminado && _lblTiempo != null)
+		{
+			if (ModoTutorial) _lblTiempo.Text = "0:00"; // fijo, no corre (ver OnTickReloj)
+			else { int m = tiempoTotalPartida / 60, s = tiempoTotalPartida % 60; _lblTiempo.Text = $"{m}:{s:00}"; }
+		}
 
 		ActualizarContadorTurno();
 		ActualizarEnergiaHUD();

@@ -27,6 +27,13 @@ public static class EstiloUI
 	private static readonly Texture2D _texMarcoDorado =
 		ResourceLoader.Exists("res://imagenes/login/login_panel.png")
 			? GD.Load<Texture2D>("res://imagenes/login/login_panel.png") : null;
+
+	/// <summary>Marco EXCLUSIVO del panel de configuración/ajustes (menú y pausa). Mide igual que
+	/// login_panel.png (978×1175), así que usa el mismo nine-patch. La escena de login NO lo usa:
+	/// ahí se mantiene login_panel.png a propósito.</summary>
+	public static readonly Texture2D MarcoAjustes =
+		ResourceLoader.Exists("res://imagenes/login/login_panel2.png")
+			? GD.Load<Texture2D>("res://imagenes/login/login_panel2.png") : null;
 	private static readonly Texture2D _texMarcoCristal =
 		ResourceLoader.Exists("res://imagenes/botonescampo1/ContadorTurno.png")
 			? GD.Load<Texture2D>("res://imagenes/botonescampo1/ContadorTurno.png") : null;
@@ -37,11 +44,13 @@ public static class EstiloUI
 	/// <summary>Marco DORADO del login (con la gema de huevo) como fondo de un PanelContainer, con
 	/// nine-patch: el borde de oro no se deforma al crecer, solo se estira el interior azul. Para MENÚS
 	/// (ajustes, ranking, tienda…). Si falta la imagen, cae al panel "vidrio" de código.</summary>
-	public static void MarcoDorado(PanelContainer p, int padX = 52, int padTop = 150, int padBottom = 60)
+	public static void MarcoDorado(PanelContainer p, int padX = 52, int padTop = 150, int padBottom = 60,
+		Texture2D textura = null)
 	{
 		if (p == null) return;
-		if (_texMarcoDorado == null) { Panel(p); return; }
-		var st = new StyleBoxTexture { Texture = _texMarcoDorado };
+		var tex = textura ?? _texMarcoDorado;
+		if (tex == null) { Panel(p); return; }
+		var st = new StyleBoxTexture { Texture = tex };
 		// Nine-patch (px de la imagen 978×1175 que NO se estiran): esquinas de oro y la gema de arriba.
 		st.TextureMarginLeft = st.TextureMarginRight = 92;
 		st.TextureMarginTop  = 150;   // incluye la gema de huevo + borde superior
@@ -97,13 +106,21 @@ public static class EstiloUI
 
 	/// <summary>Aplica el estilo de botón del juego (fondo/hover/pressed, borde, fuente y texto claro).
 	/// Si "rojo" es true usa el tono de peligro (rendirse/cerrar sesión).</summary>
-	public static void Boton(Button b, int fontSize = 0, bool rojo = false)
+	/// <summary>Estilo de botón del juego. <paramref name="rojo"/> para los destructivos (rendirse,
+	/// cerrar sesión) y <paramref name="accion"/> para el botón PRINCIPAL de una pantalla (reintentar,
+	/// jugar de nuevo, re-armar mazo): va en turquesa vivo, el mismo del BATALLAR del constructor, para
+	/// que se distinga del azul apagado del resto y no parezca un botón gris más.</summary>
+	public static void Boton(Button b, int fontSize = 0, bool rojo = false, bool accion = false)
 	{
 		if (b == null) return;
-		Color baseCol   = rojo ? new Color(0.42f, 0.16f, 0.16f, 1f) : new Color(0.16f, 0.22f, 0.32f, 1f);
-		Color hoverCol  = rojo ? new Color(0.58f, 0.22f, 0.22f, 1f) : new Color(0.24f, 0.32f, 0.46f, 1f);
-		Color bordeCol  = rojo ? new Color(0.9f, 0.5f, 0.5f, 0.8f)  : new Color(0.4f, 0.55f, 0.75f, 0.7f);
-		Color bordeHov  = rojo ? new Color(1f, 0.65f, 0.65f, 0.95f) : new Color(0.65f, 0.8f, 1f, 0.9f);
+		Color baseCol   = accion ? new Color(0.07f, 0.52f, 0.62f, 1f)
+						: rojo   ? new Color(0.42f, 0.16f, 0.16f, 1f) : new Color(0.16f, 0.22f, 0.32f, 1f);
+		Color hoverCol  = accion ? new Color(0.12f, 0.70f, 0.84f, 1f)
+						: rojo   ? new Color(0.58f, 0.22f, 0.22f, 1f) : new Color(0.24f, 0.32f, 0.46f, 1f);
+		Color bordeCol  = accion ? new Color(0.55f, 0.95f, 1f, 0.85f)
+						: rojo   ? new Color(0.9f, 0.5f, 0.5f, 0.8f)  : new Color(0.4f, 0.55f, 0.75f, 0.7f);
+		Color bordeHov  = accion ? new Color(0.85f, 1f, 1f, 1f)
+						: rojo   ? new Color(1f, 0.65f, 0.65f, 0.95f) : new Color(0.65f, 0.8f, 1f, 0.9f);
 		var hov = SB(hoverCol, bordeHov, 10, 1, 22, 11);
 		b.AddThemeStyleboxOverride("normal",  SB(baseCol, bordeCol, 10, 1, 22, 11));
 		b.AddThemeStyleboxOverride("hover",   hov);

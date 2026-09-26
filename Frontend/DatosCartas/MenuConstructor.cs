@@ -40,6 +40,16 @@ public partial class MenuConstructor : Control
 
 	// Ajustes finos de posición vertical por render (en píxeles; negativo = sube, positivo = baja).
 	// Retocar acá si algún render queda muy arriba/abajo respecto al resto.
+	// Escala por render, para los que se ven desproporcionados respecto al resto. Mismo criterio que
+	// AJUSTE_VERTICAL_RENDER (de abajo): se corrige acá y no tocando el PNG, así el archivo original
+	// queda intacto. El que no esté en esta tabla se dibuja 1:1, como siempre.
+	// Medido: el dibujo de Fuerza ocupa 456 px de alto contra un promedio de 425 entre los 10 ardides,
+	// y además es el segundo más ancho — por eso se veía más grande que los demás.
+	private static readonly Dictionary<string, float> ESCALA_RENDER = new()
+	{
+		{ "res://imagenes/RendersTropa/Renders Ardid/Fuerza_Menu.png", 0.78f },
+	};
+
 	private static readonly Dictionary<string, float> AJUSTE_VERTICAL_RENDER = new()
 	{
 		{ "res://imagenes/RendersTropa/Maguin_Menu.png",         -110f },
@@ -207,6 +217,8 @@ public partial class MenuConstructor : Control
 			_btnNfc.Pressed += AbrirTerminalInvocacion;
 			AgregarJuiceBotonNfc(_btnNfc);
 		}
+
+		PrepararFiltrosDeTipo();
 
 		if (_containerSpriteCenter != null)
 		{
@@ -422,6 +434,9 @@ public partial class MenuConstructor : Control
 	{
 		_pestanaActual = nuevaPestana.ToUpper();
 
+		// Los filtros por tipo pertenecen al selector de TROPAS: en Ardid no se muestran.
+		ActualizarVisibilidadFiltrosTipo();
+
 		if (_lblTituloMazo != null) _lblTituloMazo.Visible = false;
 
 		// Bug real: ArdidSlots es un nodo aparte de _gridMazoSlots y nunca se ocultaba — las
@@ -436,6 +451,10 @@ public partial class MenuConstructor : Control
 		{
 			if (_rectSelectorBg != null && _texTropaSelector != null)
 				_rectSelectorBg.Texture = _texTropaSelector;
+
+			// Restaura el panel selector a su tamaño/posición ORIGINAL de la escena (por si se venía
+			// de la pestaña Ardid, que lo agranda/corre — ver abajo). Tropas nunca se toca.
+			RestaurarSelectorContainerOriginal();
 
 			if (_rectMazoBg != null && _texTropaMazo != null)
 				_rectMazoBg.Texture = _texTropaMazo;
@@ -465,6 +484,12 @@ public partial class MenuConstructor : Control
 		{
 			if (_rectSelectorBg != null && _texArdidSelector != null)
 				_rectSelectorBg.Texture = _texArdidSelector;
+
+			// El panel de Ardid (solo 10 cartas, 3 columnas) deja un hueco vacío a la derecha antes
+			// del panel de "MI MAZO" — la escena usa el MISMO SelectorContainer para las dos pestañas,
+			// sin ajuste por pestaña. Acá se agranda y se corre a la derecha SOLO para Ardid; Tropas
+			// se restaura siempre a su tamaño original (ver RestaurarSelectorContainerOriginal).
+			AgrandarYCorrerSelectorParaArdid();
 
 			if (_rectMazoBg != null && _texArdidMazo != null)
 				_rectMazoBg.Texture = _texArdidMazo;
@@ -519,6 +544,32 @@ public partial class MenuConstructor : Control
 		}
 	}
 
+	// ── AJUSTE DE TAMAÑO/POSICIÓN DEL SELECTOR SOLO PARA ARDID ────────────────
+	// SelectorContainer es UN SOLO nodo compartido por las dos pestañas (Tropas y Ardid usan el
+	// mismo panel, solo cambia la textura de fondo y qué cartas se listan adentro) — nunca tuvo
+	// ajuste propio por pestaña. Con apenas 10 hechizos en 3 columnas (4 filas cortas) quedaba un
+	// hueco vacío grande entre el panel y el de "MI MAZO" a la derecha. Estos valores son los
+	// medidos de la escena (offset_left=-68, offset_right=497) — se agrandan/corren SOLO para
+	// Ardid, y Tropas se restaura siempre a los originales exactos para no arrastrar el cambio.
+	private const float SELECTOR_OFFSET_LEFT_ORIGINAL  = -68f;
+	private const float SELECTOR_OFFSET_RIGHT_ORIGINAL = 497f;
+	private const float SELECTOR_ARDID_ANCHO_EXTRA = 55f;  // "un poquito más grande"
+	private const float SELECTOR_ARDID_CORRIMIENTO  = 45f; // "más a la derecha" (cierra el hueco)
+
+	private void RestaurarSelectorContainerOriginal()
+	{
+		if (_rectSelectorBg?.GetParent() is not Control selectorContainer) return;
+		selectorContainer.OffsetLeft  = SELECTOR_OFFSET_LEFT_ORIGINAL;
+		selectorContainer.OffsetRight = SELECTOR_OFFSET_RIGHT_ORIGINAL;
+	}
+
+	private void AgrandarYCorrerSelectorParaArdid()
+	{
+		if (_rectSelectorBg?.GetParent() is not Control selectorContainer) return;
+		selectorContainer.OffsetLeft  = SELECTOR_OFFSET_LEFT_ORIGINAL  + SELECTOR_ARDID_CORRIMIENTO;
+		selectorContainer.OffsetRight = SELECTOR_OFFSET_RIGHT_ORIGINAL + SELECTOR_ARDID_CORRIMIENTO + SELECTOR_ARDID_ANCHO_EXTRA;
+	}
+
 	private static bool EsCartaBloqueada(CartaData datos)
 	{
 		if (datos == null) return false;
@@ -556,6 +607,12 @@ public partial class MenuConstructor : Control
 			bool esTropa = (datos.Categoria == CategoriaCarta.Unidad);
 			if (_pestanaActual == "TROPAS" && !esTropa) continue;
 			if (_pestanaActual == "ARDID" && esTropa) continue;
+
+			// Filtro por tipo (botones azul/rojo/amarillo). Solo aplica a tropas: los hechizos no
+			// tienen Táctico/Asesino/Coloso, así que en Ardid este filtro siempre está en null.
+			if (_filtroTipo.HasValue && esTropa
+				&& ClasificacionCartas.Clasificar(datos.RutaEscena, datos.Nombre).Tipo != _filtroTipo.Value)
+				continue;
 
 			if (!ClasificacionCartas.CoincideBusqueda(datos.RutaEscena, datos.Nombre, textoFiltro))
 				continue;
@@ -759,6 +816,9 @@ public partial class MenuConstructor : Control
 				CargarTexturaNativa(_fallbackTextureCenter, GD.Load<Texture2D>(rutaRender));
 				if (AJUSTE_VERTICAL_RENDER.TryGetValue(rutaRender, out float ajusteY))
 					_fallbackTextureCenter.Position = new Vector2(0f, ajusteY);
+				// CargarTexturaNativa deja la escala en 1:1, así que el ajuste va DESPUÉS.
+				if (ESCALA_RENDER.TryGetValue(rutaRender, out float escala))
+					_fallbackTextureCenter.Scale = new Vector2(escala, escala);
 				// Todas las demás tropas se muestran de forma completamente estática
 			}
 		}
@@ -828,10 +888,13 @@ public partial class MenuConstructor : Control
 			_lblDetalleHabilidad.Text = desc;
 			_lblDetalleHabilidad.VerticalAlignment = VerticalAlignment.Top;
 			int len = desc.Length;
-			if (len > 160) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 13);
-			else if (len > 110) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 15);
-			else if (len > 70) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 17);
-			else _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 19);
+			// Un punto más grande que antes en cada tramo: el label ahora está acotado al ancho real del
+			// pergamino (205px) y a su alto real (216px), así que hay sitio de sobra incluso con la
+			// descripción más larga del juego.
+			if (len > 160) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 16);
+			else if (len > 110) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 18);
+			else if (len > 70) _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 20);
+			else _lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", 22);
 		}
 
 		// Línea extra: tipo de tropa (Táctico/Asesino/Coloso) en vez de ventajas por elemento.
@@ -1289,6 +1352,50 @@ public partial class MenuConstructor : Control
 	// y era poco legible.
 	// Juice del botón de ayuda: crece al pasar el mouse cerca (hover) y se achica/aplasta al
 	// presionarlo — mismo lenguaje visual que ya usamos en otros botones del juego.
+	// ── FILTROS POR TIPO DE TROPA (botones azul / rojo / amarillo / verde) ──────
+	// Azul = Táctico, Rojo = Asesino, Amarillo = Coloso, Verde = quitar el filtro.
+	// Solo tienen sentido en la pestaña TROPAS: en Ardid se ocultan enteros, porque los hechizos no
+	// se clasifican por estos tipos.
+	private const string RUTA_BOTONES_TIPO = "minis botones mazo tropa";
+	private Control _contenedorFiltrosTipo;
+	private TipoTropa? _filtroTipo = null; // null = se muestran todas
+
+	private void PrepararFiltrosDeTipo()
+	{
+		_contenedorFiltrosTipo = GetNodeOrNull<Control>(RUTA_BOTONES_TIPO);
+		if (_contenedorFiltrosTipo == null) return;
+
+		ConectarFiltroTipo("tacticoboton",  TipoTropa.Tactico);
+		ConectarFiltroTipo("asesinoboton",  TipoTropa.Asesino);
+		ConectarFiltroTipo("colosoboton",   TipoTropa.Coloso);
+		ConectarFiltroTipo("regresarboton", null); // verde: vuelve a mostrar todas
+
+		ActualizarVisibilidadFiltrosTipo();
+	}
+
+	private void ConectarFiltroTipo(string nombreNodo, TipoTropa? tipo)
+	{
+		var btn = _contenedorFiltrosTipo.GetNodeOrNull<BaseButton>(nombreNodo);
+		if (btn == null) return;
+
+		AgregarJuiceBotonDuda(btn); // mismo efecto de aplastar que el resto de los botones
+		btn.Pressed += () =>
+		{
+			// Volver a tocar el mismo filtro lo quita, así no hay que ir siempre al verde.
+			_filtroTipo = (_filtroTipo == tipo) ? null : tipo;
+			PoblarSelector();
+		};
+	}
+
+	/// <summary>Los filtros solo se ven en la pestaña de Tropas. Al salir de ella se limpia el filtro,
+	/// para no volver con el selector filtrado sin que se vea el botón que lo causó.</summary>
+	private void ActualizarVisibilidadFiltrosTipo()
+	{
+		bool enTropas = _pestanaActual == "TROPAS";
+		if (_contenedorFiltrosTipo != null) _contenedorFiltrosTipo.Visible = enTropas;
+		if (!enTropas) _filtroTipo = null;
+	}
+
 	private void AgregarJuiceBotonDuda(BaseButton btn)
 	{
 		Vector2 escalaBase = btn.Scale;

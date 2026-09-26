@@ -35,7 +35,7 @@ public partial class Campo1 : Node2D
 		else
 		{
 			foreach (int i in _manoVisualCPU)
-				if (i >= 0 && i < escenasTropas.Length) lista.Add((i, escenasTropas[i]));
+				if (i >= 0 && i < _cartasCPU.Length) lista.Add((i, _cartasCPU[i]));
 		}
 		return lista;
 	}
@@ -77,37 +77,37 @@ public partial class Campo1 : Node2D
 	// 2 tácticos + 1 asesino (o al revés, alternando cada reparto) y colosos recién desde la ronda 3
 	// y después de que el rival haya gastado 5 cartas de otro tipo — nunca dos colosos juntos en la
 	// mano. Usa las MISMAS clasificaciones ya calculadas (_idxTactico/_idxAsesino/_idxColoso), que
-	// están indexadas sobre escenasTropas igual que _manoVisualCPU.
+	// están indexadas sobre _cartasCPU (el mazo propio del rival), NO sobre el mío.
 	private int _manosRepartidasCPU        = 0;
 	private int _cartasNoColosoGastadasCPU = 0;
 
 	private bool HayColosoEnManoCPU() =>
-		_tipoIndice != null && _manoVisualCPU.Exists(i => i >= 0 && i < _tipoIndice.Length && _tipoIndice[i] == TipoTropa.Coloso);
+		_tipoIndiceCPU != null && _manoVisualCPU.Exists(i => i >= 0 && i < _tipoIndiceCPU.Length && _tipoIndiceCPU[i] == TipoTropa.Coloso);
 
 	/// <summary>Cuenta una carta que el rival gastó de su mano visual (para habilitar sus colosos a
 	/// las 5), llamado desde ElegirTropaCPUDeck justo cuando la saca de _manoVisualCPU.</summary>
 	private void RegistrarCartaGastadaCPU(int idx)
 	{
-		if (_tipoIndice == null || idx < 0 || idx >= _tipoIndice.Length) return;
-		if (_tipoIndice[idx] != TipoTropa.Coloso) _cartasNoColosoGastadasCPU++;
+		if (_tipoIndiceCPU == null || idx < 0 || idx >= _tipoIndiceCPU.Length) return;
+		if (_tipoIndiceCPU[idx] != TipoTropa.Coloso) _cartasNoColosoGastadasCPU++;
 	}
 
 	// Repone hasta 3 cartas — se llama al empezar cada turno del rival, igual que la mano del
 	// jugador se completa al empezar el suyo (CompletarManoAlInicio / RellenarManoObjetivo).
 	private void RellenarManoVisualCPUSiFalta()
 	{
-		if (escenasTropas == null || escenasTropas.Length == 0 || _tipoIndice == null) return;
+		if (_cartasCPU == null || _cartasCPU.Length == 0 || _tipoIndiceCPU == null) return;
 		if (_manoVisualCPU.Count >= 3) return;
 
 		int turnoNum = _turnosJugados / 2 + 1; // misma ronda global que usa el jugador
-		bool colosoHabilitado = _idxColoso.Count > 0 && turnoNum >= RONDA_MINIMA_COLOSO
+		bool colosoHabilitado = _idxColosoCPU.Count > 0 && turnoNum >= RONDA_MINIMA_COLOSO
 			&& _cartasNoColosoGastadasCPU >= CARTAS_PARA_COLOSO && !HayColosoEnManoCPU();
 
 		int ocupTac = 0, ocupAse = 0, ocupCol = 0;
 		foreach (int idx in _manoVisualCPU)
 		{
-			if (idx < 0 || idx >= _tipoIndice.Length) continue;
-			switch (_tipoIndice[idx])
+			if (idx < 0 || idx >= _tipoIndiceCPU.Length) continue;
+			switch (_tipoIndiceCPU[idx])
 			{
 				case TipoTropa.Tactico: ocupTac++; break;
 				case TipoTropa.Asesino: ocupAse++; break;
@@ -128,9 +128,9 @@ public partial class Campo1 : Node2D
 		while (_manoVisualCPU.Count < 3)
 		{
 			int idx = -1;
-			if (needCol > 0) { idx = ElegirIndiceCPU(_idxColoso); if (idx >= 0) needCol--; }
-			if (idx < 0 && needTac > 0) { idx = ElegirIndiceCPU(_idxTactico); if (idx >= 0) needTac--; }
-			if (idx < 0 && needAse > 0) { idx = ElegirIndiceCPU(_idxAsesino); if (idx >= 0) needAse--; }
+			if (needCol > 0) { idx = ElegirIndiceCPU(_idxColosoCPU); if (idx >= 0) needCol--; }
+			if (idx < 0 && needTac > 0) { idx = ElegirIndiceCPU(_idxTacticoCPU); if (idx >= 0) needTac--; }
+			if (idx < 0 && needAse > 0) { idx = ElegirIndiceCPU(_idxAsesinoCPU); if (idx >= 0) needAse--; }
 			if (idx < 0) idx = ElegirIndiceCPU(null); // cualquiera, sin importar el tipo
 			if (idx < 0) break; // no queda nada elegible: se corta acá, no se traba
 			_manoVisualCPU.Add(idx);
@@ -142,7 +142,7 @@ public partial class Campo1 : Node2D
 	private int ElegirIndiceCPU(List<int> pool)
 	{
 		var candidatos = new List<int>();
-		IEnumerable<int> fuente = pool ?? Enumerable.Range(0, escenasTropas.Length);
+		IEnumerable<int> fuente = pool ?? _idxTacticoCPU.Concat(_idxAsesinoCPU).Concat(_idxColosoCPU);
 		foreach (int i in fuente)
 			if (!_manoVisualCPU.Contains(i) && !(_excluirRepartoNuclearCPU?.Contains(i) ?? false)) candidatos.Add(i);
 		if (candidatos.Count == 0) // red de seguridad: se relaja el filtro de la Nuclear antes de rendirse

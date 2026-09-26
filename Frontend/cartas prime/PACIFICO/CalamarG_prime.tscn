@@ -411,10 +411,10 @@ frame_progress = 0.9719873
 [node name="StatsTropa" type="Control" parent="." unique_id=427531950]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 121.000015
-offset_top = -122.0
-offset_right = 161.00002
-offset_bottom = -82.0
+offset_left = -99.99999
+offset_top = -65.0
+offset_right = -59.999992
+offset_bottom = -25.0
 scale = Vector2(0.91999876, 0.7599994)
 
 [node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=37117962]

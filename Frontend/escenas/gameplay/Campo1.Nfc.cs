@@ -52,6 +52,11 @@ public partial class Campo1 : Node2D
 			ProcesarEscaneoNfcBatalla("tiburon");
 		}
 
+		// Tutorial: "dale click a cualquier lado para seguir" — se revisa ANTES que el resto,
+		// para que el primer toque solo avance el paso y no dispare además un cierre de menú u
+		// otra acción de fondo (ver Campo1.Tutorial.cs).
+		if (ModoTutorial && ManejarClickAvanceTutorial(@event)) return;
+
 		CerrarMenuTropaSiTocanOtraCosa(@event);
 	}
 

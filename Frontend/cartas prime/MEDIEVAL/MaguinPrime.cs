@@ -24,6 +24,10 @@ public partial class MaguinPrime : TropaBase
 
 	// ── SELECCIÓN POR CLIC (jugador humano elige a quién transforma) ─────────
 	private bool  _esperandoSeleccion = false;
+
+	/// <summary>Mientras espera el clic del jugador la habilidad NO está gastada: si el turno se va,
+	/// sigue disponible y no se pierde el movimiento.</summary>
+	public override bool SeleccionPendiente => _esperandoSeleccion;
 	private Tween _tweenAviso;
 
 	public override void _Ready()
@@ -124,8 +128,8 @@ public partial class MaguinPrime : TropaBase
 
 		_tweenAviso?.Kill();
 		_tweenAviso = CreateTween().SetLoops();
-		_tweenAviso.TweenProperty(this, "modulate", new Color(0.5f, 1.6f, 1.4f), 0.3f);
-		_tweenAviso.TweenProperty(this, "modulate", Colors.White, 0.3f);
+		_tweenAviso.TweenProperty(_anim, "modulate", new Color(0.5f, 1.6f, 1.4f), 0.3f);
+		_tweenAviso.TweenProperty(_anim, "modulate", Colors.White, 0.3f);
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
@@ -140,6 +144,7 @@ public partial class MaguinPrime : TropaBase
 				_esperandoSeleccion = false;
 				GetViewport().SetInputAsHandled();
 				DetenerEfectoAviso();
+				AvisarHabilidadConfirmada(); // recién acá se cobra el movimiento
 				ConfirmarTransmutacion(enemigoClickeado);
 			}
 		}

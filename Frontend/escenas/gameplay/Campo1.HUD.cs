@@ -46,8 +46,21 @@ public partial class Campo1 : Node2D
 
 	private void CrearPanelHechizos()
 	{
-		_hechizosMano[0] = ElegirHechizoElegible();
-		_hechizosMano[1] = ElegirHechizoElegible(_hechizosMano[0]);
+		if (ModoTutorial)
+		{
+			// Tutorial: Curación SIEMPRE en el slot 0 — antes salía de un sorteo entre ~7 ardides, así
+			// que la mayoría de las veces ni aparecía y el guion no podía avanzar (bug reportado). El
+			// otro slot queda con cualquier ardid (se ve, pero no se puede usar — ver
+			// IntentarIniciarArrastreHechizo).
+			int idxCuracion = Array.FindIndex(_poolActivo, d => d.Id == "curacion");
+			_hechizosMano[0] = idxCuracion >= 0 ? idxCuracion : ElegirHechizoElegible();
+			_hechizosMano[1] = ElegirHechizoElegible(_hechizosMano[0]);
+		}
+		else
+		{
+			_hechizosMano[0] = ElegirHechizoElegible();
+			_hechizosMano[1] = ElegirHechizoElegible(_hechizosMano[0]);
+		}
 		for (int i = 0; i < 2; i++) CrearCartaHechizo(i);
 
 		// El botón "CAMBIAR" morado creado por código se reemplazó por el nodo
@@ -150,6 +163,13 @@ public partial class Campo1 : Node2D
 		if (!ValidarHechizo() || EsHechizoUsado(slotIdx)) return false;
 		if (_hechizoUsadoEsteTurno) { MostrarAvisoHechizoLimite(); return false; }
 		int piArrastre = _hechizosMano[slotIdx];
+		// Tutorial: de los ardides visibles, solo Curación funciona de verdad — el resto se ve pero
+		// no hace nada al arrastrarlo (vuelve solo a la mano).
+		if (ModoTutorial && piArrastre >= 0 && piArrastre < _poolActivo.Length && _poolActivo[piArrastre].Id != "curacion")
+		{
+			MostrarAviso("Por ahora solo puedes usar Curación", Colors.Gold);
+			return false;
+		}
 		if (piArrastre >= 0 && piArrastre < _poolActivo.Length && _poolActivo[piArrastre].Id == "nuclear")
 		{
 			if (_nuclearUsadaJugador)                     { MostrarAvisoNuclearYaUsada(); return false; }
@@ -178,6 +198,9 @@ public partial class Campo1 : Node2D
 		foreach (Node n in GetTree().GetNodesInGroup(grupo))
 			if (n is Node2D t && IsInstanceValid(t))
 			{
+				// Tutorial: Curación solo puede caer sobre el Soldado Real (el único objetivo
+				// guionado en este punto de la secuencia).
+				if (ModoTutorial && _poolActivo[pi].Id == "curacion" && !(t is SoldadoRealPrime)) continue;
 				float d = t.GlobalPosition.DistanceTo(mouseMundo);
 				if (d < mejor) { mejor = d; objetivo = t; }
 			}
@@ -218,7 +241,11 @@ public partial class Campo1 : Node2D
 		string grupo = aliados ? "tropas_jugador" : "tropas_rival";
 		Color colorAro = aliados ? new Color(0.35f, 1f, 0.5f, 0.9f) : new Color(1f, 0.35f, 0.3f, 0.9f);
 		foreach (Node n in GetTree().GetNodesInGroup(grupo))
-			if (n is Node2D t && IsInstanceValid(t)) _resaltadosHechizoActivos.Add(CrearAroResaltadoHechizo(t, colorAro, 48f));
+			if (n is Node2D t && IsInstanceValid(t))
+			{
+				if (ModoTutorial && _poolActivo[pi].Id == "curacion" && !(t is SoldadoRealPrime)) continue;
+				_resaltadosHechizoActivos.Add(CrearAroResaltadoHechizo(t, colorAro, 48f));
+			}
 	}
 
 	private Node CrearAroResaltadoHechizo(Node2D objetivo, Color color, float diametro = 48f)

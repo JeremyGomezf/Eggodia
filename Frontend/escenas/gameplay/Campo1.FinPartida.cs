@@ -122,6 +122,7 @@ public partial class Campo1 : Node2D
 	// ── FIN DE PARTIDA ────────────────────────────────────────────────────
 	private void DeterminarGanadorPorTiempo()
 	{
+		SincronizarVidaConBarra(); // que el resultado por tiempo use los mismos números que muestra la barra
 		// En línea el resultado lo ARBITRA el servidor (no cada cliente por su cuenta, que causaba
 		// que los dos se vieran ganando). Reportamos quién creemos que ganó; el server decide.
 		if (EsOnline)
@@ -136,8 +137,39 @@ public partial class Campo1 : Node2D
 		else FinalizarPartida("¡EMPATE!");
 	}
 
+	// Si la barra ya se ve VACÍA, el huevo tiene que estar muerto. Antes podía quedar con una miga de
+	// vida (p. ej. 5 de 2000 = 0.25%): la barra se veía en cero pero la partida seguía, que es
+	// justamente el fallo reportado. Con el 1% del total, cualquier resto invisible cuenta como muerte.
+	private const float FRACCION_VIDA_VISIBLE = 0.01f;
+
+	// Lo que se ve en la barra tiene que coincidir SIEMPRE con si el huevo está vivo o no. Con el
+	// porcentaje crudo, quedarse con 40 de 2000 (2%) pintaba una tira de pocos píxeles que a simple
+	// vista es "vacío", y sin embargo la partida seguía — ese era el fallo reportado. Ahora, mientras
+	// quede aunque sea 1 de vida, la barra nunca baja de este mínimo bien visible; y cuando de verdad
+	// está muerto, SincronizarVidaConBarra lo deja en 0 y la barra se ve vacía de verdad.
+	private const float MINIMO_BARRA_VISIBLE = 5f; // % de la barra
+
+	/// <summary>Porcentaje a pintar en la barra: 0 solo si está realmente muerto; si le queda algo de
+	/// vida, nunca menos del mínimo visible. Vale igual para el jugador y para el rival.</summary>
+	private double PorcentajeBarraVida(int vida)
+	{
+		if (vida <= 0) return 0;
+		float pct = (float)vida / vidaMaxJugador * 100f;
+		return Mathf.Max(pct, MINIMO_BARRA_VISIBLE);
+	}
+
+	/// <summary>Redondea a 0 la vida que ya no se ve en la barra, para los DOS bandos (jugador y bot).
+	/// Así lo que muestra la barra y lo que decide la partida nunca se contradicen.</summary>
+	private void SincronizarVidaConBarra()
+	{
+		int minimoVisible = Mathf.CeilToInt(vidaMaxJugador * FRACCION_VIDA_VISIBLE);
+		if (vidaJugador > 0 && vidaJugador <= minimoVisible) vidaJugador = 0;
+		if (vidaRival   > 0 && vidaRival   <= minimoVisible) vidaRival   = 0;
+	}
+
 	private void CheckEstadoJuego()
 	{
+		SincronizarVidaConBarra();
 		if (EsOnline)
 		{
 			if (vidaJugador <= 0) EnviarResultadoOnline("rival");     // mi huevo murió → ganó el rival
@@ -155,6 +187,8 @@ public partial class Campo1 : Node2D
 		timerReloj.Stop();
 		GetTree().Paused = false;
 		CerrarPantallaRobo(); // por seguridad: nunca dejar la pantalla de robo abierta si la partida termina
+		// El menú de acciones de tropa NO debe asomar por encima del cierre ni de Victoria/Derrota.
+		if (menuAcciones != null && IsInstanceValid(menuAcciones)) menuAcciones.Visible = false;
 		// El filtro "toon" (si aplica) NO se apaga acá: debe verse también en la frase de cierre y
 		// en Victoria/Derrota. Solo se va al abandonar Campo1 (los botones de esas pantallas).
 
@@ -171,8 +205,24 @@ public partial class Campo1 : Node2D
 			string[] caras  = esVictoria ? CARAS_VICTORIA  : CARAS_DERROTA;
 			Color colorFrase = esVictoria ? new Color(1f, 0.85f, 0.25f) : new Color(1f, 0.42f, 0.38f);
 
+			// Primero muere el huevo que perdió (se aplasta, brinca gritando, sale volando del mapa y
+			// recién ahí se escucha el CRACK). La frase de cierre aparece DESPUÉS, no encima.
+			// Si el que perdió es el bot, es exactamente lo mismo pero espejado hacia el otro lado.
+			await AnimarMuerteHuevo(perdioElJugador: !esVictoria);
+			if (!IsInstanceValid(this)) return;
+
 			MostrarFraseFinPartida(frases[random.Next(frases.Length)], colorFrase);
 			if (_lblTiempo != null) _lblTiempo.Text = caras[random.Next(caras.Length)];
+
+			// El huevo que quedó vivo festeja mientras se lee la frase: se mece de lado a lado en su
+			// trono. Si ganó el bot, baila el suyo — es el mismo efecto para los dos bandos.
+			BailarHuevoGanador(ganoElJugador: esVictoria);
+
+			// AnimarMuerteHuevo cortó la música para que se oyeran limpios el frenazo, el grito y el
+			// CRACK. Acá vuelve a arrancar, justo con la frase: los Seek de abajo necesitan que esté
+			// sonando, si no quedarían apuntando a un reproductor detenido.
+			if (_reproductorMusica != null && _reproductorMusica.Stream != null && !_reproductorMusica.Playing)
+				_reproductorMusica.Play();
 
 			// En victoria: salta a los últimos 10s de la canción y quedan en loop (sigue sonando
 			// en la pantalla de Victoria). En derrota: arranca desde el minuto específico de ESE
@@ -223,6 +273,7 @@ public partial class Campo1 : Node2D
 				var pd = escenaDerrota.Instantiate();
 				if (pd is PantallaDerrota pdScript)
 				{
+					pdScript.EsOnline         = EsOnline; // decide REINTENTAR vs RE-ARMAR MAZO
 					pdScript.MonedasGanadas   = monedasConsuelo;
 					pdScript.DañoInfligido    = _dañoTotalJugador;
 					pdScript.BajasEnemigas    = _tropasEliminadasRival;
@@ -246,6 +297,7 @@ public partial class Campo1 : Node2D
 			if (escenaVictoria != null)
 			{
 				var pv = (PantallaVictoria)escenaVictoria.Instantiate();
+				pv.EsOnline         = EsOnline; // decide JUGAR DE NUEVO vs RE-ARMAR MAZO
 				pv.DañoInfligido    = _dañoTotalJugador;
 				pv.TropasEliminadas = _tropasEliminadasRival;
 				pv.TurnosJugados    = _turnosJugados;
@@ -319,7 +371,7 @@ public partial class Campo1 : Node2D
 		btnReinicio.Text              = "Jugar de nuevo";
 		btnReinicio.Position          = new Vector2(50, 300);
 		btnReinicio.CustomMinimumSize = new Vector2(190, 48);
-		EstiloUI.Boton(btnReinicio, 20);
+		EstiloUI.Boton(btnReinicio, 20, accion: true); // botón principal también acá: turquesa, no gris
 		btnReinicio.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ReloadCurrentScene(); };
 		// "Jugar de nuevo" NO tiene sentido en línea: recargar la escena volvería a leer el ContextoOnline
 		// (MatchId/Semilla de la partida YA terminada) y re-entraría a la misma partida muerta. En online
@@ -415,6 +467,10 @@ public partial class Campo1 : Node2D
 		Node2D objetivo = esParaAliado ? BuscarAliadoRivalParaHechizo(id) : BuscarObjetivoJugadorMasFuerte();
 		if (objetivo == null) return;
 
+		// Misma regla que para el jugador: Escudo y Desprotegido no hacen nada sobre una tropa sin
+		// escudo (Tanque, Paperex). Si le tocó ese objetivo, el bot NO gasta el hechizo ni el turno.
+		if ((id == "escudo" || id == "desprotegido") && SinEscudo(objetivo)) return;
+
 		_hechizoUsadoEsteTurno = true;
 		_ardidesGastadosRival++; // al llegar a 2 se habilita su Nuclear
 
@@ -496,7 +552,13 @@ public partial class Campo1 : Node2D
 		var elegida = candidatas[random.Next(candidatas.Count)];
 		// La carta pasa DE VERDAD a la mano del rival: la va a poder jugar, y vos se la podés robar
 		// de vuelta (por eso su mano puede llegar a 4).
-		if (elegida.IdCarta >= 0 && !_manoVisualCPU.Contains(elegida.IdCarta)) _manoVisualCPU.Add(elegida.IdCarta);
+		// El índice de la carta robada es de MI mazo (escenasTropas); la mano del bot vive en su propio
+		// espacio (_cartasCPU), así que hay que traducirlo o le aparecería una carta equivocada.
+		if (elegida.IdCarta >= 0 && elegida.IdCarta < escenasTropas.Length)
+		{
+			int idxEnCPU = IndiceCPUDe(escenasTropas[elegida.IdCarta]);
+			if (idxEnCPU >= 0 && !_manoVisualCPU.Contains(idxEnCPU)) _manoVisualCPU.Add(idxEnCPU);
+		}
 		elegida.NombreSpot = "X";
 		elegida.QueueFree();
 		// Colapsa de 4→3 cartas si correspondía (mismo criterio que al jugar cualquier carta) y dejar

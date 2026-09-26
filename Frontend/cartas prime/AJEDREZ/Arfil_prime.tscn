@@ -304,9 +304,9 @@ animation = &"pre defensa"
 [node name="StatsTropa" type="Control" parent="." unique_id=638377521]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 105.99999
+offset_left = -85.99999
 offset_top = -37.0
-offset_right = 146.0
+offset_right = -45.999985
 offset_bottom = 3.0
 scale = Vector2(0.91999876, 0.7599994)
 

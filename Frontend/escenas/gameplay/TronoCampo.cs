@@ -4,6 +4,15 @@ using System;
 public partial class TronoCampo : StaticBody2D
 {
 	private Node2D huevoInstancia;
+	private Tween  _tweenIdle; // respiración en bucle: hay que frenarla antes de animar la muerte
+
+	/// <summary>Corta la respiración idle del huevo. Sin esto, ese bucle sigue tocando scale:y y pelea
+	/// con la animación de muerte (el aplastado quedaría a medias).</summary>
+	public void DetenerIdle()
+	{
+		if (_tweenIdle != null && _tweenIdle.IsValid()) _tweenIdle.Kill();
+		_tweenIdle = null;
+	}
 	/// <summary>El personaje-huevo posado en este trono (null si CargarHuevo todavía no corrió). Lo usa
 	/// la intro cinemática (Campo1.Intro.cs) para la caída desde el cielo.</summary>
 	public Node2D Huevo => huevoInstancia;
@@ -45,9 +54,9 @@ public partial class TronoCampo : StaticBody2D
 				// Sin AnimatedSprite2D "idle" (la mayoría de los huevos son Sprite2D estático):
 				// respiración sutil por Tween para que todos los huevos en batalla se sientan vivos.
 				Vector2 escalaBase = huevoInstancia.Scale;
-				Tween idleBreath = huevoInstancia.CreateTween().SetLoops();
-				idleBreath.TweenProperty(huevoInstancia, "scale:y", escalaBase.Y * 1.03f, 1.1f).SetTrans(Tween.TransitionType.Sine);
-				idleBreath.TweenProperty(huevoInstancia, "scale:y", escalaBase.Y, 1.1f).SetTrans(Tween.TransitionType.Sine);
+				_tweenIdle = huevoInstancia.CreateTween().SetLoops();
+				_tweenIdle.TweenProperty(huevoInstancia, "scale:y", escalaBase.Y * 1.03f, 1.1f).SetTrans(Tween.TransitionType.Sine);
+				_tweenIdle.TweenProperty(huevoInstancia, "scale:y", escalaBase.Y, 1.1f).SetTrans(Tween.TransitionType.Sine);
 			}
 		}
 	}

@@ -161,8 +161,8 @@ public partial class SoldadoRealPrime : TropaBase
 		Color colorNormal = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 		Color colorBrilloSuave = new Color(1.25f, 1.15f, 0.75f, 1.0f); 
 
-		_tweenParry.TweenProperty(this, "modulate", colorBrilloSuave, 0.6f);
-		_tweenParry.TweenProperty(this, "modulate", colorNormal, 0.6f);
+		_tweenParry.TweenProperty(_anim, "modulate", colorBrilloSuave, 0.6f);
+		_tweenParry.TweenProperty(_anim, "modulate", colorNormal, 0.6f);
 	}
 
 	private void LimpiarEstadoParry()

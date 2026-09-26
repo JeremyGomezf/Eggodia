@@ -15,6 +15,10 @@
 [ext_resource type="Shader" uid="uid://b4oj04low5esi" path="res://escenas/menu/borroso.gdshader" id="13_sys8m"]
 [ext_resource type="Texture2D" uid="uid://dcahc0gsvlx17" path="res://imagenes/Escenarios/nube1.png" id="14_guxwj"]
 [ext_resource type="Texture2D" uid="uid://b4oujcg3x4rua" path="res://imagenes/MenuConstructor/BotonNFC.png" id="15_sys8m"]
+[ext_resource type="Texture2D" uid="uid://dso7v5x1u7jcb" path="res://imagenes/MenuConstructor/tacticoboton.png" id="16_guxwj"]
+[ext_resource type="Texture2D" uid="uid://bxrh3ovv4h2ti" path="res://imagenes/MenuConstructor/asesinoboton.png" id="17_mkpxc"]
+[ext_resource type="Texture2D" uid="uid://b7u5fn08sl1yh" path="res://imagenes/MenuConstructor/colosoboton.png" id="18_3ow5v"]
+[ext_resource type="Texture2D" uid="uid://boj508g8df8dm" path="res://imagenes/MenuConstructor/regresarboton.png" id="19_8bur7"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ib6j1"]
 shader = ExtResource("13_sys8m")
@@ -684,8 +688,9 @@ text = "Habilidad"
 horizontal_alignment = 1
 
 [node name="LblHabilidad" type="Label" parent="InfoContainer/HabilidadBox/Margin/VBoxHabilidad" unique_id=1307508624]
-custom_minimum_size = Vector2(280, 180)
+custom_minimum_size = Vector2(205, 180)
 layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)
 theme_override_fonts/font = ExtResource("12_048dh")
@@ -731,6 +736,49 @@ texture_hover = ExtResource("15_sys8m")
 ignore_texture_size = true
 stretch_mode = 0
 
+[node name="minis botones mazo tropa" type="Control" parent="." unique_id=1757044237]
+anchors_preset = 0
+offset_left = -21.0
+offset_top = -12.0
+offset_right = 19.0
+offset_bottom = 28.0
+
+[node name="tacticoboton" type="TextureButton" parent="minis botones mazo tropa" unique_id=1181437523]
+layout_mode = 0
+offset_left = 363.0
+offset_top = 462.0
+offset_right = 479.0
+offset_bottom = 575.0
+scale = Vector2(0.6, 0.6)
+texture_normal = ExtResource("16_guxwj")
+
+[node name="asesinoboton" type="TextureButton" parent="minis botones mazo tropa" unique_id=1502336450]
+layout_mode = 0
+offset_left = 363.0
+offset_top = 536.0
+offset_right = 479.0
+offset_bottom = 649.0
+scale = Vector2(0.6, 0.6)
+texture_normal = ExtResource("17_mkpxc")
+
+[node name="colosoboton" type="TextureButton" parent="minis botones mazo tropa" unique_id=663942290]
+layout_mode = 0
+offset_left = 363.0
+offset_top = 608.0
+offset_right = 479.0
+offset_bottom = 721.0
+scale = Vector2(0.6, 0.6)
+texture_normal = ExtResource("18_3ow5v")
+
+[node name="regresarboton" type="TextureButton" parent="minis botones mazo tropa" unique_id=1529089258]
+layout_mode = 0
+offset_left = 363.0
+offset_top = 680.0
+offset_right = 479.0
+offset_bottom = 793.0
+scale = Vector2(0.6, 0.6)
+texture_normal = ExtResource("19_8bur7")
+
 [node name="CapaUI" type="CanvasLayer" parent="." unique_id=1950572810]
 
 [node name="ModalAyuda" type="Control" parent="CapaUI" unique_id=341276553]
@@ -760,26 +808,26 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="CapaUI/ModalAyuda/CenterContainer" unique_id=496712826]
-custom_minimum_size = Vector2(1100, 420)
+custom_minimum_size = Vector2(1620, 960)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_modal_bg")
 
 [node name="Margin" type="MarginContainer" parent="CapaUI/ModalAyuda/CenterContainer/Panel" unique_id=224597823]
 layout_mode = 2
-theme_override_constants/margin_left = 36
-theme_override_constants/margin_top = 32
-theme_override_constants/margin_right = 36
-theme_override_constants/margin_bottom = 32
+theme_override_constants/margin_left = 70
+theme_override_constants/margin_top = 56
+theme_override_constants/margin_right = 70
+theme_override_constants/margin_bottom = 56
 
 [node name="VBox" type="VBoxContainer" parent="CapaUI/ModalAyuda/CenterContainer/Panel/Margin" unique_id=427149128]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 34
 
 [node name="TituloAyuda" type="Label" parent="CapaUI/ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1137496643]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
 theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 38
+theme_override_font_sizes/font_size = 58
 text = "¿CÓMO CONSTRUIR TU MAZO?"
 horizontal_alignment = 1
 
@@ -787,7 +835,10 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.9, 0.94, 1, 1)
-theme_override_font_sizes/normal_font_size = 22
+theme_override_font_sizes/normal_font_size = 34
+theme_override_font_sizes/bold_font_size = 34
+theme_override_font_sizes/bold_italics_font_size = 34
+theme_override_font_sizes/italics_font_size = 34
 bbcode_enabled = true
 text = "[b]1. Selector Izquierdo:[/b] Explora tus cartas por pestañas ([color=#4cb5ff]Tropas[/color] y [color=#ff5555]Ardid[/color]) o escribe en la lupa superior para buscar rápidamente.
 
@@ -800,12 +851,12 @@ text = "[b]1. Selector Izquierdo:[/b] Explora tus cartas por pestañas ([color=#
 [b]5. ¡A Batallar!:[/b] Cuando tu mazo tenga 8 cartas válidas, presiona el botón [color=#00e5ff]BATALLAR[/color] para iniciar el duelo."
 
 [node name="BtnCerrarAyuda" type="Button" parent="CapaUI/ModalAyuda/CenterContainer/Panel/Margin/VBox" unique_id=1922394009]
-custom_minimum_size = Vector2(200, 48)
+custom_minimum_size = Vector2(460, 110)
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_default_cursor_shape = 2
 theme_override_fonts/font = SubResource("FontVariation_bold")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 36
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_batallar")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_batallar_hover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_batallar_hover")

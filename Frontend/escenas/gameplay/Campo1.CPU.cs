@@ -25,6 +25,10 @@ public partial class Campo1 : Node2D
 		// En partida en línea no hay CPU: el turno del rival lo maneja el jugador remoto.
 		if (EsOnline) { EsperarRivalOnline(); return; }
 
+		// Tutorial: nada de IA real — el rival ataca en el orden exacto del guion, sin habilidad,
+		// sin ardides, sin invocar de más (ver Campo1.Tutorial.cs).
+		if (ModoTutorial) { await EjecutarTurnoCPUTutorial(); return; }
+
 		// La intro cinemática bloquea la partida: el bot espera a que termine.
 		while (IntroEnCurso && !juegoTerminado) await ToSignal(GetTree().CreateTimer(0.2f), "timeout");
 		if (juegoTerminado) return;
@@ -121,7 +125,7 @@ public partial class Campo1 : Node2D
 					ProcesarCombateFrontal(tropa, "tropas_jugador");
 				else
 					continue; // nada que hacer con esta tropa: no gasta energía
-				if (_dificultadCPU == 2 && random.Next(5) == 0) CPUUsarHechizo();
+				if (_dificultadCPU >= 1 && random.Next(_dificultadCPU == 2 ? 5 : 9) == 0) CPUUsarHechizo(); // dificultad 1 (la normal): de vez en cuando, no siempre
 				movimientosRestantes--;
 				ActualizarInterfaz();
 				await ToSignal(GetTree().CreateTimer(delay), "timeout");
@@ -191,7 +195,7 @@ public partial class Campo1 : Node2D
 					ProcesarCombateFrontal(tropa, "tropas_jugador");
 				else
 					continue; // nada que hacer con esta tropa: no gasta energía
-				if (_dificultadCPU == 2 && random.Next(5) == 0) CPUUsarHechizo();
+				if (_dificultadCPU >= 1 && random.Next(_dificultadCPU == 2 ? 5 : 9) == 0) CPUUsarHechizo(); // dificultad 1 (la normal): de vez en cuando, no siempre
 				movimientosRestantes--;
 				ActualizarInterfaz();
 				await ToSignal(GetTree().CreateTimer(delay), "timeout");

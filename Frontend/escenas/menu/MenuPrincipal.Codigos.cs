@@ -40,77 +40,85 @@ public partial class MenuPrincipal : Control
 		fondo.MouseFilter = Control.MouseFilterEnum.Stop;
 		capa.AddChild(fondo);
 
+		// Tamaño AJUSTADO al contenido real (antes 1040×880 con el contenido ocupando ~600px de alto:
+		// quedaba un hueco vacío enorme debajo de CERRAR). Con título+subtítulo+campo+botón+resultado+
+		// cerrar+márgenes+separaciones el panel necesita ~600px de alto — se deja 640 de margen chico.
 		var marco = new Control();
 		marco.SetAnchorsPreset(LayoutPreset.Center);
-		marco.OffsetLeft = -340; marco.OffsetRight = 340;
-		marco.OffsetTop  = -290; marco.OffsetBottom = 290;
+		marco.OffsetLeft = -420; marco.OffsetRight = 420;
+		marco.OffsetTop  = -320; marco.OffsetBottom = 320;
 		fondo.AddChild(marco);
 
 		var panel = new PanelContainer();
 		panel.SetAnchorsPreset(LayoutPreset.FullRect);
 		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.08f, 0.07f, 0.14f, 0.98f);
+		// Azul más lindo/vivo que el gris-azulado muy oscuro de antes, pero sin volver al cian
+		// demasiado claro/brillante de la primera versión — un punto medio.
+		sb.BgColor = new Color(0.10f, 0.17f, 0.32f, 0.96f);
 		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 3;
-		sb.BorderColor = new Color(0.55f, 0.75f, 1f, 0.8f);
+		sb.BorderColor = new Color(0.42f, 0.68f, 1.0f, 0.85f);
 		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
 		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 20;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 36;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 30;
+		sb.ContentMarginLeft = sb.ContentMarginRight = 32;
+		sb.ContentMarginTop  = sb.ContentMarginBottom = 26;
 		sb.ShadowColor = new Color(0, 0, 0, 0.5f); sb.ShadowSize = 12;
 		panel.AddThemeStyleboxOverride("panel", sb);
 		marco.AddChild(panel);
 
+		// El contenido se centra DENTRO del panel (antes quedaba pegado arriba, dejando todo el
+		// sobrante como hueco vacío abajo).
+		var centro = new CenterContainer();
+		centro.SetAnchorsPreset(LayoutPreset.FullRect);
+		panel.AddChild(centro);
+
 		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 20);
-		panel.AddChild(vbox);
+		vbox.AddThemeConstantOverride("separation", 18);
+		vbox.CustomMinimumSize = new Vector2(680, 0); // ancho fijo: sin esto el CenterContainer lo encoge al mínimo
+		centro.AddChild(vbox);
 
 		var lblTitulo = new Label();
 		lblTitulo.Text = "INGRESAR CÓDIGO";
-		lblTitulo.AddThemeColorOverride("font_color", new Color(0.6f, 0.85f, 1f));
-		lblTitulo.AddThemeFontSizeOverride("font_size", 36);
+		// Mismo tono que el título de "Cómo Jugar" (antes 0.6,0.85,1 — más claro/brillante).
+		lblTitulo.AddThemeColorOverride("font_color", new Color(0.35f, 0.65f, 0.95f));
+		lblTitulo.AddThemeFontSizeOverride("font_size", 44);
 		lblTitulo.HorizontalAlignment = HorizontalAlignment.Center;
 		vbox.AddChild(lblTitulo);
 
 		var lblSub = new Label();
 		lblSub.Text = "Canjea códigos por skins exclusivas o monedas";
-		lblSub.AddThemeColorOverride("font_color", new Color(0.8f, 0.8f, 0.85f));
-		lblSub.AddThemeFontSizeOverride("font_size", 18);
+		lblSub.AddThemeColorOverride("font_color", new Color(0.8f, 0.85f, 0.95f));
+		lblSub.AddThemeFontSizeOverride("font_size", 24);
 		lblSub.HorizontalAlignment = HorizontalAlignment.Center;
 		lblSub.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		vbox.AddChild(lblSub);
 
 		_txtCodigo = new LineEdit();
 		_txtCodigo.PlaceholderText = "Ej: 133huevo375";
-		_txtCodigo.CustomMinimumSize = new Vector2(0, 66);
-		_txtCodigo.AddThemeFontSizeOverride("font_size", 28);
+		_txtCodigo.CustomMinimumSize = new Vector2(0, 92);
+		_txtCodigo.AddThemeFontSizeOverride("font_size", 40);
 		_txtCodigo.Alignment = HorizontalAlignment.Center;
 		_txtCodigo.MaxLength = 30;
 		vbox.AddChild(_txtCodigo);
 
 		_btnCanjear = new Button();
 		_btnCanjear.Text = "CANJEAR";
-		_btnCanjear.CustomMinimumSize = new Vector2(0, 64);
-		_btnCanjear.AddThemeFontSizeOverride("font_size", 24);
+		_btnCanjear.CustomMinimumSize = new Vector2(0, 84);
+		EstiloUI.Boton(_btnCanjear, 32, accion: true); // mismo azul apagado que el resto del menú
 		_btnCanjear.Pressed += () => _ = IntentarCanjearCodigoAsync();
 		vbox.AddChild(_btnCanjear);
 		_txtCodigo.TextSubmitted += (nuevoTexto) => { _ = IntentarCanjearCodigoAsync(); };
 
 		_lblResultadoCodigo = new Label();
 		_lblResultadoCodigo.Text = "";
-		_lblResultadoCodigo.AddThemeFontSizeOverride("font_size", 20);
+		_lblResultadoCodigo.AddThemeFontSizeOverride("font_size", 28);
 		_lblResultadoCodigo.HorizontalAlignment = HorizontalAlignment.Center;
 		_lblResultadoCodigo.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		vbox.AddChild(_lblResultadoCodigo);
 
 		var btnCerrar = new Button();
 		btnCerrar.Text = "CERRAR";
-		btnCerrar.CustomMinimumSize = new Vector2(0, 56);
-		btnCerrar.AddThemeFontSizeOverride("font_size", 22);
-		var sbCerrar = new StyleBoxFlat();
-		sbCerrar.BgColor = new Color(0.3f, 0.3f, 0.36f, 1f);
-		sbCerrar.CornerRadiusTopLeft = sbCerrar.CornerRadiusTopRight =
-		sbCerrar.CornerRadiusBottomLeft = sbCerrar.CornerRadiusBottomRight = 12;
-		btnCerrar.AddThemeStyleboxOverride("normal", sbCerrar);
+		btnCerrar.CustomMinimumSize = new Vector2(0, 72);
+		EstiloUI.Boton(btnCerrar, 28); // mismo azul apagado, sin "accion" (es el secundario)
 		btnCerrar.Pressed += () => _capaCodigos.Visible = false;
 		vbox.AddChild(btnCerrar);
 	}

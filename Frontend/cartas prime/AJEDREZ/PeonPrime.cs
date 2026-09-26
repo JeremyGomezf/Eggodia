@@ -128,19 +128,16 @@ public partial class PeonPrime : TropaBase
 		PanelContainer panel = new PanelContainer();
 		_uiPromocionLayer.AddChild(panel);
 
-		Vector2 posPantalla = GetGlobalTransformWithCanvas().Origin;
-		panel.Position = posPantalla + new Vector2(80, -50);
-
 		StyleBoxFlat estiloPanel = new StyleBoxFlat();
 		estiloPanel.BgColor = new Color(0.08f, 0.08f, 0.12f, 0.92f);
 		estiloPanel.CornerRadiusTopLeft = 8;
 		estiloPanel.CornerRadiusTopRight = 8;
 		estiloPanel.CornerRadiusBottomLeft = 8;
 		estiloPanel.CornerRadiusBottomRight = 8;
-		estiloPanel.ContentMarginLeft = 22;
-		estiloPanel.ContentMarginRight = 22;
-		estiloPanel.ContentMarginTop = 18;
-		estiloPanel.ContentMarginBottom = 18;
+		estiloPanel.ContentMarginLeft = 18;
+		estiloPanel.ContentMarginRight = 18;
+		estiloPanel.ContentMarginTop = 14;
+		estiloPanel.ContentMarginBottom = 14;
 		estiloPanel.BorderWidthLeft = 2;
 		estiloPanel.BorderWidthRight = 2;
 		estiloPanel.BorderWidthTop = 2;
@@ -149,41 +146,77 @@ public partial class PeonPrime : TropaBase
 		panel.AddThemeStyleboxOverride("panel", estiloPanel);
 
 		VBoxContainer vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 12);
+		vbox.AddThemeConstantOverride("separation", 10);
 		panel.AddChild(vbox);
 
 		Label titulo = new Label();
-		titulo.Text = "⚡ PROMOCIÓN ⚡";
+		titulo.Text = "PROMOCIÓN"; // sin emojis, a pedido
 		titulo.HorizontalAlignment = HorizontalAlignment.Center;
 		titulo.AddThemeColorOverride("font_color", new Color(1.0f, 0.84f, 0.0f));
-		titulo.AddThemeFontSizeOverride("font_size", 34); // se lee bien, era muy chico
+		titulo.AddThemeFontSizeOverride("font_size", 28); // un poco más chico que antes (era 34)
 		vbox.AddChild(titulo);
 
-		Button btnTorre   = CrearBotonOpcion("🏰 TORRE", RUTA_TORRE);
-		Button btnDama    = CrearBotonOpcion("👑 DAMA", RUTA_DAMA);
-		Button btnCaballo = CrearBotonOpcion("🐴 CABALLO", RUTA_CABALLO);
-		Button btnArfil   = CrearBotonOpcion("🎪 ARFIL", RUTA_ARFIL);
+		Button btnTorre   = CrearBotonOpcion("TORRE", RUTA_TORRE);
+		Button btnDama    = CrearBotonOpcion("DAMA", RUTA_DAMA);
+		Button btnCaballo = CrearBotonOpcion("CABALLO", RUTA_CABALLO);
+		Button btnArfil   = CrearBotonOpcion("ARFIL", RUTA_ARFIL);
 
 		vbox.AddChild(btnTorre);
 		vbox.AddChild(btnDama);
 		vbox.AddChild(btnCaballo);
 		vbox.AddChild(btnArfil);
+
+		// Tamaño REAL calculado a mano (no un offset a ciegas): con estos márgenes/separaciones/
+		// botones, el panel mide 296×360. Antes se posicionaba con un offset fijo (80,-50) desde el
+		// Peón sin mirar el alto real del panel ni el borde de la pantalla, así que con un Peón en la
+		// mitad inferior del tablero el panel se iba de largo por abajo (se veía cortado/afuera).
+		const float PANEL_ANCHO = 296f;
+		const float PANEL_ALTO  = 360f;
+		const float MARGEN_PANTALLA = 16f;
+		const float OFFSET_ADELANTE = 70f; // "adelante" del Peón, no encima
+
+		Vector2 posPeon = GetGlobalTransformWithCanvas().Origin;
+		Vector2 pantalla = GetViewport().GetVisibleRect().Size;
+
+		float x = posPeon.X + OFFSET_ADELANTE;
+		float y = posPeon.Y - PANEL_ALTO / 2f; // centrado verticalmente respecto al Peón
+
+		// Recorte a los bordes reales de la pantalla: nunca puede quedar ni abajo, ni arriba, ni a
+		// los costados. Como resultado, siempre queda pegado al Peón o, si no entra a su derecha
+		// (Peón cerca del borde), se acomoda solo hacia adentro de la pantalla.
+		x = Mathf.Clamp(x, MARGEN_PANTALLA, pantalla.X - PANEL_ANCHO - MARGEN_PANTALLA);
+		y = Mathf.Clamp(y, MARGEN_PANTALLA, pantalla.Y - PANEL_ALTO - MARGEN_PANTALLA);
+
+		panel.Position = new Vector2(x, y);
 	}
 
 	private Button CrearBotonOpcion(string texto, string rutaEscena)
 	{
 		Button btn = new Button();
 		btn.Text = texto;
-		btn.CustomMinimumSize = new Vector2(300, 74); // botones grandes: se elige con el dedo en celular
-		btn.AddThemeFontSizeOverride("font_size", 30);
+		btn.CustomMinimumSize = new Vector2(260, 64); // un poco más chico que antes (era 300x74), sigue cómodo al dedo
+		btn.AddThemeFontSizeOverride("font_size", 26);
 		btn.Pressed += () => { TransformarEnPieza(rutaEscena); };
 		return btn;
 	}
 
 	// ── TRANSFORMACIÓN ────────────────────────────────────────────────────────
+	// El panel de promoción abierto = habilidad todavía sin concretar. Si el turno se va sin elegir
+	// pieza, no se gasta ni la habilidad ni el movimiento (se cierra el panel y listo).
+	public override bool SeleccionPendiente =>
+		_uiPromocionLayer != null && IsInstanceValid(_uiPromocionLayer) && !habilidadUsada;
+
+	public override void CancelarSeleccionPendiente()
+	{
+		if (_uiPromocionLayer != null && IsInstanceValid(_uiPromocionLayer)) _uiPromocionLayer.QueueFree();
+		_uiPromocionLayer = null;
+	}
+
 	private void TransformarEnPieza(string rutaEscena)
 	{
+		bool eraPendiente = SeleccionPendiente;
 		habilidadUsada = true;
+		if (eraPendiente) AvisarHabilidadConfirmada(); // elegiste pieza: recién acá se cobra el movimiento
 
 		PackedScene escenaNueva = GD.Load<PackedScene>(rutaEscena);
 		if (escenaNueva == null) return;
@@ -290,8 +323,8 @@ public partial class PeonPrime : TropaBase
 		// acción encima de la transformación todavía en curso.
 		campo?.Call("IniciarBloqueoTablero");
 		Tween twDestello = nuevaTropa.CreateTween();
-		twDestello.TweenProperty(nuevaTropa, "modulate", new Color(2.0f, 1.8f, 0.5f), 0.2f);
-		twDestello.TweenProperty(nuevaTropa, "modulate", Colors.White, 0.4f);
+		twDestello.TweenProperty(TropaBase.NodoParaTinte(nuevaTropa), "modulate", new Color(2.0f, 1.8f, 0.5f), 0.2f);
+		twDestello.TweenProperty(TropaBase.NodoParaTinte(nuevaTropa), "modulate", Colors.White, 0.4f);
 		twDestello.Finished += () => campo?.Call("FinalizarBloqueoTablero");
 
 		// 🚨 REEVALUACIÓN AUTOMÁTICA DE VARIABLES EN EL SCRIPT DEL CAMPO Y DEL PADRE

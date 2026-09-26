@@ -410,10 +410,10 @@ position = Vector2(142, -86)
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 228.00002
-offset_top = -20.0
-offset_right = 268.0
-offset_bottom = 20.0
+offset_left = -93.99999
+offset_top = -64.0
+offset_right = -54.000008
+offset_bottom = -24.0
 scale = Vector2(0.91999876, 0.7599994)
 
 [node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=642872417]

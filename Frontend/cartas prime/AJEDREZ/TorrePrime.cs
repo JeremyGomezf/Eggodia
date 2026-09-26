@@ -23,4 +23,23 @@ public partial class TorrePrime : TropaBase
 
 		campo.Call("IniciarSeleccionEnroque", this);
 	}
+
+	// Mientras el tablero espera que elijas el carril de destino, la habilidad sigue SIN gastarse: si
+	// el turno se va, queda disponible para el próximo (y no se pierde el movimiento).
+	public override bool SeleccionPendiente
+	{
+		get
+		{
+			var campo = GetTree()?.Root?.FindChild("Campo1", true, false);
+			if (campo == null || !campo.HasMethod("EsperandoEnroqueDe")) return false;
+			try { return (bool)campo.Call("EsperandoEnroqueDe", this); } catch { return false; }
+		}
+	}
+
+	public override void CancelarSeleccionPendiente()
+	{
+		if (!SeleccionPendiente) return;
+		var campo = GetTree()?.Root?.FindChild("Campo1", true, false);
+		if (campo != null && campo.HasMethod("CancelarSeleccionEnroque")) campo.Call("CancelarSeleccionEnroque");
+	}
 }

@@ -8,6 +8,12 @@ public partial class PantallaVictoria : CanvasLayer
 	public int Racha            { get; set; }
 	public int MonedasGanadas   { get; set; }
 
+	// Chip de "+N monedas": se pidió bien grande, que se lea de una (mismo tamaño en Victoria y Derrota).
+	private const int TAM_FUENTE_MONEDAS = 38;
+
+	/// <summary>Lo fija Campo1 al abrir la pantalla: cambia qué hace el botón de "jugar de nuevo".</summary>
+	public bool EsOnline { get; set; }
+
 	public string    MvtNombre      { get; set; }
 	public int       MvtDaño        { get; set; }
 	public Texture2D MvtIlustracion { get; set; }
@@ -27,11 +33,23 @@ public partial class PantallaVictoria : CanvasLayer
 
 		var btnJugar = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnJugarDeNuevo");
 		var btnMenu  = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnMenu");
-		if (btnJugar != null) btnJugar.Pressed += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ReloadCurrentScene(); };
+		// VS BOT: repite la partida al toque. ONLINE: no se puede "repetir" (hace falta otro rival), así
+		// que el botón pasa a ser RE-ARMAR MAZO y lleva al constructor.
+		if (btnJugar != null)
+		{
+			if (EsOnline) btnJugar.Text = "RE-ARMAR MAZO";
+			btnJugar.Pressed += () =>
+			{
+				LimpiezaEfectos.LimpiarEfectosDeCampo();
+				GetTree().Paused = false;
+				if (EsOnline) GetTree().ChangeSceneToFile("res://escenas/menu/MenuConstructor.tscn");
+				else          GetTree().ReloadCurrentScene();
+			};
+		}
 		if (btnMenu  != null) btnMenu.Pressed  += () => { LimpiezaEfectos.LimpiarEfectosDeCampo(); GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn"); };
 
 		// Estilo del juego: botones, marcos (paneles) y título con nuestra paleta/fuente.
-		EstiloUI.Boton(btnJugar);
+		EstiloUI.Boton(btnJugar, accion: true); // boton principal: turquesa, no gris
 		EstiloUI.Boton(btnMenu);
 		EstiloUI.Titulo(GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/Titulo"), 0);
 		var pStats = GetNodeOrNull<PanelContainer>("Overlay/CentroVBox/VBox/PanelStats");
@@ -40,7 +58,8 @@ public partial class PantallaVictoria : CanvasLayer
 		if (pMvt != null) pMvt.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado());
 
 		MostrarRecompensa();
-		AnimarEntrada();
+		// Diferido: necesita el Size REAL ya calculado por el layout para saber si el bloque entra.
+		CallDeferred(nameof(AnimarEntrada));
 		CallDeferred(nameof(AjustarParticulasAnchoPantalla));
 	}
 
@@ -72,14 +91,16 @@ public partial class PantallaVictoria : CanvasLayer
 		sb.BorderColor = new Color(0.95f, 0.78f, 0.25f, 0.85f);
 		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
 		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 18;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 10;
+		sb.ContentMarginLeft = sb.ContentMarginRight = 34;
+		sb.ContentMarginTop  = sb.ContentMarginBottom = 16;
 		chip.AddThemeStyleboxOverride("panel", sb);
+		chip.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 
 		var l = new Label();
 		l.Text = $"+ {MonedasGanadas} monedas";
 		l.AddThemeColorOverride("font_color", new Color(1f, 0.88f, 0.4f));
-		l.AddThemeFontSizeOverride("font_size", 20);
+		l.AddThemeFontSizeOverride("font_size", TAM_FUENTE_MONEDAS);
+		if (EstiloUI.Fuente != null) l.AddThemeFontOverride("font", EstiloUI.Fuente);
 		l.HorizontalAlignment = HorizontalAlignment.Center;
 		chip.AddChild(l);
 
@@ -103,16 +124,41 @@ public partial class PantallaVictoria : CanvasLayer
 		if (foto != null && MvtIlustracion != null) foto.Texture = MvtIlustracion;
 	}
 
+	// Margen que se deja arriba y abajo para que nada quede pegado al borde.
+	private const float MARGEN_VERTICAL_PANTALLA = 30f;
+
+	/// <summary>Escala a la que el bloque entra completo en pantalla (1 si ya entra). El alto NO es
+	/// fijo: con el panel de MVT y la racha el contenido crece, y si se pasa del alto útil, al estar
+	/// centrado el sobrante se reparte y se corta arriba y abajo. Se mide el tamaño REAL tras el
+	/// layout, así vale con o sin MVT y en cualquier pantalla.</summary>
+	private float EscalaParaQueEntre(Control vbox)
+	{
+		float disponible = GetViewport().GetVisibleRect().Size.Y - MARGEN_VERTICAL_PANTALLA * 2f;
+		float alto = Mathf.Max(vbox.GetCombinedMinimumSize().Y, vbox.Size.Y);
+		if (alto <= 0f || disponible <= 0f || alto <= disponible) return 1f;
+		return disponible / alto;
+	}
+
 	private void AnimarEntrada()
 	{
 		var vbox = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox");
 		if (vbox == null) return;
+		// Misma red de seguridad que en Derrota: la capa procesa aunque el juego esté pausado y el
+		// estado final se fuerza al terminar, para que nunca quede contenido a medio desvanecer.
+		ProcessMode = Node.ProcessModeEnum.Always;
+
+		// La animación termina en la escala que HACE QUE ENTRE, no en 1: si terminara en 1 volvería a
+		// desbordar justo al final y se vería el recorte.
+		float escalaFinal = EscalaParaQueEntre(vbox);
+		Vector2 destino = new Vector2(escalaFinal, escalaFinal);
+
 		vbox.Modulate = new Color(1, 1, 1, 0);
-		vbox.Scale    = new Vector2(0.85f, 0.85f);
+		vbox.Scale    = destino * 0.85f;
 		vbox.PivotOffset = vbox.Size / 2;
 		var tw = CreateTween().SetParallel(true);
+		tw.Finished += () => { if (IsInstanceValid(vbox)) { vbox.Modulate = Colors.White; vbox.Scale = destino; } };
 		tw.TweenProperty(vbox, "modulate:a", 1.0f, 0.5f);
-		tw.TweenProperty(vbox, "scale", Vector2.One, 0.55f)
+		tw.TweenProperty(vbox, "scale", destino, 0.55f)
 		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 	}
 }

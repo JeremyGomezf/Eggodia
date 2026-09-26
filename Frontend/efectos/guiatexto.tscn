@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://cl4qpvtusmlu"]
+
+[ext_resource type="Texture2D" uid="uid://c16nr4dcnhydn" path="res://imagenes/MenuConstructor/Info_Ardid.png" id="1_giw2d"]
+[ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="2_p8817"]
+
+[node name="Guia" type="Node2D" unique_id=1418570774]
+
+[node name="Info-tutorial" type="Sprite2D" parent="." unique_id=690844814]
+position = Vector2(315, 117)
+texture = ExtResource("1_giw2d")
+
+[node name="LblHabilidad" type="Label" parent="Info-tutorial" unique_id=1776867059]
+custom_minimum_size = Vector2(520, 122)
+offset_left = -260.0
+offset_top = -50.0
+offset_right = 260.0
+offset_bottom = 72.0
+size_flags_horizontal = 4
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.15, 0.18, 0.25, 1)
+theme_override_fonts/font = ExtResource("2_p8817")
+theme_override_font_sizes/font_size = 22
+text = "TUrial ejemp,l esto es para guiarte de como se veria el texto a est tamaño y colores "
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

@@ -93,8 +93,8 @@ public partial class MachiPrime : TropaBase
 			// Efecto verde: número flotante "+N" y flash verde sobre la tropa curada.
 			campo?.MostrarDañoFlotante(aliado.GlobalPosition, curadoReal, true);
 			Tween tw = aliado.CreateTween();
-			tw.TweenProperty(aliado, "modulate", new Color(0.3f, 1.6f, 0.5f), 0.2f);
-			tw.TweenProperty(aliado, "modulate", Colors.White, 0.5f);
+			tw.TweenProperty(aliado.SpriteVisual, "modulate", new Color(0.3f, 1.6f, 0.5f), 0.2f);
+			tw.TweenProperty(aliado.SpriteVisual, "modulate", Colors.White, 0.5f);
 		}
 	}
 

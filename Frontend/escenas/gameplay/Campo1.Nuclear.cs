@@ -435,11 +435,29 @@ public partial class Campo1 : Node2D
 			if (n is TropaBase t && IsInstanceValid(t) && !t.IsQueuedForDeletion() && !t.EstaMuerta && t.vidaActual > 0)
 				objetivos.Add(t);
 
+		var murosYaGolpeados = new HashSet<ulong>(); // por si dos tropas apuntaran al mismo muro, no pegarle dos veces
+
 		foreach (TropaBase t in objetivos)
 		{
 			// Pudo morir en el medio (p. ej. por la muerte de otra tropa de la lista).
 			if (!IsInstanceValid(t) || t.IsQueuedForDeletion() || t.EstaMuerta || t.vidaActual <= 0) continue;
-			if (EstaProtegidaDeNuclear(t)) continue;
+
+			if (t.HasMeta("en_postura_permanente")) continue; // postura propia del Calamar: inmune igual que siempre
+
+			Node2D muro = BuscarMuroProtector(t);
+			if (muro != null)
+			{
+				// El muro absorbe la bomba EN VEZ de la tropa: recibe los 300 contra su propia
+				// durabilidad (260) y se puede romper, igual que con cualquier otro golpe — pero como
+				// ya cumplió su función deteniendo ESTA explosión, la tropa detrás no recibe nada.
+				if (murosYaGolpeados.Add(muro.GetInstanceId()))
+				{
+					muro.Call("RecibirDañoDe", DAÑO_NUCLEAR, this);
+					MostrarDañoFlotante(muro.GlobalPosition, DAÑO_NUCLEAR);
+				}
+				continue;
+			}
+
 			if (t is SoldadoRealPrime soldado && soldado.CubrirseDeNuclear()) continue;
 
 			t.SetMeta(META_MUERTE_NUCLEAR, true);
@@ -469,17 +487,24 @@ public partial class Campo1 : Node2D
 
 	/// <summary>Cubiertas de la bomba: el Calamar con su pre-defensa de tentáculos activa, y cualquier
 	/// tropa con un muro del Gólem de su mismo bando delante (mismo carril).</summary>
-	private bool EstaProtegidaDeNuclear(TropaBase t)
+	private bool EstaProtegidaDeNuclear(TropaBase t) =>
+		t.HasMeta("en_postura_permanente") || BuscarMuroProtector(t) != null;
+
+	/// <summary>El muro (si hay uno) en el mismo carril que la tropa. La bomba le pega A ÉL, no a la
+	/// tropa: mientras el muro exista al momento del impacto, la tropa no recibe nada — el muro es
+	/// quien arriesga su durabilidad (260) contra el daño de la bomba (300), igual que absorbe
+	/// cualquier otro golpe. Si la bomba lo rompe, la tropa queda sin protección para el próximo golpe,
+	/// pero ESTA explosión ya no la toca — el muro ya cumplió su función deteniéndola.</summary>
+	private Node2D BuscarMuroProtector(TropaBase t)
 	{
-		if (t.HasMeta("en_postura_permanente")) return true;
-		if (!t.HasMeta("carril")) return false;
+		if (!t.HasMeta("carril")) return null;
 		string grupoMuro = t.IsInGroup("tropas_jugador") ? "muros_jugador" : "muros_rival";
 		string carril = NumeroDeCarril((string)t.GetMeta("carril"));
 		foreach (Node n in GetTree().GetNodesInGroup(grupoMuro))
 			if (n is Node2D m && IsInstanceValid(m) && m.HasMeta("carril")
 				&& NumeroDeCarril((string)m.GetMeta("carril")) == carril)
-				return true;
-		return false;
+				return m;
+		return null;
 	}
 
 	private static string NumeroDeCarril(string carril) =>
@@ -722,6 +747,11 @@ public partial class Campo1 : Node2D
 		// Frame 26: arrancan juntos el BOOM, la vibración y el blanco.
 		ReproducirSonidoNuclear();
 		SacudonNuclear();
+
+		// El menú de acciones vive en una capa por ENCIMA de todo (para que la mano nunca lo tape), así
+		// que el blanco no puede cubrirlo por capas: se oculta acá. Es la única excepción pedida, y el
+		// tablero ya está bloqueado durante la explosión, así que no se pierde ninguna acción.
+		if (menuAcciones != null && IsInstanceValid(menuAcciones)) menuAcciones.Visible = false;
 
 		var capaHud = CapaHUD();
 		_destelloNuclear = new ColorRect

@@ -1,0 +1,561 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://ckyirl8sq33f" path="res://escenas/gameplay/Campo1.cs" id="1_ar4p3"]
+[ext_resource type="Texture2D" uid="uid://c05bnuea68pjh" path="res://imagenes/MenuNuevo/calaca_icon.png" id="2_5fmnn"]
+[ext_resource type="Texture2D" uid="uid://nn4qcbvpu22a" path="res://imagenes/PersonajesPng/WhatsApp Image 2026-03-25 at 4.41.44 PM.jpeg" id="2_e0wnx"]
+[ext_resource type="PackedScene" uid="uid://bh0x6bv5ndeh6" path="res://escenas/gameplay/carta_base.tscn" id="2_qk0di"]
+[ext_resource type="Texture2D" uid="uid://kf7oiropv673" path="res://imagenes/Escenarios/medievalFONDO.png" id="3_g8sj5"]
+[ext_resource type="PackedScene" uid="uid://mpausa123" path="res://escenas/gameplay/MenuPausa.tscn" id="3_mpausa"]
+[ext_resource type="Texture2D" uid="uid://dw12iugljdasy" path="res://imagenes/Escenarios/medieval-escenario.png" id="4_hdudg"]
+[ext_resource type="Texture2D" uid="uid://c8ccxlebsbf1i" path="res://imagenes/botonescampo1/BotonSacrificio.png" id="10_hbhjk"]
+[ext_resource type="FontFile" uid="uid://duwyhi2s8cphn" path="res://Cinzel.ttf" id="11_qyt1l"]
+[ext_resource type="Texture2D" uid="uid://din5j31n0hxcg" path="res://imagenes/botonescampo1/BotonBaranjar.png" id="12_7c5g7"]
+[ext_resource type="Texture2D" uid="uid://knmkuh7kk1fq" path="res://imagenes/botonescampo1/BotonCambioArdid.png" id="13_3o1sx"]
+[ext_resource type="Texture2D" uid="uid://djcnkss81ma71" path="res://imagenes/botonescampo1/ContadorTurno.png" id="14_2lnyw"]
+[ext_resource type="Texture2D" uid="uid://131akffkyea8" path="res://imagenes/botonescampo1/BotonPausa.png" id="14_m7a3u"]
+[ext_resource type="FontFile" uid="uid://dm18q0vkcuw8p" path="res://Almendra-Bold.ttf" id="15_gg5bv"]
+[ext_resource type="Texture2D" uid="uid://ba1oggxlfu2kt" path="res://imagenes/botonescampo1/BarraVidaUnder.png" id="16_y1kbq"]
+[ext_resource type="Texture2D" uid="uid://cpp3fnilxfo1r" path="res://imagenes/botonescampo1/BarraVida.png" id="17_m7a3u"]
+[ext_resource type="Texture2D" uid="uid://bwxk036cm5li3" path="res://imagenes/botonescampo1/BarraVidaProgress.png" id="18_5fmnn"]
+
+[node name="Campo1" type="Node2D" unique_id=807187685]
+script = ExtResource("1_ar4p3")
+ModoTutorial = true
+iconoCursorSacrificio = ExtResource("2_5fmnn")
+escenaCartaBase = ExtResource("2_qk0di")
+
+[node name="FONDO" type="Sprite2D" parent="." unique_id=591859094]
+position = Vector2(806.4, 453.6)
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("3_g8sj5")
+
+[node name="ESCENARIO" type="Sprite2D" parent="." unique_id=1181126171]
+position = Vector2(806.4, 453.6)
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("4_hdudg")
+
+[node name="jeremy mi hijo" type="Sprite2D" parent="." unique_id=1640264118]
+visible = false
+position = Vector2(578.25, 324.25)
+scale = Vector2(1.8328, 1.683727)
+texture = ExtResource("2_e0wnx")
+
+[node name="Timer" type="Timer" parent="." unique_id=270587084]
+autostart = true
+
+[node name="Pasar_Turno" type="Button" parent="." unique_id=485402027]
+offset_left = 85.0
+offset_top = 56.0
+offset_right = 93.0
+offset_bottom = 64.0
+
+[node name="SpawnTrono1" type="Marker2D" parent="." unique_id=1533911167]
+position = Vector2(190, 473)
+
+[node name="SpawnTrono2" type="Marker2D" parent="." unique_id=1433017232]
+position = Vector2(1426, 470)
+
+[node name="PantallaFinal" type="ColorRect" parent="." unique_id=1712408150]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 85.0
+offset_top = 56.0
+offset_right = 85.0
+offset_bottom = 56.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MensajeResultado" type="Label" parent="PantallaFinal" unique_id=224121774]
+layout_mode = 0
+offset_left = 6.0
+offset_top = -3.0
+offset_right = 46.0
+offset_bottom = 20.0
+
+[node name="Mod1" type="Marker2D" parent="." unique_id=698830398 groups=["zonas_invocacion"]]
+position = Vector2(569, 344)
+
+[node name="Indicador" type="ColorRect" parent="Mod1" unique_id=2126922730]
+offset_left = -8.0
+offset_top = -7.0
+offset_right = 32.0
+offset_bottom = 33.0
+scale = Vector2(0.38723856, 0.37211406)
+color = Color(0.8838381, 0.1367881, 0.2436428, 1)
+
+[node name="ModRival1" type="Marker2D" parent="." unique_id=1028389189 groups=["zonas_invocacion_rival"]]
+position = Vector2(1049, 344)
+
+[node name="Indicador" type="ColorRect" parent="ModRival1" unique_id=1987297612]
+offset_left = -7.0
+offset_top = -7.0
+offset_right = 33.0
+offset_bottom = 33.0
+scale = Vector2(0.38723856, 0.37211406)
+color = Color(0.8838381, 0.1367881, 0.2436428, 1)
+
+[node name="Mod2" type="Marker2D" parent="." unique_id=801882136 groups=["zonas_invocacion"]]
+position = Vector2(438, 491)
+
+[node name="Indicador" type="ColorRect" parent="Mod2" unique_id=1577266458]
+offset_left = -8.0
+offset_top = -7.0
+offset_right = 32.0
+offset_bottom = 33.0
+scale = Vector2(0.38723856, 0.37211406)
+color = Color(0.8838381, 0.1367881, 0.2436428, 1)
+
+[node name="ModRival2" type="Marker2D" parent="." unique_id=1202636240 groups=["zonas_invocacion_rival"]]
+position = Vector2(1168, 491)
+
+[node name="Indicador" type="ColorRect" parent="ModRival2" unique_id=2020004028]
+offset_left = -6.0
+offset_top = -6.0
+offset_right = 26.252869
+offset_bottom = 34.0
+scale = Vector2(0.38723856, 0.37211406)
+color = Color(0.8838381, 0.1367881, 0.2436428, 1)
+
+[node name="Mod3" type="Marker2D" parent="." unique_id=31331561 groups=["zonas_invocacion"]]
+position = Vector2(539, 654)
+
+[node name="Indicador" type="ColorRect" parent="Mod3" unique_id=1001165050]
+offset_left = -8.0
+offset_top = -7.0
+offset_right = 32.0
+offset_bottom = 33.0
+scale = Vector2(0.38723856, 0.37211406)
+color = Color(0.8838381, 0.1367881, 0.2436428, 1)
+
+[node name="ModRival3" type="Marker2D" parent="." unique_id=281382111 groups=["zonas_invocacion_rival"]]
+position = Vector2(1077, 650)
+
+[node name="Indicador" type="ColorRect" parent="ModRival3" unique_id=581110044]
+offset_left = -7.0
+offset_top = -6.0
+offset_right = 33.0
+offset_bottom = 34.0
+scale = Vector2(0.38723856, 0.37211406)
+color = Color(0.8838381, 0.1367881, 0.2436428, 1)
+
+[node name="ManoManual" type="Control" parent="." unique_id=145652396]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 842.0
+offset_top = 795.0
+offset_right = 882.0
+offset_bottom = 833.0
+
+[node name="Spot1" type="Marker2D" parent="ManoManual" unique_id=1151314638]
+position = Vector2(-165, -40.999985)
+rotation = -0.22
+
+[node name="Spot2" type="Marker2D" parent="ManoManual" unique_id=909545106]
+position = Vector2(-34, -49)
+
+[node name="Spot3" type="Marker2D" parent="ManoManual" unique_id=1639610396]
+position = Vector2(92, -36.999985)
+rotation = 0.22
+
+[node name="Spot4" type="Marker2D" parent="ManoManual" unique_id=184729106]
+position = Vector2(234, -36)
+
+[node name="ManoHechizos" type="Control" parent="." unique_id=550129384]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 1230.0
+offset_top = 742.0
+offset_right = 1270.0
+offset_bottom = 782.0
+
+[node name="SpotH1" type="Marker2D" parent="ManoHechizos" unique_id=550129385]
+position = Vector2(59.628784, -4)
+rotation = -0.18
+
+[node name="SpotH2" type="Marker2D" parent="ManoHechizos" unique_id=550129386]
+position = Vector2(150, -14)
+
+[node name="InterfazMenu" type="CanvasLayer" parent="." unique_id=916174861]
+layer = 50
+
+[node name="MenuAcciones" type="Control" parent="InterfazMenu" unique_id=224335847]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="InterfazMenu/MenuAcciones" unique_id=1829154968]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/separation = 18
+
+[node name="BtnAtaque" type="Button" parent="InterfazMenu/MenuAcciones/HBoxContainer" unique_id=2043477391]
+custom_minimum_size = Vector2(225, 88)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 34
+text = "ATACAR"
+
+[node name="BtnDefensa" type="Button" parent="InterfazMenu/MenuAcciones/HBoxContainer" unique_id=1630369539]
+custom_minimum_size = Vector2(225, 88)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 34
+text = "DEFENSA"
+
+[node name="SacrificioButton" type="TextureButton" parent="." unique_id=582472426]
+offset_left = 271.0
+offset_top = 660.0
+offset_right = 667.0
+offset_bottom = 939.0
+scale = Vector2(0.62, 0.62)
+texture_normal = ExtResource("10_hbhjk")
+texture_hover = ExtResource("10_hbhjk")
+
+[node name="textosacrificio" type="Label" parent="SacrificioButton" unique_id=919242391]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.53900003
+anchor_right = 0.5
+anchor_bottom = 0.53900003
+offset_left = -165.69235
+offset_top = -30.380981
+offset_right = 187.30765
+offset_bottom = 29.619019
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.86035514, 0.85539573, 0.85823584, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/line_spacing = 15
+theme_override_constants/paragraph_spacing = 8
+theme_override_constants/shadow_offset_x = 11
+theme_override_constants/shadow_offset_y = 8
+theme_override_constants/outline_size = 15
+theme_override_constants/shadow_outline_size = 13
+theme_override_fonts/font = ExtResource("11_qyt1l")
+theme_override_font_sizes/font_size = 40
+text = "S A C R I F I C A R"
+
+[node name="BarajarButton" type="TextureButton" parent="." unique_id=52418190]
+offset_left = 25.0
+offset_top = 660.0
+offset_right = 421.0
+offset_bottom = 939.0
+scale = Vector2(0.62, 0.62)
+texture_normal = ExtResource("12_7c5g7")
+texture_hover = ExtResource("12_7c5g7")
+
+[node name="textobarajar" type="Label" parent="BarajarButton" unique_id=248495000]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.53900003
+anchor_right = 0.5
+anchor_bottom = 0.53900003
+offset_left = -117.999985
+offset_top = -33.458008
+offset_right = 235.0
+offset_bottom = 26.541992
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.77254903, 0.92941177, 0.11372549, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/line_spacing = 15
+theme_override_constants/paragraph_spacing = 8
+theme_override_constants/shadow_offset_x = 11
+theme_override_constants/shadow_offset_y = 8
+theme_override_constants/outline_size = 15
+theme_override_constants/shadow_outline_size = 13
+theme_override_font_sizes/font_size = 39
+text = "B A R A J A R"
+
+[node name="ArdidBarButton" type="TextureButton" parent="." unique_id=1608527857]
+offset_left = 1448.0
+offset_top = 646.0
+offset_right = 1652.0
+offset_bottom = 861.0
+scale = Vector2(0.49, 0.49)
+texture_normal = ExtResource("13_3o1sx")
+texture_hover = ExtResource("13_3o1sx")
+ignore_texture_size = true
+
+[node name="PausaButton" type="TextureButton" parent="." unique_id=81058142]
+offset_left = 654.0
+offset_top = 88.0
+offset_right = 858.0
+offset_bottom = 303.0
+scale = Vector2(0.25, 0.25)
+texture_normal = ExtResource("14_m7a3u")
+texture_hover = ExtResource("14_m7a3u")
+ignore_texture_size = true
+
+[node name="TiempoPanel" type="TextureRect" parent="." unique_id=616476039]
+custom_minimum_size = Vector2(480, 145)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 751.0
+offset_top = 123.0
+offset_right = 1231.0
+offset_bottom = 268.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.197, 0.4)
+texture = ExtResource("14_2lnyw")
+expand_mode = 1
+
+[node name="HBox" type="HBoxContainer" parent="TiempoPanel" unique_id=896515983]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -127.38853
+offset_right = -187.38852
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1.7643311, 1)
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="tiempolabel" type="Label" parent="TiempoPanel/HBox" unique_id=1673255084]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9313763, 0.9303067, 0.9579267, 1)
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 83
+text = "TIEMPO"
+vertical_alignment = 1
+
+[node name="TurnoPanel" type="TextureRect" parent="." unique_id=36114729]
+custom_minimum_size = Vector2(480, 145)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 616.0
+offset_top = 159.0
+offset_right = 1096.0
+offset_bottom = 304.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.357, 0.448)
+expand_mode = 1
+
+[node name="HBox" type="HBoxContainer" parent="TurnoPanel" unique_id=1370937465]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.812263
+offset_top = -2.232143
+offset_right = -29.187744
+offset_bottom = -2.2321472
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1.2549, 1)
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="turno o avisos" type="Label" parent="TurnoPanel/HBox" unique_id=858833816]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 32
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 44
+text = "tostal banner"
+vertical_alignment = 1
+
+[node name="AvisoArdidPanel" type="TextureRect" parent="." unique_id=438604896]
+custom_minimum_size = Vector2(480, 145)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 370.00003
+offset_top = 133.99998
+offset_right = 850.0
+offset_bottom = 279.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.357, 0.448)
+expand_mode = 1
+
+[node name="avisos de ardid" type="Label" parent="AvisoArdidPanel" unique_id=842065078]
+layout_mode = 0
+offset_left = 58.812256
+offset_top = 36.767853
+offset_right = 422.81226
+offset_bottom = 102.76785
+scale = Vector2(1.2549, 1)
+pivot_offset = Vector2(182, 33)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 32
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 44
+text = "conteo de bomba"
+vertical_alignment = 1
+
+[node name="numero" type="Label" parent="AvisoArdidPanel" unique_id=2500019]
+layout_mode = 0
+offset_left = 64.425896
+offset_top = 93.75003
+offset_right = 428.4259
+offset_bottom = 159.75003
+scale = Vector2(1.2549, 1)
+pivot_offset = Vector2(182, 33)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 32
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 44
+text = "90"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureProgressBar_User" type="TextureProgressBar" parent="." unique_id=456251343]
+offset_left = 63.0
+offset_top = 167.0
+offset_right = 461.0
+offset_bottom = 265.0
+scale = Vector2(0.68, 0.68)
+texture_under = ExtResource("16_y1kbq")
+texture_over = ExtResource("17_m7a3u")
+texture_progress = ExtResource("18_5fmnn")
+texture_progress_offset = Vector2(1, 1)
+
+[node name="EnergiaPanel" type="TextureRect" parent="TextureProgressBar_User" unique_id=1297459384]
+custom_minimum_size = Vector2(480, 145)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -147.52942
+offset_top = 15.705879
+offset_right = 332.47058
+offset_bottom = 160.7059
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.592, 0.748)
+expand_mode = 1
+
+[node name="HBox" type="HBoxContainer" parent="TextureProgressBar_User/EnergiaPanel" unique_id=1157998459]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.812263
+offset_top = -2.232143
+offset_right = -29.187744
+offset_bottom = -2.2321472
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="energialabel" type="Label" parent="TextureProgressBar_User/EnergiaPanel/HBox" unique_id=1047631442]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42850503, 0.99, 0.16830002, 1)
+theme_override_constants/outline_size = 27
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 81
+text = "EP: 3/3"
+vertical_alignment = 1
+
+[node name="usuariolabel" type="Label" parent="TextureProgressBar_User" unique_id=420840337]
+texture_filter = 4
+layout_mode = 0
+offset_left = 116.17647
+offset_top = -30.882347
+offset_right = 280.17645
+offset_bottom = 21.117653
+theme_override_constants/outline_size = 16
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 39
+text = "USUARIO"
+horizontal_alignment = 1
+
+[node name="TextureProgressBar_Rival" type="TextureProgressBar" parent="." unique_id=2006015222]
+offset_left = 1278.0
+offset_top = 167.0
+offset_right = 1676.0
+offset_bottom = 265.0
+scale = Vector2(0.68, 0.68)
+fill_mode = 1
+texture_under = ExtResource("16_y1kbq")
+texture_over = ExtResource("17_m7a3u")
+texture_progress = ExtResource("18_5fmnn")
+texture_progress_offset = Vector2(1, 1)
+
+[node name="EnergiaPanel" type="TextureRect" parent="TextureProgressBar_Rival" unique_id=1402039773]
+custom_minimum_size = Vector2(480, 145)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -147.52942
+offset_top = 15.705879
+offset_right = 332.47058
+offset_bottom = 160.7059
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.592, 0.748)
+expand_mode = 1
+
+[node name="HBox" type="HBoxContainer" parent="TextureProgressBar_Rival/EnergiaPanel" unique_id=1658140511]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.812263
+offset_top = -2.232143
+offset_right = -29.187744
+offset_bottom = -2.2321472
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="energialabel" type="Label" parent="TextureProgressBar_Rival/EnergiaPanel/HBox" unique_id=1776855537]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42850503, 0.99, 0.16830002, 1)
+theme_override_constants/outline_size = 27
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 81
+text = "EP: 3/3"
+vertical_alignment = 1
+
+[node name="CPUlabel" type="Label" parent="TextureProgressBar_Rival" unique_id=2132158473]
+texture_filter = 4
+layout_mode = 0
+offset_left = 97.05882
+offset_top = -30.882347
+offset_right = 301.05884
+offset_bottom = 21.117653
+theme_override_constants/outline_size = 16
+theme_override_fonts/font = ExtResource("15_gg5bv")
+theme_override_font_sizes/font_size = 39
+text = "MALO"
+horizontal_alignment = 1
+
+[node name="MenuPausa" parent="." unique_id=567049717 instance=ExtResource("3_mpausa")]
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1921821545]
+position = Vector2(806.4, 453.6)
+rotation = -3.1415925
+scale = Vector2(0.83, 0.735)
+zoom = Vector2(1.51, 1.618)
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="pressed" from="Pasar_Turno" to="." method="_on_pasar_turno_pressed"]
+[connection signal="pressed" from="InterfazMenu/MenuAcciones/HBoxContainer/BtnAtaque" to="." method="_on_btn_ataque_pressed"]
+[connection signal="pressed" from="InterfazMenu/MenuAcciones/HBoxContainer/BtnDefensa" to="." method="_on_btn_defensa_pressed"]

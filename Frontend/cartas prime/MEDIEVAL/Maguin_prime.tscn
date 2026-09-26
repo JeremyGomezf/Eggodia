@@ -502,17 +502,15 @@ position = Vector2(87, -5)
 position = Vector2(-2, -25)
 scale = Vector2(0.31, 0.31)
 sprite_frames = SubResource("SpriteFrames_lp7oi")
-animation = &"derrota"
-frame = 21
-frame_progress = 1.0
+animation = &"idle"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=1704710540]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 100.99998
-offset_top = -20.0
-offset_right = 140.99997
-offset_bottom = 20.0
+offset_left = -107.99999
+offset_top = -35.0
+offset_right = -68.0
+offset_bottom = 5.0
 scale = Vector2(0.91999876, 0.7599994)
 
 [node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=861492653]

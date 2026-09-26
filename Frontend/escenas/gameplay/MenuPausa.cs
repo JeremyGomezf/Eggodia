@@ -3,6 +3,11 @@ using System;
 
 public partial class MenuPausa : CanvasLayer
 {
+	// Panel de "¿seguro que te rindes?": sin imagen de fondo, solo texto y botones, bien grandes.
+	private const int TAM_FUENTE_TEXTO_RENDIRSE = 46;
+	private const int TAM_FUENTE_BOTON_RENDIRSE = 42;
+	private static readonly Vector2 TAM_BOTON_RENDIRSE = new(320, 110);
+
 	private ColorRect _overlay;
 	private PanelSettings _panelSettings;
 	private VBoxContainer _vboxPausa;
@@ -30,11 +35,35 @@ public partial class MenuPausa : CanvasLayer
 		EstiloUI.Boton(btnContinue, 42);
 		EstiloUI.Boton(btnSettings, 42);
 		EstiloUI.Boton(btnExit, 42, rojo: true);      // RENDIRSE en rojo
-		EstiloUI.Boton(btnCancelar, 32);
-		EstiloUI.Boton(btnConfirmar, 32, rojo: true); // SALIR en rojo
+		EstiloUI.Boton(btnCancelar, TAM_FUENTE_BOTON_RENDIRSE);
+		EstiloUI.Boton(btnConfirmar, TAM_FUENTE_BOTON_RENDIRSE, rojo: true); // SALIR en rojo
 		EstiloUI.Titulo(GetNodeOrNull<Label>("Overlay/VBox/Titulo"), 68);
-		EstiloUI.Texto(GetNodeOrNull<Label>("Overlay/PanelConfirmacion/VBox/Label"), 34, EstiloUI.TextoClaro);
-		EstiloUI.MarcoCristal(_panelConfirmacion); // panel de "¿rendirse?" con el marco de cristal del combate
+
+		// Confirmación de rendirse: SIN marco de imagen (se pidió sacarlo, desentonaba) — queda el panel
+		// plano de la escena y se agrandan texto y botones, que es lo único que tiene que leerse acá.
+		EstiloUI.Texto(GetNodeOrNull<Label>("Overlay/PanelConfirmacion/VBox/Label"),
+			TAM_FUENTE_TEXTO_RENDIRSE, EstiloUI.TextoClaro);
+		btnCancelar.CustomMinimumSize  = TAM_BOTON_RENDIRSE;
+		btnConfirmar.CustomMinimumSize = TAM_BOTON_RENDIRSE;
+
+		// Fondo semi-transparente SOLO para este panel (el StyleBox de la escena es opaco y además lo
+		// comparten los botones, por eso se aplica por código acá y no se toca aquel). Los botones
+		// quedan tal cual: solo se suaviza la caja de atrás, que tapaba demasiado.
+		if (_panelConfirmacion != null)
+		{
+			var fondo = new StyleBoxFlat
+			{
+				BgColor          = new Color(0.08f, 0.11f, 0.18f, 0.55f),
+				BorderColor      = new Color(0.65f, 0.75f, 0.9f, 0.35f),
+				BorderWidthLeft  = 2, BorderWidthTop    = 2,
+				BorderWidthRight = 2, BorderWidthBottom = 2,
+				CornerRadiusTopLeft     = 18, CornerRadiusTopRight    = 18,
+				CornerRadiusBottomLeft  = 18, CornerRadiusBottomRight = 18,
+				ContentMarginLeft = 30, ContentMarginRight  = 30,
+				ContentMarginTop  = 26, ContentMarginBottom = 26,
+			};
+			_panelConfirmacion.AddThemeStyleboxOverride("panel", fondo);
+		}
 
 		btnContinue.Pressed += Reanudar;
 		btnSettings.Pressed += AbrirSettings;

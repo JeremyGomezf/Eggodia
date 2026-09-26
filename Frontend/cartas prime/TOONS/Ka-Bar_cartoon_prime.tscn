@@ -772,10 +772,10 @@ animation = &"idle"
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 93.0
-offset_top = -18.0
-offset_right = 133.0
-offset_bottom = 22.0
+offset_left = -96.99999
+offset_top = -36.0
+offset_right = -56.999992
+offset_bottom = 4.0
 scale = Vector2(0.91999876, 0.7599994)
 
 [node name="BarraVida" type="ProgressBar" parent="StatsTropa" unique_id=642872417]
