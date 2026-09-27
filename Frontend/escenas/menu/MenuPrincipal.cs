@@ -186,6 +186,7 @@ public partial class MenuPrincipal : Control
 		{
 			btnSettings.Pressed += MostrarSettings;
 			AgregarAnimacionHover(btnSettings);
+			CrearBotonTutorial(btnSettings); // botón de tutorial JUNTO al de ajustes (solo menú principal)
 		}
 
 		// 5b. HUD superior: nombre/nivel del jugador + perfil al hacer clic en UserPanel.
@@ -836,6 +837,52 @@ public partial class MenuPrincipal : Control
 		return _cacheCartaData.TryGetValue(rutaEscena, out var carta)
 			? (carta.Nombre, carta.Imagen)
 			: (null, null);
+	}
+
+	// Botón de TUTORIAL (Cómo Jugar) al lado del de Ajustes — SOLO en el menú principal (este script).
+	// Se crea por código para no depender de la escena; estilo nuestro: círculo oscuro con "?" dorado.
+	// Al pulsarlo abre la pantalla "Cómo Jugar" (aquí, sin partida en curso, es cambio de escena normal).
+	private void CrearBotonTutorial(TextureButton btnAjustes)
+	{
+		var btn = new Button { Name = "BtnTutorial", Text = "?" };
+		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+
+		// Mismo anclaje que Ajustes (esquina superior derecha, crece hacia la izquierda), pegado a su izquierda.
+		btn.AnchorLeft = btn.AnchorRight = 1f;
+		btn.AnchorTop  = btn.AnchorBottom = 0f;
+		btn.GrowHorizontal = Control.GrowDirection.Begin;
+		float ancho = btnAjustes.OffsetRight - btnAjustes.OffsetLeft; // mismo tamaño que Ajustes
+		btn.OffsetTop    = btnAjustes.OffsetTop;
+		btn.OffsetBottom = btnAjustes.OffsetBottom;
+		btn.OffsetRight  = btnAjustes.OffsetLeft - 16f;               // 16px a la izquierda de Ajustes
+		btn.OffsetLeft   = btn.OffsetRight - ancho;
+
+		// Estilo del juego: "?" dorado con la fuente Almendra, en un círculo oscuro con borde de oro.
+		if (EstiloUI.Fuente != null) btn.AddThemeFontOverride("font", EstiloUI.Fuente);
+		btn.AddThemeColorOverride("font_color", EstiloUI.Dorado);
+		btn.AddThemeColorOverride("font_hover_color", new Color(1f, 0.92f, 0.55f));
+		btn.AddThemeColorOverride("font_pressed_color", EstiloUI.Dorado);
+		btn.AddThemeFontSizeOverride("font_size", 64);
+		float radio = ancho / 2f;
+		var sb = new StyleBoxFlat { BgColor = new Color(0.05f, 0.06f, 0.11f, 0.92f), BorderColor = EstiloUI.OroBorde };
+		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 3;
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = (int)radio;
+		sb.ShadowColor = new Color(0.6f, 0.45f, 0.1f, 0.35f); sb.ShadowSize = 8;
+		var sbHover = (StyleBoxFlat)sb.Duplicate();
+		sbHover.BgColor = new Color(0.10f, 0.12f, 0.20f, 0.96f);
+		sbHover.BorderColor = new Color(1f, 0.9f, 0.5f);
+		btn.AddThemeStyleboxOverride("normal", sb);
+		btn.AddThemeStyleboxOverride("hover", sbHover);
+		btn.AddThemeStyleboxOverride("pressed", sbHover);
+		btn.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
+
+		btn.Pressed += () =>
+		{
+			ContextoOnline.Limpiar();   // el tutorial es local: nunca arrastrar un contexto online previo
+			GetTree().ChangeSceneToFile("res://escenas/gameplay/campo_tutorial.tscn");
+		};
+		AddChild(btn);
+		AgregarAnimacionHover(btn);
 	}
 
 	private void MostrarSettings()

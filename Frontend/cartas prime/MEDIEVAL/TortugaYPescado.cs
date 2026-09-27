@@ -24,6 +24,8 @@ public partial class TortugaYPescado : TropaBase
 	private int  _faseTortuga     = 1;    // 1: normal, 2: caparazón roto
 	private int  _turnosRestantes = 4;
 	private bool _revirtiendo     = false;
+	// Tutorial: la transmutación del Maguín es PERMANENTE (no revierte) — se activa desde MaguinPrime.
+	public  bool Permanente       = false;
 	private bool _enDefensa       = false;
 	private Node2D _objetivoAtaque;
 
@@ -222,6 +224,7 @@ public partial class TortugaYPescado : TropaBase
 	public void TickTransformacion()
 	{
 		if (_estaMuerto || _revirtiendo) return;
+		if (Permanente) return; // tutorial: no revierte nunca
 		_turnosRestantes--;
 		if (_turnosRestantes <= 0) IniciarReversion();
 	}

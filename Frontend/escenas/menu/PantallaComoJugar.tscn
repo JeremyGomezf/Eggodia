@@ -253,7 +253,7 @@ text = "4 · Hechizos"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
 theme_override_font_sizes/font_size = 15
-text = "Cinco hechizos/ardides, uno por partida cada uno: Curación (cura hasta 200 HP a una tropa tuya), Robar Carta (te llevas una carta de la mano rival), Veneno (50 de daño por turno durante 3 turnos a una tropa rival), Bloqueo (una tropa rival no puede actuar 2 turnos) y Encebollado (+100 de ataque y +100 de escudo a una tropa tuya)."
+text = "Hechizos/ardides, uno por partida cada uno. Los básicos: Curación (cura hasta 200 HP a una tropa tuya), Robar Carta (te llevas una carta de la mano rival), Veneno (50 de daño por turno durante 3 turnos a una tropa rival), Bloqueo (una tropa rival no puede actuar 2 turnos) y Encebollado (+50 de ataque, +50 de escudo y +100 de vida a una tropa tuya). En la Tienda puedes desbloquear más (Escudo, Desprotegido, Débil, Fuerza, Nuclear…)."
 autowrap_mode = 2
 
 [node name="Card5" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]
@@ -275,7 +275,7 @@ text = "5 · Energía y turnos"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.86, 0.92, 1)
 theme_override_font_sizes/font_size = 15
-text = "Empiezas con 3 de energía por turno. Cada 3 turnos completos ganas +1 (hasta 5). Si tu HP baja del 30%, ganas 1 extra ese turno."
+text = "Cada turno dispones de 3 de energía (fija, no aumenta con los turnos). Cada acción que realizas gasta energía; cuando se te acaba, tu turno termina y pasa al rival."
 autowrap_mode = 2
 
 [node name="Card6" type="PanelContainer" parent="Root/Scroll/Margin/Contenido/Grid"]

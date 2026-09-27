@@ -164,6 +164,16 @@ public partial class Campo1 : Node2D
 		if (_guiaTutorial != null) _guiaTutorial.Visible = !string.IsNullOrEmpty(_textoGuiaTutorialActual);
 	}
 
+	/// <summary>Oculta/muestra TODA la capa del tutorial (cuadro de guía "info") mientras el menú de
+	/// pausa está abierto. La capa está en Layer 500 (por encima de todo), así que sin esto el "info"
+	/// quedaba flotando ENCIMA del panel de pausa. Lo llama MenuPausa al pausar/reanudar. Fuera del
+	/// tutorial _capaTutorial es null → no hace nada.</summary>
+	public void OcultarCapaTutorialEnPausa(bool pausado)
+	{
+		if (_capaTutorial != null && IsInstanceValid(_capaTutorial))
+			_capaTutorial.Visible = !pausado;
+	}
+
 	// ── "Dale click a cualquier lado para seguir" — mecanismo real de avance ─────────────────
 	// (Antes el texto lo prometía pero nada estaba conectado; ahora si ModoTutorial y hay un paso
 	// esperando, el primer click/touch en cualquier lado dispara el siguiente paso. Enganchado
@@ -389,12 +399,54 @@ public partial class Campo1 : Node2D
 
 		if (!juegoTerminado)
 		{
-			CambiarTurno();
-			// LO QUE SIGUE (próxima etapa, no armado todavía): el cuadro Guia avisando que el
-			// Soldado Real quedó herido + arrastrar guiado la carta de Curación (con solo el
-			// Soldado Real como objetivo válido), el uso forzado de la habilidad del Maguín sobre
-			// el Tanque rival (transformación permanente en pez), el sacrificio guiado del Soldado
-			// Real + elegir reemplazo, el remate final, y la pantalla "TUTORIAL APROBADO".
+			CambiarTurno(); // vuelve el turno al jugador (turno 2)
+			// Deja ver el cartel "TU TURNO" y arranca el paso guionado de Curación.
+			GetTree().CreateTimer(1.6f).Timeout += () => { if (!juegoTerminado) PasoCurarSoldadoTutorial(); };
 		}
+	}
+
+	// ═══════════════════════════════════════════════════════════════════════════
+	// SEGUNDA MITAD GUIONADA: Curación → Habilidad Maguín → (sacrificio/remate/aprobado, próximas)
+	// ═══════════════════════════════════════════════════════════════════════════
+
+	// ── PIEZA 1: CURACIÓN GUIADA AL SOLDADO REAL ──────────────────────────────────────────────
+	private bool _esperandoCuracionTutorial = false;
+
+	private void PasoCurarSoldadoTutorial()
+	{
+		// Bloqueo de menús de tropa mientras se cura (el arrastre de la carta de Curación NO pasa por
+		// MostrarMenuTropa, así que sigue permitido; esto solo evita que ataque una tropa por error).
+		_tutorialBloqueoTotal = true;
+		_esperandoCuracionTutorial = true;
+		MostrarGuiaConTexto("El Soldado Real quedó herido por el ataque enemigo. Arrastra tu carta de " +
+			"CURACIÓN sobre él (el círculo verde te marca dónde soltarla) para devolverle vida.");
+	}
+
+	/// <summary>La llama AplicarCuracion (Campo1.Hechizos.cs) cuando se cura una tropa en modo tutorial.
+	/// Solo avanza si estábamos esperando la curación y fue sobre el Soldado Real.</summary>
+	private void NotificarCuracionTutorial(Node2D objetivo)
+	{
+		if (!_esperandoCuracionTutorial || !(objetivo is SoldadoRealPrime)) return;
+		_esperandoCuracionTutorial = false;
+		_tutorialBloqueoTotal = false;
+		CallDeferred(nameof(PasoMaguinTutorial));
+	}
+
+	// ── PIEZA 2: HABILIDAD DEL MAGUÍN SOBRE EL TANQUE (transformación permanente) ──────────────
+	private void PasoMaguinTutorial()
+	{
+		MostrarGuiaConTexto("¡Bien hecho! Ahora usa la HABILIDAD del Maguín: transformará al Tanque " +
+			"enemigo en un pez indefenso… ¡y en el tutorial es para siempre! Toca al Maguín y elige HABILIDAD.");
+		// Solo se puede tocar el Maguín, y solo su botón HABILIDAD queda habilitado. Al usarla,
+		// AvanzarPasoForzadoTutorial(Habilidad) dispara el siguiente paso.
+		ForzarPasoTutorial(typeof(MaguinPrime), AccionForzadaTutorial.Habilidad, PasoTrasMaguinTutorial);
+	}
+
+	private void PasoTrasMaguinTutorial()
+	{
+		// PRÓXIMA PIEZA (aún no armada): sacrificio guiado del Soldado Real + elegir reemplazo,
+		// remate final y pantalla "TUTORIAL APROBADO". Por ahora cierra el guion sin trabar nada.
+		MostrarGuiaConTexto("¡Excelente! Transformaste al Tanque. (El tutorial continuará con el " +
+			"sacrificio y el remate final.)");
 	}
 }

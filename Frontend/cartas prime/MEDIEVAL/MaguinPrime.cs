@@ -122,6 +122,14 @@ public partial class MaguinPrime : TropaBase
 			return;
 		}
 
+		// Tutorial: sin selección por clic — apunta directo al Tanque rival (guionado), y la
+		// transformación queda PERMANENTE (ver TransformarEnAnimal).
+		if (EsModoTutorial())
+		{
+			ConfirmarTransmutacion(BuscarTanqueRivalTutorial() ?? BuscarEnemigoConMasVida());
+			return;
+		}
+
 		_esperandoSeleccion = true;
 		var campo = GetTree().Root.FindChild("Campo1", true, false);
 		campo?.Call("MostrarAviso", "Decide a cuál transformas", new Color(0.5f, 1f, 0.9f));
@@ -200,6 +208,30 @@ public partial class MaguinPrime : TropaBase
 		_fueHabilidadEsteAtaque = true;
 		_objetivoTransmutacion  = objetivo;
 		ReproducirAtaque();
+	}
+
+	// ── TUTORIAL ────────────────────────────────────────────────────────────────
+	private bool EsModoTutorial()
+	{
+		var campo = GetTree().Root.FindChild("Campo1", true, false);
+		if (campo == null) return false;
+		try { return (bool)campo.Get("ModoTutorial"); } catch { return false; }
+	}
+
+	// En el tutorial la habilidad se usa de forma guionada antes de su turno 4 de desbloqueo,
+	// así que ahí nunca está bloqueada. Fuera del tutorial, la regla normal (turno 4) sigue igual.
+	public override bool HabilidadBloqueada()
+	{
+		if (EsModoTutorial()) return false;
+		return base.HabilidadBloqueada();
+	}
+
+	// Tutorial: el Tanque rival (guionado) es siempre el objetivo de la transmutación.
+	private Node2D BuscarTanqueRivalTutorial()
+	{
+		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+			if (n is TanqueCartoonPrime tq && IsInstanceValid(tq)) return tq;
+		return null;
 	}
 
 	private Node2D BuscarEnemigoConMasVida()
@@ -321,6 +353,7 @@ public partial class MaguinPrime : TropaBase
 			animal.tropaOriginal          = objetivo;
 			animal.vidaOriginalGuardada   = vidaObjetivo;
 			animal.escudoOriginalGuardado = escudoObjetivo;
+			animal.Permanente             = EsModoTutorial(); // tutorial: no revierte
 		}
 
 		Node padre = objetivo.GetParent() ?? GetTree().Root;

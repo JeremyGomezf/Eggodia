@@ -488,7 +488,7 @@ public partial class Campo1 : Node2D
 		InicializarManoVisualCPU();
 		// Se sortea acá (antes de CrearEscenaDeBatalla) para que la skin del rival pueda usar este
 		// mismo nombre — ver SkinPorNombreCPU(). En online no aplica: ahí se usa ContextoOnline.RivalNombre.
-		_nombreCPUElegido = ModoTutorial ? "Sargento Huevo" : NOMBRES_CPU[random.Next(NOMBRES_CPU.Length)];
+		_nombreCPUElegido = ModoTutorial ? "Coronel Huevo" : NOMBRES_CPU[random.Next(NOMBRES_CPU.Length)];
 		CrearEscenaDeBatalla();
 		// Tutorial: la mano NO se llena acá — la propia secuencia guiada (Campo1.Tutorial.cs) la
 		// puebla recién después del splash de bienvenida y los 3 mensajes de introducción, para que

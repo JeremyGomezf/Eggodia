@@ -107,6 +107,8 @@ public partial class MenuPausa : CanvasLayer
 		_overlay.Visible = true;
 		_vboxPausa.Visible = true;
 		_panelConfirmacion.Visible = false;
+		// Tutorial: ocultar el cuadro "info" (capa 500) para que no quede encima del panel de pausa.
+		GetParentOrNull<Campo1>()?.OcultarCapaTutorialEnPausa(true);
 	}
 
 	private void Reanudar()
@@ -114,6 +116,7 @@ public partial class MenuPausa : CanvasLayer
 		_overlay.Visible = false;
 		if (_panelSettings != null) _panelSettings.Visible = false;
 		GetTree().Paused = false;
+		GetParentOrNull<Campo1>()?.OcultarCapaTutorialEnPausa(false); // volver a mostrar el "info"
 	}
 
 	private void AbrirSettings()

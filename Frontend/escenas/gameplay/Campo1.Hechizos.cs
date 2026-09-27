@@ -59,6 +59,7 @@ public partial class Campo1 : Node2D
 		Tween tw = objetivo.CreateTween();
 		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", COLOR_CURACION, 0.2f);
 		tw.TweenProperty(TropaBase.NodoParaTinte(objetivo), "modulate", Colors.White, 0.5f);
+		if (ModoTutorial) NotificarCuracionTutorial(objetivo); // avanza el paso guionado de curación
 	}
 
 	/// <summary>Tras devolverle escudo a una tropa, le avisa si tiene facetas por escudo (el Granadero)
