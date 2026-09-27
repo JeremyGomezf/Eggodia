@@ -372,7 +372,7 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_sec_btn")
 theme_override_styles/hover = SubResource("StyleBoxFlat_sec_btn_hover")
-text = "CÓMO JUGAR"
+text = "TUTORIAL"
 
 [node name="BtnPruebas" type="Button" parent="SecondaryButtons" unique_id=1573578891]
 custom_minimum_size = Vector2(235, 50)

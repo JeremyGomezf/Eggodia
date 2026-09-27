@@ -1,4 +1,4 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dxollmex1pokr"]
 
 [ext_resource type="Script" uid="uid://ckyirl8sq33f" path="res://escenas/gameplay/Campo1.cs" id="1_ar4p3"]
 [ext_resource type="Texture2D" uid="uid://c05bnuea68pjh" path="res://imagenes/MenuNuevo/calaca_icon.png" id="2_5fmnn"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://kf7oiropv673" path="res://imagenes/Escenarios/medievalFONDO.png" id="3_g8sj5"]
 [ext_resource type="PackedScene" uid="uid://mpausa123" path="res://escenas/gameplay/MenuPausa.tscn" id="3_mpausa"]
 [ext_resource type="Texture2D" uid="uid://dw12iugljdasy" path="res://imagenes/Escenarios/medieval-escenario.png" id="4_hdudg"]
+[ext_resource type="PackedScene" uid="uid://cl4qpvtusmlu" path="res://efectos/guiatexto.tscn" id="8_l1tl8"]
 [ext_resource type="Texture2D" uid="uid://c8ccxlebsbf1i" path="res://imagenes/botonescampo1/BotonSacrificio.png" id="10_hbhjk"]
 [ext_resource type="FontFile" uid="uid://duwyhi2s8cphn" path="res://Cinzel.ttf" id="11_qyt1l"]
 [ext_resource type="Texture2D" uid="uid://din5j31n0hxcg" path="res://imagenes/botonescampo1/BotonBaranjar.png" id="12_7c5g7"]
@@ -20,9 +21,9 @@
 
 [node name="Campo1" type="Node2D" unique_id=807187685]
 script = ExtResource("1_ar4p3")
-ModoTutorial = true
 iconoCursorSacrificio = ExtResource("2_5fmnn")
 escenaCartaBase = ExtResource("2_qk0di")
+ModoTutorial = true
 
 [node name="FONDO" type="Sprite2D" parent="." unique_id=591859094]
 position = Vector2(806.4, 453.6)
@@ -205,6 +206,10 @@ layout_mode = 2
 theme_override_fonts/font = ExtResource("15_gg5bv")
 theme_override_font_sizes/font_size = 34
 text = "DEFENSA"
+
+[node name="Guia" parent="." unique_id=1418570774 instance=ExtResource("8_l1tl8")]
+position = Vector2(507, 590)
+scale = Vector2(0.975, 0.975)
 
 [node name="SacrificioButton" type="TextureButton" parent="." unique_id=582472426]
 offset_left = 271.0

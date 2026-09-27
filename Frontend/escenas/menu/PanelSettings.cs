@@ -4,6 +4,13 @@ using System;
 public partial class PanelSettings : PanelContainer
 {
 	private const string RUTA_COMO_JUGAR = "res://escenas/menu/PantallaComoJugar.tscn";
+	// Desde el MENÚ PRINCIPAL este botón ya no abre la guía de texto: lanza el tutorial jugable.
+	// Dentro de una partida (Ajustes desde el menú de pausa) sigue siendo "Cómo jugar" como siempre,
+	// porque ahí no se puede arrancar otra partida encima.
+	private const string RUTA_TUTORIAL_JUGABLE = "res://escenas/gameplay/campo_tutorial.tscn";
+
+	/// <summary>True si este panel de Ajustes es el del menú principal (no el de la pausa en partida).</summary>
+	private bool EstoyEnMenuPrincipal() => GetTree()?.CurrentScene is MenuPrincipal;
 	private const string RUTA_LOGIN      = "res://escenas/menu/PanelLogin.tscn";
 
 	private HSlider _sliderVolumen;
@@ -83,7 +90,12 @@ public partial class PanelSettings : PanelContainer
 		// congelada y no responde a nada. Y "Cómo jugar" desde una partida NO debe cambiar de escena
 		// (destruiría la partida y al volver caías al menú): se muestra como CAPA encima. Ver AbrirComoJugar.
 		if (_btnComoJugar != null)
+		{
 			_btnComoJugar.Pressed += AbrirComoJugar;
+			// El texto se decide diferido: al correr _Ready, CurrentScene puede no estar asignada
+			// todavía y no se sabría si este panel es el del menú o el de la pausa.
+			Callable.From(AjustarTextoBotonComoJugar).CallDeferred();
+		}
 
 		if (_btnCerrarSesion != null)
 			_btnCerrarSesion.Pressed += () =>
@@ -127,8 +139,23 @@ public partial class PanelSettings : PanelContainer
 	// Abre "Cómo jugar". Si venimos de una partida en curso (árbol pausado, p. ej. VS BOT desde la
 	// pausa), la muestra como CAPA encima de la partida SIN destruirla: "volver" cierra la capa y sigues
 	// en la partida. Desde el menú principal (no pausado) se comporta como antes: cambia de escena.
+	private void AjustarTextoBotonComoJugar()
+	{
+		if (_btnComoJugar == null || !IsInstanceValid(_btnComoJugar)) return;
+		if (EstoyEnMenuPrincipal()) _btnComoJugar.Text = "TUTORIAL";
+	}
+
 	private void AbrirComoJugar()
 	{
+		// Menú principal: arranca el tutorial jugable directamente.
+		if (!GetTree().Paused && EstoyEnMenuPrincipal())
+		{
+			ContextoOnline.Limpiar(); // el tutorial es local: no arrastrar un contexto online previo
+			Preferencias.TutorialVisto = true;
+			GetTree().ChangeSceneToFile(RUTA_TUTORIAL_JUGABLE);
+			return;
+		}
+
 		var escena = GD.Load<PackedScene>(RUTA_COMO_JUGAR);
 
 		if (GetTree().Paused && escena != null)

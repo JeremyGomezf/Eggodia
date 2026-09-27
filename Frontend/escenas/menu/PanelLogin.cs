@@ -207,6 +207,9 @@ public partial class PanelLogin : Control
 				// Pasa al perfil de ESTA cuenta (su propio archivo: nada del invitado ni de otra cuenta)
 				// y trae del servidor su inventario completo (monedas + skins + tronos + ítems + equipado).
 				SesionJuego.Instance.ActivarPerfil(usuario.Id, usuario.Nombre);
+				// Cuenta recién creada: el menú principal abrirá el tutorial una sola vez. Si esto
+				// fue un inicio de sesión normal, no se toca nada.
+				if (_accionPendiente == "registro") SesionJuego.CuentaRecienCreada = true;
 				Economia.Instancia()?.CargarInventarioCuenta(usuario.Id);
 				GD.Print($"[Login] ¡Bienvenido, {usuario.Nombre}! (ID: {usuario.Id}, monedas: {usuario.Monedas})");
 				IrAlMenu();

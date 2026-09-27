@@ -151,10 +151,14 @@ public partial class Campo1 : Node2D
 
 	/// <summary>Porcentaje a pintar en la barra: 0 solo si está realmente muerto; si le queda algo de
 	/// vida, nunca menos del mínimo visible. Vale igual para el jugador y para el rival.</summary>
-	private double PorcentajeBarraVida(int vida)
+	private double PorcentajeBarraVida(int vida, bool esRival = false)
 	{
 		if (vida <= 0) return 0;
-		float pct = (float)vida / vidaMaxJugador * 100f;
+		// Tutorial: el huevo rival tiene poca vida de verdad (para que caiga al morir sus tropas),
+		// pero SU barra se mide contra esa vida reducida — así se ve llena al empezar, en vez de a
+		// un quinto, que daba la impresión de que ya venía golpeado.
+		int maximo = (ModoTutorial && esRival) ? VIDA_RIVAL_TUTORIAL : vidaMaxJugador;
+		float pct = (float)vida / maximo * 100f;
 		return Mathf.Max(pct, MINIMO_BARRA_VISIBLE);
 	}
 
@@ -163,8 +167,9 @@ public partial class Campo1 : Node2D
 	private void SincronizarVidaConBarra()
 	{
 		int minimoVisible = Mathf.CeilToInt(vidaMaxJugador * FRACCION_VIDA_VISIBLE);
+		int minimoRival   = ModoTutorial ? Mathf.CeilToInt(VIDA_RIVAL_TUTORIAL * FRACCION_VIDA_VISIBLE) : minimoVisible;
 		if (vidaJugador > 0 && vidaJugador <= minimoVisible) vidaJugador = 0;
-		if (vidaRival   > 0 && vidaRival   <= minimoVisible) vidaRival   = 0;
+		if (vidaRival   > 0 && vidaRival   <= minimoRival)   vidaRival   = 0;
 	}
 
 	private void CheckEstadoJuego()
@@ -211,7 +216,9 @@ public partial class Campo1 : Node2D
 			await AnimarMuerteHuevo(perdioElJugador: !esVictoria);
 			if (!IsInstanceValid(this)) return;
 
-			MostrarFraseFinPartida(frases[random.Next(frases.Length)], colorFrase);
+			// Tutorial: no van las frases burlonas/celebratorias al azar — siempre el mismo cierre.
+			string frase = (ModoTutorial && esVictoria) ? "TUTORIAL COMPLETADO" : frases[random.Next(frases.Length)];
+			MostrarFraseFinPartida(frase, colorFrase);
 			if (_lblTiempo != null) _lblTiempo.Text = caras[random.Next(caras.Length)];
 
 			// El huevo que quedó vivo festeja mientras se lee la frase: se mece de lado a lado en su
@@ -248,7 +255,14 @@ public partial class Campo1 : Node2D
 			{
 				if (_reproductorMusica.Stream is AudioStreamMP3 mp3) mp3.Loop = esVictoria;
 				float duracion = (float)_reproductorMusica.Stream.GetLength();
-				if (esVictoria)
+				// Tutorial: al salir la frase de cierre suenan los ÚLTIMOS 15 SEGUNDOS de su música
+				// (en la partida normal son los últimos 10).
+				if (ModoTutorial)
+				{
+					float colaTutorial = Mathf.Max(0f, duracion - 15f);
+					_reproductorMusica.Seek(colaTutorial);
+				}
+				else if (esVictoria)
 				{
 					if (duracion > 10f) _reproductorMusica.Seek(duracion - 10f);
 				}
@@ -266,7 +280,8 @@ public partial class Campo1 : Node2D
 		if (msg.Contains("DERROTA"))
 		{
 			Preferencias.PartidasPerdidas++;
-			int monedasConsuelo = Economia.Instancia().RecompensarPartida("derrota", 0, EsOnline);
+			// El tutorial no paga: ni al ganar ni al (raro) perder.
+			int monedasConsuelo = ModoTutorial ? 0 : Economia.Instancia().RecompensarPartida("derrota", 0, EsOnline);
 			var escenaDerrota = GD.Load<PackedScene>("res://escenas/gameplay/PantallaDerrota.tscn");
 			if (escenaDerrota != null)
 			{
@@ -298,6 +313,8 @@ public partial class Campo1 : Node2D
 			{
 				var pv = (PantallaVictoria)escenaVictoria.Instantiate();
 				pv.EsOnline         = EsOnline; // decide JUGAR DE NUEVO vs RE-ARMAR MAZO
+				pv.EsTutorial       = ModoTutorial; // sin monedas, sin auto-achicado, "REPETIR TUTORIAL"
+				if (ModoTutorial) monedasGanadas = 0; // el tutorial no paga
 				pv.DañoInfligido    = _dañoTotalJugador;
 				pv.TropasEliminadas = _tropasEliminadasRival;
 				pv.TurnosJugados    = _turnosJugados;

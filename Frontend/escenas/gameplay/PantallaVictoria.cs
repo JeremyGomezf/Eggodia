@@ -14,6 +14,10 @@ public partial class PantallaVictoria : CanvasLayer
 	/// <summary>Lo fija Campo1 al abrir la pantalla: cambia qué hace el botón de "jugar de nuevo".</summary>
 	public bool EsOnline { get; set; }
 
+	/// <summary>Victoria del TUTORIAL: sin monedas, sin auto-achicado, y el botón principal repite
+	/// el tutorial en vez de empezar una partida normal.</summary>
+	public bool EsTutorial { get; set; }
+
 	public string    MvtNombre      { get; set; }
 	public int       MvtDaño        { get; set; }
 	public Texture2D MvtIlustracion { get; set; }
@@ -37,7 +41,8 @@ public partial class PantallaVictoria : CanvasLayer
 		// que el botón pasa a ser RE-ARMAR MAZO y lleva al constructor.
 		if (btnJugar != null)
 		{
-			if (EsOnline) btnJugar.Text = "RE-ARMAR MAZO";
+			if (EsOnline)        btnJugar.Text = "RE-ARMAR MAZO";
+			else if (EsTutorial) btnJugar.Text = "REPETIR TUTORIAL"; // recarga la escena del tutorial
 			btnJugar.Pressed += () =>
 			{
 				LimpiezaEfectos.LimpiarEfectosDeCampo();
@@ -60,6 +65,11 @@ public partial class PantallaVictoria : CanvasLayer
 		MostrarRecompensa();
 		// Diferido: necesita el Size REAL ya calculado por el layout para saber si el bloque entra.
 		CallDeferred(nameof(AnimarEntrada));
+		// Y además se REVISA cada vez que el bloque cambia de tamaño (igual que hace la pantalla de
+		// Derrota). Sin esto, si la primera medición salía inflada, la escala chica se quedaba fija
+		// para siempre — era por lo que la victoria se veía en miniatura.
+		var vboxReajuste = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox");
+		if (vboxReajuste != null) vboxReajuste.Resized += ReajustarEscalaBloque;
 		CallDeferred(nameof(AjustarParticulasAnchoPantalla));
 	}
 
@@ -131,21 +141,57 @@ public partial class PantallaVictoria : CanvasLayer
 	/// fijo: con el panel de MVT y la racha el contenido crece, y si se pasa del alto útil, al estar
 	/// centrado el sobrante se reparte y se corta arriba y abajo. Se mide el tamaño REAL tras el
 	/// layout, así vale con o sin MVT y en cualquier pantalla.</summary>
+	// Por debajo de esto no se achica nunca: si una medición sale rara (p. ej. el bloque todavía sin
+	// layout, o una ilustración de MVT que no cargó y reserva de más), antes la pantalla entera
+	// terminaba diminuta. Es preferible recortar un pelo que ver la victoria en miniatura.
+	private const float ESCALA_MINIMA_BLOQUE = 0.82f;
+
+	// Se dispara cuando el bloque cambia de tamaño (terminó de acomodarse el texto/los paneles):
+	// recalcula la escala con la medida buena. No toca nada mientras la animación de entrada sigue
+	// corriendo, para no pelearse con su tween.
+	private bool _entradaVictoriaEnCurso = true;
+
+	private void ReajustarEscalaBloque()
+	{
+		if (_entradaVictoriaEnCurso) return;
+		var vbox = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox");
+		if (vbox == null || !IsInstanceValid(vbox)) return;
+		float e = EscalaParaQueEntre(vbox);
+		vbox.PivotOffset = vbox.Size / 2;
+		vbox.Scale = new Vector2(e, e);
+	}
+
 	private float EscalaParaQueEntre(Control vbox)
 	{
+		// Tutorial: SIN auto-achicado. Solo pasaba ahí (en la partida normal se ve bien), y como no
+		// hay forma de reproducirlo leyendo el código, se corta por lo sano: en el tutorial la
+		// pantalla se muestra siempre a tamaño natural, igual que la de campo_1.
+		if (EsTutorial) return 1f;
+
 		float disponible = GetViewport().GetVisibleRect().Size.Y - MARGEN_VERTICAL_PANTALLA * 2f;
 		float alto = Mathf.Max(vbox.GetCombinedMinimumSize().Y, vbox.Size.Y);
 		if (alto <= 0f || disponible <= 0f || alto <= disponible) return 1f;
-		return disponible / alto;
+		return Mathf.Max(disponible / alto, ESCALA_MINIMA_BLOQUE);
 	}
 
-	private void AnimarEntrada()
+	private async void AnimarEntrada()
 	{
 		var vbox = GetNodeOrNull<Control>("Overlay/CentroVBox/VBox");
 		if (vbox == null) return;
 		// Misma red de seguridad que en Derrota: la capa procesa aunque el juego esté pausado y el
 		// estado final se fuerza al terminar, para que nunca quede contenido a medio desvanecer.
 		ProcessMode = Node.ProcessModeEnum.Always;
+
+		// Se espera a que el layout se ASIENTE antes de medir. Con un solo CallDeferred no alcanza:
+		// los contenedores de Godot terminan de resolver tamaños en el frame siguiente, y hasta
+		// entonces GetCombinedMinimumSize() puede devolver un alto mucho mayor que el real. Con ese
+		// alto inflado, el "achicar para que entre" de abajo escalaba el bloque muchísimo y la
+		// pantalla de victoria terminaba en miniatura.
+		for (int i = 0; i < 2; i++)
+		{
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			if (!IsInstanceValid(this) || !IsInstanceValid(vbox)) return;
+		}
 
 		// La animación termina en la escala que HACE QUE ENTRE, no en 1: si terminara en 1 volvería a
 		// desbordar justo al final y se vería el recorte.
@@ -156,7 +202,13 @@ public partial class PantallaVictoria : CanvasLayer
 		vbox.Scale    = destino * 0.85f;
 		vbox.PivotOffset = vbox.Size / 2;
 		var tw = CreateTween().SetParallel(true);
-		tw.Finished += () => { if (IsInstanceValid(vbox)) { vbox.Modulate = Colors.White; vbox.Scale = destino; } };
+		tw.Finished += () =>
+		{
+			if (!IsInstanceValid(vbox)) return;
+			vbox.Modulate = Colors.White;
+			vbox.Scale = destino;
+			_entradaVictoriaEnCurso = false; // de acá en más manda ReajustarEscalaBloque
+		};
 		tw.TweenProperty(vbox, "modulate:a", 1.0f, 0.5f);
 		tw.TweenProperty(vbox, "scale", destino, 0.55f)
 		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);

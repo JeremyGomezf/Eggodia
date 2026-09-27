@@ -279,6 +279,10 @@ public partial class Campo1 : Node2D
 
 	private void RellenarManoObjetivo()
 	{
+		// Tutorial: la mano NO se repone sola. Se juegan las 3 cartas iniciales y no vuelve a
+		// aparecer ninguna carta de invocación hasta el sacrificio del Maguín, que es cuando la
+		// secuencia guiada ofrece el reemplazo (ver PermitirManoTutorial en Campo1.Tutorial.cs).
+		if (ModoTutorial && _tutorialManoBloqueada) return;
 		if (contenedorMano == null || _tipoIndice == null) return;
 		string[] spots = SPOTS_MANO;
 

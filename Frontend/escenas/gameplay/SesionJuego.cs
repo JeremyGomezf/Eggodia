@@ -24,6 +24,11 @@ public partial class SesionJuego : Node
 	public string NombreJugador { get; set; } = "Jugador";
 	public bool   EstaLogueado  => UsuarioId > 0;
 
+	/// <summary>Se prende SOLO cuando se acaba de crear una cuenta nueva (registro exitoso en
+	/// PanelLogin). El menú principal lo consume una única vez para abrir el tutorial automáticamente
+	/// —como hacen los juegos recién instalados—. Las cuentas que ya existían nunca lo activan.</summary>
+	public static bool CuentaRecienCreada = false;
+
 	// Mínimo de ardides equipados para poder jugar y para que Campo1 use tu selección real (por
 	// debajo de esto, Campo1 arma su propio pool aleatorio de los 8 hechizos disponibles). Se pidió
 	// "4 o 5" — 4 es el piso; equipar 5 o los 6 completos también sirve.

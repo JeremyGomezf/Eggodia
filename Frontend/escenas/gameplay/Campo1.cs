@@ -83,7 +83,11 @@ public partial class Campo1 : Node2D
 				var escenarioNodeM = GetNodeOrNull<Sprite2D>("ESCENARIO");
 				if (fondoNodeM != null && ResourceLoader.Exists(escMedieval.Fondo))         fondoNodeM.Texture     = GD.Load<Texture2D>(escMedieval.Fondo);
 				if (escenarioNodeM != null && ResourceLoader.Exists(escMedieval.Escenario)) escenarioNodeM.Texture = GD.Load<Texture2D>(escMedieval.Escenario);
-				if (ResourceLoader.Exists(escMedieval.Musica)) _musicaPartida = GD.Load<AudioStream>(escMedieval.Musica);
+				// Los fondos son los del Medieval, pero la MÚSICA es la propia del tutorial.
+				string musicaTutorial = "res://efectos/musica/MUSICA TUTORIAL.mp3";
+				string pista = ResourceLoader.Exists(musicaTutorial) ? musicaTutorial : escMedieval.Musica;
+				if (ResourceLoader.Exists(pista)) _musicaPartida = GD.Load<AudioStream>(pista);
+				_volumenExtraEscenario = VOLUMEN_EXTRA_TUTORIAL_DB; // suena más bajito que una partida
 				return;
 			}
 		}
@@ -391,7 +395,10 @@ public partial class Campo1 : Node2D
 		// Tutorial: sin música, a pedido explícito (por ahora).
 		ElegirEscenarioBatalla();
 		SilenciarOtrasMusicas();
-		if (!ModoTutorial) IniciarMusicaPartida();
+		// El tutorial TAMBIÉN tiene música (MUSICA TUTORIAL.mp3, más bajita y en bucle). Se corta
+		// sola cuando muere un huevo (Campo1.MuerteHuevo.cs) y vuelve en sus últimos 15s con la
+		// frase de cierre (Campo1.FinPartida.cs).
+		IniciarMusicaPartida();
 
 		// Escenario "toon": mismo filtro "1930s Cartoon Aesthetic" de MenuConstructor. Se queda
 		// activo TODA la partida (incluida la frase y pantalla de Victoria/Derrota) y solo se
@@ -443,7 +450,9 @@ public partial class Campo1 : Node2D
 		}
 		// Sin ardides elegidos se usa el catálogo completo, pero Nuclear (600 monedas) solo entra si
 		// el jugador ya lo compró — no se regala en el pool por defecto.
-		if (_poolActivo == POOL_HECHIZO_BASE && !Preferencias.TieneHechizoDesbloqueado("nuclear"))
+		// En el tutorial la Nuclear se deja en el pool aunque no esté comprada: se muestra a
+		// propósito detrás de la Curación (no se puede usar, es solo para que se vea la carta).
+		if (_poolActivo == POOL_HECHIZO_BASE && !ModoTutorial && !Preferencias.TieneHechizoDesbloqueado("nuclear"))
 			_poolActivo = Array.FindAll(POOL_HECHIZO_BASE, d => d.Id != "nuclear");
 		_cooldownHechizo = new int[_poolActivo.Length];
 
@@ -464,7 +473,9 @@ public partial class Campo1 : Node2D
 
 		// Tutorial: mazo fijo (Golem, Maguín, Soldado Real) en vez del mazo real de la sesión —
 		// así el tutorial se ve siempre igual sin importar qué mazo tenga armado el jugador.
-		if (ModoTutorial) { ForzarMazoTutorial(); }
+		// Tutorial: el huevo rival arranca con muy poca vida — la idea es que al caer sus 3 tropas
+		// en el remate final la partida se termine en victoria sin alargarse.
+		if (ModoTutorial) { ForzarMazoTutorial(); vidaRival = VIDA_RIVAL_TUTORIAL; }
 		// Mazo desde sesión del jugador
 		else if (SesionJuego.Instance != null && SesionJuego.Instance.TieneMazo)
 		{
@@ -518,7 +529,9 @@ public partial class Campo1 : Node2D
 
 		GetTree().CreateTimer(1.2f).Timeout += () =>
 		{
-			if (!juegoTerminado && !IntroEnCurso) MostrarAviso("¡El rival está listo para la batalla!", new Color(1f, 0.75f, 0.35f));
+			// En el tutorial no va: pisaba al splash "BIENVENIDO AL TUTORIAL" y, además, no es una
+			// partida de verdad — los avisos los da la secuencia guiada.
+			if (!juegoTerminado && !IntroEnCurso && !ModoTutorial) MostrarAviso("¡El rival está listo para la batalla!", new Color(1f, 0.75f, 0.35f));
 		};
 	}
 

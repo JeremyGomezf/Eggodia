@@ -489,14 +489,14 @@ position = Vector2(155, 30)
 position = Vector2(-12.000001, -1)
 scale = Vector2(0.465, 0.465)
 sprite_frames = SubResource("SpriteFrames_pm8sp")
-animation = &"idle"
-frame = 14
-frame_progress = 0.036257673
+animation = &"pre defensa"
+frame = 1
 
 [node name="SpotFuego" type="Marker2D" parent="." unique_id=885034068]
 position = Vector2(88, 27)
 
 [node name="StatsTropa" type="Control" parent="." unique_id=1623861200]
+visible = false
 layout_mode = 3
 anchors_preset = 0
 offset_left = -96.000046

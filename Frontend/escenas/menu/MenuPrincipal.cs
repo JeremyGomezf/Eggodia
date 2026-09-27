@@ -8,6 +8,7 @@ public partial class MenuPrincipal : Control
 	[Export] public string RutaConstructorMazo = "res://escenas/menu/MenuConstructor.tscn";
 	[Export] public string RutaCampoPruebas    = "res://escenas/gameplay/campo_pruebas.tscn";
 	[Export] public string RutaComoJugar       = "res://escenas/menu/PantallaComoJugar.tscn";
+	[Export] public string RutaTutorialJugable = "res://escenas/gameplay/campo_tutorial.tscn";
 	[Export] public string RutaBestiario       = "res://escenas/menu/PantallaBestiario.tscn";
 	[Export] public string RutaTienda          = "res://escenas/menu/Tienda.tscn";
 	[Export] public string RutaInvocacion      = "res://escenas/SummonTerminal.tscn";
@@ -149,10 +150,18 @@ public partial class MenuPrincipal : Control
 				AgregarAnimacionHover(btnBestiario);
 			}
 
+			// Antes decía "CÓMO JUGAR" y abría una pantalla de texto/imágenes. Ahora es "TUTORIAL" y
+			// lanza el tutorial jugable (campo_tutorial.tscn). El botón de "Cómo jugar" de
+			// Configuración NO cambia: sigue llevando a la pantalla de siempre.
 			var btnComoJugar = secundarios.GetNodeOrNull<Button>("BtnComoJugar");
 			if (btnComoJugar != null)
 			{
-				btnComoJugar.Pressed += () => GetTree().ChangeSceneToFile(RutaComoJugar);
+				btnComoJugar.Text = "TUTORIAL";
+				btnComoJugar.Pressed += () =>
+				{
+					ContextoOnline.Limpiar(); // el tutorial es local: nunca arrastra un contexto online previo
+					GetTree().ChangeSceneToFile(RutaTutorialJugable);
+				};
 				AgregarAnimacionHover(btnComoJugar);
 			}
 
@@ -186,7 +195,9 @@ public partial class MenuPrincipal : Control
 		{
 			btnSettings.Pressed += MostrarSettings;
 			AgregarAnimacionHover(btnSettings);
-			CrearBotonTutorial(btnSettings); // botón de tutorial JUNTO al de ajustes (solo menú principal)
+			// Antes acá se creaba por código un botón redondo con "?" que abría el tutorial. Se quitó:
+			// la única entrada al tutorial desde el menú es el botón TUTORIAL (el que antes decía
+			// CÓMO JUGAR), más el arranque automático para cuentas nuevas.
 		}
 
 		// 5b. HUD superior: nombre/nivel del jugador + perfil al hacer clic en UserPanel.
@@ -225,11 +236,15 @@ public partial class MenuPrincipal : Control
 			eco.InventarioAplicado += ActualizarHuevoMenu;
 		}
 
-		// 7. Primer inicio del juego: abrir el tutorial automáticamente (una sola vez)
-		if (!Preferencias.TutorialVisto)
+		// 7. Cuenta RECIÉN CREADA: se abre solo el tutorial jugable, una única vez (como los juegos
+		// que te lo muestran apenas los instalás). Quien ya tenía cuenta entra directo al menú: no
+		// se le abre nada. Antes esto dependía de Preferencias.TutorialVisto y le saltaba a
+		// cualquiera que no hubiese visto la pantalla vieja de "cómo jugar".
+		if (SesionJuego.CuentaRecienCreada)
 		{
+			SesionJuego.CuentaRecienCreada = false;
 			Preferencias.TutorialVisto = true;
-			Callable.From(AbrirComoJugar).CallDeferred();
+			Callable.From(AbrirTutorialJugable).CallDeferred();
 		}
 
 		// El chequeo de versión nueva del APK ahora corre AL INICIO, en la PantallaCarga (antes del
@@ -292,6 +307,15 @@ public partial class MenuPrincipal : Control
 	{
 		Preferencias.TutorialVisto = true;
 		GetTree().ChangeSceneToFile(RutaComoJugar);
+	}
+
+	/// <summary>Abre el tutorial jugable (campo_tutorial.tscn). Lo usan el botón TUTORIAL y el
+	/// arranque automático de las cuentas nuevas.</summary>
+	private void AbrirTutorialJugable()
+	{
+		Preferencias.TutorialVisto = true;
+		ContextoOnline.Limpiar();
+		GetTree().ChangeSceneToFile(RutaTutorialJugable);
 	}
 
 	private void AgregarAnimacionHover(Control btn)
@@ -839,51 +863,6 @@ public partial class MenuPrincipal : Control
 			: (null, null);
 	}
 
-	// Botón de TUTORIAL (Cómo Jugar) al lado del de Ajustes — SOLO en el menú principal (este script).
-	// Se crea por código para no depender de la escena; estilo nuestro: círculo oscuro con "?" dorado.
-	// Al pulsarlo abre la pantalla "Cómo Jugar" (aquí, sin partida en curso, es cambio de escena normal).
-	private void CrearBotonTutorial(TextureButton btnAjustes)
-	{
-		var btn = new Button { Name = "BtnTutorial", Text = "?" };
-		btn.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-
-		// Mismo anclaje que Ajustes (esquina superior derecha, crece hacia la izquierda), pegado a su izquierda.
-		btn.AnchorLeft = btn.AnchorRight = 1f;
-		btn.AnchorTop  = btn.AnchorBottom = 0f;
-		btn.GrowHorizontal = Control.GrowDirection.Begin;
-		float ancho = btnAjustes.OffsetRight - btnAjustes.OffsetLeft; // mismo tamaño que Ajustes
-		btn.OffsetTop    = btnAjustes.OffsetTop;
-		btn.OffsetBottom = btnAjustes.OffsetBottom;
-		btn.OffsetRight  = btnAjustes.OffsetLeft - 16f;               // 16px a la izquierda de Ajustes
-		btn.OffsetLeft   = btn.OffsetRight - ancho;
-
-		// Estilo del juego: "?" dorado con la fuente Almendra, en un círculo oscuro con borde de oro.
-		if (EstiloUI.Fuente != null) btn.AddThemeFontOverride("font", EstiloUI.Fuente);
-		btn.AddThemeColorOverride("font_color", EstiloUI.Dorado);
-		btn.AddThemeColorOverride("font_hover_color", new Color(1f, 0.92f, 0.55f));
-		btn.AddThemeColorOverride("font_pressed_color", EstiloUI.Dorado);
-		btn.AddThemeFontSizeOverride("font_size", 64);
-		float radio = ancho / 2f;
-		var sb = new StyleBoxFlat { BgColor = new Color(0.05f, 0.06f, 0.11f, 0.92f), BorderColor = EstiloUI.OroBorde };
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 3;
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = (int)radio;
-		sb.ShadowColor = new Color(0.6f, 0.45f, 0.1f, 0.35f); sb.ShadowSize = 8;
-		var sbHover = (StyleBoxFlat)sb.Duplicate();
-		sbHover.BgColor = new Color(0.10f, 0.12f, 0.20f, 0.96f);
-		sbHover.BorderColor = new Color(1f, 0.9f, 0.5f);
-		btn.AddThemeStyleboxOverride("normal", sb);
-		btn.AddThemeStyleboxOverride("hover", sbHover);
-		btn.AddThemeStyleboxOverride("pressed", sbHover);
-		btn.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
-
-		btn.Pressed += () =>
-		{
-			ContextoOnline.Limpiar();   // el tutorial es local: nunca arrastrar un contexto online previo
-			GetTree().ChangeSceneToFile("res://escenas/gameplay/campo_tutorial.tscn");
-		};
-		AddChild(btn);
-		AgregarAnimacionHover(btn);
-	}
 
 	private void MostrarSettings()
 	{

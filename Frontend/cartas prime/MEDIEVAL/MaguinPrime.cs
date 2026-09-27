@@ -122,17 +122,15 @@ public partial class MaguinPrime : TropaBase
 			return;
 		}
 
-		// Tutorial: sin selección por clic — apunta directo al Tanque rival (guionado), y la
-		// transformación queda PERMANENTE (ver TransformarEnAnimal).
-		if (EsModoTutorial())
-		{
-			ConfirmarTransmutacion(BuscarTanqueRivalTutorial() ?? BuscarEnemigoConMasVida());
-			return;
-		}
-
 		_esperandoSeleccion = true;
 		var campo = GetTree().Root.FindChild("Campo1", true, false);
-		campo?.Call("MostrarAviso", "Decide a cuál transformas", new Color(0.5f, 1f, 0.9f));
+		// Tutorial: la transmutación NO es automática — el jugador tiene que tocar al Tanque, y
+		// solo al Tanque (ver DetectarEnemigoEnPosicion, que ignora al resto en modo tutorial). La
+		// transformación además queda PERMANENTE (ver TransformarEnAnimal).
+		if (EsModoTutorial())
+			campo?.Call("MostrarAviso", "Selecciona al TANQUE enemigo", new Color(0.5f, 1f, 0.9f));
+		else
+			campo?.Call("MostrarAviso", "Decide a cuál transformas", new Color(0.5f, 1f, 0.9f));
 
 		_tweenAviso?.Kill();
 		_tweenAviso = CreateTween().SetLoops();
@@ -186,12 +184,14 @@ public partial class MaguinPrime : TropaBase
 	private Node2D DetectarEnemigoEnPosicion(Vector2 posClic)
 	{
 		string grupoEnemigo = IsInGroup("tropas_jugador") ? "tropas_rival" : "tropas_jugador";
+		bool soloTanque = EsModoTutorial(); // en el tutorial el único objetivo válido es el Tanque
 		Node2D objetivoCercano = null;
 		float distanciaMinima = 120.0f;
 		foreach (Node n in GetTree().GetNodesInGroup(grupoEnemigo))
 		{
 			// Una tropa ya transmutada (Tortuga/Pez) no puede volver a transmutarse encima.
 			if (!(n is Node2D e) || !IsInstanceValid(e) || e is TortugaYPescado) continue;
+			if (soloTanque && e is not TanqueCartoonPrime) continue;
 			float dist = e.GlobalPosition.DistanceTo(posClic);
 			if (dist < distanciaMinima) { distanciaMinima = dist; objetivoCercano = e; }
 		}

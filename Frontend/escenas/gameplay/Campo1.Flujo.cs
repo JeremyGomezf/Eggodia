@@ -65,7 +65,7 @@ public partial class Campo1 : Node2D
 		// que el cuadro está indicando — tocar cualquier otra no hace nada (con un aviso).
 		if (ModoTutorial && _tropaForzadaTutorial != null && tropa.GetType() != _tropaForzadaTutorial)
 		{
-			MostrarAviso("Sigue la indicación del cuadro de arriba", Colors.Gold);
+			MostrarAviso("Sigue la indicación del cuadro de abajo", Colors.Gold);
 			return;
 		}
 
@@ -233,7 +233,11 @@ public partial class Campo1 : Node2D
 	{
 		if (modoSacrificioActivo) return; // el modo sacrificio bloquea todo el HUD, este botón también
 		if (!esTurnoJugador || movimientosRestantes <= 0 || usosBarajar >= MAX_BARAJAR || _faseApertura) return;
-		usosBarajar++; EjecutarBarajadoLogico(); RegistrarGastoMovimiento();
+		usosBarajar++;
+		// Tutorial: barajar reparte las 3 cartas fijas de reemplazo, no una mano al azar.
+		if (ModoTutorial) BarajarTutorialReemplazo(); else EjecutarBarajadoLogico();
+		RegistrarGastoMovimiento();
+		if (ModoTutorial) NotificarBarajarTutorial();
 	}
 
 	private void EjecutarBarajadoLogico()
@@ -278,6 +282,7 @@ public partial class Campo1 : Node2D
 			{
 				// Segundo clic sobre la MISMA tropa: confirma.
 				usosSacrificio++; EjecutarMuerteTropaSacrificada(t); CancelarSacrificio(); RegistrarGastoMovimiento();
+				if (ModoTutorial) NotificarSacrificioTutorial(t);
 			}
 			else
 			{
@@ -307,6 +312,18 @@ public partial class Campo1 : Node2D
 	{
 		if (juegoTerminado || !esTurnoJugador || !puntoMod.IsInGroup("zonas_invocacion")) return false;
 		if (puntoMod.GetNodeOrNull("Ocupado") != null || escenaTropa == null) return false;
+
+		// Tutorial: cada carta inicial tiene su carril fijo (ver CARRIL_FIJO_TUTORIAL). Si se suelta
+		// en otro, no se invoca — los carriles inválidos ya se ven grises mientras se arrastra.
+		if (ModoTutorial)
+		{
+			string carrilPedido = CarrilFijoTutorial(escenaTropa.ResourcePath);
+			if (carrilPedido != null && (string)puntoMod.Name != carrilPedido)
+			{
+				MostrarAviso("Esta carta va en el carril iluminado", Colors.Gold);
+				return false;
+			}
+		}
 		Node2D t = (Node2D)escenaTropa.Instantiate();
 		AddChild(t);
 		if (t is TropaBase tbInv) tbInv.ColocarPorCentroColision(puntoMod.GlobalPosition);
@@ -335,6 +352,9 @@ public partial class Campo1 : Node2D
 
 		// En línea: avisar al rival que invoqué esta tropa (la reproduce en su carril espejado).
 		if (EsOnline) EmitirAccionOnline("invocar", new Godot.Collections.Dictionary { { "carril", (string)puntoMod.Name } });
+
+		// Tutorial: si esta es la tropa que reemplaza al Maguín sacrificado, sigue el remate final.
+		if (ModoTutorial) NotificarInvocacionReemplazoTutorial();
 
 		// Fase de apertura: pasar turno automáticamente al llenar los 3 carriles
 		if (_faseApertura && TodosSpotsOcupados())
@@ -691,8 +711,12 @@ public partial class Campo1 : Node2D
 		if (btnBarajar != null)    { bool b = !esTurnoJugador || usosBarajar >= MAX_BARAJAR || movimientosRestantes <= 0; btnBarajar.Disabled = b; btnBarajar.Modulate = b ? new Color(1, 1, 1, 0.4f) : Colors.White; }
 		if (btnSacrificio != null) { bool s = !esTurnoJugador || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500 || movimientosRestantes <= 0; btnSacrificio.Disabled = s; btnSacrificio.Modulate = s ? new Color(1, 1, 1, 0.4f) : Colors.White; }
 
+		// Tutorial: si hay un botón resaltado por el guion, se vuelve a imponer acá — si no, estas
+		// dos líneas de arriba lo reactivarían todo en el siguiente refresco.
+		if (ModoTutorial) ForzarBloqueoBotonesTutorial();
+
 		if (_barraHPJugador != null) _barraHPJugador.Value = PorcentajeBarraVida(vidaJugador);
-		if (_barraHPRival   != null) _barraHPRival.Value   = PorcentajeBarraVida(vidaRival);
+		if (_barraHPRival   != null) _barraHPRival.Value   = PorcentajeBarraVida(vidaRival, esRival: true);
 
 		if (!juegoTerminado && _lblTiempo != null)
 		{

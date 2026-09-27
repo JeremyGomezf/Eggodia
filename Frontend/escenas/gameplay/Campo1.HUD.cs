@@ -53,8 +53,11 @@ public partial class Campo1 : Node2D
 			// otro slot queda con cualquier ardid (se ve, pero no se puede usar — ver
 			// IntentarIniciarArrastreHechizo).
 			int idxCuracion = Array.FindIndex(_poolActivo, d => d.Id == "curacion");
+			int idxNuclear  = Array.FindIndex(_poolActivo, d => d.Id == "nuclear");
 			_hechizosMano[0] = idxCuracion >= 0 ? idxCuracion : ElegirHechizoElegible();
-			_hechizosMano[1] = ElegirHechizoElegible(_hechizosMano[0]);
+			// Detrás de Curación va siempre la Nuclear (queda asomando, como carta de adorno: en el
+			// tutorial no se puede usar ningún ardid que no sea Curación).
+			_hechizosMano[1] = idxNuclear >= 0 ? idxNuclear : ElegirHechizoElegible(_hechizosMano[0]);
 		}
 		else
 		{
@@ -167,7 +170,7 @@ public partial class Campo1 : Node2D
 		// no hace nada al arrastrarlo (vuelve solo a la mano).
 		if (ModoTutorial && piArrastre >= 0 && piArrastre < _poolActivo.Length && _poolActivo[piArrastre].Id != "curacion")
 		{
-			MostrarAviso("Por ahora solo puedes usar Curación", Colors.Gold);
+			MostrarAviso("Ardid no disponible", Colors.Gold);
 			return false;
 		}
 		if (piArrastre >= 0 && piArrastre < _poolActivo.Length && _poolActivo[piArrastre].Id == "nuclear")
@@ -292,6 +295,9 @@ public partial class Campo1 : Node2D
 	// Campo1.Turnos.cs).
 	private void ActivarModoCambio()
 	{
+		// Tutorial: cambiar de ardid está prohibido toda la partida — el guion depende de que la
+		// carta de Curación siga en la mano (y el botón además se muestra bloqueado).
+		if (ModoTutorial) return;
 		if (_cooldownBtnArdid > 0 || !ValidarHechizo()) return;
 		for (int i = 0; i < 2; i++) AutoReemplazarHechizo(i);
 

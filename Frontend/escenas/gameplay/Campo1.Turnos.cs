@@ -30,7 +30,10 @@ public partial class Campo1 : Node2D
 		_turnosJugados++;
 
 		// Castigo por carril propio vacío al terminar el turno (antes de pasar al otro bando).
-		if (!_faseApertura) AplicarCastigoCarrilesVacios(esTurnoJugador);
+		// Tutorial: nadie pierde vida por tener un carril vacío. El huevo rival tiene poca vida a
+		// propósito y este castigo (-150 por cambio de turno) lo dejaba en 0 antes de tiempo — la
+		// partida se cerraba en victoria aunque todavía quedara el pez vivo.
+		if (!_faseApertura && !ModoTutorial) AplicarCastigoCarrilesVacios(esTurnoJugador);
 
 		esTurnoJugador    = !esTurnoJugador;
 		tiempoTurnoActual = DURACION_TURNO_SEG;
@@ -55,7 +58,8 @@ public partial class Campo1 : Node2D
 		if (_cooldownBtnArdid > 0)
 		{
 			_cooldownBtnArdid--;
-			if (_cooldownBtnArdid == 0 && _btnCambiarHechizo != null)
+			// En el tutorial nunca se re-habilita: cambiar de ardid está prohibido toda la partida.
+			if (_cooldownBtnArdid == 0 && _btnCambiarHechizo != null && !ModoTutorial)
 			{
 				_btnCambiarHechizo.Disabled = false;
 				_btnCambiarHechizo.Modulate = Colors.White;
@@ -187,6 +191,9 @@ public partial class Campo1 : Node2D
 	{
 
 		if (juegoTerminado || _lblTurnoAviso == null || string.IsNullOrEmpty(_turnoBaseTexto)) return;
+		// Tutorial: sin cuenta atrás. El turno no se corta por tiempo (el reloj está congelado), así
+		// que mostrar "(20s)" solo confundía y metía prisa para decidir.
+		if (ModoTutorial) { _lblTurnoAviso.Text = _turnoBaseTexto; return; }
 		int segundos = Mathf.Max(0, tiempoTurnoActual);
 		_lblTurnoAviso.Text = $"{_turnoBaseTexto} ({segundos}s)";
 	}

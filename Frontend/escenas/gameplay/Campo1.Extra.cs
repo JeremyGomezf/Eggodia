@@ -60,18 +60,35 @@ public partial class Campo1 : Node2D
 
 	// Público: algunas cartas (p. ej. MaguinPrime, con su modo de selección "decide a cuál
 	// transformas") lo llaman desde afuera vía campo.Call("MostrarAviso", ...).
+	/// <summary>Borra el aviso que esté en pantalla en este momento. Lo usa el tutorial cuando la
+	/// acción que pedía el aviso ya se cumplió ("arrastra la carta...", "elige una carta nueva...")
+	/// — si no, el cartel se quedaba puesto aunque ya no hiciera falta.</summary>
+	public void LimpiarAvisoActual()
+	{
+		if (_avisoActual != null && IsInstanceValid(_avisoActual)) _avisoActual.QueueFree();
+		_avisoActual = null;
+	}
+
 	public void MostrarAviso(string texto, Color color)
 	{
 		// Durante la reproducción visual de una jugada del rival (online) NO se muestran avisos: el texto
 		// está escrito desde la perspectiva del que actúa ("¡Envenenaste a…!") y saldría al revés.
 		if (SuprimiendoAvisosOnline) return;
+		// Partida terminada: NINGÚN aviso más. La frase de cierre ("TUTORIAL COMPLETADO", "GG BRO",
+		// etc.) se dibuja en el mismo hueco que los avisos, así que cualquier toast que llegara
+		// después la borraba de la pantalla a mitad de la lectura.
+		if (juegoTerminado) return;
 		// top = null → CenterContainer a pantalla completa: queda en el centro exacto, como se pidió.
 		// No tapa nada: el host es MouseFilter.Ignore y los botones de tropa van por encima (capa HUD).
-		MostrarAvisoCentrado(ConstruirToast(texto, color, FUENTE_TOAST), null, DURACION_TOAST);
+		// En el tutorial los avisos duran más (3s): son indicaciones que hay que alcanzar a leer,
+		// no confirmaciones rápidas de una jugada.
+		float duracion = ModoTutorial ? 3.0f : DURACION_TOAST;
+		MostrarAvisoCentrado(ConstruirToast(texto, color, FUENTE_TOAST), null, duracion);
 	}
 
 	private void MostrarAvisoFase(string msg)
 	{
+		if (juegoTerminado) return; // no pisar la frase de cierre (ver MostrarAviso)
 		MostrarAvisoCentrado(ConstruirToast(msg, new Color(1f, 0.6f, 0.3f), FUENTE_TOAST), null, DURACION_TOAST);
 	}
 

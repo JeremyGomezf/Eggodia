@@ -136,7 +136,12 @@ public partial class Carta : Control
 					if (campo == null || !campo.IntentarIniciarArrastreHechizo(HechizoSlotIdx)) return;
 				}
 				EstaArrastrando = true;
-				if (campo != null && campo.ModoTutorial) campo.OcultarGuiaTutorial();
+				if (campo != null && campo.ModoTutorial)
+				{
+					campo.OcultarGuiaTutorial();
+					// Apaga los carriles que no son el de esta carta, para que se vea de una cuál toca.
+					if (!EsHechizo) campo.MarcarCarrilesTutorial(EscenaTropa?.ResourcePath);
+				}
 				// Si el toque llega en pleno hover, PivotOffset todavía está en el punto "crece
 				// hacia arriba" (Size.X*0.5, Size.Y) en vez del centro — si se achica alrededor de
 				// ese pivote en vez del centro, la carta se ve "correr" lejos del dedo/mouse
@@ -183,7 +188,7 @@ public partial class Carta : Control
 	private void VerificarSoltado()
 	{
 		var campoG = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
-		if (campoG != null && campoG.ModoTutorial) campoG.RestaurarGuiaTutorial();
+		if (campoG != null && campoG.ModoTutorial) { campoG.RestaurarGuiaTutorial(); campoG.RestaurarCarrilesTutorial(); }
 
 		if (EsHechizo) { VerificarSoltadoHechizo(); return; }
 
@@ -242,7 +247,7 @@ public partial class Carta : Control
 		if (!EstaArrastrando) return;
 		EstaArrastrando = false;
 		var campoC = GetTree().Root.FindChild("Campo1", true, false) as Campo1;
-		if (campoC != null && campoC.ModoTutorial) campoC.RestaurarGuiaTutorial();
+		if (campoC != null && campoC.ModoTutorial) { campoC.RestaurarGuiaTutorial(); campoC.RestaurarCarrilesTutorial(); }
 		if (EsHechizo) (GetTree()?.Root.FindChild("Campo1", true, false) as Campo1)?.FinalizarArrastreHechizo();
 		RegresarAMano();
 	}

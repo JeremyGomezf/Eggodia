@@ -180,6 +180,14 @@ public abstract partial class TropaBase : Area2D
 		if (estado) MostrarBarras(false);
 	}
 
+	/// <summary>True si estamos dentro de campo_tutorial.tscn (ModoTutorial del Campo1 activo).</summary>
+	protected bool EsPartidaTutorial()
+	{
+		var campo = GetTree()?.Root.FindChild("Campo1", true, false);
+		if (campo == null) return false;
+		try { return (bool)campo.Get("ModoTutorial"); } catch { return false; }
+	}
+
 	public virtual void RecibirDaño(int cantidad)
 	{
 		if (_estaMuerto) return;
@@ -200,6 +208,13 @@ public abstract partial class TropaBase : Area2D
 		}
 
 		if (cantidad > 0) vidaActual -= cantidad;
+
+		// Tutorial: ninguna tropa NUESTRA puede morir durante la secuencia guiada — si un golpe del
+		// rival la dejaría en 0, queda en 1 de vida. El guion depende de que las 3 sigan en pie
+		// (y el tutorial no tiene forma de perderse). No afecta a las tropas rivales: esas sí
+		// tienen que morir en el remate final.
+		if (vidaActual <= 0 && IsInGroup("tropas_jugador") && EsPartidaTutorial()) vidaActual = 1;
+
 		ActualizarBarrasUI();
 
 		if (vidaActual <= 0)

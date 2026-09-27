@@ -24,7 +24,7 @@ public partial class Campo1 : Node2D
 	// turno (qué tropa ataca a cuál, el rival apareciendo con sus 3 tropas sin el aviso normal de
 	// "rival listo"), la curación guiada arrastrando la carta de Curación, el desbloqueo/uso guiado
 	// de la habilidad del Maguín forzando el objetivo (tanque rival → pez, permanente), el
-	// sacrificio guiado del Soldado Real + elección de reemplazo, el remate final (atacar con todo)
+	// sacrificio guiado del MAGUÍN + elección de reemplazo, el remate final (atacar con todo)
 	// y la pantalla especial "TUTORIAL APROBADO" (sin música/reloj/monedas, botón "Repetir tutorial"
 	// que reinicia toda esta secuencia desde cero). También: escenario/música fijos en Medieval con
 	// el trono del Sargento Huevo de rival, y que entre los ardides mostrados solo Curación pueda
@@ -39,9 +39,17 @@ public partial class Campo1 : Node2D
 	/// 1 asesino, 1 coloso — Maguín, Soldado Real, Golem). Se llama ANTES de PrepararMazoSinRepetir/
 	/// InicializarClasificacionMazo, así que el resto del juego (tipos, fan de la mano, invocación)
 	/// funciona sin ningún cambio, como si el jugador hubiera armado ese mazo de verdad.</summary>
+	// Cartas de reemplazo: las 3 que aparecen al usar BARAJAR (el Dragón va al medio).
+	private const string RUTA_TIBURON_TUTORIAL = "res://cartas prime/PACIFICO/Tiburon_prime.tscn";
+	private const string RUTA_DRAGON_TUTORIAL  = "res://cartas prime/MEDIEVAL/Dragon_prime.tscn";
+	private const string RUTA_CALAMAR_TUTORIAL = "res://cartas prime/PACIFICO/CalamarG_prime.tscn";
+	private const int IDX_TIBURON_TUTORIAL = 3, IDX_DRAGON_TUTORIAL = 4, IDX_CALAMAR_TUTORIAL = 5;
+
 	private void ForzarMazoTutorial()
 	{
-		escenasTropas = new[] { RUTA_GOLEM_TUTORIAL, RUTA_MAGUIN_TUTORIAL, RUTA_SOLDADOREAL_TUTORIAL };
+		// Los 3 primeros son la mano inicial; los 3 últimos, el reemplazo tras barajar.
+		escenasTropas = new[] { RUTA_GOLEM_TUTORIAL, RUTA_MAGUIN_TUTORIAL, RUTA_SOLDADOREAL_TUTORIAL,
+			RUTA_TIBURON_TUTORIAL, RUTA_DRAGON_TUTORIAL, RUTA_CALAMAR_TUTORIAL };
 		imagenesCartas = new string[escenasTropas.Length];
 		for (int i = 0; i < escenasTropas.Length; i++)
 			imagenesCartas[i] = ClasificacionCartas.ImagenBatalla(escenasTropas[i]) ?? "";
@@ -51,10 +59,85 @@ public partial class Campo1 : Node2D
 	/// <summary>Pone las 3 cartas fijas DIRECTO en Spot1/2/3 — sin el sorteo por tipo de la partida
 	/// normal. Ya NO se llama desde _Ready: la llama la propia secuencia del tutorial recién
 	/// después de los 3 mensajes de introducción (ver PasoMostrarManoTutorial).</summary>
+	/// <summary>BARAJAR del tutorial: en vez del barajado normal, reparte las 3 cartas de reemplazo
+	/// fijas — Tiburón, Dragón (en el medio) y Calamar.</summary>
+	private void BarajarTutorialReemplazo()
+	{
+		if (contenedorMano != null)
+			foreach (Node n in contenedorMano.GetChildren())
+				if (n is Carta c) { c.NombreSpot = "X"; c.QueueFree(); }
+
+		_tutorialManoBloqueada = false;
+		CrearCartaConIndice("Spot1", IDX_TIBURON_TUTORIAL);
+		CrearCartaConIndice("Spot2", IDX_DRAGON_TUTORIAL);  // el Dragón, al medio
+		CrearCartaConIndice("Spot3", IDX_CALAMAR_TUTORIAL);
+		ReacomodarManoTropas();
+	}
+
 	private void IniciarManoTutorial()
 	{
-		for (int i = 0; i < SPOTS_MANO.Length && i < escenasTropas.Length; i++)
+		for (int i = 0; i < SPOTS_MANO.Length; i++)
 			CrearCartaConIndice(SPOTS_MANO[i], i);
+		// Igual que RellenarManoObjetivo en la partida normal: sin esto las cartas quedaban sueltas
+		// en la posición cruda de cada spot, sin el abanico/escala de siempre (se veían mal puestas).
+		ReacomodarManoTropas();
+	}
+
+	// ── CARRIL FIJO POR CARTA ─────────────────────────────────────────────────────────────────
+	// En el tutorial cada una de las 3 cartas iniciales tiene SU carril: Soldado Real en Mod1,
+	// Maguín en Mod2, Gólem en Mod3. Al agarrar una carta, los otros dos carriles se ponen grises
+	// (y si igual se suelta ahí, se rechaza con un aviso). Además de guiar, deja el tablero siempre
+	// en el mismo orden, así el resto del guion (quién ataca a quién) es predecible.
+	private static readonly Dictionary<string, string> CARRIL_FIJO_TUTORIAL = new()
+	{
+		{ RUTA_SOLDADOREAL_TUTORIAL, "Mod1" },
+		{ RUTA_MAGUIN_TUTORIAL,      "Mod2" },
+		{ RUTA_GOLEM_TUTORIAL,       "Mod3" },
+	};
+
+	/// <summary>Carril obligatorio de esa carta, o null si puede ir a cualquiera (las cartas de
+	/// reemplazo posteriores al sacrificio no tienen carril fijo).</summary>
+	public string CarrilFijoTutorial(string rutaEscena)
+		=> (!string.IsNullOrEmpty(rutaEscena) && CARRIL_FIJO_TUTORIAL.TryGetValue(rutaEscena, out string c)) ? c : null;
+
+	/// <summary>La llama Carta.cs al empezar a arrastrar: apaga los carriles que no corresponden.</summary>
+	public void MarcarCarrilesTutorial(string rutaEscena)
+	{
+		string permitido = CarrilFijoTutorial(rutaEscena);
+		foreach (Node n in GetTree().GetNodesInGroup("zonas_invocacion"))
+		{
+			if (n is not Node2D zona || !IsInstanceValid(zona)) continue;
+			bool habilitado = permitido == null || (string)zona.Name == permitido;
+			zona.Modulate = habilitado ? Colors.White : new Color(0.4f, 0.4f, 0.45f, 0.45f);
+		}
+	}
+
+	/// <summary>La llama Carta.cs al soltar/cancelar: devuelve los 3 carriles a su color normal.</summary>
+	public void RestaurarCarrilesTutorial()
+	{
+		foreach (Node n in GetTree().GetNodesInGroup("zonas_invocacion"))
+			if (n is Node2D zona && IsInstanceValid(zona)) zona.Modulate = Colors.White;
+	}
+
+	/// <summary>Vida del huevo rival en el tutorial. Es poca a propósito (al caer sus 3 tropas la
+	/// partida se cierra), pero su barra se mide contra este mismo número, así que se ve LLENA al
+	/// empezar — ver PorcentajeBarraVida en Campo1.FinPartida.cs.</summary>
+	public const int VIDA_RIVAL_TUTORIAL = 400;
+
+	/// <summary>Cuánto MÁS BAJO suena la música del tutorial respecto a la de los escenarios. Apenas
+	/// un escalón por debajo: se pidió "casi igual que los escenarios, pero un poquito menos".</summary>
+	private const float VOLUMEN_EXTRA_TUTORIAL_DB = -2f;
+
+	/// <summary>Mientras es true, RellenarManoObjetivo (Campo1.MazoRobo.cs) no repone NADA: una vez
+	/// jugadas las 3 cartas iniciales la mano queda vacía a propósito, para que el jugador no pueda
+	/// invocar fuera del guion. Se libera recién al sacrificar al Maguín, que es el único momento en
+	/// que el tutorial ofrece invocar una tropa nueva (Dragón / Tiburón / Calamar).</summary>
+	private bool _tutorialManoBloqueada = true;
+
+	private void PermitirManoTutorial()
+	{
+		_tutorialManoBloqueada = false;
+		RellenarManoObjetivo();
 	}
 
 	// ── CAPA DEL TUTORIAL (splash + cuadro Guia) ──────────────────────────────────────────────
@@ -66,6 +149,7 @@ public partial class Campo1 : Node2D
 		AddChild(_capaTutorial);
 
 		CrearGuiaTutorial();
+		BloquearBotonArdidTutorial(true); // de entrada y para toda la partida
 		MostrarSplashBienvenida();
 	}
 
@@ -89,7 +173,7 @@ public partial class Campo1 : Node2D
 		lbl.VerticalAlignment = VerticalAlignment.Center;
 		lbl.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		lbl.Modulate = new Color(1, 1, 1, 0);
-		EstiloUI.Texto(lbl, 64, EstiloUI.Dorado);
+		EstiloUI.Texto(lbl, 110, EstiloUI.Dorado);
 		capa.AddChild(lbl);
 
 		var tw = CreateTween();
@@ -116,25 +200,42 @@ public partial class Campo1 : Node2D
 	private Tween  _tweenGuiaTutorial;
 	private string _textoGuiaTutorialActual = "";
 
+	// Escala final del cuadro cuando lo instancia el código (plan B). Si el nodo "Guia" ya está
+	// puesto a mano en la escena, se respeta la escala que tenga ahí y esta constante no se usa.
+	private static readonly Vector2 ESCALA_GUIA_TUTORIAL = new Vector2(1.45f, 1.45f);
+	private Vector2 _escalaFinalGuiaTutorial = Vector2.One;
+
 	private void CrearGuiaTutorial()
 	{
-		var escena = GD.Load<PackedScene>(RUTA_GUIA_TUTORIAL);
-		if (escena == null) return;
-		_guiaTutorial = escena.Instantiate<Node2D>();
-		_capaTutorial.AddChild(_guiaTutorial);
-		_lblGuiaTutorial = _guiaTutorial.GetNodeOrNull<Label>("Info-tutorial/LblHabilidad");
+		// PLAN A: el nodo "Guia" ya colocado a mano en campo_tutorial.tscn. Es el que manda: se
+		// respeta TAL CUAL la posición y la escala que tenga puestas en el editor (así el cuadro
+		// queda exactamente donde se lo acomodó, sin que el código lo mueva por su cuenta).
+		_guiaTutorial = FindChild("Guia", true, false) as Node2D;
 
-		// Más abajo (más cerca de la mano) que en la primera versión: antes quedaba muy arriba,
-		// casi en el centro de la pantalla, lejos de las cartas que señala.
-		var mano = GetNodeOrNull<Control>("ManoManual");
-		Vector2 pos = mano != null ? mano.GlobalPosition + new Vector2(20f, -90f) : new Vector2(640f, 620f);
-		_guiaTutorial.Position = pos;
+		// PLAN B: si la escena todavía no lo tiene guardado, se instancia por código y se lo ubica
+		// cerca de la mano, como aproximación.
+		if (_guiaTutorial == null)
+		{
+			var escena = GD.Load<PackedScene>(RUTA_GUIA_TUTORIAL);
+			if (escena == null) return;
+			_guiaTutorial = escena.Instantiate<Node2D>();
+			_capaTutorial.AddChild(_guiaTutorial);
+
+			var mano = GetNodeOrNull<Control>("ManoManual");
+			_guiaTutorial.Position = mano != null ? mano.GlobalPosition + new Vector2(20f, -90f) : new Vector2(640f, 620f);
+			_guiaTutorial.Scale = ESCALA_GUIA_TUTORIAL;
+			GD.Print("[Tutorial] Nodo 'Guia' no encontrado en la escena: se instanció por código.");
+		}
+
+		// Por delante de todo lo del tablero (tropas llegan a ZIndex 100, la mano a 150).
+		_guiaTutorial.ZIndex = 4000;
+		_escalaFinalGuiaTutorial = _guiaTutorial.Scale;
+		_lblGuiaTutorial = _guiaTutorial.FindChild("LblHabilidad", true, false) as Label;
+		// El .tscn trae un texto de ejemplo para poder acomodarlo en el editor: se limpia acá para
+		// que no llegue a verse ni un fotograma antes del primer mensaje real.
+		if (_lblGuiaTutorial != null) _lblGuiaTutorial.Text = "";
 		_guiaTutorial.Visible = false;
 	}
-
-	// Escala final del cuadro una vez terminada la animación de aparición — más grande que el
-	// tamaño original del .tscn (pedido explícito: se veía chico).
-	private static readonly Vector2 ESCALA_GUIA_TUTORIAL = new Vector2(1.45f, 1.45f);
 
 	/// <summary>Muestra el cuadro Guia con un texto nuevo, con la animación de chico a grande.</summary>
 	private void MostrarGuiaConTexto(string texto)
@@ -143,17 +244,28 @@ public partial class Campo1 : Node2D
 		if (_guiaTutorial == null) return;
 		if (_lblGuiaTutorial != null) _lblGuiaTutorial.Text = texto;
 		_guiaTutorial.Visible = true;
-		_guiaTutorial.Scale = ESCALA_GUIA_TUTORIAL * 0.15f;
+		_guiaTutorial.Scale = _escalaFinalGuiaTutorial * 0.15f;
 		_tweenGuiaTutorial?.Kill();
 		_tweenGuiaTutorial = CreateTween();
 		_tweenGuiaTutorial.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-		_tweenGuiaTutorial.TweenProperty(_guiaTutorial, "scale", ESCALA_GUIA_TUTORIAL, 0.35f);
+		_tweenGuiaTutorial.TweenProperty(_guiaTutorial, "scale", _escalaFinalGuiaTutorial, 0.35f);
 	}
 
 	/// <summary>Se llama desde Carta.cs apenas el jugador empieza a arrastrar una carta, y desde
 	/// MostrarMenuTropa al abrir el menú de una tropa: el cuadro se corre para no tapar la vista.</summary>
 	public void OcultarGuiaTutorial()
 	{
+		if (_guiaTutorial != null) _guiaTutorial.Visible = false;
+	}
+
+	/// <summary>Cierra el cuadro DE VERDAD: además de ocultarlo, olvida el texto, para que no vuelva
+	/// a aparecer solo. (OcultarGuiaTutorial es un escondite temporal — al terminar de arrastrar una
+	/// carta, RestaurarGuiaTutorial lo devolvía con el mensaje viejo: por eso el texto de "tienes 20
+	/// segundos" reaparecía cada vez que se agarraba una carta.)</summary>
+	private void CerrarGuiaTutorial()
+	{
+		_textoGuiaTutorialActual = "";
+		if (_lblGuiaTutorial != null) _lblGuiaTutorial.Text = "";
 		if (_guiaTutorial != null) _guiaTutorial.Visible = false;
 	}
 
@@ -172,6 +284,11 @@ public partial class Campo1 : Node2D
 	{
 		if (_capaTutorial != null && IsInstanceValid(_capaTutorial))
 			_capaTutorial.Visible = !pausado;
+
+		// El cuadro "Guia" está puesto a mano en campo_tutorial.tscn (no dentro de _capaTutorial),
+		// así que hay que taparlo aparte: con ZIndex 4000 se vería encima del panel de pausa.
+		if (_guiaTutorial != null && IsInstanceValid(_guiaTutorial))
+			_guiaTutorial.Visible = pausado ? false : !string.IsNullOrEmpty(_textoGuiaTutorialActual);
 	}
 
 	// ── "Dale click a cualquier lado para seguir" — mecanismo real de avance ─────────────────
@@ -181,10 +298,35 @@ public partial class Campo1 : Node2D
 	private bool   _esperandoClickTutorial = false;
 	private Action _alAvanzarClickTutorial;
 
+	private Timer _timerPistaClickTutorial;
+
 	private void EsperarClickParaAvanzar(Action alAvanzar)
 	{
 		_esperandoClickTutorial = true;
 		_alAvanzarClickTutorial = alAvanzar;
+
+		// Si el cuadro se queda puesto un rato sin que nadie lo toque, se recuerda cada tanto cómo
+		// seguir — antes no había forma de enterarse de que había que tocar la pantalla.
+		_timerPistaClickTutorial?.Stop();
+		_timerPistaClickTutorial?.QueueFree();
+		_timerPistaClickTutorial = new Timer { WaitTime = 10.0, Autostart = true, OneShot = false };
+		AddChild(_timerPistaClickTutorial);
+		_timerPistaClickTutorial.Timeout += () =>
+		{
+			// Si la partida ya terminó, la pista se apaga: si no, seguía saltando cada 10s y le
+			// borraba la frase de cierre de la pantalla.
+			if (juegoTerminado) { DetenerPistaClickTutorial(); return; }
+			if (!_esperandoClickTutorial) return;
+			MostrarAviso("Toca cualquier lado para continuar", Colors.Gold);
+		};
+	}
+
+	private void DetenerPistaClickTutorial()
+	{
+		if (_timerPistaClickTutorial == null) return;
+		_timerPistaClickTutorial.Stop();
+		_timerPistaClickTutorial.QueueFree();
+		_timerPistaClickTutorial = null;
 	}
 
 	/// <returns>true si el evento fue consumido acá (el llamador debe cortar su propio manejo).</returns>
@@ -196,6 +338,7 @@ public partial class Campo1 : Node2D
 		if (!esClick) return false;
 
 		_esperandoClickTutorial = false;
+		DetenerPistaClickTutorial();
 		var accion = _alAvanzarClickTutorial;
 		_alAvanzarClickTutorial = null;
 		accion?.Invoke();
@@ -228,8 +371,19 @@ public partial class Campo1 : Node2D
 
 	private void PasoMostrarManoTutorial()
 	{
-		OcultarGuiaTutorial();
 		IniciarManoTutorial();
+		// Antes de mandar a colocarlas, se explica que hay 3 TIPOS de carta y que estas 3 son una
+		// de cada uno (coinciden con ClasificacionCartas: Maguín táctico, Soldado Real asesino,
+		// Gólem coloso).
+		MostrarGuiaConTexto("Hay 3 tipos de carta, y tienes una de cada uno: el TÁCTICO (Maguín) " +
+			"apoya con su habilidad, el ASESINO (Soldado Real) golpea fuerte, y el COLOSO (Gólem) " +
+			"es el que más aguanta.");
+		EsperarClickParaAvanzar(PasoColocarTropasTutorial);
+	}
+
+	private void PasoColocarTropasTutorial()
+	{
+		CerrarGuiaTutorial();
 		MostrarAviso("Coloca tus 3 tropas en los círculos azules", Colors.Gold);
 		EsperarColocarTresTropasTutorial();
 	}
@@ -364,7 +518,7 @@ public partial class Campo1 : Node2D
 		// Gastaste las 3 energías del turno (una por acción) — el cambio de turno hacia el rival lo
 		// maneja el flujo normal del juego (RegistrarGastoMovimiento -> CambiarTurno al llegar a 0),
 		// que termina llamando a EjecutarTurnoCPU() → EjecutarTurnoCPUTutorial() acá abajo.
-		OcultarGuiaTutorial();
+		CerrarGuiaTutorial();
 	}
 
 	// ── TURNO DE ATAQUE GUIONADO DEL RIVAL ────────────────────────────────────────────────────
@@ -397,13 +551,19 @@ public partial class Campo1 : Node2D
 			if (juegoTerminado) return;
 		}
 
-		if (!juegoTerminado)
-		{
-			CambiarTurno(); // vuelve el turno al jugador (turno 2)
-			// Deja ver el cartel "TU TURNO" y arranca el paso guionado de Curación.
-			GetTree().CreateTimer(1.6f).Timeout += () => { if (!juegoTerminado) PasoCurarSoldadoTutorial(); };
-		}
+		if (juegoTerminado) return;
+
+		_rondaRivalTutorial++;
+		CambiarTurno(); // vuelve el turno al jugador
+		// Deja ver el cartel "TU TURNO" y arranca el paso guionado que toque según la ronda:
+		//   ronda 1 → Curación + habilidad del Maguín + Barajar
+		//   ronda 2 → remate final (atacar con todo)
+		//   ronda 2 → sacrificio guiado del Maguín + invocar reemplazo, y de ahí al remate
+		Action siguiente = _rondaRivalTutorial <= 1 ? PasoCurarSoldadoTutorial : PasoSacrificarMaguinTutorial;
+		GetTree().CreateTimer(1.6f).Timeout += () => { if (!juegoTerminado) siguiente(); };
 	}
+
+	private int _rondaRivalTutorial = 0;
 
 	// ═══════════════════════════════════════════════════════════════════════════
 	// SEGUNDA MITAD GUIONADA: Curación → Habilidad Maguín → (sacrificio/remate/aprobado, próximas)
@@ -418,6 +578,9 @@ public partial class Campo1 : Node2D
 		// MostrarMenuTropa, así que sigue permitido; esto solo evita que ataque una tropa por error).
 		_tutorialBloqueoTotal = true;
 		_esperandoCuracionTutorial = true;
+		// Todo el HUD y la mano quedan semitransparentes y sin responder MENOS la carta de Curación,
+		// que es lo único que se puede tocar en este paso.
+		AtenuarTodoMenosCuracionTutorial();
 		MostrarGuiaConTexto("El Soldado Real quedó herido por el ataque enemigo. Arrastra tu carta de " +
 			"CURACIÓN sobre él (el círculo verde te marca dónde soltarla) para devolverle vida.");
 	}
@@ -428,7 +591,9 @@ public partial class Campo1 : Node2D
 	{
 		if (!_esperandoCuracionTutorial || !(objetivo is SoldadoRealPrime)) return;
 		_esperandoCuracionTutorial = false;
+		LimpiarAvisoActual();
 		_tutorialBloqueoTotal = false;
+		RestaurarResaltadoBotonTutorial(); // devuelve el HUD y la mano a la normalidad
 		CallDeferred(nameof(PasoMaguinTutorial));
 	}
 
@@ -442,11 +607,325 @@ public partial class Campo1 : Node2D
 		ForzarPasoTutorial(typeof(MaguinPrime), AccionForzadaTutorial.Habilidad, PasoTrasMaguinTutorial);
 	}
 
+	// ── PIEZA 3: BARAJAR GUIADO (es lo que trae cartas nuevas a la mano) ──────────────────────
+	// Tras transformar al Tanque, el cuadro pide usar BARAJAR. Ese botón queda agrandado y
+	// balanceándose (mismo tratamiento visual que el de Sacrificio cuando está activo) y TODO lo
+	// demás del HUD queda atenuado y bloqueado, para que no haya forma de equivocarse.
 	private void PasoTrasMaguinTutorial()
 	{
-		// PRÓXIMA PIEZA (aún no armada): sacrificio guiado del Soldado Real + elegir reemplazo,
-		// remate final y pantalla "TUTORIAL APROBADO". Por ahora cierra el guion sin trabar nada.
-		MostrarGuiaConTexto("¡Excelente! Transformaste al Tanque. (El tutorial continuará con el " +
-			"sacrificio y el remate final.)");
+		MostrarGuiaConTexto("¡Excelente! El Tanque quedó convertido en pez para siempre. Ahora usa el " +
+			"botón BARAJAR: con él cambias tu mano y te llegan cartas nuevas para invocar.");
+		_esperandoBarajarTutorial = true;
+		// Se desbloquea la reposición ANTES de barajar: así el barajado ya reparte cartas nuevas.
+		_tutorialManoBloqueada = false;
+		ResaltarSoloBotonTutorial(btnBarajar);
+	}
+
+	private bool _esperandoBarajarTutorial = false;
+
+	/// <summary>La llama _on_barajar_pressed (Campo1.Flujo.cs) después de barajar, en modo tutorial.</summary>
+	private void NotificarBarajarTutorial()
+	{
+		if (!_esperandoBarajarTutorial) return;
+		_esperandoBarajarTutorial = false;
+		RestaurarResaltadoBotonTutorial();
+		CerrarGuiaTutorial();
+		// El barajado gasta la última energía del turno, así que el juego pasa solo al turno del
+		// rival → EjecutarTurnoCPUTutorial (segunda ronda de ataques, sin matar a nadie).
+	}
+
+	/// <summary>Deja el botón "cambiar ardid" completamente muerto al clic (no solo atenuado). En el
+	/// tutorial se bloquea de entrada y para siempre: cambiar de ardid rompería el guion, que
+	/// necesita que la Curación siga en la mano.</summary>
+	private void BloquearBotonArdidTutorial(bool bloquear)
+	{
+		if (_btnCambiarHechizo == null || !IsInstanceValid(_btnCambiarHechizo)) return;
+		_btnCambiarHechizo.Disabled    = bloquear;
+		_btnCambiarHechizo.MouseFilter = bloquear ? Control.MouseFilterEnum.Ignore : Control.MouseFilterEnum.Stop;
+		if (bloquear) _btnCambiarHechizo.Modulate = new Color(1f, 1f, 1f, 0.4f);
+	}
+
+	/// <summary>Paso de Curación: atenúa y desactiva TODO (HUD, tropas de la mano, el otro ardid)
+	/// menos la carta de Curación, que es lo único que hay que tocar.</summary>
+	private void AtenuarTodoMenosCuracionTutorial()
+	{
+		RestaurarResaltadoBotonTutorial();
+
+		// Solo BOTONES: las barras de vida, la energía y el reloj se dejan intactos (son información,
+		// no cosas que se puedan tocar — atenuarlos hacía que pareciera que el juego se rompió).
+		foreach (Node n in CapaHUD().GetChildren())
+		{
+			if (n is not BaseButton btn || !IsInstanceValid(btn)) continue;
+			if (n.Name == "PausaButton") continue; // Pausa nunca se bloquea
+			AtenuarNodoTutorial(btn);
+		}
+
+		// Mano de tropas: entera bloqueada (en este paso no se invoca nada).
+		if (contenedorMano != null && IsInstanceValid(contenedorMano))
+			foreach (Node n in contenedorMano.GetChildren())
+				if (n is Carta c && IsInstanceValid(c)) c.BloquearPorModo(true);
+
+		// Mano de ardides: se bloquea carta por carta, salvando la de Curación.
+		if (_contenedorHechizos != null && IsInstanceValid(_contenedorHechizos))
+		{
+			foreach (Node n in _contenedorHechizos.GetChildren())
+			{
+				if (n is not Carta c || !IsInstanceValid(c)) continue;
+				bool esCuracion = c.HechizoPi >= 0 && c.HechizoPi < _poolActivo.Length
+					&& _poolActivo[c.HechizoPi].Id == "curacion";
+				if (!esCuracion) c.BloquearPorModo(true);
+			}
+		}
+	}
+
+	// ── PIEZA 3.5: SACRIFICIO GUIADO DEL MAGUÍN ───────────────────────────────────────────────
+	// Turno 3: el Maguín quedó muy golpeado. El único botón vivo es SACRIFICIO; el aviso explica el
+	// doble clic (la confirmación de dos toques ya existe en el juego normal). Al morir, se libera
+	// su carril y toca invocar una de las 3 cartas nuevas que trajo el barajado.
+	private bool _esperandoSacrificioTutorial = false;
+	private bool _esperandoInvocarReemplazoTutorial = false;
+
+	private void PasoSacrificarMaguinTutorial()
+	{
+		_esperandoSacrificioTutorial = true;
+		MostrarGuiaConTexto("El Maguín quedó muy herido y ya no aguanta otro golpe. Usa el botón de " +
+			"SACRIFICIO para retirarlo y poder invocar una tropa nueva en su lugar.");
+		MostrarAviso("Sacrifica al Maguín para seguir la batalla", Colors.OrangeRed);
+		ResaltarSoloBotonTutorial(btnSacrificio);
+	}
+
+	/// <summary>La llama VerificarSacrificioEnCampo (Campo1.Flujo.cs) al confirmar un sacrificio.</summary>
+	private void NotificarSacrificioTutorial(Node2D tropa)
+	{
+		if (!_esperandoSacrificioTutorial) return;
+		_esperandoSacrificioTutorial = false;
+		LimpiarAvisoActual();
+		RestaurarResaltadoBotonTutorial();
+		_esperandoInvocarReemplazoTutorial = true;
+
+		MostrarGuiaConTexto("Sé que duele, pero hay que seguir. Ahora invoca una de tus cartas nuevas " +
+			"en el carril que quedó libre.");
+		// El cuadro se cierra con un toque; recién ahí sale el aviso de la acción (antes se quedaba
+		// puesto tapando la mano mientras había que elegir la carta nueva).
+		EsperarClickParaAvanzar(() =>
+		{
+			CerrarGuiaTutorial();
+			MostrarAviso("Elige una carta nueva e invócala", Colors.Gold);
+		});
+	}
+
+	/// <summary>La llama TropaInvocada (Campo1.Flujo.cs) cuando el jugador pone la tropa de reemplazo.</summary>
+	private void NotificarInvocacionReemplazoTutorial()
+	{
+		if (!_esperandoInvocarReemplazoTutorial) return;
+		_esperandoInvocarReemplazoTutorial = false;
+		LimpiarAvisoActual();
+		// Barajar y sacrificio ya cumplieron su función: quedan muertos el resto del tutorial.
+		_tutorialManoBloqueada = true;
+		CerrarGuiaTutorial();
+		GetTree().CreateTimer(0.8f).Timeout += () => { if (!juegoTerminado) PasoRemateFinalTutorial(); };
+	}
+
+	// ── PIEZA 4: REMATE FINAL (atacar con todo) ───────────────────────────────────────────────
+	// Último turno del jugador: solo está habilitado ATAQUE, en cualquiera de las 3 tropas. El
+	// cuadro da la indicación una vez y desaparece; el aviso recuerda que hay que atacar con las 3.
+	private bool _remateFinalTutorial = false;
+
+	private void PasoRemateFinalTutorial()
+	{
+		_remateFinalTutorial = true;
+		_tutorialBloqueoTotal = false;
+		MostrarGuiaConTexto("¡Última indicación! Ataca con todo: selecciona tus tropas y elige ATAQUE " +
+			"para acabar con el enemigo de una vez.");
+		// Cualquier tropa propia sirve, pero SOLO el botón de ataque (tropa = null → no se filtra por
+		// tipo; la acción forzada sigue limitando los botones en MostrarMenuTropa).
+		ForzarPasoTutorial(null, AccionForzadaTutorial.Atacar, ProgramarContinuarRemateTutorial);
+		EsperarClickParaAvanzar(() =>
+		{
+			CerrarGuiaTutorial();
+			MostrarAviso("Ataca con las 3 tropas para terminar", Colors.Gold);
+		});
+	}
+
+	/// <summary>Espera a que termine la animación de muerte antes de revisar el tablero: si se
+	/// consultara en el mismo instante del golpe, la tropa recién matada todavía contaría como viva.</summary>
+	private void ProgramarContinuarRemateTutorial()
+	{
+		// Se re-arma YA (no después del timer) para que en el rato que dura la animación de muerte
+		// no quede ninguna ventana con los botones de defensa/habilidad sueltos.
+		if (_remateFinalTutorial) ForzarPasoTutorial(null, AccionForzadaTutorial.Atacar, ProgramarContinuarRemateTutorial);
+		GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) ContinuarRemateFinalTutorial(); };
+	}
+
+	/// <summary>Tras cada ataque del remate, se vuelve a dejar solo ATAQUE habilitado (para las tropas
+	/// que todavía no actuaron) y se revisa si ya no queda ninguna tropa rival viva.</summary>
+	private void ContinuarRemateFinalTutorial()
+	{
+		if (!_remateFinalTutorial || juegoTerminado) return;
+
+		// Cada tropa rival que cae le arranca un tercio de la vida a su huevo: así la barra baja de a
+		// poco, a medida que se van eliminando, en vez de desplomarse de golpe al final.
+		int vivas = ContarTropasRivalesTutorial();
+		int objetivo = Mathf.RoundToInt(VIDA_RIVAL_TUTORIAL * (vivas / 3f));
+		if (vivas > 0 && vidaRival > objetivo)
+		{
+			vidaRival = objetivo;
+			ActualizarInterfaz();
+		}
+
+		if (vivas > 0)
+		{
+			// Sigue el remate: se re-arma el paso forzado para el próximo ataque.
+			ForzarPasoTutorial(null, AccionForzadaTutorial.Atacar, ProgramarContinuarRemateTutorial);
+			return;
+		}
+
+		// Ya no queda ninguna tropa rival: el huevo rival (que en el tutorial arranca con muy poca
+		// vida) cae a 0 y la partida se cierra en victoria. Se fuerza acá en vez de esperar al
+		// castigo por carriles vacíos, para que pase justo al morir la última tropa.
+		_remateFinalTutorial = false;
+		_accionForzadaTutorial = AccionForzadaTutorial.Ninguna;
+		_tropaForzadaTutorial  = null;
+
+		PasoCierreTutorial();
+		GetTree().CreateTimer(2.4f).Timeout += () =>
+		{
+			if (juegoTerminado) return;
+			CerrarGuiaTutorial();
+			vidaRival = 0;
+			ActualizarInterfaz();
+			CheckEstadoJuego(); // → FinalizarPartida("VICTORIA")
+		};
+	}
+
+	/// <summary>Cuántas tropas rivales siguen vivas. Cuenta también al PEZ en el que se transformó el
+	/// Tanque: sigue siendo una tropa rival y hay que matarlo igual para terminar.</summary>
+	private int ContarTropasRivalesTutorial()
+	{
+		int vivas = 0;
+		foreach (Node n in GetTree().GetNodesInGroup("tropas_rival"))
+		{
+			if (n is not Node2D t || !IsInstanceValid(t) || t.IsQueuedForDeletion()) continue;
+			if (t is TropaBase tb && tb.EstaMuerta) continue;
+			vivas++;
+		}
+		return vivas;
+	}
+
+	// ── PIEZA 5: CIERRE ───────────────────────────────────────────────────────────────────────
+	private void PasoCierreTutorial()
+	{
+		MostrarGuiaConTexto("¡BIEN HECHO! Ya sabes lo básico de EGGODIA. Espero que ganes muchas " +
+			"batallas más y armes una estrategia todavía mejor.");
+		// PRÓXIMA PIEZA (aún no armada): la frase "TUTORIAL COMPLETADO" y la pantalla de victoria
+		// especial (sin monedas, con el botón "Repetir tutorial" en vez de "Reintentar"). Mientras
+		// tanto, al morir las 3 tropas rivales el flujo normal de fin de partida hace su trabajo.
+	}
+
+	// ── RESALTAR UN SOLO BOTÓN DEL HUD (y bloquear el resto) ─────────────────────────────────
+	private readonly List<(CanvasItem nodo, Color modulate, bool eraDisabled, Control.MouseFilterEnum filtro)> _atenuadosTutorial = new();
+	private Tween         _tweenBaileBotonTutorial;
+	private TextureButton _botonResaltadoTutorial;
+	private Vector2       _escalaPrevioBotonTutorial = Vector2.One;
+
+	private void ResaltarSoloBotonTutorial(TextureButton objetivo)
+	{
+		RestaurarResaltadoBotonTutorial();
+		if (objetivo == null || !IsInstanceValid(objetivo)) return;
+		_botonResaltadoTutorial = objetivo;
+
+		// Igual que en el paso de Curación: solo botones. Vida, energía y reloj quedan como están.
+		foreach (Node n in CapaHUD().GetChildren())
+		{
+			if (n is not BaseButton btn || !IsInstanceValid(btn)) continue;
+			if (n.Name == "PausaButton" || btn == objetivo) continue; // Pausa nunca se bloquea
+			AtenuarNodoTutorial(btn);
+		}
+		foreach (Control mano in new[] { contenedorMano, _contenedorHechizos })
+		{
+			if (mano == null || !IsInstanceValid(mano)) continue;
+			AtenuarNodoTutorial(mano);
+			foreach (Node n in mano.GetChildren())
+				if (n is Carta c && IsInstanceValid(c)) c.BloquearPorModo(true);
+		}
+
+		objetivo.Disabled    = false;
+		objetivo.Modulate    = Colors.White;
+		objetivo.MouseFilter = Control.MouseFilterEnum.Stop;
+		objetivo.ZIndex      = 60;
+		objetivo.PivotOffset = objetivo.Size / 2f;
+		_escalaPrevioBotonTutorial = objetivo.Scale;
+		Vector2 agrandado = _escalaPrevioBotonTutorial * 1.18f;
+		if (_escalaReposoBoton.ContainsKey(objetivo)) _escalaReposoBoton[objetivo] = agrandado;
+		objetivo.CreateTween().TweenProperty(objetivo, "scale", agrandado, 0.15f)
+			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+
+		_tweenBaileBotonTutorial = objetivo.CreateTween().SetLoops();
+		_tweenBaileBotonTutorial.TweenProperty(objetivo, "rotation", Mathf.DegToRad(2.5f), 0.18f)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		_tweenBaileBotonTutorial.TweenProperty(objetivo, "rotation", Mathf.DegToRad(-2.5f), 0.36f)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+		_tweenBaileBotonTutorial.TweenProperty(objetivo, "rotation", 0f, 0.18f)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+	}
+
+	private void AtenuarNodoTutorial(CanvasItem ci)
+	{
+		bool eraDisabled = ci is BaseButton bb && bb.Disabled;
+		var filtroPrevio = ci is Control ctrl ? ctrl.MouseFilter : Control.MouseFilterEnum.Ignore;
+		_atenuadosTutorial.Add((ci, ci.Modulate, eraDisabled, filtroPrevio));
+		ci.Modulate = new Color(ci.Modulate.R, ci.Modulate.G, ci.Modulate.B, 0.35f);
+		if (ci is BaseButton btn) btn.Disabled = true;
+		if (ci is Control c) c.MouseFilter = Control.MouseFilterEnum.Ignore;
+	}
+
+	private void RestaurarResaltadoBotonTutorial()
+	{
+		_tweenBaileBotonTutorial?.Kill();
+		_tweenBaileBotonTutorial = null;
+
+		if (_botonResaltadoTutorial != null && IsInstanceValid(_botonResaltadoTutorial))
+		{
+			_botonResaltadoTutorial.Rotation = 0f;
+			_botonResaltadoTutorial.ZIndex   = 0;
+			if (_escalaReposoBoton.ContainsKey(_botonResaltadoTutorial))
+				_escalaReposoBoton[_botonResaltadoTutorial] = _escalaPrevioBotonTutorial;
+			_botonResaltadoTutorial.Scale = _escalaPrevioBotonTutorial;
+		}
+		_botonResaltadoTutorial = null;
+
+		foreach (var (ci, modulate, eraDisabled, filtroPrevio) in _atenuadosTutorial)
+		{
+			if (!IsInstanceValid(ci)) continue;
+			ci.Modulate = modulate;
+			if (ci is BaseButton btn) btn.Disabled = eraDisabled;
+			if (ci is Control c) c.MouseFilter = filtroPrevio;
+		}
+		_atenuadosTutorial.Clear();
+		foreach (Control mano in new[] { contenedorMano, _contenedorHechizos })
+		{
+			if (mano == null || !IsInstanceValid(mano)) continue;
+			foreach (Node n in mano.GetChildren())
+				if (n is Carta c && IsInstanceValid(c)) c.BloquearPorModo(false);
+		}
+	}
+
+	/// <summary>Mantiene bloqueados Barajar/Sacrificio que NO sean el botón resaltado, porque
+	/// ActualizarInterfaz los recalcula todo el tiempo y si no los volvería a habilitar.</summary>
+	private void ForzarBloqueoBotonesTutorial()
+	{
+		if (_botonResaltadoTutorial == null) return;
+		var atenuado = new Color(1, 1, 1, 0.35f);
+		foreach (var b in new[] { btnBarajar, btnSacrificio })
+		{
+			if (b == null || !IsInstanceValid(b) || b == _botonResaltadoTutorial) continue;
+			b.Disabled = true;
+			b.Modulate = atenuado;
+		}
+		if (IsInstanceValid(_botonResaltadoTutorial))
+		{
+			_botonResaltadoTutorial.Disabled = false;
+			_botonResaltadoTutorial.Modulate = Colors.White;
+		}
 	}
 }
