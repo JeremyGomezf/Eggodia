@@ -178,6 +178,11 @@ public partial class MaguinPrime : TropaBase
 	private void DetenerEfectoAviso()
 	{
 		_tweenAviso?.Kill();
+		_tweenAviso = null;
+		// El parpadeo celeste se anima sobre _anim (el sprite), NO sobre el nodo raíz: acá se
+		// reseteaba Modulate de la raíz y el sprite quedaba teñido de celeste para siempre después
+		// de usar la habilidad.
+		if (_anim != null && IsInstanceValid(_anim)) _anim.Modulate = Colors.White;
 		Modulate = Colors.White;
 	}
 

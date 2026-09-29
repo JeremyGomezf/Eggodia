@@ -131,6 +131,9 @@ public partial class MenuPrincipal : Control
 
 		ConectarBtnTrofeo();
 
+		// Clic de interfaz en todos los botones del menú (diferido: alcanza también los creados por código).
+		Callable.From(() => SonidoUI.EngancharBotones(this)).CallDeferred();
+
 		var btnVsBot = GetNodeOrNull<BaseButton>("BottomButtons/BtnVsBot");
 		if (btnVsBot != null)
 		{

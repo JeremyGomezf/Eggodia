@@ -298,6 +298,7 @@ public partial class Campo1 : Node2D
 					pdScript.MvtIlustracion = mvtRival.ilustracion;
 				}
 				AddChild(pd);
+				SonidoUI.EngancharBotones(pd); // nace después de _Ready: se engancha acá
 			}
 			return;
 		}
@@ -325,6 +326,7 @@ public partial class Campo1 : Node2D
 				pv.MvtDaño        = mvtJugador.daño;
 				pv.MvtIlustracion = mvtJugador.ilustracion;
 				AddChild(pv);
+				SonidoUI.EngancharBotones(pv); // la pantalla nace después de _Ready: se engancha acá
 			}
 
 			if (SesionJuego.Instance != null)

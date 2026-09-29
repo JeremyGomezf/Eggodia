@@ -141,7 +141,10 @@ public partial class Campo1 : Node2D
 			{ btnA.Disabled = true; btnA.Modulate = new Color(1, 1, 1, 0.4f); }
 			if (_accionForzadaTutorial != AccionForzadaTutorial.Defender && btnD != null)
 			{ btnD.Disabled = true; btnD.Modulate = new Color(1, 1, 1, 0.4f); }
-			if (_accionForzadaTutorial != AccionForzadaTutorial.Habilidad && btnHabilidad != null)
+			// Excepción del remate final: el Dragón conserva también su HABILIDAD (su llamarada
+			// remata al Campero de enfrente). Las demás tropas nuevas solo pueden atacar.
+			bool dragonEnRemate = _remateFinalTutorial && tropa is DragonPrime;
+			if (_accionForzadaTutorial != AccionForzadaTutorial.Habilidad && !dragonEnRemate && btnHabilidad != null)
 			{ btnHabilidad.Disabled = true; btnHabilidad.Modulate = new Color(1, 1, 1, 0.4f); }
 		}
 
@@ -232,6 +235,8 @@ public partial class Campo1 : Node2D
 	public void _on_barajar_pressed()
 	{
 		if (modoSacrificioActivo) return; // el modo sacrificio bloquea todo el HUD, este botón también
+		// Tutorial: el botón se ve normal SIEMPRE, pero solo funciona en el paso que lo pide.
+		if (ModoTutorial && !PuedeUsarBarajarTutorial()) return;
 		if (!esTurnoJugador || movimientosRestantes <= 0 || usosBarajar >= MAX_BARAJAR || _faseApertura) return;
 		usosBarajar++;
 		// Tutorial: barajar reparte las 3 cartas fijas de reemplazo, no una mano al azar.
@@ -260,6 +265,8 @@ public partial class Campo1 : Node2D
 
 	public void _on_sacrificar_pressed()
 	{
+		// Tutorial: el botón se ve normal SIEMPRE, pero solo se puede activar en el paso del Maguín.
+		if (ModoTutorial && !modoSacrificioActivo && !PuedeUsarSacrificioTutorial()) return;
 		if (!esTurnoJugador || movimientosRestantes <= 0 || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500 || _faseApertura)
 		{ if (modoSacrificioActivo) CancelarSacrificio(); return; }
 		modoSacrificioActivo = !modoSacrificioActivo;
@@ -277,6 +284,14 @@ public partial class Campo1 : Node2D
 			if (m == null || !m.HasMeta("tropa_instanciada")) continue;
 			Node2D t = (Node2D)m.GetMeta("tropa_instanciada");
 			if (!IsInstanceValid(t) || (t is TropaBase tb && tb.EstaMuerta)) continue; // ya está muriendo
+
+			// Tutorial: el sacrificio guiado es SOLO para el Maguín. Tocar cualquier otra tropa en
+			// modo sacrificio no hace nada (antes se podía matar a cualquiera y se rompía el guion).
+			if (ModoTutorial && t is not MaguinPrime)
+			{
+				MostrarAviso("En el tutorial solo puedes sacrificar al Maguín", Colors.OrangeRed);
+				continue;
+			}
 
 			if (_candidatoSacrificio == t)
 			{
@@ -711,9 +726,21 @@ public partial class Campo1 : Node2D
 		if (btnBarajar != null)    { bool b = !esTurnoJugador || usosBarajar >= MAX_BARAJAR || movimientosRestantes <= 0; btnBarajar.Disabled = b; btnBarajar.Modulate = b ? new Color(1, 1, 1, 0.4f) : Colors.White; }
 		if (btnSacrificio != null) { bool s = !esTurnoJugador || usosSacrificio >= MAX_SACRIFICIO || vidaJugador <= 500 || movimientosRestantes <= 0; btnSacrificio.Disabled = s; btnSacrificio.Modulate = s ? new Color(1, 1, 1, 0.4f) : Colors.White; }
 
-		// Tutorial: si hay un botón resaltado por el guion, se vuelve a imponer acá — si no, estas
-		// dos líneas de arriba lo reactivarían todo en el siguiente refresco.
-		if (ModoTutorial) ForzarBloqueoBotonesTutorial();
+		// Tutorial: los botones NUNCA se ven atenuados — siempre parecen disponibles. Si se pulsan
+		// fuera de su momento, avisan "No disponible por el momento" (ver PuedeUsarBarajarTutorial /
+		// PuedeUsarSacrificioTutorial). Sin esto, las dos líneas de arriba los pintaban grises.
+		if (ModoTutorial)
+		{
+			if (btnBarajar    != null) { btnBarajar.Disabled    = false; btnBarajar.Modulate    = Colors.White; }
+			if (btnSacrificio != null) { btnSacrificio.Disabled = false; btnSacrificio.Modulate = Colors.White; }
+			// El de cambiar ardid, igual: se ve normal y avisa al pulsarlo si todavía no toca.
+			if (_btnCambiarHechizo != null)
+			{
+				_btnCambiarHechizo.Disabled    = false;
+				_btnCambiarHechizo.Modulate    = Colors.White;
+				_btnCambiarHechizo.MouseFilter = Control.MouseFilterEnum.Stop;
+			}
+		}
 
 		if (_barraHPJugador != null) _barraHPJugador.Value = PorcentajeBarraVida(vidaJugador);
 		if (_barraHPRival   != null) _barraHPRival.Value   = PorcentajeBarraVida(vidaRival, esRival: true);

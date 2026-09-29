@@ -149,7 +149,6 @@ public partial class Campo1 : Node2D
 		AddChild(_capaTutorial);
 
 		CrearGuiaTutorial();
-		BloquearBotonArdidTutorial(true); // de entrada y para toda la partida
 		MostrarSplashBienvenida();
 	}
 
@@ -485,7 +484,11 @@ public partial class Campo1 : Node2D
 	/// coincide con el paso forzado vigente (o no hay ninguno), no hace nada.</summary>
 	private void AvanzarPasoForzadoTutorial(AccionForzadaTutorial completada)
 	{
-		if (_accionForzadaTutorial == AccionForzadaTutorial.Ninguna || _accionForzadaTutorial != completada) return;
+		if (_accionForzadaTutorial == AccionForzadaTutorial.Ninguna) return;
+		// En el remate final vale tanto ATAQUE como la HABILIDAD del Dragón: las dos matan enemigos.
+		bool coincide = _accionForzadaTutorial == completada
+			|| (_remateFinalTutorial && completada == AccionForzadaTutorial.Habilidad);
+		if (!coincide) return;
 		_tropaForzadaTutorial = null;
 		_accionForzadaTutorial = AccionForzadaTutorial.Ninguna;
 		var siguiente = _alCompletarPasoForzadoTutorial;
@@ -591,6 +594,7 @@ public partial class Campo1 : Node2D
 	{
 		if (!_esperandoCuracionTutorial || !(objetivo is SoldadoRealPrime)) return;
 		_esperandoCuracionTutorial = false;
+		_cambioArdidPermitidoTutorial = true; // ya se usó la Curación: el botón pasa a funcionar
 		LimpiarAvisoActual();
 		_tutorialBloqueoTotal = false;
 		RestaurarResaltadoBotonTutorial(); // devuelve el HUD y la mano a la normalidad
@@ -616,6 +620,7 @@ public partial class Campo1 : Node2D
 		MostrarGuiaConTexto("¡Excelente! El Tanque quedó convertido en pez para siempre. Ahora usa el " +
 			"botón BARAJAR: con él cambias tu mano y te llegan cartas nuevas para invocar.");
 		_esperandoBarajarTutorial = true;
+		_barajarPermitidoTutorial = true; // recién ahora el botón funciona
 		// Se desbloquea la reposición ANTES de barajar: así el barajado ya reparte cartas nuevas.
 		_tutorialManoBloqueada = false;
 		ResaltarSoloBotonTutorial(btnBarajar);
@@ -628,37 +633,56 @@ public partial class Campo1 : Node2D
 	{
 		if (!_esperandoBarajarTutorial) return;
 		_esperandoBarajarTutorial = false;
+		_barajarPermitidoTutorial = false; // una sola vez en todo el tutorial
 		RestaurarResaltadoBotonTutorial();
 		CerrarGuiaTutorial();
 		// El barajado gasta la última energía del turno, así que el juego pasa solo al turno del
 		// rival → EjecutarTurnoCPUTutorial (segunda ronda de ataques, sin matar a nadie).
 	}
 
-	/// <summary>Deja el botón "cambiar ardid" completamente muerto al clic (no solo atenuado). En el
-	/// tutorial se bloquea de entrada y para siempre: cambiar de ardid rompería el guion, que
-	/// necesita que la Curación siga en la mano.</summary>
-	private void BloquearBotonArdidTutorial(bool bloquear)
+	// ── PERMISOS DE BOTONES DEL TUTORIAL ──────────────────────────────────────────────────────
+	// Los botones se ven SIEMPRE normales (nunca atenuados), pero solo funcionan en el momento que
+	// el guion los pide. Fuera de ese momento avisan "No disponible por el momento" y no hacen nada.
+	// Barajar: una sola vez, en su paso. Sacrificio: una sola vez, para el Maguín.
+	private bool _barajarPermitidoTutorial    = false;
+	private bool _sacrificioPermitidoTutorial = false;
+	// Cambiar de ardid: bloqueado hasta que se use la Curación (antes de eso, cambiarla rompía el
+	// paso guiado). Después ya da igual, porque ningún otro ardid se puede usar — se deja funcionar
+	// solo para que se vea que el botón responde.
+	private bool _cambioArdidPermitidoTutorial = false;
+
+	/// <returns>true si se puede cambiar de ardid ahora; si no, avisa y devuelve false.</returns>
+	private bool PuedeCambiarArdidTutorial()
 	{
-		if (_btnCambiarHechizo == null || !IsInstanceValid(_btnCambiarHechizo)) return;
-		_btnCambiarHechizo.Disabled    = bloquear;
-		_btnCambiarHechizo.MouseFilter = bloquear ? Control.MouseFilterEnum.Ignore : Control.MouseFilterEnum.Stop;
-		if (bloquear) _btnCambiarHechizo.Modulate = new Color(1f, 1f, 1f, 0.4f);
+		if (_cambioArdidPermitidoTutorial) return true;
+		MostrarAviso("No disponible por el momento", Colors.Gold);
+		return false;
 	}
 
-	/// <summary>Paso de Curación: atenúa y desactiva TODO (HUD, tropas de la mano, el otro ardid)
-	/// menos la carta de Curación, que es lo único que hay que tocar.</summary>
+	/// <returns>true si el barajado puede ejecutarse ahora; si no, avisa y devuelve false.</returns>
+	private bool PuedeUsarBarajarTutorial()
+	{
+		if (_barajarPermitidoTutorial) return true;
+		MostrarAviso("No disponible por el momento", Colors.Gold);
+		return false;
+	}
+
+	/// <returns>true si el sacrificio puede activarse ahora; si no, avisa y devuelve false.</returns>
+	private bool PuedeUsarSacrificioTutorial()
+	{
+		if (_sacrificioPermitidoTutorial) return true;
+		MostrarAviso("No disponible por el momento", Colors.Gold);
+		return false;
+	}
+
+	/// <summary>Paso de Curación: bloquea las CARTAS menos la de Curación (los botones del HUD se
+	/// siguen viendo normales y avisan al pulsarlos).</summary>
 	private void AtenuarTodoMenosCuracionTutorial()
 	{
 		RestaurarResaltadoBotonTutorial();
 
-		// Solo BOTONES: las barras de vida, la energía y el reloj se dejan intactos (son información,
-		// no cosas que se puedan tocar — atenuarlos hacía que pareciera que el juego se rompió).
-		foreach (Node n in CapaHUD().GetChildren())
-		{
-			if (n is not BaseButton btn || !IsInstanceValid(btn)) continue;
-			if (n.Name == "PausaButton") continue; // Pausa nunca se bloquea
-			AtenuarNodoTutorial(btn);
-		}
+		// Los botones del HUD NO se atenúan (se ven normales); si se pulsan fuera de su momento
+		// avisan "No disponible por el momento". Acá solo se bloquean las CARTAS.
 
 		// Mano de tropas: entera bloqueada (en este paso no se invoca nada).
 		if (contenedorMano != null && IsInstanceValid(contenedorMano))
@@ -688,6 +712,7 @@ public partial class Campo1 : Node2D
 	private void PasoSacrificarMaguinTutorial()
 	{
 		_esperandoSacrificioTutorial = true;
+		_sacrificioPermitidoTutorial = true; // recién ahora el botón funciona
 		MostrarGuiaConTexto("El Maguín quedó muy herido y ya no aguanta otro golpe. Usa el botón de " +
 			"SACRIFICIO para retirarlo y poder invocar una tropa nueva en su lugar.");
 		MostrarAviso("Sacrifica al Maguín para seguir la batalla", Colors.OrangeRed);
@@ -699,6 +724,7 @@ public partial class Campo1 : Node2D
 	{
 		if (!_esperandoSacrificioTutorial) return;
 		_esperandoSacrificioTutorial = false;
+		_sacrificioPermitidoTutorial = false; // una sola vez en todo el tutorial
 		LimpiarAvisoActual();
 		RestaurarResaltadoBotonTutorial();
 		_esperandoInvocarReemplazoTutorial = true;
@@ -735,15 +761,19 @@ public partial class Campo1 : Node2D
 	{
 		_remateFinalTutorial = true;
 		_tutorialBloqueoTotal = false;
-		MostrarGuiaConTexto("¡Última indicación! Ataca con todo: selecciona tus tropas y elige ATAQUE " +
-			"para acabar con el enemigo de una vez.");
+		// Energía al máximo: el remate necesita 3 ataques y, si el turno venía gastado, el jugador se
+		// quedaba sin energía a mitad y el tutorial se trababa sin salida.
+		movimientosRestantes = ENERGIA_MAXIMA;
+		ActualizarInterfaz();
+		MostrarGuiaConTexto("¡Última indicación! Ataca con todo: tienes que eliminar a las 3 tropas " +
+			"enemigas para que el huevo rival caiga y ganes el tutorial.");
 		// Cualquier tropa propia sirve, pero SOLO el botón de ataque (tropa = null → no se filtra por
 		// tipo; la acción forzada sigue limitando los botones en MostrarMenuTropa).
 		ForzarPasoTutorial(null, AccionForzadaTutorial.Atacar, ProgramarContinuarRemateTutorial);
 		EsperarClickParaAvanzar(() =>
 		{
 			CerrarGuiaTutorial();
-			MostrarAviso("Ataca con las 3 tropas para terminar", Colors.Gold);
+			MostrarAviso($"Elimina a las {ContarTropasRivalesTutorial()} tropas rivales", Colors.Gold);
 		});
 	}
 
@@ -752,8 +782,14 @@ public partial class Campo1 : Node2D
 	private void ProgramarContinuarRemateTutorial()
 	{
 		// Se re-arma YA (no después del timer) para que en el rato que dura la animación de muerte
-		// no quede ninguna ventana con los botones de defensa/habilidad sueltos.
-		if (_remateFinalTutorial) ForzarPasoTutorial(null, AccionForzadaTutorial.Atacar, ProgramarContinuarRemateTutorial);
+		// no quede ninguna ventana con los botones de defensa/habilidad sueltos. De paso se rellena
+		// la energía: en el remate nunca puede faltar para terminar de matar a las 3 tropas.
+		if (_remateFinalTutorial)
+		{
+			movimientosRestantes = ENERGIA_MAXIMA;
+			ActualizarInterfaz();
+			ForzarPasoTutorial(null, AccionForzadaTutorial.Atacar, ProgramarContinuarRemateTutorial);
+		}
 		GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) ContinuarRemateFinalTutorial(); };
 	}
 
@@ -834,21 +870,11 @@ public partial class Campo1 : Node2D
 		if (objetivo == null || !IsInstanceValid(objetivo)) return;
 		_botonResaltadoTutorial = objetivo;
 
-		// Igual que en el paso de Curación: solo botones. Vida, energía y reloj quedan como están.
-		foreach (Node n in CapaHUD().GetChildren())
-		{
-			if (n is not BaseButton btn || !IsInstanceValid(btn)) continue;
-			if (n.Name == "PausaButton" || btn == objetivo) continue; // Pausa nunca se bloquea
-			AtenuarNodoTutorial(btn);
-		}
-		foreach (Control mano in new[] { contenedorMano, _contenedorHechizos })
-		{
-			if (mano == null || !IsInstanceValid(mano)) continue;
-			AtenuarNodoTutorial(mano);
-			foreach (Node n in mano.GetChildren())
-				if (n is Carta c && IsInstanceValid(c)) c.BloquearPorModo(true);
-		}
-
+		// Ya NO se atenúa nada del HUD: todos los botones se siguen viendo normales y disponibles.
+		// Lo que impide usarlos fuera de su momento son los permisos del tutorial (ver
+		// PuedeUsarBarajarTutorial / PuedeUsarSacrificioTutorial), que muestran "No disponible por el
+		// momento" al pulsarlos. El único indicador visual es que el botón que TOCA usar crece y se
+		// balancea.
 		objetivo.Disabled    = false;
 		objetivo.Modulate    = Colors.White;
 		objetivo.MouseFilter = Control.MouseFilterEnum.Stop;
@@ -910,22 +936,4 @@ public partial class Campo1 : Node2D
 		}
 	}
 
-	/// <summary>Mantiene bloqueados Barajar/Sacrificio que NO sean el botón resaltado, porque
-	/// ActualizarInterfaz los recalcula todo el tiempo y si no los volvería a habilitar.</summary>
-	private void ForzarBloqueoBotonesTutorial()
-	{
-		if (_botonResaltadoTutorial == null) return;
-		var atenuado = new Color(1, 1, 1, 0.35f);
-		foreach (var b in new[] { btnBarajar, btnSacrificio })
-		{
-			if (b == null || !IsInstanceValid(b) || b == _botonResaltadoTutorial) continue;
-			b.Disabled = true;
-			b.Modulate = atenuado;
-		}
-		if (IsInstanceValid(_botonResaltadoTutorial))
-		{
-			_botonResaltadoTutorial.Disabled = false;
-			_botonResaltadoTutorial.Modulate = Colors.White;
-		}
-	}
 }

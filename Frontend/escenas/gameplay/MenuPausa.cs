@@ -15,6 +15,9 @@ public partial class MenuPausa : CanvasLayer
 
 	public override void _Ready()
 	{
+		// Clic de interfaz en los botones de esta pantalla (se crea aparte de Campo1/MenuPrincipal).
+		Callable.From(() => SonidoUI.EngancharBotones(this)).CallDeferred();
+
 		_overlay = GetNode<ColorRect>("Overlay");
 		_panelSettings = GetNodeOrNull<PanelSettings>("PanelSettings");
 		// Dentro de una partida (VS BOT) no se puede cerrar sesión: se oculta ese botón. En el menú

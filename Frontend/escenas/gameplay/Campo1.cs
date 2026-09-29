@@ -517,6 +517,10 @@ public partial class Campo1 : Node2D
 		// Mejora estética integrada de zonas de invocación (del amigo)
 		EstilizarIndicadoresInvocacion();
 
+		// Clic de interfaz en todos los botones de la partida (HUD, menú de tropa, pausa…).
+		// Diferido para alcanzar también los botones que se crean por código en este mismo _Ready.
+		Callable.From(() => SonidoUI.EngancharBotones(this)).CallDeferred();
+
 		if (SesionJuego.Instance != null)
 			_rachaVictorias = SesionJuego.Instance.RachaActual;
 

@@ -47,6 +47,9 @@ public partial class PanelSettings : PanelContainer
 
 	public override void _Ready()
 	{
+		// Clic de interfaz en los botones de esta pantalla (se crea aparte de Campo1/MenuPrincipal).
+		Callable.From(() => SonidoUI.EngancharBotones(this)).CallDeferred();
+
 		// Reaplicar la escala cuando el panel se dimensiona o se muestra (ahí ya tiene Size real y el
 		// pivote queda bien centrado).
 		Resized += AplicarEscalaCentrada;

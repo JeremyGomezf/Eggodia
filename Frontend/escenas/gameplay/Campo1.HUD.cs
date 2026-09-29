@@ -295,9 +295,9 @@ public partial class Campo1 : Node2D
 	// Campo1.Turnos.cs).
 	private void ActivarModoCambio()
 	{
-		// Tutorial: cambiar de ardid está prohibido toda la partida — el guion depende de que la
-		// carta de Curación siga en la mano (y el botón además se muestra bloqueado).
-		if (ModoTutorial) return;
+		// Tutorial: el botón se ve normal SIEMPRE; solo funciona una vez usada la Curación (antes de
+		// eso, cambiar la carta dejaría el paso guiado sin salida).
+		if (ModoTutorial && !PuedeCambiarArdidTutorial()) return;
 		if (_cooldownBtnArdid > 0 || !ValidarHechizo()) return;
 		for (int i = 0; i < 2; i++) AutoReemplazarHechizo(i);
 
