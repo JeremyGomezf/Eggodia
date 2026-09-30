@@ -327,6 +327,11 @@ public partial class GranaderoCartoonPrime : TropaBase
 	}
 
 	// ── EXPLOSIÓN ─────────────────────────────────────────────────────────────
+	// El audio del Granadero es la EXPLOSIÓN, no el lanzamiento: si suena al arrancar la animación
+	// de ataque (que es lo que hace TropaBase por defecto) empieza mucho antes de que la granada
+	// caiga y queda desfasado. Se difiere y se dispara acá, en el frame 0 de la explosión.
+	protected override bool SonidoAtaqueDiferido => true;
+
 	private void CrearExplosion(Vector2 pos, bool esGranada)
 	{
 		PackedScene escena = esGranada ? _escenaExpGran : _escenaExpCent;
@@ -342,6 +347,8 @@ public partial class GranaderoCartoonPrime : TropaBase
 		{
 			if (!esGranada) animExp.Play("explosion_centro_c");
 			else            animExp.Play();
+			// Exactamente con el primer fotograma de la explosión que se acaba de lanzar.
+			SonidosTropa.Reproducir(this, esGranada ? SonidosTropa.ATAQUE : SonidosTropa.HABILIDAD);
 			DesvanecerAlAntepenultimoFrame(exp, animExp);
 		}
 		else

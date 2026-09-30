@@ -24,6 +24,12 @@ public partial class CartaMini : Control
 	private bool _animarInteraccion = true;
 	public void FijarAnimacionInteraccion(bool activa) => _animarInteraccion = activa;
 
+	// Crecimiento al pasar el mouse por encima. Se puede apagar por separado del "punch" del clic:
+	// en el selector de Ardid las cartas ya se dibujan agrandadas y ese hover las movía de sitio
+	// (además pisaba su pivote), así que ahí se quiere que estén quietas hasta que se las toque.
+	private bool _animarHover = true;
+	public void FijarAnimacionHover(bool activa) => _animarHover = activa;
+
 	public bool EstaBloqueada { get; private set; } = false;
 	private Control _overlayBloqueo = null;
 
@@ -134,7 +140,9 @@ public partial class CartaMini : Control
 			{
 				if (_animarInteraccion)
 				{
-					PivotOffset = Size / 2;
+					// Si el hover está apagado, la carta tiene un pivote propio (Ardid): se respeta,
+					// para que el "punch" no la recoloque.
+					if (_animarHover) PivotOffset = Size / 2;
 					var tween = CreateTween();
 					tween.TweenProperty(this, "scale", _escalaBase * 0.85f, 0.05f).SetTrans(Tween.TransitionType.Sine);
 					tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
@@ -151,10 +159,13 @@ public partial class CartaMini : Control
 
 		if (what == NotificationMouseEnter)
 		{
-			PivotOffset = Size / 2;
-			ZIndex = 10;
-			var tween = CreateTween();
-			tween.TweenProperty(this, "scale", _escalaBase * 1.08f, 0.1f).SetTrans(Tween.TransitionType.Sine);
+			if (_animarHover)
+			{
+				PivotOffset = Size / 2;
+				ZIndex = 10;
+				var tween = CreateTween();
+				tween.TweenProperty(this, "scale", _escalaBase * 1.08f, 0.1f).SetTrans(Tween.TransitionType.Sine);
+			}
 			if (EstaBloqueada)
 			{
 				Modulate = new Color(0.45f, 0.45f, 0.45f, 0.88f);
@@ -166,9 +177,12 @@ public partial class CartaMini : Control
 		}
 		else if (what == NotificationMouseExit)
 		{
-			ZIndex = 0;
-			var tween = CreateTween();
-			tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
+			if (_animarHover)
+			{
+				ZIndex = 0;
+				var tween = CreateTween();
+				tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
+			}
 			if (EstaBloqueada)
 			{
 				Modulate = new Color(0.42f, 0.42f, 0.42f, 0.85f);

@@ -155,6 +155,16 @@ public partial class Tienda : Control
 		var sep = new HSeparator(); _contenidoScroll.AddChild(sep);
 	}
 
+	// ── ORDEN DE EXHIBICIÓN EN LA TIENDA ──────────────────────────────────────────────────────
+	// Cada huevo queda en la misma posición que el trono que le pega, para que se lean en pareja:
+	//   Rey/Real · Dino/Rocoso · Majestad II/Ajedrez · Capitán/Piedra ·
+	//   Paper Dino/Papel · Coronel/Bomba · Rosa/Dado · Majestad/Cofre
+	// IMPORTANTE: son solo índices de VISUALIZACIÓN. Los arreglos de Preferencias no se reordenan
+	// porque sus posiciones están guardadas en el perfil del jugador (qué skin tiene y cuál usa);
+	// cambiarlas le daría a cada uno una skin distinta de la que compró.
+	private static readonly int[] ORDEN_SKINS_TIENDA  = { 0, 2, 7, 1, 4, 5, 6, 3 };
+	private static readonly int[] ORDEN_TRONOS_TIENDA = { 0, 3, 5, 2, 1, 4, 7, 6 };
+
 	private void AgregarGridSkins()
 	{
 		var flow = new HFlowContainer();
@@ -163,8 +173,8 @@ public partial class Tienda : Control
 		flow.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		_contenidoScroll.AddChild(flow);
 
-		for (int i = 0; i < Preferencias.SKIN_NOMBRES.Length; i++)
-			flow.AddChild(CrearItemSkin(i));
+		foreach (int idx in ORDEN_SKINS_TIENDA)
+			if (idx >= 0 && idx < Preferencias.SKIN_NOMBRES.Length) flow.AddChild(CrearItemSkin(idx));
 	}
 
 	private void AgregarGridTronos()
@@ -175,8 +185,8 @@ public partial class Tienda : Control
 		flow.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		_contenidoScroll.AddChild(flow);
 
-		for (int i = 0; i < Preferencias.TRONO_NOMBRES.Length; i++)
-			flow.AddChild(CrearItemTrono(i));
+		foreach (int idx in ORDEN_TRONOS_TIENDA)
+			if (idx >= 0 && idx < Preferencias.TRONO_NOMBRES.Length) flow.AddChild(CrearItemTrono(idx));
 	}
 
 	private void AgregarGridTropasTienda()

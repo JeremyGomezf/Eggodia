@@ -13,6 +13,10 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 	private const string RUTA_CONFIG_AUDIO = "user://audio.cfg";
 
 	private float _lastVolume = 0.5f;
+
+	/// <summary>Volumen de crucero de la música del menú. Antes era 0 dB (volumen pleno) y tapaba
+	/// los diálogos de los personajes en el Constructor de mazo.</summary>
+	private const float VOLUMEN_MENU_DB = -11f;
 	private bool _musicaMuteada  = false;
 	private bool _efectosMuteados = false;
 
@@ -39,7 +43,9 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 				VolumeDb = -40f;
 				Play();
 				Tween twFadeIn = CreateTween();
-				twFadeIn.TweenProperty(this, "volume_db", 0f, 2.5f);
+				// Sube hasta VOLUMEN_MENU_DB (no hasta 0): a volumen pleno tapaba las voces de los
+				// personajes en el Constructor de mazo.
+				twFadeIn.TweenProperty(this, "volume_db", VOLUMEN_MENU_DB, 2.5f);
 			}
 
 			// Aplicar volumen inicial al bus Master para que afecte todo el audio

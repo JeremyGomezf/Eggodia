@@ -243,6 +243,9 @@ public partial class KaBarCartoonPrime : TropaBase
 		{
 			_anim.Frame = 0;
 			_anim.Play("respawn_fantasma");
+			// El audio arranca EXACTAMENTE con el primer fotograma del respawn. Antes sonaba en el
+			// instante de morir, unos 4 s antes de que el fantasma apareciera, y quedaba descolgado.
+			SonidosTropa.Reproducir(this, SonidosTropa.MUERTE, forzar: true);
 		};
 	}
 

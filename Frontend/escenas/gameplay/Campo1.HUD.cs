@@ -167,11 +167,20 @@ public partial class Campo1 : Node2D
 		if (_hechizoUsadoEsteTurno) { MostrarAvisoHechizoLimite(); return false; }
 		int piArrastre = _hechizosMano[slotIdx];
 		// Tutorial: de los ardides visibles, solo Curación funciona de verdad — el resto se ve pero
-		// no hace nada al arrastrarlo (vuelve solo a la mano).
-		if (ModoTutorial && piArrastre >= 0 && piArrastre < _poolActivo.Length && _poolActivo[piArrastre].Id != "curacion")
+		// no hace nada al arrastrarlo. Y la Curación tampoco se puede usar cuando a uno se le antoje:
+		// solo en el paso guiado en que hay que curar al Soldado Real.
+		if (ModoTutorial && piArrastre >= 0 && piArrastre < _poolActivo.Length)
 		{
-			MostrarAviso("Ardid no disponible", Colors.Gold);
-			return false;
+			if (_poolActivo[piArrastre].Id != "curacion")
+			{
+				MostrarAviso("Ardid no disponible", Colors.Gold);
+				return false;
+			}
+			if (!_esperandoCuracionTutorial)
+			{
+				MostrarAviso("No disponible por el momento", Colors.Gold);
+				return false;
+			}
 		}
 		if (piArrastre >= 0 && piArrastre < _poolActivo.Length && _poolActivo[piArrastre].Id == "nuclear")
 		{

@@ -182,6 +182,7 @@ public partial class MenuConstructor : Control
 		// Clic de interfaz en todos los botones del constructor (diferido: alcanza los creados por código).
 		Callable.From(() => SonidoUI.EngancharBotones(this)).CallDeferred();
 
+		DuckingMusica.Reiniciar(); // por si una voz quedó a medias en la escena anterior
 		_rectVintage = EfectoVintageToons.Instalar(this);
 		_ardidSlots = _gridMazoSlots?.GetParent<Control>()?.GetNodeOrNull<Control>("ArdidSlots");
 
@@ -565,11 +566,8 @@ public partial class MenuConstructor : Control
 	private const float SCROLL_OFFSET_TOP_ORIGINAL   = 115f;
 	private const float SCROLL_ARDID_CORRIMIENTO     = 26f;   // las cartas, un poco más a la derecha
 	private const float ESCALA_MINI_ARDID_SELECTOR   = 1.22f; // cartas de ardid más grandes que las de tropa
-	// Al agrandarlas quedaban pegadas de arriba abajo y la primera fila salía cortada contra el
-	// borde del panel: se les da aire vertical y se baja el arranque de la rejilla. El espacio
-	// LATERAL no se toca (a los costados ya estaban bien).
-	private const int   SEPARACION_V_ARDID           = 34;    // en Tropas es 14
-	private const float SCROLL_ARDID_BAJADA          = 34f;   // para que la fila de arriba no se corte
+	private const int   SEPARACION_V_ARDID           = 34;    // aire entre filas (en Tropas es 14)
+	private const float SCROLL_ARDID_BAJADA          = 20f;   // la rejilla arranca un poco más abajo
 
 	private ScrollContainer ScrollDelSelector()
 		=> _rectSelectorBg?.GetParent()?.GetNodeOrNull<ScrollContainer>("ScrollCartas");
@@ -593,7 +591,8 @@ public partial class MenuConstructor : Control
 	}
 
 	/// <summary>Ardid: el panel queda igual que en Tropas; solo se corre la rejilla de cartas hacia
-	/// la derecha (las cartas además se dibujan más grandes, ver ESCALA_MINI_ARDID_SELECTOR).</summary>
+	/// la derecha, con un poco más de aire vertical y un margen arriba para que la primera fila no se
+	/// vea recortada. El tamaño de las cartas es el mismo que en Tropas.</summary>
 	private void AgrandarYCorrerSelectorParaArdid()
 	{
 		if (_rectSelectorBg?.GetParent() is not Control selectorContainer) return;
@@ -683,16 +682,26 @@ public partial class MenuConstructor : Control
 			bool bloqueada = EsCartaBloqueada(datos);
 			mini.SetBloqueada(bloqueada);
 
-			// En Ardid las cartas se dibujan más grandes que en Tropas: son solo 10 y con el tamaño
-			// de tropa quedaban diminutas en el panel.
-			Vector2 escBase = _pestanaActual == "ARDID"
+			bool esArdid = _pestanaActual == "ARDID";
+			// En Ardid las cartas se dibujan más grandes que en Tropas (son solo 10 y con el tamaño
+			// de tropa quedaban diminutas en el panel).
+			Vector2 escBase = esArdid
 				? new Vector2(ESCALA_MINI_ARDID_SELECTOR, ESCALA_MINI_ARDID_SELECTOR)
 				: Vector2.One;
 
 			mini.Modulate = bloqueada ? new Color(0.42f, 0.42f, 0.42f, 0) : new Color(1, 1, 1, 0);
 			mini.Scale = escBase * 0.7f;
 			mini.FijarEscalaBase(escBase);
-			mini.PivotOffset = new Vector2(55f, 72f);
+
+			// Pivote: en Ardid va en el BORDE SUPERIOR (y=0) en vez del centro. Al agrandarse, la
+			// carta crece solo hacia abajo y nunca sobresale por arriba de su hueco — que era lo que
+			// hacía que la primera fila se viera cortada contra el borde del panel. Lo que crece
+			// hacia abajo lo absorbe la separación entre filas.
+			mini.PivotOffset = esArdid ? new Vector2(55f, 0f) : new Vector2(55f, 72f);
+			// En Ardid las cartas quedan QUIETAS mientras solo se pasa el mouse: el crecimiento del
+			// hover las corría de sitio y además pisaba el pivote de arriba, devolviendo el recorte.
+			// El "punch" al hacer clic se mantiene.
+			if (esArdid) mini.FijarAnimacionHover(false);
 
 			var tw = mini.CreateTween();
 			float delay = indice * 0.025f;

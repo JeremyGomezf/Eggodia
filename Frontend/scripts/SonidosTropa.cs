@@ -21,6 +21,40 @@ public static class SonidosTropa
 	private const string RUTA_BASE  = "res://efectos/sonidos/tropas/";
 	private const float  VOLUMEN_DB = -3f;
 
+	// ── AJUSTES DE VOZ POR TROPA/EVENTO ───────────────────────────────────────────────────────
+	// Correcciones puntuales sobre VOLUMEN_DB cuando un audio viene más fuerte que el resto.
+	private static readonly Dictionary<string, float> AJUSTE_VOLUMEN = new()
+	{
+		{ "MachiPrime/" + DANO, -7f }, // el quejido del Machi venía bastante más alto que los demás
+
+		// El "ataque" del Granadero es en realidad el lanzamiento + la explosión de la granada
+		// (4,5 s): reventaba por encima de todo lo demás. HABILIDAD reusa ese mismo audio.
+		{ "GranaderoCartoonPrime/" + ATAQUE,    -8f },
+		{ "GranaderoCartoonPrime/" + HABILIDAD, -8f },
+
+		// El Ka-Bar se grabó mucho más bajo que el resto y en batalla casi no se oía (incluido el
+		// sonido con el que aparece el fantasma, que usa muerte.ogg).
+		{ "KaBarCartoonPrime/" + ATAQUE,    +6f },
+		{ "KaBarCartoonPrime/" + DANO,      +6f },
+		{ "KaBarCartoonPrime/" + DEFENSA,   +6f },
+		{ "KaBarCartoonPrime/" + HABILIDAD, +6f },
+		{ "KaBarCartoonPrime/" + MUERTE,    +6f },
+
+		// Diálogos del Constructor de mazo: estos personajes se grabaron más bajo que el resto y
+		// casi no se escuchaban al seleccionarlos.
+		{ "SoldadoRealPrime/"      + DIALOGO, +5f },
+		{ "MachiPrime/"            + DIALOGO, +5f },
+		{ "PeonPrime/"             + DIALOGO, +5f },
+		{ "DamaPrime/"             + DIALOGO, +5f },
+		{ "CamperoCartoonPrime/"   + DIALOGO, +5f },
+		{ "KaBarCartoonPrime/"     + DIALOGO, +5f },
+	};
+
+	/// <summary>Eventos que hoy NO se reproducen. Las líneas de muerte duran ~3 s y el personaje ya
+	/// desapareció mucho antes, así que la voz quedaba sonando sola y descolgada de la animación.
+	/// Se apagan por ahora; para volver a activarlas basta con vaciar este conjunto.</summary>
+	private static readonly HashSet<string> EVENTOS_SILENCIADOS = new() { MUERTE };
+
 	public const string ATAQUE    = "ataque";
 	public const string DANO      = "dano";
 	public const string DEFENSA   = "defensa";
@@ -101,10 +135,16 @@ public static class SonidosTropa
 	}
 
 	/// <summary>Reproduce el sonido "evento" de la tropa "tropa". Nunca falla: si no hay audio, no suena.</summary>
-	public static void Reproducir(Node tropa, string evento)
+	/// <param name="forzar">Ignora EVENTOS_SILENCIADOS. Lo usa el Ka-Bar, cuyo "muerte.ogg" no es una
+	/// despedida sino el sonido de su transformación en fantasma, y se dispara en ese momento exacto.</param>
+	public static void Reproducir(Node tropa, string evento, bool forzar = false)
 	{
 		if (tropa == null || !GodotObject.IsInstanceValid(tropa)) return;
-		ReproducirStream(tropa, Obtener(tropa.GetType().Name, evento));
+		if (!forzar && EVENTOS_SILENCIADOS.Contains(evento)) return;
+
+		string clase = tropa.GetType().Name;
+		float extraDb = AJUSTE_VOLUMEN.TryGetValue(clase + "/" + evento, out float ajuste) ? ajuste : 0f;
+		ReproducirStream(tropa, Obtener(clase, evento), extraDb: extraDb);
 	}
 
 	/// <summary>Diálogo de la tropa cuya escena es "rutaEscena" (lo usa el selector del Constructor de mazo).</summary>
@@ -113,30 +153,47 @@ public static class SonidosTropa
 		if (string.IsNullOrEmpty(rutaEscena)) return;
 		string archivo = rutaEscena.GetFile().GetBaseName().ToLowerInvariant();
 		if (!CLASE_POR_ESCENA.TryGetValue(archivo, out string clase)) return;
-		ReproducirStream(contexto, Obtener(clase, DIALOGO), esDialogo: true);
+		float extraDb = AJUSTE_VOLUMEN.TryGetValue(clase + "/" + DIALOGO, out float ajuste) ? ajuste : 0f;
+		ReproducirStream(contexto, Obtener(clase, DIALOGO), esDialogo: true, extraDb: extraDb);
 	}
 
 	// Un solo diálogo a la vez: al elegir otra carta rápido, el anterior se corta en vez de encimarse.
 	private static AudioStreamPlayer _dialogoActual;
 
-	private static void ReproducirStream(Node contexto, AudioStream stream, bool esDialogo = false)
+	private static void ReproducirStream(Node contexto, AudioStream stream, bool esDialogo = false, float extraDb = 0f)
 	{
 		if (stream == null || contexto == null || !GodotObject.IsInstanceValid(contexto)) return;
 		var tree = contexto.GetTree();
 		if (tree == null) return;
 
 		if (esDialogo && _dialogoActual != null && GodotObject.IsInstanceValid(_dialogoActual))
+		{
+			DuckingMusica.Soltar(); // el diálogo anterior se corta: devuelve su "retención" del ducking
 			_dialogoActual.QueueFree();
+		}
 
 		var player = new AudioStreamPlayer
 		{
 			Stream      = stream,
-			VolumeDb    = VOLUMEN_DB,
+			VolumeDb    = VOLUMEN_DB + extraDb,
 			Bus         = GlobalAudioManager.BUS_EFECTOS, // se silencia con el botón EFECTOS de Ajustes
 			ProcessMode = Node.ProcessModeEnum.Always,
 		};
 		(tree.CurrentScene ?? tree.Root).AddChild(player);
-		player.Finished += player.QueueFree;
+
+		// El "ducking" (bajar la música mientras habla un personaje) se aplica SOLO a los diálogos
+		// del Constructor de mazo. En batalla NO: ahí la música se queda a su volumen de ambiente y
+		// no se mueve, para que no esté subiendo y bajando con cada golpe.
+		if (esDialogo)
+		{
+			DuckingMusica.Tomar(player);
+			player.Finished += () => { DuckingMusica.Soltar(); player.QueueFree(); };
+		}
+		else
+		{
+			player.Finished += player.QueueFree;
+		}
+
 		player.Play();
 		if (esDialogo) _dialogoActual = player;
 	}

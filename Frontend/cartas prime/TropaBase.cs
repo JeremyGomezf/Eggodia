@@ -668,6 +668,10 @@ public abstract partial class TropaBase : Area2D
 		SonidosTropa.Reproducir(this, SonidosTropa.HABILIDAD);
 	}
 
+	/// <summary>true si esta tropa NO debe sonar al arrancar su animación de ataque/habilidad porque
+	/// ella misma reproduce el audio en el instante correcto (por ejemplo, al aparecer la explosión).</summary>
+	protected virtual bool SonidoAtaqueDiferido => false;
+
 	/// <summary>Sonido de muerte, una sola vez por tropa (la derrota puede reiniciarse o avisarse dos veces).</summary>
 	public void SonarMuerte()
 	{
@@ -698,6 +702,9 @@ public abstract partial class TropaBase : Area2D
 			bool yaSonoLaHabilidad = _turnoHabilidadAnunciada == turnoActualCarta;
 			_turnoHabilidadAnunciada = -1;
 			if (yaSonoLaHabilidad) return;
+			// Tropas cuyo audio no es el golpe sino el IMPACTO (el Granadero: su "ataque" es la
+			// explosión de la granada) lo disparan ellas mismas en el momento justo, no acá.
+			if (SonidoAtaqueDiferido) return;
 			SonidosTropa.Reproducir(this, a.StartsWith("habilidad") ? SonidosTropa.HABILIDAD : SonidosTropa.ATAQUE);
 		}
 		else if (a.StartsWith("pre defensa"))

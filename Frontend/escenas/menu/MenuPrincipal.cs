@@ -129,6 +129,7 @@ public partial class MenuPrincipal : Control
 			AgregarAnimacionHover(btnOnline);
 		}
 
+		DuckingMusica.Reiniciar(); // por si una voz quedó a medias en la escena anterior
 		ConectarBtnTrofeo();
 
 		// Clic de interfaz en todos los botones del menú (diferido: alcanza también los creados por código).

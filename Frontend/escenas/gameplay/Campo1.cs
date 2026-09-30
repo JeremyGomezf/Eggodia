@@ -10,7 +10,11 @@ public partial class Campo1 : Node2D
 	private AudioStream _musicaPartida;
 	// -6dB respecto a la música del menú (que suena a 0dB propio): a 0dB quedaba muy fuerte en
 	// batalla. Ambas siguen afectadas por igual por el volumen/mute del Bus Master.
-	[Export] private float _volumenMusicaDb = -6.0f;
+	// Antes -6 dB: la música del escenario tapaba las voces de los personajes y los efectos. Se baja
+	// para que quede de AMBIENTE (criterio tipo Clash Royale: la música acompaña, nunca compite).
+	// Encima de esto actúa el ducking, que la baja todavía más mientras habla un personaje
+	// (ver DuckingMusica.cs).
+	[Export] private float _volumenMusicaDb = -21.0f;
 	private AudioStreamPlayer _reproductorMusica;
 
 	// ── ESCENARIOS DE BATALLA (5 mapas visuales+musicales, sorteados por partida) ─────────
@@ -287,7 +291,7 @@ public partial class Campo1 : Node2D
 	private static readonly string[] NOMBRES_CPU = {
 		"Bot 67", "botcito", "Carlos", "Gonzalo", "Jeremy", "Mclovin", "Ec0tec_ec2",
 		"CPU xd", "Hola k ase", "Guayaco", "Campo1", "Bot 1", "Bot 2", "Bot 3", "Maestro",
-		"6 a 1", "Rival malo", "KanKox", "KromaNexus", "juegocards"
+		"Rival malo", "KanKox", "KromaNexus", "juegocards"
 	};
 
 	// El nombre del bot (VS BOT, offline) se sortea una sola vez y se guarda acá — tanto la
@@ -515,6 +519,7 @@ public partial class Campo1 : Node2D
 		if (ModoTutorial) IniciarInterfazTutorial();
 
 		// Mejora estética integrada de zonas de invocación (del amigo)
+		DuckingMusica.Reiniciar(); // por si una voz quedó a medias en la escena anterior
 		EstilizarIndicadoresInvocacion();
 
 		// Clic de interfaz en todos los botones de la partida (HUD, menú de tropa, pausa…).
