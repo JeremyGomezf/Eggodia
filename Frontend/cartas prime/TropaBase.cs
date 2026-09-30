@@ -78,6 +78,7 @@ public abstract partial class TropaBase : Area2D
 	{
 		InputPickable = true;
 		_anim = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
+		_anim.AnimationChanged += AlCambiarAnimacionSonido; // sonidos de ataque/defensa/daño/muerte
 		_contenedorStats = GetNodeOrNull<Control>("StatsTropa");
 		if (_contenedorStats != null) _contenedorStats.Visible = false;
 		// El juego no tiene sistema de elementos visible al jugador: sin círculo de tipo.
@@ -254,6 +255,7 @@ public abstract partial class TropaBase : Area2D
 	protected void EfectoGolpe()
 	{
 		if (_estaMuerto || _anim == null) return;
+		SonarDaño();
 
 		// Tiñe el SPRITE, no la raíz de la tropa: la raíz propaga el Modulate a TODOS sus hijos por
 		// igual, incluida StatsTropa (las barras de vida/escudo) — así el flash rojo del golpe las
@@ -632,6 +634,81 @@ public abstract partial class TropaBase : Area2D
 	}
 
 	public virtual void ReproducirDerrota() { _estaMuerto = true; _anim.Play("derrota"); }
+
+	// ── SONIDOS DEL PERSONAJE (ver SonidosTropa.cs) ────────────────────────
+	// Se disparan al EMPEZAR la animación correspondiente, así cubren a todas las tropas aunque cada
+	// una tenga su propia forma de atacar/defender/morir ("ataque_fantasma", "daño 1", "derrota -
+	// dañado", "pre defensa-tortuga"...). La habilidad es aparte: la anuncia quien la ordena
+	// (AnunciarHabilidad), porque muchas tropas la resuelven sin pasar por EjecutarAccion base.
+
+	// Turno propio en el que ya sonó la habilidad: la animación de ataque/habilidad que la acompaña en
+	// ese mismo turno no vuelve a sonar (si no, se oirían habilidad + ataque juntos). -1 = ninguna.
+	private int   _turnoHabilidadAnunciada = -1;
+	private ulong _ultimoSonidoDañoMs;
+	private bool  _sonoMuerte;
+
+	/// <summary>Suena la habilidad (o el ataque, si la tropa no tiene audio de habilidad). La llaman
+	/// Campo1 (jugador, CPU, online) y CampoPruebas justo antes de EjecutarAccion("usar_habilidad").</summary>
+	public void AnunciarHabilidad()
+	{
+		MarcarHabilidad();
+		SonarHabilidad();
+	}
+
+	/// <summary>Marca que en este turno se usa la habilidad, SIN sonar todavía: así la animación de
+	/// ataque/habilidad que la acompañe no suena como un ataque normal.</summary>
+	public void MarcarHabilidad() => _turnoHabilidadAnunciada = turnoActualCarta;
+
+	/// <summary>Suena la habilidad (o el ataque si la tropa no tiene audio propio). Para las habilidades
+	/// con objetivo a elegir (Maguín, Dama, Caballo, Torre, Peón) se llama recién cuando el jugador
+	/// toca la tropa objetivo, no al pulsar el botón.</summary>
+	public void SonarHabilidad()
+	{
+		if (_estaMuerto) return;
+		SonidosTropa.Reproducir(this, SonidosTropa.HABILIDAD);
+	}
+
+	/// <summary>Sonido de muerte, una sola vez por tropa (la derrota puede reiniciarse o avisarse dos veces).</summary>
+	public void SonarMuerte()
+	{
+		if (_sonoMuerte) return;
+		_sonoMuerte = true;
+		SonidosTropa.Reproducir(this, SonidosTropa.MUERTE);
+	}
+
+	// Anti-ráfaga: golpes múltiples en fracciones de segundo (Soldado Cartoon pega 4 veces) suenan una vez.
+	private void SonarDaño()
+	{
+		ulong ahora = Time.GetTicksMsec();
+		if (ahora - _ultimoSonidoDañoMs < 250) return;
+		_ultimoSonidoDañoMs = ahora;
+		SonidosTropa.Reproducir(this, SonidosTropa.DANO);
+	}
+
+	private void AlCambiarAnimacionSonido()
+	{
+		if (_anim == null) return;
+		string a = ((string)_anim.Animation).ToLowerInvariant();
+
+		if (a.StartsWith("derrota")) { SonarMuerte(); return; }
+		if (_sonoMuerte) return; // ya muerta: nada más suena
+
+		if (a.StartsWith("ataque") || a.StartsWith("habilidad"))
+		{
+			bool yaSonoLaHabilidad = _turnoHabilidadAnunciada == turnoActualCarta;
+			_turnoHabilidadAnunciada = -1;
+			if (yaSonoLaHabilidad) return;
+			SonidosTropa.Reproducir(this, a.StartsWith("habilidad") ? SonidosTropa.HABILIDAD : SonidosTropa.ATAQUE);
+		}
+		else if (a.StartsWith("pre defensa"))
+		{
+			SonidosTropa.Reproducir(this, SonidosTropa.DEFENSA);
+		}
+		else if (a.StartsWith("daño"))
+		{
+			SonarDaño(); // tropas que animan el daño sin pasar por EfectoGolpe
+		}
+	}
 
 	// ── UI (encapsulada) ──────────────────────────────────────────────────
 

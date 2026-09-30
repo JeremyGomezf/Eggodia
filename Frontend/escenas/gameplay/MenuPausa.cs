@@ -104,14 +104,62 @@ public partial class MenuPausa : CanvasLayer
 		}
 	}
 
+	/// <summary>¿Se puede abrir la pausa ahora? No con la partida ya terminada (ESC sobre la frase final
+	/// o la pantalla de Victoria/Derrota dejaba el juego pausado debajo, y la escena siguiente arrancaba
+	/// congelada) ni en línea (ahí no hay botón de pausa: pausar congelaría tu lado mientras el rival
+	/// sigue jugando).</summary>
+	private bool PuedePausar()
+	{
+		if (ContextoOnline.Activo) return false;
+		var campo = GetParentOrNull<Campo1>();
+		return campo == null || !campo.juegoTerminado;
+	}
+
+	// Capas de la partida que se dibujan POR ENCIMA de la pausa (popup NFC 320, robar carta 250,
+	// cuadro del tutorial 500, splash 600…): se ocultan mientras la pausa está abierta y se devuelven
+	// tal cual al continuar. Así ninguna se transpone sobre el panel, sea cual sea y aunque se agreguen
+	// capas nuevas en el futuro.
+	private readonly System.Collections.Generic.List<CanvasLayer> _capasOcultasPorPausa = new();
+
+	private void OcultarCapasPorEncima()
+	{
+		_capasOcultasPorPausa.Clear();
+		Node raizPartida = GetParent();
+		if (raizPartida == null) return;
+		foreach (Node n in raizPartida.FindChildren("*", "CanvasLayer", true, false))
+		{
+			if (n is not CanvasLayer capa || capa == this || !capa.Visible || capa.Layer <= Layer) continue;
+			capa.Visible = false;
+			_capasOcultasPorPausa.Add(capa);
+		}
+	}
+
+	private void RestaurarCapasPorEncima()
+	{
+		foreach (var capa in _capasOcultasPorPausa)
+			if (IsInstanceValid(capa)) capa.Visible = true;
+		_capasOcultasPorPausa.Clear();
+	}
+
 	public void Pausar()
 	{
+		if (!PuedePausar()) return;
 		GetTree().Paused = true;
 		_overlay.Visible = true;
 		_vboxPausa.Visible = true;
 		_panelConfirmacion.Visible = false;
-		// Tutorial: ocultar el cuadro "info" (capa 500) para que no quede encima del panel de pausa.
-		GetParentOrNull<Campo1>()?.OcultarCapaTutorialEnPausa(true);
+		OcultarCapasPorEncima();
+		CancelarArrastresEnCurso();
+	}
+
+	// Si se pausa con una carta agarrada, el "soltar" ocurre durante la pausa y la carta no se entera:
+	// al continuar quedaba pegada al cursor. Se devuelve a la mano en el momento de pausar.
+	private void CancelarArrastresEnCurso()
+	{
+		Node raizPartida = GetParent();
+		if (raizPartida == null) return;
+		foreach (Node n in raizPartida.FindChildren("*", "", true, false))
+			if (n is Carta c && c.EstaArrastrando) c.CancelarArrastre();
 	}
 
 	private void Reanudar()
@@ -119,7 +167,7 @@ public partial class MenuPausa : CanvasLayer
 		_overlay.Visible = false;
 		if (_panelSettings != null) _panelSettings.Visible = false;
 		GetTree().Paused = false;
-		GetParentOrNull<Campo1>()?.OcultarCapaTutorialEnPausa(false); // volver a mostrar el "info"
+		RestaurarCapasPorEncima();
 	}
 
 	private void AbrirSettings()

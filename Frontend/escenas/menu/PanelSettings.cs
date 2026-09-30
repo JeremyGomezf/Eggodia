@@ -74,7 +74,7 @@ public partial class PanelSettings : PanelContainer
 
 		// Estilo del juego (fuente Almendra + botones nuestros) sobre la UI de la escena, que venía con
 		// la fuente/estilo por defecto de Godot. Solo apariencia: no cambia la lógica.
-		EstiloUI.Boton(_btnMute, 34);
+		CrearBotonesAudio(); // MÚSICA (verde, izquierda) + EFECTOS (amarillo, derecha) en lugar de SILENCIAR
 		EstiloUI.Boton(_btnComoJugar, 34);
 		EstiloUI.Boton(_btnCerrar, 36);
 		EstiloUI.Boton(_btnCerrarSesion, 34, rojo: true);
@@ -116,14 +116,10 @@ public partial class PanelSettings : PanelContainer
 				_sliderVolumen.Value = audioManager.GetVolumen();
 				_sliderVolumen.ValueChanged += (v) => audioManager.CambiarVolumen((float)v);
 			}
-			if (_btnMute != null)
-			{
-				_btnMute.Pressed += () =>
-				{
-					audioManager.SetMute(!audioManager.IsMuted());
-					ActualizarUI();
-				};
-			}
+			if (_btnMusica != null)
+				_btnMusica.Pressed += () => { audioManager.SetMusicaMuteada(!audioManager.IsMusicaMuteada()); ActualizarUI(); };
+			if (_btnEfectos != null)
+				_btnEfectos.Pressed += () => { audioManager.SetEfectosMuteados(!audioManager.IsEfectosMuteados()); ActualizarUI(); };
 			ActualizarUI();
 		}
 
@@ -181,13 +177,66 @@ public partial class PanelSettings : PanelContainer
 		GetTree().ChangeSceneToFile(RUTA_COMO_JUGAR);
 	}
 
+	// ── BOTONES DE AUDIO: MÚSICA y EFECTOS por separado ─────────────────────
+	// Antes había un solo "SILENCIAR" que apagaba todo (bus Master). Ahora son dos, lado a lado:
+	// MÚSICA (verde, izquierda) silencia solo la música de menú/batalla, y EFECTOS (amarillo, derecha)
+	// solo los sonidos del juego (botones, tropas, efectos). Se crean por código en el mismo lugar del
+	// botón viejo, que queda oculto.
+	private Button _btnMusica;
+	private Button _btnEfectos;
+	private static readonly Color VERDE_AUDIO    = new(0.20f, 0.62f, 0.28f);
+	private static readonly Color AMARILLO_AUDIO = new(0.92f, 0.74f, 0.16f);
+	private static readonly Color GRIS_APAGADO   = new(0.28f, 0.29f, 0.32f);
+
+	private void CrearBotonesAudio()
+	{
+		var vbox = GetNodeOrNull<VBoxContainer>("Margin/VBox");
+		if (vbox == null) return;
+
+		var fila = new HBoxContainer { Name = "HBoxAudio", CustomMinimumSize = new Vector2(0, 84) };
+		fila.AddThemeConstantOverride("separation", 18);
+		_btnMusica  = new Button { Name = "BtnMusica",  SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(0, 84) };
+		_btnEfectos = new Button { Name = "BtnEfectos", SizeFlagsHorizontal = SizeFlags.ExpandFill, CustomMinimumSize = new Vector2(0, 84) };
+		fila.AddChild(_btnMusica);   // izquierda
+		fila.AddChild(_btnEfectos);  // derecha
+
+		// Mismo lugar que el SILENCIAR de la escena (que se oculta, no se borra: la escena sigue intacta).
+		int idx = _btnMute != null ? _btnMute.GetIndex() : vbox.GetChildCount();
+		vbox.AddChild(fila);
+		vbox.MoveChild(fila, idx);
+		if (_btnMute != null) _btnMute.Visible = false;
+	}
+
+	private static void PintarBotonAudio(Button b, string nombre, bool encendido, Color color, Color colorTexto)
+	{
+		if (b == null) return;
+		b.Text = $"{nombre}: {(encendido ? "SÍ" : "NO")}";
+		Color fondo = encendido ? color : GRIS_APAGADO;
+		StyleBoxFlat Caja(Color bg, float borde)
+		{
+			var sb = new StyleBoxFlat { BgColor = bg, BorderColor = encendido ? color.Lightened(0.35f) : new Color(0.5f, 0.5f, 0.55f) };
+			sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = (int)borde;
+			sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
+			sb.ContentMarginLeft = sb.ContentMarginRight = 16;
+			return sb;
+		}
+		b.AddThemeStyleboxOverride("normal",  Caja(fondo, 2));
+		b.AddThemeStyleboxOverride("hover",   Caja(fondo.Lightened(0.12f), 3));
+		b.AddThemeStyleboxOverride("pressed", Caja(fondo.Darkened(0.15f), 3));
+		b.AddThemeStyleboxOverride("focus",   new StyleBoxEmpty());
+		if (EstiloUI.Fuente != null) b.AddThemeFontOverride("font", EstiloUI.Fuente);
+		b.AddThemeFontSizeOverride("font_size", 30);
+		Color txt = encendido ? colorTexto : new Color(0.75f, 0.75f, 0.78f);
+		foreach (var n in new[] { "font_color", "font_hover_color", "font_pressed_color", "font_focus_color" })
+			b.AddThemeColorOverride(n, txt);
+	}
+
 	private void ActualizarUI()
 	{
-		if (GlobalAudioManager.Instance == null || _btnMute == null) return;
-		bool isMuted = GlobalAudioManager.Instance.IsMuted();
-
-		_btnMute.Text = isMuted ? "ACTIVAR SONIDO" : "SILENCIAR";
-		_btnMute.SelfModulate = isMuted ? Colors.LightGreen : new Color(1f, 0.4f, 0.4f);
+		var am = GlobalAudioManager.Instance;
+		if (am == null) return;
+		PintarBotonAudio(_btnMusica,  "MÚSICA",  !am.IsMusicaMuteada(),  VERDE_AUDIO,    Colors.White);
+		PintarBotonAudio(_btnEfectos, "EFECTOS", !am.IsEfectosMuteados(), AMARILLO_AUDIO, new Color(0.18f, 0.12f, 0.02f));
 	}
 
 	// Oculta el botón "CERRAR SESIÓN". Lo usa el menú de pausa (VS BOT): no tiene sentido cerrar sesión

@@ -704,6 +704,8 @@ public partial class MenuConstructor : Control
 			mini.OnClickeada += (c) =>
 			{
 				SeleccionarCarta(c.MisDatos);
+				// Diálogo del personaje al SELECCIONARLO en el selector (no al invocarlo en combate).
+				SonidosTropa.ReproducirDialogoPorEscena(this, c.MisDatos?.RutaEscena);
 				if (c.EstaBloqueada)
 				{
 					MostrarModalCartaBloqueada(c.MisDatos);

@@ -4,8 +4,17 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 {
 	public static GlobalAudioManager Instance { get; private set; }
 
+	// ── BUSES SEPARADOS ─────────────────────────────────────────────────────
+	// Antes TODO sonaba por el bus Master, así que silenciar "la música" apagaba también los botones
+	// y las tropas. Ahora hay dos buses hijos de Master: "Musica" (menú + batalla) y "Efectos" (todo lo
+	// demás). Cada botón de Ajustes silencia solo el suyo; el slider de volumen sigue siendo general.
+	public const string BUS_MUSICA  = "Musica";
+	public const string BUS_EFECTOS = "Efectos";
+	private const string RUTA_CONFIG_AUDIO = "user://audio.cfg";
+
 	private float _lastVolume = 0.5f;
-	private bool _isMuted = false;
+	private bool _musicaMuteada  = false;
+	private bool _efectosMuteados = false;
 
 	private AudioStreamWav _clickSound;
 
@@ -15,6 +24,9 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 		{
 			Instance = this;
 			ProcessMode = ProcessModeEnum.Always; // Keep playing when paused
+			CrearBuses();
+			CargarPreferenciasAudio();
+			Bus = BUS_MUSICA; // la música del menú es MÚSICA, no un efecto
 
 			var stream = ResourceLoader.Load<AudioStream>("res://musica/Tide_of_the_First_King.mp3");
 			if (stream != null)
@@ -54,6 +66,13 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 
 	private void OnNodeAdded(Node node)
 	{
+		// Cualquier reproductor que entre al árbol sin bus propio (Master) es un EFECTO: botones,
+		// tropas, terminal de invocación, cuenta regresiva, explosiones… La música se crea ya con
+		// Bus = BUS_MUSICA, así que no se toca.
+		if (node is AudioStreamPlayer p && p.Bus == "Master")     p.Bus = BUS_EFECTOS;
+		else if (node is AudioStreamPlayer2D p2 && p2.Bus == "Master") p2.Bus = BUS_EFECTOS;
+		else if (node is AudioStreamPlayer3D p3 && p3.Bus == "Master") p3.Bus = BUS_EFECTOS;
+
 		// Solo click sound: el juego es para móvil y MouseEntered no aplica en touch
 		if (node is BaseButton btn)
 		{
@@ -180,20 +199,77 @@ public partial class GlobalAudioManager : AudioStreamPlayer
 		if (Stream != null && !Playing) Play();
 	}
 
+	/// <summary>Volumen GENERAL (bus Master): afecta música y efectos por igual.</summary>
 	public void CambiarVolumen(float valor)
 	{
 		_lastVolume = valor;
-		if (!_isMuted)
-			AudioServer.SetBusVolumeDb(0, (float)Mathf.LinearToDb(valor));
-	}
-
-	public void SetMute(bool isMuted)
-	{
-		_isMuted = isMuted;
-		// Bus Master (índice 0) — afecta TODO el audio del juego
-		AudioServer.SetBusVolumeDb(0, _isMuted ? -80f : (float)Mathf.LinearToDb(_lastVolume));
+		AudioServer.SetBusVolumeDb(0, (float)Mathf.LinearToDb(valor));
+		GuardarPreferenciasAudio();
 	}
 
 	public float GetVolumen() => _lastVolume;
-	public bool IsMuted() => _isMuted;
+
+	// ── SILENCIO POR SEPARADO ────────────────────────────────────────────────
+	public bool IsMusicaMuteada()  => _musicaMuteada;
+	public bool IsEfectosMuteados() => _efectosMuteados;
+
+	public void SetMusicaMuteada(bool muteada)
+	{
+		_musicaMuteada = muteada;
+		AplicarMute(BUS_MUSICA, muteada);
+		GuardarPreferenciasAudio();
+	}
+
+	public void SetEfectosMuteados(bool muteados)
+	{
+		_efectosMuteados = muteados;
+		AplicarMute(BUS_EFECTOS, muteados);
+		GuardarPreferenciasAudio();
+	}
+
+	/// <summary>Compatibilidad: silencia/activa TODO (música y efectos a la vez).</summary>
+	public void SetMute(bool isMuted) { SetMusicaMuteada(isMuted); SetEfectosMuteados(isMuted); }
+	public bool IsMuted() => _musicaMuteada && _efectosMuteados;
+
+	private static void AplicarMute(string bus, bool mute)
+	{
+		int idx = AudioServer.GetBusIndex(bus);
+		if (idx >= 0) AudioServer.SetBusMute(idx, mute);
+	}
+
+	/// <summary>Crea los buses "Musica" y "Efectos" (hijos de Master) si todavía no existen.</summary>
+	private static void CrearBuses()
+	{
+		foreach (string nombre in new[] { BUS_MUSICA, BUS_EFECTOS })
+		{
+			if (AudioServer.GetBusIndex(nombre) >= 0) continue;
+			AudioServer.AddBus();
+			int idx = AudioServer.BusCount - 1;
+			AudioServer.SetBusName(idx, nombre);
+			AudioServer.SetBusSend(idx, "Master");
+		}
+	}
+
+	// Se recuerdan entre sesiones: si apagaste la música, al volver a abrir el juego sigue apagada.
+	private void CargarPreferenciasAudio()
+	{
+		var cfg = new ConfigFile();
+		if (cfg.Load(RUTA_CONFIG_AUDIO) == Error.Ok)
+		{
+			_lastVolume      = (float)cfg.GetValue("audio", "volumen", _lastVolume);
+			_musicaMuteada   = (bool)cfg.GetValue("audio", "musica_muteada", false);
+			_efectosMuteados = (bool)cfg.GetValue("audio", "efectos_muteados", false);
+		}
+		AplicarMute(BUS_MUSICA, _musicaMuteada);
+		AplicarMute(BUS_EFECTOS, _efectosMuteados);
+	}
+
+	private void GuardarPreferenciasAudio()
+	{
+		var cfg = new ConfigFile();
+		cfg.SetValue("audio", "volumen", _lastVolume);
+		cfg.SetValue("audio", "musica_muteada", _musicaMuteada);
+		cfg.SetValue("audio", "efectos_muteados", _efectosMuteados);
+		cfg.Save(RUTA_CONFIG_AUDIO);
+	}
 }

@@ -616,6 +616,7 @@ public partial class Campo1 : Node2D
 		_reproductorMusica = new AudioStreamPlayer();
 		_reproductorMusica.Stream = _musicaPartida;
 		_reproductorMusica.Name = "MusicaBatalla";
+		_reproductorMusica.Bus = GlobalAudioManager.BUS_MUSICA; // se silencia con el botón MÚSICA, no con EFECTOS
 		_reproductorMusica.VolumeDb = _volumenMusicaDb + _volumenExtraEscenario;
 
 		AddChild(_reproductorMusica);

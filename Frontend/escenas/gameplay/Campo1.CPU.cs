@@ -118,7 +118,10 @@ public partial class Campo1 : Node2D
 					if (!await IntentarEnroqueIA(torreIA) && puedeAtacar) ProcesarCombateFrontal(tropa, "tropas_jugador");
 				}
 				else if (intentaHabilidad)
+				{
+					(tropa as TropaBase)?.AnunciarHabilidad(); // sonido de habilidad del personaje
 					tropa.Call("EjecutarAccion", "usar_habilidad");
+				}
 				else if (DebeDefender(tropa, objetivo))
 					tropa.Call("EjecutarAccion", "preparar_defensa");
 				else if (puedeAtacar)
@@ -188,7 +191,10 @@ public partial class Campo1 : Node2D
 					if (!await IntentarEnroqueIA(torreIA) && puedeAtacar) ProcesarCombateFrontal(tropa, "tropas_jugador");
 				}
 				else if (intentaHabilidad)
+				{
+					(tropa as TropaBase)?.AnunciarHabilidad(); // sonido de habilidad del personaje
 					tropa.Call("EjecutarAccion", "usar_habilidad");
+				}
 				else if (DebeDefender(tropa, objetivo))
 					tropa.Call("EjecutarAccion", "preparar_defensa");
 				else if (puedeAtacar)
@@ -248,7 +254,7 @@ public partial class Campo1 : Node2D
 				if (!await IntentarEnroqueIA(torre) && objetivo != null) ProcesarCombateFrontal(tropa, "tropas_jugador");
 				else if (objetivo == null) continue;
 			}
-			else if (habilidadLista)                      tropa.EjecutarAccion("usar_habilidad");
+			else if (habilidadLista)                      { tropa.AnunciarHabilidad(); tropa.EjecutarAccion("usar_habilidad"); }
 			else if (objetivo != null)                    ProcesarCombateFrontal(tropa, "tropas_jugador");
 			else if (Gi(tropa, "escudoActual") > 0)       tropa.EjecutarAccion("preparar_defensa");
 			else continue; // no hay nada útil que hacer con esta: no gasta energía

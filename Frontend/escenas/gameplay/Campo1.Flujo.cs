@@ -197,13 +197,16 @@ public partial class Campo1 : Node2D
 		if (HabilidadBloqueadaTurno(tropaSeleccionada)) { menuAcciones.Visible = false; return; }
 		string carrilHab = tropaSeleccionada.HasMeta("carril") ? (string)tropaSeleccionada.GetMeta("carril") : "";
 		var tropaHab = tropaSeleccionada;
+		(tropaHab as TropaBase)?.MarcarHabilidad(); // su animación no debe sonar como un ataque normal
 		tropaHab.Call("EjecutarAccion", "usar_habilidad");
 		menuAcciones.Visible = false;
 
 		// Si la habilidad quedó esperando que elijas algo (Dama, Caballo en carril 2, Maguín, Torre,
 		// Peón), NO se cobra nada todavía: si el turno se va sin elegir, la habilidad sigue intacta y
 		// no perdiste el movimiento. Se cobra al confirmar (ConfirmarHabilidadPendiente).
+		// El SONIDO de la habilidad también espera: suena al tocar la tropa objetivo, no al pulsar el botón.
 		if (tropaHab is TropaBase tb && tb.SeleccionPendiente) { _habilidadPendienteCarril = carrilHab; return; }
+		(tropaHab as TropaBase)?.SonarHabilidad();
 
 		tropaHab.Call("SetActivo", false);
 		RegistrarGastoMovimiento();
@@ -220,6 +223,7 @@ public partial class Campo1 : Node2D
 	public void ConfirmarHabilidadPendiente(Node2D tropa)
 	{
 		if (tropa == null || !IsInstanceValid(tropa)) return;
+		(tropa as TropaBase)?.SonarHabilidad(); // recién ahora, al tocar el objetivo, suena la habilidad
 		tropa.Call("SetActivo", false);
 		RegistrarGastoMovimiento();
 		if (EsOnline)
@@ -477,6 +481,7 @@ public partial class Campo1 : Node2D
 		// puede volver a sacrificar ni cobrar su castigo dos veces).
 		if (tropa.HasMeta(META_MUERTE_PROCESADA)) return;
 		tropa.SetMeta(META_MUERTE_PROCESADA, true);
+		(tropa as TropaBase)?.SonarMuerte(); // sonido de muerte (una sola vez; también cubre la Nuclear)
 
 		// El huevo del dueño acusa el golpe: tiembla de lado a lado, más fuerte cuanto más pesada era
 		// la tropa que cayó (táctico < asesino < coloso). Vale igual para el jugador y para el bot.

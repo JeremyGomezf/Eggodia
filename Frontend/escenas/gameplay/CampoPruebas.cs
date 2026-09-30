@@ -380,6 +380,7 @@ public partial class CampoPruebas : Node2D
 		bool usadaAntes = false; try { usadaAntes = (bool)tropa.Get("habilidadUsada"); } catch { }
 
 		tropa.Call("SetActivo", true);
+		tropa.AnunciarHabilidad();
 		tropa.EjecutarAccion("usar_habilidad");
 		ManejarMuerte();
 

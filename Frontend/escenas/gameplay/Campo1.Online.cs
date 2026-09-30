@@ -242,7 +242,7 @@ public partial class Campo1 : Node2D
 		{
 			string carrilMio = EspejarCarril(ch.GetString() ?? "");
 			if (TropaEnCarril(carrilMio) is TropaBase hab && IsInstanceValid(hab))
-				EjecutarVisualOnline(() => hab.EjecutarAccion("usar_habilidad"));
+				EjecutarVisualOnline(() => { hab.AnunciarHabilidad(); hab.EjecutarAccion("usar_habilidad"); });
 		}
 		else if (tipo == "hechizo" && datos.ValueKind == JsonValueKind.Object &&
 			datos.TryGetProperty("hechizoId", out var hid) && datos.TryGetProperty("carrilObjetivo", out var cobj))
