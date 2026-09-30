@@ -22,6 +22,10 @@ public partial class Campo1 : Node2D
 	public void RegistrarDañoTropa(Node2D atacante, int daño)
 	{
 		if (!IsInstanceValid(atacante) || daño <= 0) return;
+		// Tortuga/Pez del Maguín: el daño cuenta para la TROPA ORIGINAL transformada (su carta, su
+		// nombre y su ícono), no para un "personaje" aparte sin carta que dejaba el MVT sin ícono.
+		if (atacante is TortugaYPescado animal && animal.tropaOriginal != null && IsInstanceValid(animal.tropaOriginal))
+			atacante = animal.tropaOriginal;
 		ulong id = atacante.GetInstanceId();
 		if (!_statsPorTropa.TryGetValue(id, out var reg))
 		{
@@ -53,6 +57,9 @@ public partial class Campo1 : Node2D
 				string archivo = dir.GetNext();
 				while (archivo != "")
 				{
+					// En el APK exportado los .tres aparecen como "x.tres.remap": sin quitar ese sufijo no se
+					// encontraba NINGUNA carta en el celular (ni ícono ni nombre para el MVT).
+					if (archivo.EndsWith(".remap")) archivo = archivo[..^".remap".Length];
 					if (archivo.EndsWith(".tres"))
 					{
 						var datos = GD.Load<CartaData>($"res://DatosCartas/{archivo}");
@@ -64,6 +71,14 @@ public partial class Campo1 : Node2D
 			}
 		}
 		if (_cacheIlustraciones.TryGetValue(ruta, out var tex) && tex != null) return tex;
+
+		// Escena sin carta propia pero que ES la misma carta que otra (p. ej. TRex_prime y Paper_Rex
+		// son el Paper-Rex): se usa el ÍCONO de esa carta equivalente, no la imagen grande.
+		string cartaPng = ClasificacionCartas.Clasificar(ruta).CartaPng;
+		if (!string.IsNullOrEmpty(cartaPng))
+			foreach (var par in _cacheIlustraciones)
+				if (par.Value != null && ClasificacionCartas.Clasificar(par.Key).CartaPng == cartaPng)
+					return par.Value;
 
 		// Fallback: si la carta no tiene Imagen asignada en su .tres (o no se encontró match),
 		// usamos la ilustración grande de batalla (la misma que la mano de cartas), NUNCA un frame
@@ -94,6 +109,9 @@ public partial class Campo1 : Node2D
 				string archivo = dir.GetNext();
 				while (archivo != "")
 				{
+					// En el APK exportado los .tres aparecen como "x.tres.remap": sin quitar ese sufijo no se
+					// encontraba NINGUNA carta en el celular (ni ícono ni nombre para el MVT).
+					if (archivo.EndsWith(".remap")) archivo = archivo[..^".remap".Length];
 					if (archivo.EndsWith(".tres"))
 					{
 						var datos = GD.Load<CartaData>($"res://DatosCartas/{archivo}");

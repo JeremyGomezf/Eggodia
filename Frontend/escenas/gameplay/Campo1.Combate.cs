@@ -50,7 +50,10 @@ public partial class Campo1 : Node2D
 
 				if (grupoEnemigo == "tropas_rival") _dañoTotalJugador += dañoReal;
 				else                                _dañoTotalRival   += dañoReal;
-				RegistrarDañoTropa(atacante, dañoReal);
+				// En línea, el ataque del rival se REPRODUCE sin descontar vida (la vida real llega por el
+				// snapshot), así que dañoReal da 0 y su tropa nunca entraba al MVT. Ahí se cuenta el daño
+				// que hizo en su partida, para que el MVT exista y tenga su ícono también en online.
+				RegistrarDañoTropa(atacante, SoloVisualOnline ? daño : dañoReal);
 
 				if (dañoReal > 0)
 				{

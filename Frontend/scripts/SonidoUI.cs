@@ -70,7 +70,10 @@ public static class SonidoUI
 	public static void Reproducir(Node contexto)
 	{
 		if (contexto == null || !GodotObject.IsInstanceValid(contexto)) return;
-		var tree = contexto.GetTree();
+		// Un botón que cambia de pantalla (VS BOT, Menú principal…) ya salió del árbol cuando suena su
+		// clic: GetTree() sobre él daba error ("data.tree is null") y el clic no sonaba. Se usa el árbol
+		// global del juego, que siempre existe.
+		var tree = contexto.IsInsideTree() ? contexto.GetTree() : Engine.GetMainLoop() as SceneTree;
 		if (tree == null) return;
 
 		var player = new AudioStreamPlayer

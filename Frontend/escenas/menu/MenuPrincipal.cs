@@ -89,7 +89,7 @@ public partial class MenuPrincipal : Control
 		var btnJugar = GetNodeOrNull<Button>("VBoxContainer/JUGAR");
 		if (btnJugar != null)
 		{
-			btnJugar.Pressed += () => { if (!TieneMazoCompletoOAvisa()) return; ContextoOnline.Limpiar(); GetTree().ChangeSceneToFile(RutaEscenaJuego); };
+			btnJugar.Pressed += () => { if (!TieneMazoCompletoOAvisa()) return; ContextoOnline.Limpiar(); TransicionCarga.Ir(this, RutaEscenaJuego, SesionJuego.Instance?.MazoSeleccionado); }; // carga en 2do plano con pantalla de carga (antes congelaba 8-10 s)
 			AgregarAnimacionHover(btnJugar);
 		}
 
@@ -138,7 +138,7 @@ public partial class MenuPrincipal : Control
 		var btnVsBot = GetNodeOrNull<BaseButton>("BottomButtons/BtnVsBot");
 		if (btnVsBot != null)
 		{
-			btnVsBot.Pressed += () => { if (!TieneMazoCompletoOAvisa()) return; ContextoOnline.Limpiar(); GetTree().ChangeSceneToFile(RutaEscenaJuego); };
+			btnVsBot.Pressed += () => { if (!TieneMazoCompletoOAvisa()) return; ContextoOnline.Limpiar(); TransicionCarga.Ir(this, RutaEscenaJuego, SesionJuego.Instance?.MazoSeleccionado); }; // carga en 2do plano con pantalla de carga (antes congelaba 8-10 s)
 			AgregarAnimacionHover(btnVsBot);
 		}
 
