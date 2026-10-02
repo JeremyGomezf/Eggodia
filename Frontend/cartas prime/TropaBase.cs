@@ -260,15 +260,27 @@ public abstract partial class TropaBase : Area2D
 		// Tiñe el SPRITE, no la raíz de la tropa: la raíz propaga el Modulate a TODOS sus hijos por
 		// igual, incluida StatsTropa (las barras de vida/escudo) — así el flash rojo del golpe las
 		// pintaba también. El sprite es hermano de StatsTropa, así que teñirlo a él nunca las toca.
+		// Una sola lectura de SeleccionPendiente por golpe: en algunas tropas (la Torre) el getter sale
+		// a buscar nodos por el arbol, y leerlo dos veces por impacto encarece cada golpe recibido.
+		bool esperandoClic = SeleccionPendiente;
 		bool hayFlashEnCurso = _tweenGolpe != null && _tweenGolpe.IsValid() && _tweenGolpe.IsRunning();
-		if (!hayFlashEnCurso) _colorReposoGolpe = _anim.Modulate; // color limpio, sin flash a mitad de camino
+		// Si la tropa espera que elijas un objetivo, su aura de seleccion esta latiendo sobre esta misma
+		// propiedad: capturar "el color actual" tomaria un amarillo/celeste a mitad del pulso y lo dejaria
+		// clavado como color de reposo. En ese caso el reposo es blanco y el aura se reenciende sola.
+		if (!hayFlashEnCurso) _colorReposoGolpe = esperandoClic ? Colors.White : _anim.Modulate; // color limpio, sin flash a mitad de camino
 
 		_tweenGolpe?.Kill();
 		Color antes = _colorReposoGolpe ?? _anim.Modulate;
 		_tweenGolpe = CreateTween();
 		_tweenGolpe.TweenProperty(_anim, "modulate", new Color(3f, 0.4f, 0.4f, 1f), 0.05f);
 		_tweenGolpe.TweenProperty(_anim, "modulate", antes, 0.15f);
-		_tweenGolpe.Finished += () => _colorReposoGolpe = null; // tanda terminada: el próximo golpe vuelve a capturar
+		_tweenGolpe.Finished += () =>
+		{
+			_colorReposoGolpe = null; // tanda terminada: el proximo golpe vuelve a capturar
+			// Recibir un golpe NO cancela una habilidad que esta esperando tu clic: baja la vida y nada
+			// mas. El aura de seleccion vuelve a latir para que se siga viendo que la tropa te espera.
+			if (esperandoClic) ReanudarEfectoAviso();
+		};
 	}
 
 	/// <summary>Polimorfismo: las subclases pueden extender este método.</summary>
@@ -305,6 +317,12 @@ public abstract partial class TropaBase : Area2D
 	/// le corresponde a este turno — sin gastar la habilidad (nunca llegó a marcarse usada), pero
 	/// con el aro de aviso brillando para siempre.</summary>
 	public virtual void CancelarSeleccionPendiente() { }
+
+	/// <summary>Vuelve a encender el aura intermitente de "estoy esperando que elijas un objetivo".
+	/// La llama EfectoGolpe al terminar el flash rojo de un golpe, porque ese flash anima la misma
+	/// propiedad (_anim.modulate) y pisa el latido. Solo la implementan las tropas con seleccion por
+	/// clic y aura: Maguin, Dama y Caballo.</summary>
+	protected virtual void ReanudarEfectoAviso() { }
 
 	/// <summary>¿La habilidad quedó ESPERANDO que el jugador elija algo (objetivo, carril, pieza) y
 	/// todavía no se concretó? Campo1 lo consulta justo después de pulsar HABILIDAD: mientras esté
@@ -665,6 +683,11 @@ public abstract partial class TropaBase : Area2D
 	public void SonarHabilidad()
 	{
 		if (_estaMuerto) return;
+		// Mismo criterio que al arrancar la animacion (ver mas abajo): las tropas cuyo audio NO es el
+		// golpe sino el IMPACTO lo disparan ellas mismas en el instante justo. El Granadero reusa para
+		// su habilidad el mismo archivo que el ataque, que arranca en la explosion — si ademas sonara
+		// al anunciar la habilidad, se oiria un estallido antes de que el mortero siquiera salga.
+		if (SonidoAtaqueDiferido) return;
 		SonidosTropa.Reproducir(this, SonidosTropa.HABILIDAD);
 	}
 

@@ -23,6 +23,21 @@ public static class SonidosTropa
 
 	// ── AJUSTES DE VOZ POR TROPA/EVENTO ───────────────────────────────────────────────────────
 	// Correcciones puntuales sobre VOLUMEN_DB cuando un audio viene más fuerte que el resto.
+	// ── ARRANQUE DEL AUDIO POR TROPA/EVENTO ───────────────────────────────────────────────────
+	// Segundo del archivo en el que EMPIEZA a sonar. Sirve para los audios que traen varias cosas
+	// seguidas y solo queremos la de atras.
+	//
+	// El ataque del Granadero dura 4,5 s y trae el lanzamiento (0,0-1,1 s), el silbido de vuelo
+	// (1,1-1,97 s) y recien despues la explosion. Como el sonido se dispara en el fotograma 0 de la
+	// explosion (ver GranaderoCartoonPrime.CrearExplosion), arrancarlo desde el principio hacia que
+	// el estallido se oyera unos 2 s tarde. Saltando a 1,97 s el estallido entra justo con la
+	// explosion en pantalla y la cola (2,5 s) se apaga sola. HABILIDAD reusa el mismo archivo.
+	private static readonly Dictionary<string, float> AJUSTE_INICIO = new()
+	{
+		{ "GranaderoCartoonPrime/" + ATAQUE,    1.97f },
+		{ "GranaderoCartoonPrime/" + HABILIDAD, 1.97f },
+	};
+
 	private static readonly Dictionary<string, float> AJUSTE_VOLUMEN = new()
 	{
 		{ "MachiPrime/" + DANO, -7f }, // el quejido del Machi venía bastante más alto que los demás
@@ -144,7 +159,8 @@ public static class SonidosTropa
 
 		string clase = tropa.GetType().Name;
 		float extraDb = AJUSTE_VOLUMEN.TryGetValue(clase + "/" + evento, out float ajuste) ? ajuste : 0f;
-		ReproducirStream(tropa, Obtener(clase, evento), extraDb: extraDb);
+		float desde   = AJUSTE_INICIO.TryGetValue(clase + "/" + evento, out float ini) ? ini : 0f;
+		ReproducirStream(tropa, Obtener(clase, evento), extraDb: extraDb, desdeSegundo: desde);
 	}
 
 	/// <summary>Diálogo de la tropa cuya escena es "rutaEscena" (lo usa el selector del Constructor de mazo).</summary>
@@ -160,7 +176,7 @@ public static class SonidosTropa
 	// Un solo diálogo a la vez: al elegir otra carta rápido, el anterior se corta en vez de encimarse.
 	private static AudioStreamPlayer _dialogoActual;
 
-	private static void ReproducirStream(Node contexto, AudioStream stream, bool esDialogo = false, float extraDb = 0f)
+	private static void ReproducirStream(Node contexto, AudioStream stream, bool esDialogo = false, float extraDb = 0f, float desdeSegundo = 0f)
 	{
 		if (stream == null || contexto == null || !GodotObject.IsInstanceValid(contexto)) return;
 		var tree = contexto.GetTree();
@@ -194,7 +210,9 @@ public static class SonidosTropa
 			player.Finished += player.QueueFree;
 		}
 
-		player.Play();
+		// Si el audio trae relleno adelante (ver AJUSTE_INICIO), se arranca pasado ese tramo.
+		float largo = (float)stream.GetLength();
+		player.Play(desdeSegundo > 0f && (largo <= 0f || desdeSegundo < largo) ? desdeSegundo : 0f);
 		if (esDialogo) _dialogoActual = player;
 	}
 }

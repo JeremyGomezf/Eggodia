@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djdgkcndc2nls"
-path.s3tc="res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.s3tc.ctex"
-path.etc2="res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.etc2.ctex"
+uid="uid://ctby3o5m3f6ct"
+path.s3tc="res://.godot/imported/TorreSprite.png-629e315b0725b278d436a37a330749b3.s3tc.ctex"
+path.etc2="res://.godot/imported/TorreSprite.png-629e315b0725b278d436a37a330749b3.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ metadata={
 
 [deps]
 
-source_file="res://imagenes/sprites/Ajedrez/Caballo Ajedrez.png"
-dest_files=["res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.s3tc.ctex", "res://.godot/imported/Caballo Ajedrez.png-3f514d710651c24e193086b819b6f7c4.etc2.ctex"]
+source_file="res://imagenes/sprites/Ajedrez/TorreSprite.png"
+dest_files=["res://.godot/imported/TorreSprite.png-629e315b0725b278d436a37a330749b3.s3tc.ctex", "res://.godot/imported/TorreSprite.png-629e315b0725b278d436a37a330749b3.etc2.ctex"]
 
 [params]
 

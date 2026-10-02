@@ -1245,6 +1245,24 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_xd0wp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wp20m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xkkth")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kaekk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0h6g7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ogto1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u0fhh")
 }],
 "loop": 0,
 "name": &"habilidad 3",
@@ -1325,8 +1343,8 @@ position = Vector2(93, -6)
 position = Vector2(-2, -57.000004)
 scale = Vector2(0.492, 0.492)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"idle 1"
-frame_progress = 0.6233201
+animation = &"habilidad 3"
+frame = 16
 
 [node name="SpotGranada" type="Marker2D" parent="." unique_id=2679467]
 position = Vector2(-9, -78)

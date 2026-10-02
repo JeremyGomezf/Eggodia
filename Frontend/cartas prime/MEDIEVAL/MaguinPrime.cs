@@ -132,10 +132,7 @@ public partial class MaguinPrime : TropaBase
 		else
 			campo?.Call("MostrarAviso", "Decide a cuál transformas", new Color(0.5f, 1f, 0.9f));
 
-		_tweenAviso?.Kill();
-		_tweenAviso = CreateTween().SetLoops();
-		_tweenAviso.TweenProperty(_anim, "modulate", new Color(0.5f, 1.6f, 1.4f), 0.3f);
-		_tweenAviso.TweenProperty(_anim, "modulate", Colors.White, 0.3f);
+		ReanudarEfectoAviso();
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
@@ -173,6 +170,16 @@ public partial class MaguinPrime : TropaBase
 	{
 		CancelarSeleccionPendiente();
 		base.AlSerBloqueado();
+	}
+
+	/// <summary>Enciende (o reenciende) el latido celeste de "elegi a cual transformas".</summary>
+	protected override void ReanudarEfectoAviso()
+	{
+		if (_anim == null || !IsInstanceValid(_anim)) return;
+		_tweenAviso?.Kill();
+		_tweenAviso = CreateTween().SetLoops();
+		_tweenAviso.TweenProperty(_anim, "modulate", new Color(0.5f, 1.6f, 1.4f), 0.3f);
+		_tweenAviso.TweenProperty(_anim, "modulate", Colors.White, 0.3f);
 	}
 
 	private void DetenerEfectoAviso()

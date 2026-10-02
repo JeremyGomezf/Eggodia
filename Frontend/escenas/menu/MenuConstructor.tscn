@@ -323,7 +323,6 @@ mouse_default_cursor_shape = 2
 flat = true
 
 [node name="ScrollCartas" type="ScrollContainer" parent="SelectorContainer" unique_id=2095476746]
-script = ExtResource("scroll_tactil")
 layout_mode = 0
 offset_left = 75.0
 offset_top = 115.0
@@ -332,6 +331,7 @@ offset_bottom = 895.0
 theme = SubResource("Theme_subtle_scroll")
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 2
+script = ExtResource("scroll_tactil")
 
 [node name="GridCartas" type="GridContainer" parent="SelectorContainer/ScrollCartas" unique_id=209447049]
 layout_mode = 2

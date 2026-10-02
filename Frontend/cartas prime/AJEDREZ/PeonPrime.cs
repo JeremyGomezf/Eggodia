@@ -263,9 +263,14 @@ public partial class PeonPrime : TropaBase
 			}
 		}
 		
-		// 3. Transferir TODOS los metadatos de la casilla (carril, zona, etc.)
+		// 3. Transferir los metadatos de la casilla (carril, zona, idx_mazo, estados de hechizo...).
+		// NO se copian las marcas de muerte: son del Peon que esta desapareciendo, no de la pieza que
+		// nace. "muerte_nuclear" haria que la pieza nueva muera en polvo (efecto exclusivo de la bomba)
+		// la proxima vez que la maten, y "muerte_procesada" haria que su muerte se ignore y se quede
+		// clavada en el carril.
 		foreach (string meta in GetMetaList())
 		{
+			if (meta == "muerte_nuclear" || meta == "muerte_procesada") continue;
 			nuevaTropa.SetMeta(meta, GetMeta(meta));
 		}
 
@@ -318,6 +323,13 @@ public partial class PeonPrime : TropaBase
 			nuevaTropa.Set("puntosAtaque", atk);
 		}
 		catch { }
+
+		// Mismo cierre que una invocacion normal (ver Campo1.Flujo.TropaInvocada): la pieza nace
+		// visible y ACTIVA, para que pueda usarse igual que cualquier tropa recien puesta. Sin el
+		// SetActivo quedaba con las barras de vida/escudo visibles de entrada, porque es ese metodo
+		// el que las oculta al activar.
+		nuevaTropa.Visible = true;
+		if (nuevaTropa.HasMethod("SetActivo")) nuevaTropa.Call("SetActivo", true);
 
 		// Efecto visual — bloquea el tablero mientras dura, para que la IA no dispare otra
 		// acción encima de la transformación todavía en curso.

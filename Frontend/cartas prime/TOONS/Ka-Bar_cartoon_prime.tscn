@@ -295,7 +295,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_chmmp")
 }],
-"loop": 1,
+"loop": 0,
 "name": &"ataque_fantasma",
 "speed": 9.0
 }, {
@@ -821,7 +821,7 @@ position = Vector2(67, -6)
 position = Vector2(6, -37)
 scale = Vector2(0.4919, 0.4919)
 sprite_frames = SubResource("SpriteFrames_4s16o")
-animation = &"idle"
+animation = &"ataque_fantasma"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=336409651]
 layout_mode = 3

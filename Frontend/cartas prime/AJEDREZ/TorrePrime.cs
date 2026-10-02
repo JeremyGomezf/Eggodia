@@ -5,6 +5,18 @@ using Godot;
 /// en la misma ronda en que se invoca (única carta con umbral 0).</summary>
 public partial class TorrePrime : TropaBase
 {
+	// Campo1 cacheado: SeleccionPendiente se lee muy seguido (entre otras, en cada golpe recibido) y
+	// antes hacia un FindChild recursivo desde la raiz CADA VEZ. Con ataques de varios impactos
+	// seguidos eso son varios recorridos del arbol entero en fracciones de segundo, y el juego da
+	// tirones. El nodo del campo no cambia durante la partida, asi que se busca una sola vez.
+	private Node _campoCache;
+	private Node Campo()
+	{
+		if (_campoCache != null && IsInstanceValid(_campoCache)) return _campoCache;
+		_campoCache = GetTree()?.Root?.FindChild("Campo1", true, false);
+		return _campoCache;
+	}
+
 	public override string Tipo => Tipos.METAL;
 	protected override int TurnoDesbloqueoHabilidad => 0;
 
@@ -18,7 +30,7 @@ public partial class TorrePrime : TropaBase
 	{
 		if (habilidadUsada || HabilidadBloqueada() || !HasMeta("carril")) return;
 
-		var campo = GetTree().Root.FindChild("Campo1", true, false);
+		var campo = Campo();
 		if (campo == null || !campo.HasMethod("IniciarSeleccionEnroque")) return;
 
 		campo.Call("IniciarSeleccionEnroque", this);
@@ -30,7 +42,7 @@ public partial class TorrePrime : TropaBase
 	{
 		get
 		{
-			var campo = GetTree()?.Root?.FindChild("Campo1", true, false);
+			var campo = Campo();
 			if (campo == null || !campo.HasMethod("EsperandoEnroqueDe")) return false;
 			try { return (bool)campo.Call("EsperandoEnroqueDe", this); } catch { return false; }
 		}
@@ -39,7 +51,7 @@ public partial class TorrePrime : TropaBase
 	public override void CancelarSeleccionPendiente()
 	{
 		if (!SeleccionPendiente) return;
-		var campo = GetTree()?.Root?.FindChild("Campo1", true, false);
+		var campo = Campo();
 		if (campo != null && campo.HasMethod("CancelarSeleccionEnroque")) campo.Call("CancelarSeleccionEnroque");
 	}
 }

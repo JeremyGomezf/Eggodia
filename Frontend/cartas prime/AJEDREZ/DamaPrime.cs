@@ -133,18 +133,27 @@ public partial class DamaPrime : TropaBase
 			_esperandoSeleccion = true;
 
 			// Activa la luz amarilla intermitente
-			_tweenAviso = CreateTween().SetLoops();
-			_tweenAviso.TweenProperty(_anim, "modulate", new Color(1.8f, 1.5f, 0.6f), 0.3f);
-			_tweenAviso.TweenProperty(_anim, "modulate", Colors.White, 0.3f);
+			ReanudarEfectoAviso();
 		}
+	}
+
+	/// <summary>Enciende (o reenciende) el latido amarillo de "elegi el objetivo".</summary>
+	protected override void ReanudarEfectoAviso()
+	{
+		if (_anim == null || !IsInstanceValid(_anim)) return;
+		_tweenAviso?.Kill();
+		_tweenAviso = CreateTween().SetLoops();
+		_tweenAviso.TweenProperty(_anim, "modulate", new Color(1.8f, 1.5f, 0.6f), 0.3f);
+		_tweenAviso.TweenProperty(_anim, "modulate", Colors.White, 0.3f);
 	}
 
 	private void DetenerEfectoAviso()
 	{
-		if (_tweenAviso != null && _tweenAviso.IsValid())
-		{
-			_tweenAviso.Kill();
-		}
+		if (_tweenAviso != null && _tweenAviso.IsValid()) _tweenAviso.Kill();
+		_tweenAviso = null;
+		// El latido se anima sobre _anim (el sprite), NO sobre la raiz: reseteando solo la raiz el
+		// sprite quedaba teñido de amarillo para siempre despues de elegir el objetivo.
+		if (_anim != null && IsInstanceValid(_anim)) _anim.Modulate = Colors.White;
 		Modulate = Colors.White;
 	}
 

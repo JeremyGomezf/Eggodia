@@ -76,6 +76,14 @@ public partial class Campo1 : Node2D
 	private readonly List<Action> _polvosEsperandoBlanco = new();
 
 	private CanvasLayer _capaNuclear;     // cartas negras de MI mano (por encima del blanco)
+	private CanvasLayer _capaDestello;    // capa propia del blanco (ver LAYER_DESTELLO)
+
+	// El blanco tiene que tapar TODO: el campo, las tropas, las manos, el HUD entero y cualquier
+	// panel que se haya abierto (intro, retirada, avisos de online). Antes vivia dentro de la capa
+	// del HUD (layer 50) y por eso lo tapaba cualquier capa mas alta. La unica excepcion pedida es
+	// la pantalla de Robar Carta (layer 250), que tiene que verse POR ENCIMA del blanco — por eso
+	// este valor queda justo debajo de ella (y debajo del NFC 320 y del tutorial 500/600).
+	private const int LAYER_DESTELLO = 200;
 	private ColorRect   _destelloNuclear; // vive dentro de la capa del HUD
 	private readonly List<(Control nodo, int indice)> _hudSobreDestello = new();
 
@@ -274,8 +282,26 @@ public partial class Campo1 : Node2D
 		_capaNuclear      = null;
 		OcultarCuentaNuclear();
 		GuardiaNuclearActiva = false;
+		LimpiarMarcaNuclearDeSobrevivientes();
 		_nuclearesEnCurso = Math.Max(0, _nuclearesEnCurso - 1);
 		ActualizarInterfaz();
+	}
+
+	/// <summary>Terminada la bomba, le saca la marca "muerte_nuclear" a TODA tropa que siga viva.
+	/// Esa marca es la que hace que una muerte termine en polvo en vez de en su derrota normal (ver
+	/// Campo1.Flujo.EjecutarMuerteTropaSacrificada). Se ponia antes de aplicar el danio y solo se
+	/// quitaba en la rama "sobrevivio" del bucle, asi que habia casos en que quedaba pegada — el mas
+	/// claro, el Ka-Bar: muere con la bomba, se va en polvo y vuelve como fantasma con la marca
+	/// todavia puesta, asi que su siguiente muerte (por el Granadero, el Tanque o lo que sea) volvia
+	/// a salir en polvo. Limpiarla aca cubre cualquier tropa que siga viva tras la explosion, sin
+	/// importar por que sobrevivio.</summary>
+	private void LimpiarMarcaNuclearDeSobrevivientes()
+	{
+		foreach (string grupo in new[] { "tropas_jugador", "tropas_rival" })
+			foreach (Node n in GetTree().GetNodesInGroup(grupo))
+				if (n is TropaBase t && IsInstanceValid(t) && !t.IsQueuedForDeletion()
+					&& t.vidaActual > 0 && t.HasMeta(META_MUERTE_NUCLEAR))
+					t.RemoveMeta(META_MUERTE_NUCLEAR);
 	}
 
 	/// <summary>Espera respetando la pausa (el timer no corre con el juego pausado). Devuelve false si
@@ -721,9 +747,12 @@ public partial class Campo1 : Node2D
 			_twSacudonMundo.TweenProperty(this, "position", _origenSacudonMundo + new Vector2(
 				lado * fuerzaMundo * fuerza,
 				(float)GD.RandRange(-0.4, 0.4) * fuerzaMundo * fuerza), paso);
-			_twSacudonHud.TweenProperty(capaHud, "offset", _origenSacudonHud + new Vector2(
+			Vector2 offHud = _origenSacudonHud + new Vector2(
 				lado * fuerzaBotones * fuerza,
-				(float)GD.RandRange(-0.3, 0.3) * fuerzaBotones * fuerza), paso);
+				(float)GD.RandRange(-0.3, 0.3) * fuerzaBotones * fuerza);
+			_twSacudonHud.TweenProperty(capaHud, "offset", offHud, paso);
+			if (_capaDestello != null && IsInstanceValid(_capaDestello))
+				_twSacudonHud.Parallel().TweenProperty(_capaDestello, "offset", offHud, paso);
 		}
 		_twSacudonMundo.TweenProperty(this, "position", _origenSacudonMundo, paso);
 		_twSacudonHud.TweenProperty(capaHud, "offset", _origenSacudonHud, paso);
@@ -737,8 +766,9 @@ public partial class Campo1 : Node2D
 		or CalamarGPrime or ArfilPrime or TRexPrime or GranaderoCartoonPrime or GolemPrime or DragonPrime;
 
 	// ── DESTELLO BLANCO ───────────────────────────────────────────────────
-	// Va DENTRO de la capa del HUD (así tapa el campo, las tropas, las manos y el resto del HUD), y
-	// los 5 elementos de HUD_SOBRE_DESTELLO se mueven por encima de él mientras dura.
+	// Va en su PROPIA capa (LAYER_DESTELLO = 200), por encima del HUD y de cualquier panel abierto;
+	// solo la pantalla de Robar Carta (250) queda por encima. Los 5 elementos de HUD_SOBRE_DESTELLO
+	// se mudan a esa misma capa mientras dura, para seguir viendose sobre el blanco.
 	private void IniciarDestelloNuclear()
 	{
 		if (_destelloNuclearIniciado) return;
@@ -754,6 +784,9 @@ public partial class Campo1 : Node2D
 		if (menuAcciones != null && IsInstanceValid(menuAcciones)) menuAcciones.Visible = false;
 
 		var capaHud = CapaHUD();
+		_capaDestello = new CanvasLayer { Name = "CapaDestelloNuclear", Layer = LAYER_DESTELLO };
+		AddChild(_capaDestello);
+		_capaDestello.Offset = capaHud.Offset;   // acompaña al sacudon igual que el HUD
 		_destelloNuclear = new ColorRect
 		{
 			Name        = "DestelloNuclear",
@@ -761,7 +794,7 @@ public partial class Campo1 : Node2D
 			MouseFilter = Control.MouseFilterEnum.Ignore,
 			Modulate    = new Color(1, 1, 1, 0),
 		};
-		capaHud.AddChild(_destelloNuclear);
+		_capaDestello.AddChild(_destelloNuclear);
 		// AndOffsets: con SetAnchorsPreset solo, al llamarlo ya dentro del árbol Godot conserva el tamaño
 		// actual (0x0) y el blanco no se ve.
 		_destelloNuclear.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
@@ -778,7 +811,8 @@ public partial class Campo1 : Node2D
 		{
 			if (capaHud.GetNodeOrNull<Control>(nombre) is not Control c) continue;
 			_hudSobreDestello.Add((c, c.GetIndex()));
-			capaHud.MoveChild(c, -1);
+			capaHud.RemoveChild(c);
+			_capaDestello.AddChild(c);   // dentro de la capa del blanco y despues de el: quedan encima
 		}
 
 		// Frame 26: la pantalla se pone casi blanca en lo que dura ese frame (1/10.5 s).
@@ -813,9 +847,15 @@ public partial class Campo1 : Node2D
 
 		// Devuelve los 5 elementos a su orden original dentro del HUD.
 		foreach (var (nodo, indice) in _hudSobreDestello.OrderBy(h => h.indice))
-			if (IsInstanceValid(nodo) && nodo.GetParent() == capaHud)
-				capaHud.MoveChild(nodo, Math.Min(indice, capaHud.GetChildCount() - 1));
+		{
+			if (!IsInstanceValid(nodo)) continue;
+			nodo.GetParent()?.RemoveChild(nodo);
+			capaHud.AddChild(nodo);
+			capaHud.MoveChild(nodo, Math.Min(indice, capaHud.GetChildCount() - 1));
+		}
 		_hudSobreDestello.Clear();
+		if (_capaDestello != null && IsInstanceValid(_capaDestello)) _capaDestello.QueueFree();
+		_capaDestello = null;
 
 		// Ya no queda blanco: recién ahora los polvos reproducen su animación.
 		_destelloNuclearActivo = false;
