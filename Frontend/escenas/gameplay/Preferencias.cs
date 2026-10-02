@@ -91,6 +91,21 @@ public static class Preferencias
 		set => EscribirBoolEn(SEC_DISPOSITIVO, "tutorial_visto", value);
 	}
 
+	/// <summary>Última versión publicada que informó el servidor (y su enlace de descarga). Es del
+	/// DISPOSITIVO. Sirve para bloquear igual en la pantalla de carga si hay una actualización pendiente
+	/// aunque esta vez no haya internet o el servidor no responda (ver ChequeoActualizacion).</summary>
+	public static string VersionUltimaConocida
+	{
+		get => LeerStringEn(SEC_DISPOSITIVO, "version_ultima_conocida", "");
+		set => EscribirStringEn(SEC_DISPOSITIVO, "version_ultima_conocida", value ?? "");
+	}
+
+	public static string UrlDescargaConocida
+	{
+		get => LeerStringEn(SEC_DISPOSITIVO, "url_descarga_conocida", "");
+		set => EscribirStringEn(SEC_DISPOSITIVO, "url_descarga_conocida", value ?? "");
+	}
+
 	/// <summary>Tutorial pendiente por instalación NUEVA: el menú lo abre solo la primera vez que se
 	/// llega a él, entre como entre (cuenta nueva, cuenta existente o invitado). También es del
 	/// DISPOSITIVO.</summary>

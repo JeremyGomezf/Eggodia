@@ -59,9 +59,10 @@ public partial class PantallaCarga : Control
 	private int _total;
 
 	// ── Chequeo de actualización AL INICIO ────────────────────────────────────
-	// Apenas abre la app se consulta la versión del servidor. Si hay una versión nueva OBLIGATORIA,
-	// el aviso bloquea aquí mismo (antes del login) y no se avanza. Si no hay update / no hay conexión,
-	// se sigue normal al login. Se espera a que el chequeo termine antes de pasar (con tope de seguridad).
+	// Apenas abre la app se consulta la versión del servidor. Si hay una versión nueva, el aviso bloquea
+	// aquí mismo (antes del login) y NO se avanza, sea la primera vez que se abre el juego o no. Sin
+	// conexión se decide con la última versión que el servidor informó alguna vez (ver
+	// ChequeoActualizacion). Se espera a que el chequeo decida antes de pasar.
 	private bool _cargaLista        = false; // la precarga/animación de la barra terminó
 	private bool _chequeoListo       = false; // el chequeo de versión respondió (o falló/omitió)
 	private bool _bloqueadoPorUpdate = false; // hay update obligatorio en pantalla → no avanzar
@@ -80,8 +81,16 @@ public partial class PantallaCarga : Control
 			IntentarAvanzar();
 		};
 		AddChild(chequeo);
-		// Red de seguridad: si el chequeo jamás responde (caso raro), a los 6s se sigue igual.
-		GetTree().CreateTimer(6.0).Timeout += () => { if (!_chequeoListo) { _chequeoListo = true; IntentarAvanzar(); } };
+		// Red de seguridad por si el chequeo jamás decide (no debería: tiene su propio tope de 12 s). Antes
+		// a los 6 s se avanzaba a ciegas y una red lenta alcanzaba para saltarse el aviso; ahora solo se
+		// avanza si NO se sabe de ninguna actualización pendiente.
+		GetTree().CreateTimer(16.0).Timeout += () =>
+		{
+			if (_chequeoListo) return;
+			_chequeoListo = true;
+			_bloqueadoPorUpdate = ChequeoActualizacion.HayActualizacionConocida();
+			IntentarAvanzar();
+		};
 
 		CargarPeon();
 
