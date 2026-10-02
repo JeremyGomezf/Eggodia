@@ -33,6 +33,15 @@ public partial class Campo1 : Node2D
 		while (IntroEnCurso && !juegoTerminado) await ToSignal(GetTree().CreateTimer(0.2f), "timeout");
 		if (juegoTerminado) return;
 
+		// Rival bot "en línea" (nadie real buscaba partida): que no se note. Mismo aviso que con un rival
+		// real y un rato de "pensar" antes de jugar, como una persona (la CPU responde al instante).
+		if (OnlineConBot)
+		{
+			MostrarAviso("Turno del rival…", new Color(1f, 0.85f, 0.4f));
+			await ToSignal(GetTree().CreateTimer(1.5 + random.NextDouble() * 2.5), "timeout");
+			if (juegoTerminado) return;
+		}
+
 		// Fase de apertura: la CPU llena sus 3 carriles sin atacar
 		if (_faseApertura)
 		{
@@ -45,7 +54,7 @@ public partial class Campo1 : Node2D
 				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
 				InvocacionRival(zona, ElegirTropaCPU());
 				ActualizarInterfaz();
-				await ToSignal(GetTree().CreateTimer(0.65f), "timeout");
+				await ToSignal(GetTree().CreateTimer(OnlineConBot ? 1.0 + random.NextDouble() * 1.4 : 0.65), "timeout");
 			}
 			_faseApertura = false;
 			if (!juegoTerminado) CambiarTurno();
@@ -72,6 +81,7 @@ public partial class Campo1 : Node2D
 		// Cadencia orgánica entre acciones de la IA (0.5s-1.0s): más lenta en fácil, más ágil
 		// en difícil, pero siempre dentro del rango legible para el jugador.
 		float delay = _dificultadCPU == 0 ? 1.0f : _dificultadCPU == 1 ? 0.75f : 0.5f;
+		if (OnlineConBot) delay *= 1.7f + (float)random.NextDouble() * 0.9f; // ritmo de persona, no de máquina
 		await EsperarTableroLibre();
 		await ToSignal(GetTree().CreateTimer(delay * 0.4f), "timeout");
 		if (juegoTerminado) return;

@@ -207,6 +207,8 @@ public partial class Campo1 : Node2D
 	{
 		if (juegoTerminado) return;
 		juegoTerminado = true;
+		ReportarResultadoContraBot(msg); // contra un bot "en línea": el servidor registra el final
+		CerrarConfirmacionRetirada();
 		timerReloj.Stop();
 		GetTree().Paused = false;
 		CerrarPantallaRobo(); // por seguridad: nunca dejar la pantalla de robo abierta si la partida termina
@@ -297,16 +299,18 @@ public partial class Campo1 : Node2D
 
 		if (msg.Contains("DERROTA"))
 		{
-			Preferencias.PartidasPerdidas++;
-			// El tutorial no paga: ni al ganar ni al (raro) perder.
-			int monedasConsuelo = ModoTutorial ? 0 : Economia.Instancia().RecompensarPartida("derrota", 0, EsOnline);
+			if (!ModoTutorial) Preferencias.PartidasPerdidas++;
+			// El tutorial no paga: ni al ganar ni al (raro) perder. Con cuenta, el premio y la derrota los
+			// guarda el servidor (antes las derrotas nunca llegaban al servidor).
+			int monedasConsuelo = Economia.Instancia().RegistrarFinDePartida("derrota", 0, PareceOnline, ModoTutorial, _dañoTotalJugador);
 			var escenaDerrota = GD.Load<PackedScene>("res://escenas/gameplay/PantallaDerrota.tscn");
 			if (escenaDerrota != null)
 			{
 				var pd = escenaDerrota.Instantiate();
 				if (pd is PantallaDerrota pdScript)
 				{
-					pdScript.EsOnline         = EsOnline; // decide REINTENTAR vs RE-ARMAR MAZO
+					pdScript.EsOnline         = PareceOnline; // decide REINTENTAR vs RE-ARMAR MAZO
+					pdScript.MotivoFin        = _motivoFinOnline;
 					pdScript.MonedasGanadas   = monedasConsuelo;
 					pdScript.DañoInfligido    = _dañoTotalJugador;
 					pdScript.BajasEnemigas    = _tropasEliminadasRival;
@@ -323,15 +327,21 @@ public partial class Campo1 : Node2D
 
 		if (msg.Contains("VICTORIA"))
 		{
-			Preferencias.PartidasGanadas++;
-			Preferencias.AgregarExperiencia(Preferencias.XP_POR_VICTORIA);
+			// Se ve al instante; con cuenta, el servidor aplica la experiencia/victoria de verdad y el
+			// nivel que devuelve es el que queda (el mismo en cualquier celular).
+			if (!ModoTutorial)
+			{
+				Preferencias.PartidasGanadas++;
+				Preferencias.AgregarExperiencia(Preferencias.XP_POR_VICTORIA);
+			}
 			VerificarLogros(msg);
 			var escenaVictoria = GD.Load<PackedScene>("res://escenas/gameplay/PantallaVictoria.tscn");
-			int monedasGanadas = Economia.Instancia().RecompensarPartida("victoria", _rachaVictorias + 1, EsOnline);
+			int monedasGanadas = Economia.Instancia().RegistrarFinDePartida("victoria", _rachaVictorias + 1, PareceOnline, ModoTutorial, _dañoTotalJugador);
 			if (escenaVictoria != null)
 			{
 				var pv = (PantallaVictoria)escenaVictoria.Instantiate();
-				pv.EsOnline         = EsOnline; // decide JUGAR DE NUEVO vs RE-ARMAR MAZO
+				pv.EsOnline         = PareceOnline; // decide JUGAR DE NUEVO vs RE-ARMAR MAZO
+				pv.MotivoFin        = _motivoFinOnline;
 				pv.EsTutorial       = ModoTutorial; // sin monedas, sin auto-achicado, "REPETIR TUTORIAL"
 				if (ModoTutorial) monedasGanadas = 0; // el tutorial no paga
 				pv.DañoInfligido    = _dañoTotalJugador;
@@ -351,8 +361,6 @@ public partial class Campo1 : Node2D
 			{
 				SesionJuego.Instance.UltimoResultado    = "victoria";
 				SesionJuego.Instance.DañoUltimaPartida  = _dañoTotalJugador;
-				if (SesionJuego.Instance.EstaLogueado)
-					EnviarResultadoBackend("victoria", _dañoTotalJugador);
 			}
 			return;
 		}
@@ -413,11 +421,11 @@ public partial class Campo1 : Node2D
 		// "Jugar de nuevo" NO tiene sentido en línea: recargar la escena volvería a leer el ContextoOnline
 		// (MatchId/Semilla de la partida YA terminada) y re-entraría a la misma partida muerta. En online
 		// solo se puede volver al menú y buscar un rival nuevo. Solo se muestra en partidas locales (vs bot).
-		if (!EsOnline) pantalla.AddChild(btnReinicio);
+		if (!PareceOnline) pantalla.AddChild(btnReinicio);
 
 		var btnMenu = new Button();
 		btnMenu.Text              = "Menú Principal";
-		btnMenu.Position          = EsOnline ? new Vector2(152, 300) : new Vector2(255, 300);
+		btnMenu.Position          = PareceOnline ? new Vector2(152, 300) : new Vector2(255, 300);
 		btnMenu.CustomMinimumSize = new Vector2(190, 48);
 		EstiloUI.Boton(btnMenu, 20);
 		btnMenu.Pressed += () =>
@@ -451,27 +459,13 @@ public partial class Campo1 : Node2D
 		string resultadoStr = msg.Contains("VICTORIA") ? "victoria"
 							: msg.Contains("EMPATE")   ? "empate" : "derrota";
 		VerificarLogros(msg);
+		// Empate (y cualquier final por este camino): premio, estadística y, con cuenta, servidor.
+		Economia.Instancia().RegistrarFinDePartida(resultadoStr, 0, PareceOnline, ModoTutorial, _dañoTotalJugador);
 		if (SesionJuego.Instance != null)
 		{
 			SesionJuego.Instance.UltimoResultado    = resultadoStr;
 			SesionJuego.Instance.DañoUltimaPartida  = _dañoTotalJugador;
-			if (SesionJuego.Instance.EstaLogueado)
-				EnviarResultadoBackend(resultadoStr, _dañoTotalJugador);
 		}
-	}
-
-	private void EnviarResultadoBackend(string resultado, int daño)
-	{
-		var http = new Godot.HttpRequest();
-		AddChild(http);
-		string json = System.Text.Json.JsonSerializer.Serialize(new {
-			UsuarioId = SesionJuego.Instance!.UsuarioId,
-			Resultado = resultado,
-			DañoHecho = daño
-		});
-		string[] h = { "Content-Type: application/json" };
-		http.Request(ApiConfig.Resultado, h, HttpClient.Method.Post, json);
-		GD.Print($"[Campo1] Resultado → backend: {resultado}");
 	}
 
 

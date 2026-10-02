@@ -66,6 +66,20 @@ using (var scope = app.Services.CreateScope())
     try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN EquipSkinExclusiva TEXT NOT NULL DEFAULT '';"); } catch { }
     try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN EquipTronoIdx INTEGER NOT NULL DEFAULT 0;"); } catch { }
 
+    // Nivel y mazo por CUENTA (antes solo en el celular: se perdían al reinstalar o cambiar de teléfono).
+    // La experiencia solo se gana al vencer (+150 por victoria), así que la de las cuentas que ya
+    // existían se reconstruye desde sus victorias. Ese UPDATE corre UNA sola vez: solo cuando el ALTER
+    // acaba de crear la columna (si ya existía, el ALTER falla y se salta).
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN Experiencia INTEGER NOT NULL DEFAULT 0;");
+        db.Database.ExecuteSqlRaw("UPDATE Usuarios SET Experiencia = Victorias * 150;");
+    }
+    catch { /* la columna ya existía */ }
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN MazoJson TEXT NOT NULL DEFAULT '';"); } catch { }
+    // Códigos con vencimiento (ver PromoCode.ExpiraUtc).
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE promo_codes ADD COLUMN ExpiraUtc TEXT NULL;"); } catch { }
+
     // Migración ligera (igual que arriba): EnsureCreated tampoco agrega TABLAS nuevas a una BD ya
     // creada — promo_codes/user_skins se agregaron después del primer despliegue, así que en un
     // servidor con una cards.db previa a ese cambio esas tablas nunca existían y CUALQUIER canje de
@@ -117,8 +131,49 @@ using (var scope = app.Services.CreateScope())
                 ""FechaUtc"" TEXT NOT NULL
             );");
         db.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_user_items_UserId_Tipo_ItemId"" ON ""user_items"" (""UserId"", ""Tipo"", ""ItemId"");");
+
+        // partidas_jugadas: una fila por partida YA premiada (monedas/XP/estadísticas). El índice único
+        // (UserId, PartidaId) hace idempotente el premio: si el cliente reintenta tras un corte de red,
+        // la segunda vez no suma de nuevo. Sirve además de historial.
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""partidas_jugadas"" (
+                ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_partidas_jugadas"" PRIMARY KEY AUTOINCREMENT,
+                ""UserId"" INTEGER NOT NULL,
+                ""PartidaId"" TEXT NOT NULL,
+                ""Modo"" TEXT NOT NULL,
+                ""Resultado"" TEXT NOT NULL,
+                ""Monedas"" INTEGER NOT NULL,
+                ""Xp"" INTEGER NOT NULL,
+                ""FechaUtc"" TEXT NOT NULL
+            );");
+        db.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_partidas_jugadas_UserId_PartidaId"" ON ""partidas_jugadas"" (""UserId"", ""PartidaId"");");
+
+        // promo_canjes: quién canjeó qué código. Con un código compartido por muchos (MaxUsos alto), es lo
+        // que impide que la MISMA cuenta lo canjee dos veces (antes solo se impedía en códigos de skin, y
+        // de rebote, porque ya la tenía; uno de monedas se podía canjear una y otra vez).
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""promo_canjes"" (
+                ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_promo_canjes"" PRIMARY KEY AUTOINCREMENT,
+                ""CodigoId"" INTEGER NOT NULL,
+                ""UserId"" INTEGER NOT NULL,
+                ""FechaUtc"" TEXT NOT NULL
+            );");
+        db.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_promo_canjes_CodigoId_UserId"" ON ""promo_canjes"" (""CodigoId"", ""UserId"");");
+
+        // errores_cliente: errores que el juego reporta solo (antes solo se veían conectando el celular
+        // por cable). Se guardan los últimos ~2000 (ver ErroresController).
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""errores_cliente"" (
+                ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_errores_cliente"" PRIMARY KEY AUTOINCREMENT,
+                ""FechaUtc"" TEXT NOT NULL,
+                ""Version"" TEXT NOT NULL,
+                ""Plataforma"" TEXT NOT NULL,
+                ""UsuarioId"" INTEGER NOT NULL,
+                ""Mensaje"" TEXT NOT NULL,
+                ""Detalle"" TEXT NOT NULL
+            );");
     }
-    catch (Exception ex) { Console.Error.WriteLine($"[DB] No se pudieron asegurar promo_codes/user_skins/user_cards: {ex.Message}"); }
+    catch (Exception ex) { Console.Error.WriteLine($"[DB] No se pudieron asegurar las tablas auxiliares: {ex.Message}"); }
 
     // Siembra idempotente de los 20 códigos vigentes (10 Huevo Dorado + 10 Huevo Ecotec). No usa
     // HasData porque HasData solo se aplica cuando EnsureCreated crea la BD desde cero — en un

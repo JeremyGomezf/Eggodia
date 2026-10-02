@@ -12,6 +12,8 @@ public partial class PantallaDerrota : CanvasLayer
 
 	/// <summary>Lo fija Campo1 al abrir la pantalla: cambia qué hace el botón REINTENTAR.</summary>
 	public bool EsOnline { get; set; }
+	// En línea: por qué terminó ("Perdiste por inactividad…"). Reemplaza el subtítulo genérico.
+	public string MotivoFin { get; set; } = "";
 
 	public string    MvtNombre      { get; set; }
 	public int       MvtDaño        { get; set; }
@@ -25,6 +27,8 @@ public partial class PantallaDerrota : CanvasLayer
 		MostrarRecompensa();
 		MostrarStats();
 		MostrarMVT();
+		if (!string.IsNullOrEmpty(MotivoFin) && GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/Mensaje") is Label lblMotivo)
+			lblMotivo.Text = MotivoFin;
 
 		// VS BOT: REINTENTAR vuelve a jugar la misma partida de una. ONLINE: no hay partida que repetir,
 		// así que pasa a ser RE-ARMAR MAZO y lleva al constructor.
@@ -88,8 +92,9 @@ public partial class PantallaDerrota : CanvasLayer
 		}
 	}
 
-	// Margen que se deja arriba y abajo para que nunca quede nada pegado al borde.
-	private const float MARGEN_VERTICAL_PANTALLA = 16f;
+	// Margen que se deja arriba y abajo para que nunca quede nada pegado al borde (el botón de abajo
+	// se veía muy pegado al borde en el celular).
+	private const float MARGEN_VERTICAL_PANTALLA = 48f;
 
 	/// <summary>Achica el bloque entero (huevo + textos + paneles + botones) lo justo para que entre en
 	/// la pantalla. Hace falta porque el alto del contenido NO es fijo: cuando hubo daño rival aparece

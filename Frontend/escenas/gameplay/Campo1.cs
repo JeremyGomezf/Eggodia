@@ -516,6 +516,7 @@ public partial class Campo1 : Node2D
 		ActualizarInterfaz();
 		AnunciarTurno(); // muestra "TU TURNO" desde el primer instante, no solo al cambiar de turno
 		ConfigurarModoOnline();
+		IniciarPrecargaCPU(); // VS BOT: sus tropas se cargan en segundo plano, no al invocarlas
 		if (ModoTutorial) IniciarInterfazTutorial();
 
 		// Mejora estética integrada de zonas de invocación (del amigo)

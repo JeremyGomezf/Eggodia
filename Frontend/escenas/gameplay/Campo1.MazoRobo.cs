@@ -402,7 +402,11 @@ public partial class Campo1 : Node2D
 			_cpuColosoPendiente = false;
 			var colososLibres = _colososCPU.FindAll(ruta => !yaEnCampo.Contains(ruta));
 			var poolColoso = colososLibres.Count > 0 ? colososLibres : _colososCPU;
-			string rutaColoso = poolColoso[random.Next(poolColoso.Count)];
+			// El elegido de antemano (ya cargado en segundo plano), si sigue siendo válido.
+			string rutaColoso = !string.IsNullOrEmpty(_colosoPrecargadoCPU) && poolColoso.Contains(_colosoPrecargadoCPU)
+				? _colosoPrecargadoCPU
+				: poolColoso[random.Next(poolColoso.Count)];
+			_colosoPrecargadoCPU = null;
 			int idxColosoJugado = IndiceCPUDe(rutaColoso);
 			_manoVisualCPU.Remove(idxColosoJugado); // si lo tenía en mano, lo gasta
 			RegistrarCartaGastadaCPU(idxColosoJugado);

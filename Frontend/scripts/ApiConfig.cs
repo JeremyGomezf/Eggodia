@@ -19,8 +19,24 @@ public static class ApiConfig
 	private const string SERVIDOR_PROD  = "https://enyooichat.cloud";
 	private const int    PUERTO_LOCAL   = 5289;
 
+	// Servidor de PRUEBAS sin tocar el código:
+	//   • PC: variable de entorno EGGODIA_API (p. ej. http://localhost:5299).
+	//   • Celular conectado por USB: archivo user://servidor_pruebas.txt con la URL. Solo se puede crear
+	//     con adb en un APK de depuración (run-as) y se usa junto con `adb reverse tcp:5299 tcp:5299`.
+	// En los celulares de los jugadores no existe ninguno de los dos → producción.
+	private static readonly string _baseEntorno = LeerServidorDePruebas();
+
+	private static string LeerServidorDePruebas()
+	{
+		string entorno = OS.GetEnvironment("EGGODIA_API");
+		if (!string.IsNullOrEmpty(entorno)) return entorno;
+		const string ARCHIVO = "user://servidor_pruebas.txt";
+		return FileAccess.FileExists(ARCHIVO) ? FileAccess.GetFileAsString(ARCHIVO).Trim() : "";
+	}
+
 	public static string Base =>
-		USAR_BACKEND_LOCAL ? $"http://localhost:{PUERTO_LOCAL}" : SERVIDOR_PROD;
+		!string.IsNullOrEmpty(_baseEntorno) ? _baseEntorno.TrimEnd('/')
+		: USAR_BACKEND_LOCAL ? $"http://localhost:{PUERTO_LOCAL}" : SERVIDOR_PROD;
 
 	public static string Usuarios  => $"{Base}/api/usuarios";
 	public static string Cartas    => $"{Base}/api/cartas";

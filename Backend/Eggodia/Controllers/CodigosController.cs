@@ -46,9 +46,23 @@ namespace Eggodia.API.Controllers
                     return BadRequest(new { success = false, message = "Código promocional no válido o inexistente." });
                 }
 
+                if (promo.ExpiraUtc.HasValue && DateTime.UtcNow > promo.ExpiraUtc.Value)
+                {
+                    return Conflict(new { success = false, message = "Este código ya expiró." });
+                }
+
                 if (promo.UsosActuales >= promo.MaxUsos)
                 {
                     return Conflict(new { success = false, message = "Este código ya ha sido canjeado." });
+                }
+
+                // Un código compartido (muchos usos) se puede canjear UNA vez por cuenta.
+                bool yaLoCanjeo = await _db.Database
+                    .SqlQuery<int>($"SELECT COUNT(*) AS Value FROM promo_canjes WHERE CodigoId = {promo.Id} AND UserId = {req.UserId}")
+                    .SingleAsync() > 0;
+                if (yaLoCanjeo)
+                {
+                    return Conflict(new { success = false, message = "Ya canjeaste este código." });
                 }
 
                 // Si es una skin, verificar si el usuario ya la posee
@@ -69,12 +83,20 @@ namespace Eggodia.API.Controllers
                     });
                 }
 
+                // Monedas: las suma el SERVIDOR a la cuenta (antes solo el celular las sumaba y mandaba su
+                // saldo total). La respuesta trae el saldo nuevo para que el cliente lo adopte.
+                if (promo.TipoRecompensa == "monedas" && int.TryParse(promo.ValorRecompensa, out var monedasCodigo) && monedasCodigo > 0)
+                    usuario.Monedas += monedasCodigo;
+
                 // Marcar código como usado
                 promo.UsosActuales++;
                 promo.UsadoPorUsuarioId = req.UserId;
                 promo.FechaCanje = DateTime.UtcNow;
 
                 await _db.SaveChangesAsync();
+                await _db.Database.ExecuteSqlInterpolatedAsync($@"
+                    INSERT OR IGNORE INTO promo_canjes (CodigoId, UserId, FechaUtc)
+                    VALUES ({promo.Id}, {req.UserId}, {DateTime.UtcNow.ToString("o")});");
 
                 return Ok(new
                 {
@@ -82,6 +104,7 @@ namespace Eggodia.API.Controllers
                     tipo = promo.TipoRecompensa,
                     valor = promo.ValorRecompensa,
                     nombre = promo.NombreRecompensa,
+                    monedas = usuario.Monedas, // saldo YA actualizado de la cuenta
                     mensaje = promo.TipoRecompensa == "skin"
                         ? $"¡Felicidades! Has desbloqueado el skin: {promo.NombreRecompensa}"
                         : $"¡Código canjeado con éxito! Has recibido: {promo.NombreRecompensa}"

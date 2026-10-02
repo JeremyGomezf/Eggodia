@@ -19,6 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://bxrh3ovv4h2ti" path="res://imagenes/MenuConstructor/asesinoboton.png" id="17_mkpxc"]
 [ext_resource type="Texture2D" uid="uid://b7u5fn08sl1yh" path="res://imagenes/MenuConstructor/colosoboton.png" id="18_3ow5v"]
 [ext_resource type="Texture2D" uid="uid://boj508g8df8dm" path="res://imagenes/MenuConstructor/regresarboton.png" id="19_8bur7"]
+[ext_resource type="Script" uid="uid://un3tgq6b4r4i" path="res://scripts/ScrollTactil.cs" id="scroll_tactil"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ib6j1"]
 shader = ExtResource("13_sys8m")
@@ -322,6 +323,7 @@ mouse_default_cursor_shape = 2
 flat = true
 
 [node name="ScrollCartas" type="ScrollContainer" parent="SelectorContainer" unique_id=2095476746]
+script = ExtResource("scroll_tactil")
 layout_mode = 0
 offset_left = 75.0
 offset_top = 115.0

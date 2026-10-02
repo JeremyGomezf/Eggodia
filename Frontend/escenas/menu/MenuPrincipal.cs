@@ -240,19 +240,117 @@ public partial class MenuPrincipal : Control
 			eco.InventarioAplicado += ActualizarHuevoMenu;
 		}
 
-		// 7. Cuenta RECIÉN CREADA: se abre solo el tutorial jugable, una única vez (como los juegos
-		// que te lo muestran apenas los instalás). Quien ya tenía cuenta entra directo al menú: no
-		// se le abre nada. Antes esto dependía de Preferencias.TutorialVisto y le saltaba a
-		// cualquiera que no hubiese visto la pantalla vieja de "cómo jugar".
-		if (SesionJuego.CuentaRecienCreada)
+		// 7. Cuenta RECIÉN CREADA o juego RECIÉN INSTALADO: se abre solo el tutorial jugable, una única
+		// vez (como los juegos que te lo muestran apenas los instalás). Lo de la instalación cubre a
+		// quien entra con una cuenta que ya tenía o como invitado en un celular nuevo. Quien solo
+		// actualizó el juego entra directo al menú: no se le abre nada. Antes esto dependía de
+		// Preferencias.TutorialVisto y le saltaba a cualquiera que no hubiese visto la pantalla vieja
+		// de "cómo jugar".
+		if (SesionJuego.CuentaRecienCreada || Preferencias.TutorialPendiente)
 		{
 			SesionJuego.CuentaRecienCreada = false;
+			Preferencias.TutorialPendiente = false;
 			Preferencias.TutorialVisto = true;
 			Callable.From(AbrirTutorialJugable).CallDeferred();
 		}
 
-		// El chequeo de versión nueva del APK ahora corre AL INICIO, en la PantallaCarga (antes del
-		// login), no aquí — así un update obligatorio bloquea desde el arranque. Ver PantallaCarga.cs.
+		// El chequeo de versión nueva del APK corre AL INICIO, en la PantallaCarga (antes del login),
+		// así un update obligatorio bloquea desde el arranque. Pero eso solo pasa al ABRIR la app: en
+		// Android, salir con "inicio" y volver no reinicia el juego (solo lo reanuda, ver
+		// SesionJuego._Notification), y quien ya estaba jugando cuando se publicó una versión nueva
+		// nunca veía el aviso. Por eso también se revisa cada vez que se entra al menú (al volver de
+		// una partida) y al volver a la app estando en él (AlVolverDeSegundoPlano). No se revisa en
+		// medio de un combate para no cortarlo.
+		RevisarVersionNueva();
+
+		// Saldo y nivel de la cuenta al día (p. ej. monedas que regaló el admin) y premios que hayan
+		// quedado pendientes sin internet. El nivel se repinta cuando llega la respuesta.
+		if (eco != null)
+		{
+			eco.ProgresoCambiado += ActualizarNivel;
+			eco.ConexionCambiada += MostrarAvisoConexion;
+			eco.RefrescarCuenta();
+			if (!eco.HayConexion) MostrarAvisoConexion(false);
+		}
+
+		Callable.From(LiberarMemoriaPartidaAnterior).CallDeferred();
+	}
+
+	private void RevisarVersionNueva()
+	{
+		if (!ChequeoActualizacion.RevisadoHaceMenosDe(30))
+			AddChild(new ChequeoActualizacion());
+	}
+
+	/// <summary>Volvió a la app estando en el menú (ver SesionJuego._Notification).</summary>
+	public void AlVolverDeSegundoPlano()
+	{
+		RevisarVersionNueva();
+		Economia.Instancia()?.RefrescarCuenta(forzar: true);
+	}
+
+	private void ActualizarNivel()
+	{
+		var lblNivel = GetNodeOrNull<Label>("TopHUD/LevelPanel/Label");
+		if (lblNivel != null) lblNivel.Text = $"Nv. {Preferencias.Nivel}";
+	}
+
+	// ── AVISO "SIN CONEXIÓN" ──────────────────────────────────────────────
+	// Si el servidor no responde (sin internet o servidor caído), un cartel arriba lo dice y deja
+	// reintentar. Antes no se avisaba nada: el login, la tienda o el online simplemente fallaban.
+	private CanvasLayer _capaSinConexion;
+
+	private void MostrarAvisoConexion(bool hayConexion)
+	{
+		if (hayConexion)
+		{
+			if (_capaSinConexion != null && IsInstanceValid(_capaSinConexion)) _capaSinConexion.Visible = false;
+			return;
+		}
+		if (_capaSinConexion == null || !IsInstanceValid(_capaSinConexion))
+		{
+			_capaSinConexion = new CanvasLayer { Layer = 90 };
+			AddChild(_capaSinConexion);
+			var ancla = new CenterContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+			ancla.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+			ancla.OffsetTop = 205; // debajo de la barra de arriba (monedas / nombre / nivel)
+			ancla.OffsetBottom = 305;
+			_capaSinConexion.AddChild(ancla);
+			var panel = new PanelContainer();
+			EstiloUI.Panel(panel); // vidrio de código: el marco de textura se aplasta en una sola línea
+			ancla.AddChild(panel);
+			var fila = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+			fila.AddThemeConstantOverride("separation", 28);
+			panel.AddChild(fila);
+			var lbl = new Label { Text = "Sin conexión con el servidor", VerticalAlignment = VerticalAlignment.Center };
+			EstiloUI.Texto(lbl, 32, EstiloUI.Peligro);
+			fila.AddChild(lbl);
+			var btn = new Button { Text = "REINTENTAR", CustomMinimumSize = new Vector2(230, 64) };
+			EstiloUI.Boton(btn, 28, accion: true);
+			btn.Pressed += () =>
+			{
+				var e = Economia.Instancia();
+				int cuenta = SesionJuego.Instance?.UsuarioId ?? -1;
+				// Si al abrir la app no había internet, el inventario de la cuenta nunca llegó: se trae.
+				if (cuenta > 0) e?.CargarInventarioCuenta(cuenta);
+				e?.RefrescarCuenta(forzar: true);
+			};
+			fila.AddChild(btn);
+			SonidoUI.EngancharBotones(_capaSinConexion);
+		}
+		_capaSinConexion.Visible = true;
+	}
+
+	/// <summary>Las texturas y escenas de la partida anterior quedan retenidas por los objetos C# que
+	/// las envuelven hasta que pasa el recolector de .NET, y en el celular casi nunca pasa solo: la
+	/// memoria crecía en cada partida (412 → 800 MB en 6 partidas, medido en un Redmi de 6 GB) hasta
+	/// que Android mataba apps y el juego se congelaba segundos al cargar tropas. Se fuerza aquí, en
+	/// el menú, donde el tirón de unos ms no se nota (en PC: 677 → 192 MB de texturas).</summary>
+	private static void LiberarMemoriaPartidaAnterior()
+	{
+		System.GC.Collect();
+		System.GC.WaitForPendingFinalizers();
+		System.GC.Collect();
 	}
 
 	public override void _ExitTree()
@@ -261,6 +359,8 @@ public partial class MenuPrincipal : Control
 		{
 			Economia.Instance.MonedasCambiaron -= OnMonedasCambiaron;
 			Economia.Instance.InventarioAplicado -= ActualizarHuevoMenu;
+			Economia.Instance.ProgresoCambiado -= ActualizarNivel;
+			Economia.Instance.ConexionCambiada -= MostrarAvisoConexion;
 		}
 	}
 
@@ -382,9 +482,10 @@ public partial class MenuPrincipal : Control
 
 		var panel = new PanelContainer();
 		panel.SetAnchorsPreset(Control.LayoutPreset.Center);
-		panel.CustomMinimumSize = new Vector2(820, 420);
-		panel.OffsetLeft = -410; panel.OffsetRight = 410;
-		panel.OffsetTop  = -210; panel.OffsetBottom = 210;
+		// Más grande que antes (820×420): en el celular las tarjetas de skins se veían chicas.
+		panel.CustomMinimumSize = new Vector2(1060, 520);
+		panel.OffsetLeft = -530; panel.OffsetRight = 530;
+		panel.OffsetTop  = -260; panel.OffsetBottom = 260;
 
 		var sb = new StyleBoxFlat();
 		sb.BgColor = new Color(0.06f, 0.08f, 0.16f, 0.98f);
@@ -406,13 +507,13 @@ public partial class MenuPrincipal : Control
 		var lblTitulo = new Label();
 		lblTitulo.Text = "SELECCIONA TU HUEVO";
 		lblTitulo.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
-		lblTitulo.AddThemeFontSizeOverride("font_size", 22);
+		lblTitulo.AddThemeFontSizeOverride("font_size", 30);
 		lblTitulo.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		header.AddChild(lblTitulo);
 		var btnX = new Button();
 		btnX.Text = "✕";
-		btnX.CustomMinimumSize = new Vector2(40, 40);
-		btnX.AddThemeFontSizeOverride("font_size", 18);
+		btnX.CustomMinimumSize = new Vector2(56, 56);
+		btnX.AddThemeFontSizeOverride("font_size", 26);
 		btnX.Pressed += () => overlay.QueueFree();
 		header.AddChild(btnX);
 		vbox.AddChild(header);
@@ -423,7 +524,7 @@ public partial class MenuPrincipal : Control
 		var scrollSkins = new ScrollTactil();
 		scrollSkins.VerticalScrollMode = ScrollContainer.ScrollMode.Disabled;
 		scrollSkins.HorizontalScrollMode = ScrollContainer.ScrollMode.Auto;
-		scrollSkins.CustomMinimumSize = new Vector2(0, 260);
+		scrollSkins.CustomMinimumSize = new Vector2(0, 340);
 		vbox.AddChild(scrollSkins);
 
 		var grid = new GridContainer();
@@ -445,7 +546,7 @@ public partial class MenuPrincipal : Control
 			bool activa  = string.IsNullOrEmpty(exclusivaActiva) && Preferencias.SkinActivaIdx == i;
 
 			var skinPanel = new PanelContainer();
-			skinPanel.CustomMinimumSize = new Vector2(190, 230);
+			skinPanel.CustomMinimumSize = TAM_TARJETA_SKIN;
 
 			var sbSkin = new StyleBoxFlat();
 			sbSkin.BgColor = activa ? new Color(0.12f, 0.22f, 0.10f) : new Color(0.08f, 0.10f, 0.20f, 0.95f);
@@ -463,7 +564,7 @@ public partial class MenuPrincipal : Control
 			svbox.AddThemeConstantOverride("separation", 6);
 
 			var tex = new TextureRect();
-			tex.CustomMinimumSize = new Vector2(130, 140); // caja más cuadrada — antes 130x195 (alargada)
+			tex.CustomMinimumSize = TAM_HUEVO_SKIN; // caja más cuadrada — antes 130x195 (alargada)
 			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
 			tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
@@ -477,7 +578,7 @@ public partial class MenuPrincipal : Control
 			var lblN = new Label();
 			lblN.Text = Preferencias.SKIN_NOMBRES[capI];
 			lblN.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
-			lblN.AddThemeFontSizeOverride("font_size", 12);
+			lblN.AddThemeFontSizeOverride("font_size", 17);
 			lblN.HorizontalAlignment = HorizontalAlignment.Center;
 			lblN.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 			svbox.AddChild(lblN);
@@ -487,7 +588,7 @@ public partial class MenuPrincipal : Control
 				var lbl = new Label();
 				lbl.Text = "✓ EQUIPADA";
 				lbl.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
-				lbl.AddThemeFontSizeOverride("font_size", 11);
+				lbl.AddThemeFontSizeOverride("font_size", 16);
 				lbl.HorizontalAlignment = HorizontalAlignment.Center;
 				svbox.AddChild(lbl);
 			}
@@ -495,8 +596,8 @@ public partial class MenuPrincipal : Control
 			{
 				var btnEquip = new Button();
 				btnEquip.Text = "EQUIPAR";
-				btnEquip.CustomMinimumSize = new Vector2(0, 32);
-				btnEquip.AddThemeFontSizeOverride("font_size", 12);
+				btnEquip.CustomMinimumSize = new Vector2(0, 46);
+				btnEquip.AddThemeFontSizeOverride("font_size", 17);
 				btnEquip.Pressed += () => {
 					Preferencias.SkinExclusivaActiva = "";
 					Preferencias.SkinActivaIdx = capI;
@@ -535,7 +636,7 @@ public partial class MenuPrincipal : Control
 			if (!poseida) continue;
 
 			var skinPanel = new PanelContainer();
-			skinPanel.CustomMinimumSize = new Vector2(190, 230);
+			skinPanel.CustomMinimumSize = TAM_TARJETA_SKIN;
 
 			var sbSkin = new StyleBoxFlat();
 			sbSkin.BgColor = activa ? new Color(0.15f, 0.25f, 0.12f) : new Color(0.12f, 0.08f, 0.22f, 0.95f);
@@ -553,7 +654,7 @@ public partial class MenuPrincipal : Control
 			svbox.AddThemeConstantOverride("separation", 6);
 
 			var tex = new TextureRect();
-			tex.CustomMinimumSize = new Vector2(130, 140);
+			tex.CustomMinimumSize = TAM_HUEVO_SKIN;
 			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
 			tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
@@ -565,7 +666,7 @@ public partial class MenuPrincipal : Control
 			var lblN = new Label();
 			lblN.Text = nombreExc + "\n★ EXCLUSIVO ★";
 			lblN.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
-			lblN.AddThemeFontSizeOverride("font_size", 11);
+			lblN.AddThemeFontSizeOverride("font_size", 15);
 			lblN.HorizontalAlignment = HorizontalAlignment.Center;
 			lblN.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 			svbox.AddChild(lblN);
@@ -575,7 +676,7 @@ public partial class MenuPrincipal : Control
 				var lbl = new Label();
 				lbl.Text = "✓ EQUIPADA";
 				lbl.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
-				lbl.AddThemeFontSizeOverride("font_size", 11);
+				lbl.AddThemeFontSizeOverride("font_size", 16);
 				lbl.HorizontalAlignment = HorizontalAlignment.Center;
 				svbox.AddChild(lbl);
 			}
@@ -583,8 +684,8 @@ public partial class MenuPrincipal : Control
 			{
 				var btnEquip = new Button();
 				btnEquip.Text = "EQUIPAR";
-				btnEquip.CustomMinimumSize = new Vector2(0, 32);
-				btnEquip.AddThemeFontSizeOverride("font_size", 12);
+				btnEquip.CustomMinimumSize = new Vector2(0, 46);
+				btnEquip.AddThemeFontSizeOverride("font_size", 17);
 				string r = rutaExc;
 				btnEquip.Pressed += () => {
 					Preferencias.SkinExclusivaActiva = r;
@@ -607,6 +708,10 @@ public partial class MenuPrincipal : Control
 		tw.TweenProperty(panel, "scale", Vector2.One, 0.22f)
 		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 	}
+
+	// Tarjetas del selector "SELECCIONA TU HUEVO" (antes 190×230 con huevo de 130×140).
+	private static readonly Vector2 TAM_TARJETA_SKIN = new(240, 300);
+	private static readonly Vector2 TAM_HUEVO_SKIN   = new(170, 190);
 
 	private const string RUTA_REY_HUEVO_CORONADO = "res://imagenes/RendersTropa/Huevo render/ReyHuevo_Render.png";
 	// Paper Dino Huevo: en el selector y la Tienda usa el render estático como todos (ya arreglado),

@@ -18,7 +18,7 @@ public partial class Campo1 : Node2D
 		tiempoTotalPartida--;
 		if (tiempoTotalPartida <= 0) { DeterminarGanadorPorTiempo(); return; }
 		tiempoTurnoActual--;
-		if (tiempoTurnoActual <= 0 && !_turnoFinalizando) { _turnoFinalizando = true; CambiarTurno(); }
+		if (tiempoTurnoActual <= 0 && !_turnoFinalizando) { _turnoFinalizando = true; _finTurnoPorTiempo = true; CambiarTurno(); }
 		ActualizarInterfaz();
 	}
 
@@ -130,6 +130,9 @@ public partial class Campo1 : Node2D
 			// Programar aparición de coloso del CPU cada 3 turnos.
 			int turnoNum = _turnosJugados / 2 + 1;
 			_cpuColosoPendiente = (turnoNum % 3 == 0);
+			// El coloso del PRÓXIMO turno de coloso se elige ya, para cargarlo en segundo plano mientras
+			// juega el jugador (ver Campo1.PrecargaCPU.cs).
+			if ((turnoNum + 1) % 3 == 0) PrepararColosoCPU();
 			// La reposición de MI mano pasa acá, a los 2s de empezar el turno DEL RIVAL — así cuando
 			// vuelva a ser mi turno la mano ya está lista y no pierdo nada de mis 30s pensando la
 			// estrategia esperando que aparezca una carta. Nunca durante la fase de apertura.

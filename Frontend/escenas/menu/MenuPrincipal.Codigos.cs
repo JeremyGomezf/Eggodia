@@ -117,8 +117,8 @@ public partial class MenuPrincipal : Control
 
 		var btnCerrar = new Button();
 		btnCerrar.Text = "CERRAR";
-		btnCerrar.CustomMinimumSize = new Vector2(0, 72);
-		EstiloUI.Boton(btnCerrar, 28); // mismo azul apagado, sin "accion" (es el secundario)
+		btnCerrar.CustomMinimumSize = new Vector2(0, 84); // mismo tamaño que CANJEAR
+		EstiloUI.Boton(btnCerrar, 32); // mismo azul apagado, sin "accion" (es el secundario)
 		btnCerrar.Pressed += () => _capaCodigos.Visible = false;
 		vbox.AddChild(btnCerrar);
 	}
@@ -180,9 +180,10 @@ public partial class MenuPrincipal : Control
 
 		var panel = new PanelContainer();
 		panel.SetAnchorsPreset(LayoutPreset.Center);
-		panel.CustomMinimumSize = new Vector2(500, 520);
-		panel.OffsetLeft = -250; panel.OffsetRight = 250;
-		panel.OffsetTop  = -260; panel.OffsetBottom = 260;
+		// Más grande que antes (500×520): en el celular la imagen y los textos se veían chicos.
+		panel.CustomMinimumSize = new Vector2(780, 800);
+		panel.OffsetLeft = -390; panel.OffsetRight = 390;
+		panel.OffsetTop  = -400; panel.OffsetBottom = 400;
 
 		var sb = new StyleBoxFlat();
 		sb.BgColor = new Color(0.08f, 0.12f, 0.22f, 0.98f);
@@ -198,7 +199,7 @@ public partial class MenuPrincipal : Control
 		capa.AddChild(panel);
 
 		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 16);
+		vbox.AddThemeConstantOverride("separation", 24);
 		vbox.Alignment = BoxContainer.AlignmentMode.Center;
 		panel.AddChild(vbox);
 
@@ -207,11 +208,11 @@ public partial class MenuPrincipal : Control
 		lblHeader.HorizontalAlignment = HorizontalAlignment.Center;
 		lblHeader.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 		lblHeader.AddThemeColorOverride("font_color", new Color(1f, 0.88f, 0.3f));
-		lblHeader.AddThemeFontSizeOverride("font_size", 24);
+		lblHeader.AddThemeFontSizeOverride("font_size", 40);
 		vbox.AddChild(lblHeader);
 
 		var texRect = new TextureRect();
-		texRect.CustomMinimumSize = new Vector2(180, 240);
+		texRect.CustomMinimumSize = new Vector2(300, 360);
 		texRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
 		texRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 		texRect.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
@@ -225,14 +226,14 @@ public partial class MenuPrincipal : Control
 		lblNombre.Text = nombreSkin;
 		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
 		lblNombre.AddThemeColorOverride("font_color", Colors.White);
-		lblNombre.AddThemeFontSizeOverride("font_size", 28);
+		lblNombre.AddThemeFontSizeOverride("font_size", 48);
 		vbox.AddChild(lblNombre);
 
 		var btnEquipar = new Button();
 		btnEquipar.Text = "¡GENIAL!";
-		btnEquipar.CustomMinimumSize = new Vector2(220, 52);
+		btnEquipar.CustomMinimumSize = new Vector2(340, 92);
 		btnEquipar.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
-		btnEquipar.AddThemeFontSizeOverride("font_size", 22);
+		EstiloUI.Boton(btnEquipar, 36, accion: true);
 		btnEquipar.Pressed += () =>
 		{
 			capa.QueueFree();
@@ -241,7 +242,7 @@ public partial class MenuPrincipal : Control
 		vbox.AddChild(btnEquipar);
 
 		// Animación elástica de aparición
-		panel.PivotOffset = new Vector2(250, 260);
+		panel.PivotOffset = new Vector2(390, 400);
 		panel.Scale = Vector2.Zero;
 		var tw = panel.CreateTween();
 		tw.TweenProperty(panel, "scale", Vector2.One, 0.35f)

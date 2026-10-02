@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
@@ -29,6 +30,14 @@ public partial class Economia : Node
 	// pantallas abiertas (ej. el huevo del menú) se refresquen con lo equipado de verdad.
 	[Signal] public delegate void InventarioAplicadoEventHandler();
 
+	// Cambió el progreso de la cuenta traído del servidor (experiencia → nivel, victorias, derrotas).
+	[Signal] public delegate void ProgresoCambiadoEventHandler();
+
+	// Resultado de la última vez que se habló con el servidor: false = sin conexión (el menú lo avisa
+	// con un cartel y un botón de reintentar).
+	[Signal] public delegate void ConexionCambiadaEventHandler(bool hayConexion);
+	public bool HayConexion { get; private set; } = true;
+
 	private int _monedas = 0;
 	public int Monedas => _monedas;
 
@@ -42,7 +51,9 @@ public partial class Economia : Node
 	public const int RECOMPENSA_BOT_VICTORIA    = 20;
 	public const int RECOMPENSA_BOT_DERROTA     = 5;
 	public const int RECOMPENSA_EMPATE          = 8;
+	public const int RECOMPENSA_ONLINE_EMPATE   = 15;
 	public const int BONO_POR_RACHA             = 25;
+	public const int RACHA_MAXIMA               = 10; // tope del bono (el servidor aplica el mismo)
 
 	public override void _Ready()
 	{
@@ -63,14 +74,24 @@ public partial class Economia : Node
 	}
 
 	// ── OPERACIONES ──────────────────────────────────────────────────────
+	// Agregar/Gastar son LOCALES (invitado). Con cuenta, las monedas solo cambian en el servidor (premio
+	// de partida, compra, código) y el cliente adopta el saldo que este devuelve: nunca se manda un
+	// saldo total, que pisaba lo que el admin regalaba con el juego abierto.
 
 	public void Agregar(int cantidad)
 	{
 		if (cantidad <= 0) return;
 		_monedas += cantidad;
 		Guardar();
-		EnviarSaldoAlServidor();
 		EmitSignal(SignalName.MonedasCambiaron, _monedas);
+	}
+
+	/// <summary>Solo para un servidor viejo (sin los endpoints nuevos): suma local y sube el saldo total
+	/// como hacían las versiones ≤ 1.1.1.</summary>
+	public void AgregarModoViejo(int cantidad)
+	{
+		Agregar(cantidad);
+		EnviarSaldoAlServidor();
 	}
 
 	public bool TieneSuficiente(int costo) => _monedas >= costo;
@@ -81,13 +102,197 @@ public partial class Economia : Node
 		if (costo <= 0 || _monedas < costo) return false;
 		_monedas -= costo;
 		Guardar();
-		EnviarSaldoAlServidor();
 		EmitSignal(SignalName.MonedasCambiaron, _monedas);
 		return true;
 	}
 
-	/// <summary>Calcula y otorga la recompensa de una partida. Devuelve lo ganado.</summary>
-	public int RecompensarPartida(string resultado, int racha, bool esOnline = false)
+	private int CuentaActiva => SesionJuego.Instance?.UsuarioId ?? _usuarioId;
+
+	/// <summary>Fin de partida: premio (monedas), experiencia y estadísticas. Devuelve las monedas
+	/// ganadas para mostrarlas YA en la pantalla de victoria/derrota.
+	///   • Invitado: todo local, como siempre.
+	///   • Cuenta: se suma al instante en pantalla y el SERVIDOR aplica el premio de verdad
+	///     (POST /recompensa); al responder, se adopta su saldo/nivel. En línea el resultado lo valida el
+	///     servidor con el arbitraje de la partida. Sin internet, queda pendiente y se reintenta después
+	///     (sin cobrarse dos veces: cada partida tiene su id).</summary>
+	public int RegistrarFinDePartida(string resultado, int racha, bool esOnline, bool esTutorial, int dañoHecho)
+	{
+		int ganado = esTutorial ? 0 : CalcularRecompensa(resultado, racha, esOnline);
+		int cuenta = CuentaActiva;
+		if (cuenta <= 0)
+		{
+			Agregar(ganado);
+			return ganado;
+		}
+
+		if (ganado > 0)
+		{
+			_monedas += ganado; // a la vista ya; el servidor confirma (o corrige) al responder
+			Guardar();
+			EmitSignal(SignalName.MonedasCambiaron, _monedas);
+		}
+
+		string partidaId = esOnline && !string.IsNullOrEmpty(ContextoOnline.MatchId)
+			? ContextoOnline.MatchId
+			: Guid.NewGuid().ToString("N");
+		string cuerpo = JsonSerializer.Serialize(new Dictionary<string, object>
+		{
+			{ "partidaId", partidaId },
+			{ "modo", esTutorial ? "tutorial" : esOnline ? "online" : "bot" },
+			{ "resultado", resultado },
+			{ "racha", racha },
+			{ "dañoHecho", dañoHecho },
+		});
+		Preferencias.GuardarPremioPendiente(partidaId, cuerpo); // por si se corta antes de confirmar
+		EnviarPremio(cuenta, partidaId, cuerpo);
+		return ganado;
+	}
+
+	private int _premiosEnVuelo = 0;
+
+	private void EnviarPremio(int cuenta, string partidaId, string cuerpo)
+	{
+		var h = new HttpRequest { Timeout = 15 };
+		AddChild(h);
+		_premiosEnVuelo++;
+		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
+		{
+			_premiosEnVuelo--;
+			if (IsInstanceValid(h)) h.QueueFree();
+			bool sigueSiendoSuya = CuentaActiva == cuenta;
+
+			if (r != (long)HttpRequest.Result.Success || c >= 500)
+			{
+				MarcarConexion(r == (long)HttpRequest.Result.Success); // queda pendiente: se reintenta luego
+				return;
+			}
+			MarcarConexion(true);
+			Preferencias.QuitarPremioPendiente(partidaId);
+			if (!sigueSiendoSuya) return;
+
+			if (c == 200)
+			{
+				AdoptarRespuestaCuenta(Encoding.UTF8.GetString(b));
+			}
+			else if (c == 404 && b.Length == 0)
+			{
+				// Servidor viejo (todavía sin /recompensa): se usa el camino de antes.
+				EnviarSaldoAlServidor();
+				EnviarResultadoModoViejo(cuenta, cuerpo);
+			}
+			else
+			{
+				// 400/409: el servidor no lo aceptó (p. ej. partida online cancelada) → se trae el saldo
+				// real para deshacer lo que se sumó a la vista.
+				RefrescarCuenta(forzar: true);
+			}
+		};
+		string[] hdr = { "Content-Type: application/json" };
+		if (h.Request($"{ApiConfig.Usuarios}/{cuenta}/recompensa", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok)
+		{
+			_premiosEnVuelo--;
+			if (IsInstanceValid(h)) h.QueueFree();
+		}
+	}
+
+	private void EnviarResultadoModoViejo(int cuenta, string cuerpoPremio)
+	{
+		try
+		{
+			var p = JsonSerializer.Deserialize<JsonElement>(cuerpoPremio);
+			string json = JsonSerializer.Serialize(new Dictionary<string, object>
+			{
+				{ "UsuarioId", cuenta },
+				{ "Resultado", p.GetProperty("resultado").GetString() ?? "" },
+				{ "DañoHecho", p.GetProperty("dañoHecho").GetInt32() },
+			});
+			var h = new HttpRequest();
+			AddChild(h);
+			h.RequestCompleted += (long r, long c, string[] hd, byte[] b) => { if (IsInstanceValid(h)) h.QueueFree(); };
+			string[] hdr = { "Content-Type: application/json" };
+			if (h.Request(ApiConfig.Resultado, hdr, HttpClient.Method.Post, json) != Error.Ok && IsInstanceValid(h)) h.QueueFree();
+		}
+		catch { }
+	}
+
+	/// <summary>Adopta lo que devuelve el servidor sobre la cuenta (monedas, experiencia, victorias,
+	/// derrotas — los campos que vengan) y avisa a las pantallas abiertas.</summary>
+	private void AdoptarRespuestaCuenta(string json)
+	{
+		JsonElement doc;
+		try { doc = JsonSerializer.Deserialize<JsonElement>(json); } catch { return; }
+		if (doc.ValueKind != JsonValueKind.Object) return;
+
+		if (doc.TryGetProperty("monedas", out var m) && m.TryGetInt32(out var monedas))
+		{
+			_monedas = Mathf.Max(0, monedas);
+			Guardar();
+			EmitSignal(SignalName.MonedasCambiaron, _monedas);
+		}
+		if (doc.TryGetProperty("experiencia", out var xp) && xp.TryGetInt32(out var experiencia))
+		{
+			int victorias = doc.TryGetProperty("victorias", out var v) && v.TryGetInt32(out var vi) ? vi : Preferencias.PartidasGanadas;
+			int derrotas  = doc.TryGetProperty("derrotas", out var d) && d.TryGetInt32(out var de) ? de : Preferencias.PartidasPerdidas;
+			Preferencias.AdoptarProgresoDeServidor(experiencia, victorias, derrotas);
+			EmitSignal(SignalName.ProgresoCambiado);
+		}
+	}
+
+	private void MarcarConexion(bool hay)
+	{
+		if (HayConexion == hay) return;
+		HayConexion = hay;
+		EmitSignal(SignalName.ConexionCambiada, hay);
+	}
+
+	private ulong _ultimoRefrescoMs = 0;
+	private bool _refrescando = false;
+
+	/// <summary>Trae de nuevo el saldo y el progreso de la cuenta (y reenvía los premios que quedaron
+	/// pendientes sin internet). Se llama al entrar al menú y al volver a la app: así las monedas que
+	/// el admin regala aparecen sin tener que cerrar sesión. Sin forzar, como mucho cada 10 s.</summary>
+	public void RefrescarCuenta(bool forzar = false)
+	{
+		int cuenta = CuentaActiva;
+		if (cuenta <= 0 || _refrescando) return;
+		ulong ahora = Time.GetTicksMsec();
+		if (!forzar && _ultimoRefrescoMs != 0 && ahora - _ultimoRefrescoMs < 10_000) return;
+		_ultimoRefrescoMs = ahora;
+
+		foreach (string pendiente in Preferencias.PremiosPendientes())
+		{
+			try
+			{
+				var p = JsonSerializer.Deserialize<JsonElement>(pendiente);
+				EnviarPremio(cuenta, p.GetProperty("partidaId").GetString() ?? "", pendiente);
+			}
+			catch { }
+		}
+		// Si hay premios viajando, su respuesta ya trae el saldo nuevo: no se pide otra vez (evita que
+		// el número "baje y vuelva a subir" en pantalla).
+		if (_premiosEnVuelo > 0) return;
+
+		_refrescando = true;
+		var h = new HttpRequest { Timeout = 10 };
+		AddChild(h);
+		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
+		{
+			_refrescando = false;
+			if (IsInstanceValid(h)) h.QueueFree();
+			MarcarConexion(r == (long)HttpRequest.Result.Success);
+			if (r == (long)HttpRequest.Result.Success && c == 200 && CuentaActiva == cuenta)
+				AdoptarRespuestaCuenta(Encoding.UTF8.GetString(b));
+		};
+		if (h.Request($"{ApiConfig.Usuarios}/{cuenta}") != Error.Ok)
+		{
+			_refrescando = false;
+			if (IsInstanceValid(h)) h.QueueFree();
+		}
+	}
+
+	/// <summary>Monedas que da una partida (mismos valores que aplica el servidor, ver
+	/// UsuariosController.Recompensa).</summary>
+	public static int CalcularRecompensa(string resultado, int racha, bool esOnline)
 	{
 		int ganado = 0;
 		if (resultado == "victoria")
@@ -95,7 +300,7 @@ public partial class Economia : Node
 			ganado = esOnline ? RECOMPENSA_ONLINE_VICTORIA : RECOMPENSA_BOT_VICTORIA;
 			if (esOnline && racha > 1)
 			{
-				ganado += Mathf.Max(0, racha - 1) * BONO_POR_RACHA;
+				ganado += Mathf.Max(0, Mathf.Min(racha, RACHA_MAXIMA) - 1) * BONO_POR_RACHA;
 			}
 		}
 		else if (resultado == "derrota")
@@ -104,14 +309,10 @@ public partial class Economia : Node
 		}
 		else // empate
 		{
-			ganado = esOnline ? 15 : RECOMPENSA_EMPATE;
+			ganado = esOnline ? RECOMPENSA_ONLINE_EMPATE : RECOMPENSA_EMPATE;
 		}
-
-		Agregar(ganado);
 		return ganado;
 	}
-
-	public int RecompensarPartida(string resultado, int racha) => RecompensarPartida(resultado, racha, false);
 
 	// ── PERSISTENCIA ─────────────────────────────────────────────────────
 
@@ -268,6 +469,7 @@ public partial class Economia : Node
 			// Si mientras viajaba el pedido el jugador cambió de perfil (cerró sesión / entró con
 			// otra cuenta), esta respuesta ya no es suya: se descarta para no escribir en otro perfil.
 			bool sigueSiendoSuya = (SesionJuego.Instance?.UsuarioId ?? -1) == usuarioId;
+			MarcarConexion(r == (long)HttpRequest.Result.Success);
 			if (sigueSiendoSuya && r == (long)HttpRequest.Result.Success && c == 200)
 			{
 				_aplicandoInventario = true;
@@ -299,6 +501,20 @@ public partial class Economia : Node
 			Guardar();
 			EmitSignal(SignalName.MonedasCambiaron, _monedas);
 		}
+
+		// Nivel/experiencia y victorias/derrotas de la CUENTA (servidor ≥ 1.1.2): el mismo nivel en
+		// cualquier celular donde se inicie sesión.
+		if (doc.TryGetProperty("experiencia", out var xpInv) && xpInv.TryGetInt32(out var experiencia))
+		{
+			int victorias = doc.TryGetProperty("victorias", out var vInv) && vInv.TryGetInt32(out var vi) ? vi : Preferencias.PartidasGanadas;
+			int derrotas  = doc.TryGetProperty("derrotas", out var dInv) && dInv.TryGetInt32(out var de) ? de : Preferencias.PartidasPerdidas;
+			Preferencias.AdoptarProgresoDeServidor(experiencia, victorias, derrotas);
+			EmitSignal(SignalName.ProgresoCambiado);
+		}
+
+		// Mazo guardado en la cuenta (si la cuenta todavía no tiene uno, se le sube el de este celular).
+		if (doc.TryGetProperty("mazo", out var mazoInv) && mazoInv.ValueKind == JsonValueKind.String)
+			SesionJuego.Instance?.AdoptarMazoDeServidor(mazoInv.GetString() ?? "");
 
 		if (doc.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array)
 			foreach (var it in items.EnumerateArray())

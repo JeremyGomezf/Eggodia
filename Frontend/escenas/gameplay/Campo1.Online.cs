@@ -43,14 +43,48 @@ public partial class Campo1 : Node2D
 	private HttpRequest _httpResultado;
 	private bool _finOnlineEnviado = false;
 
+	// Número de cada acción propia: si un envío se reintenta tras un corte (llegó al servidor pero la
+	// respuesta se perdió), el servidor la reconoce y no la duplica.
+	private int _seqAccion = 0;
+	// El turno que termina ahora se acabó por TIEMPO (no por gastar la energía). El servidor cuenta los
+	// turnos seguidos que se acaban por tiempo sin jugar nada: al 3º, pierde por inactividad.
+	private bool _finTurnoPorTiempo = false;
+
+	// Conexión propia: último latido que el servidor respondió. Sin respuesta por SEG_AVISO_SIN_RED se
+	// avisa "sin conexión"; a los SEG_PERDER_SIN_RED se da la partida por perdida (el servidor ya le dio
+	// la victoria al rival a los 20 s).
+	private ulong _ultimoLatidoOkMs = 0;
+	private const int SEG_AVISO_SIN_RED  = 7;
+	private const int SEG_PERDER_SIN_RED = 25;
+	// Desde cuántos segundos sin noticias del rival se avisa "el rival perdió la conexión" (el servidor
+	// lo da por caído a los 20).
+	private const int SEG_AVISO_RIVAL = 6;
+	private const int SEG_DESCONEXION_SERVIDOR = 20;
+
+	private string _motivoFinOnline = ""; // por qué terminó la partida en línea (lo muestra la pantalla final)
+	private CanvasLayer _capaEstadoRed;
+	private Label _lblEstadoRed;
+
+	/// <summary>Partida "en línea" contra un BOT del servidor (cuando nadie más buscaba partida): se
+	/// juega con la CPU, el mismo bot del VS BOT (EsOnline = false), pero se ve como online (nombre/skin/trono del rival,
+	/// sin pausa, botón de retirada), se cobra como online y mantiene el latido con el servidor.</summary>
+	public bool OnlineConBot => ContextoOnline.Activo && ContextoOnline.RivalEsBot;
+
+	/// <summary>Cualquier partida en línea a la vista del jugador: rival real o bot. Sale del contexto
+	/// (no de EsOnline) para valer también antes de ConfigurarModoOnline, p. ej. al armar el HUD.</summary>
+	public bool PareceOnline => ContextoOnline.Activo;
+
 	private void ConfigurarModoOnline()
 	{
-		EsOnline = ContextoOnline.Activo;
+		EsOnline = ContextoOnline.Activo && !ContextoOnline.RivalEsBot;
+		if (OnlineConBot) { IniciarLatido(); return; } // juega la CPU (bot); solo se late al servidor
 		if (!EsOnline) return; // el nombre del rival ya sale sobre su barra (ver Campo1.Extra.cs)
 
-		_httpAccion  = new HttpRequest(); AddChild(_httpAccion);
+		// Con timeout: en el celular, al cambiar de WiFi a datos un pedido puede quedar colgado para
+		// siempre y, como HttpRequest hace uno a la vez, frenaba todos los siguientes.
+		_httpAccion  = new HttpRequest { Timeout = 8 }; AddChild(_httpAccion);
 		_httpAccion.RequestCompleted += OnAccionEnviada; // vacía la cola de envío de a una
-		_httpPollAcc = new HttpRequest(); AddChild(_httpPollAcc);
+		_httpPollAcc = new HttpRequest { Timeout = 6 }; AddChild(_httpPollAcc);
 		_httpPollAcc.RequestCompleted += OnRespuestaAcciones;
 
 		// 0.35s: las jugadas del rival aparecen ~2× más rápido que con 0.6s (más "tiempo real")
@@ -59,13 +93,7 @@ public partial class Campo1 : Node2D
 		AddChild(_timerPollAcc);
 		_timerPollAcc.Timeout += SondearAcciones;
 
-		// Heartbeat: late cada 3s. Si el rival deja de latir 12s (tras haber entrado), este gana.
-		_httpLatido = new HttpRequest(); AddChild(_httpLatido);
-		_httpLatido.RequestCompleted += OnRespuestaLatido;
-		_timerLatido = new Timer { WaitTime = 3.0, OneShot = false };
-		AddChild(_timerLatido);
-		_timerLatido.Timeout += EnviarLatido;
-		_timerLatido.Start();
+		IniciarLatido();
 
 		// WebSocket (tiempo real). Intenta conectar; si no puede, todo sigue por sondeo.
 		_ws = new WebSocketPeer();
@@ -85,6 +113,21 @@ public partial class Campo1 : Node2D
 		}
 	}
 
+	// Heartbeat: late cada 3s. Si el rival deja de latir 20s (tras haber entrado), este gana. El primero
+	// sale ya: así el servidor sabe enseguida que entré a la partida. Contra un bot mantiene viva la
+	// partida en el servidor (para cobrar el premio) y aplica la misma regla si YO desaparezco.
+	private void IniciarLatido()
+	{
+		_httpLatido = new HttpRequest { Timeout = 6 }; AddChild(_httpLatido);
+		_httpLatido.RequestCompleted += OnRespuestaLatido;
+		_timerLatido = new Timer { WaitTime = 3.0, OneShot = false };
+		AddChild(_timerLatido);
+		_timerLatido.Timeout += EnviarLatido;
+		_timerLatido.Start();
+		_ultimoLatidoOkMs = Time.GetTicksMsec();
+		Callable.From(EnviarLatido).CallDeferred();
+	}
+
 	// ── EMITIR ACCIÓN (yo, jugador activo) ────────────────────────────────────
 	// Cada acción lleva un snapshot del tablero como verdad para la reconciliación del rival.
 	public void EmitirAccionOnline(string tipo, Godot.Collections.Dictionary datos = null)
@@ -94,6 +137,7 @@ public partial class Campo1 : Node2D
 		{
 			{ "tipo", tipo },
 			{ "autor", ContextoOnline.Asiento }, // "A"/"B": para que el rival no reproduzca mis propias acciones
+			{ "seq", _seqAccion++ },             // idempotencia en el servidor (reintentos sin duplicar)
 			{ "datos", datos ?? new Godot.Collections.Dictionary() },
 			{ "snapshot", SerializarTablero() }   // foto del tablero JUSTO tras esta acción (verdad)
 		};
@@ -118,8 +162,17 @@ public partial class Campo1 : Node2D
 	private void OnAccionEnviada(long result, long code, string[] headers, byte[] body)
 	{
 		_enviandoAccion = false;
+		if (result == (long)HttpRequest.Result.Success && code == 404) { PartidaOnlinePerdida(); return; }
 		bool ok = result == (long)HttpRequest.Result.Success && (code == 200 || code == 201);
-		if (ok && _colaAcciones.Count > 0) _colaAcciones.Dequeue(); // enviada: la sacamos de la cola
+		if (!ok)
+		{
+			// Sin red / error del servidor: la acción queda al frente de la cola y se reintenta en 1 s
+			// (antes se reintentaba al instante, en bucle, mientras no hubiera conexión). Reintentar es
+			// seguro: lleva su "seq" y el servidor no la duplica.
+			GetTree().CreateTimer(1.0).Timeout += () => { if (IsInstanceValid(this)) BombearColaAcciones(); };
+			return;
+		}
+		if (_colaAcciones.Count > 0) _colaAcciones.Dequeue(); // enviada: la sacamos de la cola
 
 		// Empujón instantáneo al rival por WebSocket: la acción YA quedó guardada en el backend; el
 		// WS solo AVISA "hay algo nuevo, léelo ya" (sin esperar tu sondeo de 0.35s). El rival lo lee
@@ -127,8 +180,7 @@ public partial class Campo1 : Node2D
 		// acción por el WS a propósito: si el WS y el REST reprodujeran en paralelo, una carrera entre
 		// ambos duplicaba acciones y adelantaba el contador, y podía SALTARSE el 'fin_turno' → el turno
 		// no se pasaba y el rival no podía jugar. Con el WS como simple empujón eso no puede pasar.
-		if (ok && _ws != null && _ws.GetReadyState() == WebSocketPeer.State.Open) _ws.SendText("n");
-		// Si falló, se mantiene al frente para reintentar en el siguiente bombeo.
+		if (_ws != null && _ws.GetReadyState() == WebSocketPeer.State.Open) _ws.SendText("n");
 		BombearColaAcciones();
 	}
 
@@ -157,7 +209,9 @@ public partial class Campo1 : Node2D
 	private void EsperarRivalOnline()
 	{
 		if (!EsOnline) return;
-		EmitirAccionOnline("fin_turno");
+		bool porTiempo = _finTurnoPorTiempo;
+		_finTurnoPorTiempo = false;
+		EmitirAccionOnline("fin_turno", new Godot.Collections.Dictionary { { "porTiempo", porTiempo } });
 		IniciarEsperaOnline();
 	}
 
@@ -185,6 +239,7 @@ public partial class Campo1 : Node2D
 	private void OnRespuestaAcciones(long result, long code, string[] headers, byte[] body)
 	{
 		_ocupadoAcciones = false;
+		if (result == (long)HttpRequest.Result.Success && code == 404) { PartidaOnlinePerdida(); return; }
 		if (result != (long)HttpRequest.Result.Success || code != 200) return;
 		try
 		{
@@ -462,7 +517,19 @@ public partial class Campo1 : Node2D
 	// ── LATIDO / DESCONEXIÓN ──────────────────────────────────────────────────
 	private void EnviarLatido()
 	{
-		if (!EsOnline || juegoTerminado) return;
+		if (!PareceOnline || juegoTerminado) return;
+
+		// ¿Yo perdí la conexión? (el servidor no me responde hace rato). Primero se avisa; si no vuelve a
+		// tiempo, la partida está perdida: el servidor ya le dio la victoria al rival.
+		ulong segSinRed = (Time.GetTicksMsec() - _ultimoLatidoOkMs) / 1000;
+		if (segSinRed >= SEG_PERDER_SIN_RED)
+		{
+			ResolverResultadoOnline("gano_" + AsientoRival, "desconexion");
+			return;
+		}
+		if (segSinRed >= SEG_AVISO_SIN_RED)
+			MostrarEstadoRed($"Sin conexión… reconectando ({SEG_PERDER_SIN_RED - (int)segSinRed} s)", EstiloUI.Peligro);
+
 		BombearColaAcciones(); // red de seguridad: reintenta acciones que no hayan salido
 		if (_ocupadoLatido) return;
 		_ocupadoLatido = true;
@@ -475,76 +542,256 @@ public partial class Campo1 : Node2D
 	private void OnRespuestaLatido(long result, long code, string[] headers, byte[] body)
 	{
 		_ocupadoLatido = false;
-		if (result != (long)HttpRequest.Result.Success || code != 200) return;
+		if (result != (long)HttpRequest.Result.Success) return; // sin red: EnviarLatido lleva la cuenta
+		if (code == 404) { PartidaOnlinePerdida(); return; }
+		if (code != 200) return;
+		_ultimoLatidoOkMs = Time.GetTicksMsec();
 		try
 		{
 			var doc = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(body));
 			string resultado = doc.TryGetProperty("resultado", out var r) ? (r.GetString() ?? "") : "";
+			string motivo = doc.TryGetProperty("motivo", out var mo) ? (mo.GetString() ?? "") : "";
 			bool rivalCaido = doc.TryGetProperty("rivalCaido", out var rc) && rc.GetBoolean();
-			if (!string.IsNullOrEmpty(resultado)) ResolverResultadoOnline(resultado);
-			else if (rivalCaido)
+			int rivalSilencio = doc.TryGetProperty("rivalSilencio", out var rs) && rs.TryGetInt32(out var rsv) ? rsv : 0;
+
+			if (!string.IsNullOrEmpty(resultado)) { ResolverResultadoOnline(resultado, motivo); return; }
+			if (rivalCaido) { ResolverResultadoOnline("gano_" + ContextoOnline.Asiento, "desconexion"); return; }
+
+			if (rivalSilencio >= SEG_AVISO_RIVAL)
 			{
-				MostrarAviso("El rival se desconectó. ¡Ganaste!", new Color(0.5f, 1f, 0.6f));
-				ResolverResultadoOnline("gano_" + ContextoOnline.Asiento);
+				int quedan = Mathf.Max(0, SEG_DESCONEXION_SERVIDOR - rivalSilencio);
+				MostrarEstadoRed($"{ContextoOnline.RivalNombre} perdió la conexión… esperando ({quedan} s)", EstiloUI.Dorado);
 			}
+			else OcultarEstadoRed();
 		}
 		catch { }
 	}
 
+	private static string AsientoRival => ContextoOnline.SoyPrimero ? "B" : "A";
+
 	// Muestra el resultado AUTORITATIVO (viene del servidor). "gano_<miAsiento>" = gané; "empate";
-	// cualquier otro = perdí. Se usa tanto para desconexión (latido) como para fin normal (arbitraje).
-	private void ResolverResultadoOnline(string resultado)
+	// "cancelada" = el rival nunca entró; cualquier otro = perdí. motivo explica POR QUÉ terminó
+	// (desconexión, inactividad, rendición) y se le cuenta al jugador antes del cierre.
+	private void ResolverResultadoOnline(string resultado, string motivo = "")
 	{
 		SoloVisualOnline = false; // fin de la partida: se restablece el daño local normal
 		if (juegoTerminado) return;
+		DetenerRedOnline();
+
+		if (resultado == "cancelada")
+		{
+			TerminarOnlineSinResultado("El rival no llegó a entrar a la partida.\nPartida cancelada: no cuenta para nadie.");
+			return;
+		}
+
+		bool gane = resultado == "gano_" + ContextoOnline.Asiento;
+		bool empate = resultado == "empate";
+		string aviso = motivo switch
+		{
+			"desconexion" => empate ? "Los dos perdieron la conexión: empate"
+						   : gane   ? "El rival se desconectó. ¡Ganaste!"
+						   :          "Perdiste la conexión: el rival gana la partida",
+			"inactividad" => gane ? "El rival no jugó 3 turnos seguidos. ¡Ganaste!"
+						   :        "Perdiste por inactividad (3 turnos sin jugar)",
+			"rendicion"   => gane ? "El rival se retiró. ¡Ganaste!" : "Te retiraste de la partida.",
+			_             => "",
+		};
+		// El aviso dura poco (enseguida arranca el cierre): por eso también queda en la pantalla final.
+		_motivoFinOnline = aviso;
+		if (aviso != "") MostrarAviso(aviso, gane || empate ? new Color(0.5f, 1f, 0.6f) : EstiloUI.Peligro);
+
+		if (empate) FinalizarPartida("¡EMPATE!");
+		else if (gane) FinalizarPartida("¡VICTORIA!");
+		else FinalizarPartida("¡DERROTA!");
+	}
+
+	private void DetenerRedOnline()
+	{
 		if (_timerLatido != null && !_timerLatido.IsStopped()) _timerLatido.Stop();
 		if (_timerPollAcc != null && !_timerPollAcc.IsStopped()) _timerPollAcc.Stop();
 		if (_timerWs != null && !_timerWs.IsStopped()) _timerWs.Stop();
 		if (_ws != null && _ws.GetReadyState() == WebSocketPeer.State.Open) _ws.Close();
-
-		if (resultado == "empate") FinalizarPartida("¡EMPATE!");
-		else if (resultado == "gano_" + ContextoOnline.Asiento) FinalizarPartida("¡VICTORIA!");
-		else FinalizarPartida("¡DERROTA!");
+		OcultarEstadoRed();
 	}
 
-	// Reporta el fin de partida NORMAL (huevo a 0 o por tiempo) al servidor, que ARBITRA (el primer
-	// reporte gana), y muestra el resultado autoritativo → ambos clientes ven lo mismo, nunca "los dos
-	// ganan". quien: "yo" gané | "rival" ganó (perdí) | "empate". Si la red falla, cae al local.
-	private void EnviarResultadoOnline(string quien)
+	/// <summary>Rendirse en línea (botón de retirada → "¿Deseas retirarte?", ver Campo1.Retirada.cs):
+	/// el servidor le da la victoria al rival y los dos ven el mismo final.</summary>
+	public void RendirseOnline()
 	{
-		if (!EsOnline || _finOnlineEnviado || juegoTerminado) return;
+		if (!PareceOnline || juegoTerminado) return;
+		EnviarResultadoOnline("rival", "rendicion");
+	}
+
+	/// <summary>Contra un bot el final lo decide la partida local (huevo a 0 o por tiempo): se le avisa
+	/// al servidor para que quede registrado y el premio online se pueda verificar.</summary>
+	private void ReportarResultadoContraBot(string msg)
+	{
+		if (!OnlineConBot || _finOnlineEnviado) return;
+		_finOnlineEnviado = true;
+		if (_timerLatido != null && !_timerLatido.IsStopped()) _timerLatido.Stop();
+		string ganador = msg.Contains("VICTORIA") ? "gano_" + ContextoOnline.Asiento
+					   : msg.Contains("DERROTA")  ? "gano_" + AsientoRival
+					   :                            "empate";
+		var h = new HttpRequest { Timeout = 10 };
+		AddChild(h);
+		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) => { if (IsInstanceValid(h)) h.QueueFree(); };
+		string cuerpo = JsonSerializer.Serialize(new { jugadorId = ContextoOnline.JugadorId, ganador, motivo = "normal" });
+		string[] headers = { "Content-Type: application/json" };
+		if (h.Request($"{ApiConfig.Base}/api/match/{ContextoOnline.MatchId}/resultado", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
+			h.QueueFree();
+	}
+
+	// Reporta el fin de partida NORMAL (huevo a 0 o por tiempo) o la RENDICIÓN al servidor, que ARBITRA
+	// (el primer reporte gana), y muestra el resultado autoritativo → ambos clientes ven lo mismo, nunca
+	// "los dos ganan". quien: "yo" gané | "rival" ganó (perdí) | "empate". Si la red falla, cae al local.
+	private void EnviarResultadoOnline(string quien, string motivo = "normal")
+	{
+		if (!PareceOnline || _finOnlineEnviado || juegoTerminado) return;
 		_finOnlineEnviado = true;
 
 		string ganador = quien == "yo"    ? "gano_" + ContextoOnline.Asiento
-					   : quien == "rival" ? "gano_" + (ContextoOnline.SoyPrimero ? "B" : "A")
+					   : quien == "rival" ? "gano_" + AsientoRival
 					   :                     "empate";
 
 		if (_timerPollAcc != null && !_timerPollAcc.IsStopped()) _timerPollAcc.Stop();
 
-		_httpResultado = new HttpRequest();
+		_httpResultado = new HttpRequest { Timeout = 8 };
 		AddChild(_httpResultado);
 		_httpResultado.RequestCompleted += (long r, long c, string[] h, byte[] b) =>
 		{
+			if (r == (long)HttpRequest.Result.Success && c == 404) { PartidaOnlinePerdida(); return; }
 			string autoritativo = ganador; // respaldo si el server no responde
+			string motivoFinal = motivo;
 			if (r == (long)HttpRequest.Result.Success && c == 200)
 			{
 				try
 				{
 					var doc = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(b));
-					if (doc.TryGetProperty("resultado", out var rr))
+					if (doc.TryGetProperty("resultado", out var rr) && rr.GetString() is string s && s != "")
 					{
-						string s = rr.GetString() ?? "";
-						if (!string.IsNullOrEmpty(s)) autoritativo = s;
+						autoritativo = s;
+						motivoFinal = doc.TryGetProperty("motivo", out var mm) ? (mm.GetString() ?? "") : "";
 					}
 				}
 				catch { }
 			}
-			ResolverResultadoOnline(autoritativo);
+			ResolverResultadoOnline(autoritativo, motivoFinal);
 		};
-		string cuerpo = JsonSerializer.Serialize(new { jugadorId = ContextoOnline.JugadorId, ganador });
+		string cuerpo = JsonSerializer.Serialize(new { jugadorId = ContextoOnline.JugadorId, ganador, motivo });
 		string[] headers = { "Content-Type: application/json" };
 		if (_httpResultado.Request($"{ApiConfig.Base}/api/match/{ContextoOnline.MatchId}/resultado", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
-			ResolverResultadoOnline(ganador);
+			ResolverResultadoOnline(ganador, motivo);
+	}
+
+	// ── PARTIDA SIN RESULTADO (cancelada / perdida en el servidor) ────────────
+	/// <summary>El servidor ya no conoce la partida (se reinició o la cerró): no se puede saber quién
+	/// ganó, así que no cuenta para nadie. Antes los dos jugadores quedaban esperando para siempre.</summary>
+	private void PartidaOnlinePerdida()
+	{
+		if (juegoTerminado) return;
+		DetenerRedOnline();
+		TerminarOnlineSinResultado("Se perdió la partida en el servidor.\nNo cuenta como derrota.");
+	}
+
+	private void TerminarOnlineSinResultado(string mensaje)
+	{
+		if (juegoTerminado) return;
+		juegoTerminado = true;
+		SoloVisualOnline = false;
+		CerrarConfirmacionRetirada();
+		timerReloj?.Stop();
+		GetTree().Paused = false;
+		CerrarPantallaRobo();
+		if (menuAcciones != null && IsInstanceValid(menuAcciones)) menuAcciones.Visible = false;
+
+		var capa = new CanvasLayer { Layer = 150 };
+		AddChild(capa);
+		var velo = new ColorRect { Color = new Color(0, 0, 0, 0.6f), MouseFilter = Control.MouseFilterEnum.Stop };
+		velo.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		capa.AddChild(velo);
+
+		var centro = new CenterContainer();
+		centro.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		velo.AddChild(centro);
+		var panel = new PanelContainer();
+		EstiloUI.MarcoCristal(panel, 70, 50);
+		centro.AddChild(panel);
+		var vbox = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+		vbox.AddThemeConstantOverride("separation", 36);
+		panel.AddChild(vbox);
+
+		var lbl = new Label { Text = mensaje, HorizontalAlignment = HorizontalAlignment.Center };
+		EstiloUI.Texto(lbl, 44, EstiloUI.TextoClaro);
+		vbox.AddChild(lbl);
+
+		var btn = new Button { Text = "VOLVER AL MENÚ", CustomMinimumSize = new Vector2(420, 110) };
+		EstiloUI.Boton(btn, 40, accion: true);
+		btn.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
+		btn.Pressed += () =>
+		{
+			LimpiezaEfectos.LimpiarEfectosDeCampo();
+			ContextoOnline.Limpiar();
+			GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
+		};
+		vbox.AddChild(btn);
+		SonidoUI.EngancharBotones(capa);
+	}
+
+	// ── CARTEL DE ESTADO DE LA RED ────────────────────────────────────────────
+	// "Sin conexión… reconectando" / "El rival perdió la conexión… esperando": arriba al centro, sin
+	// bloquear el juego.
+	private void MostrarEstadoRed(string texto, Color color)
+	{
+		if (juegoTerminado) return;
+		if (_capaEstadoRed == null || !IsInstanceValid(_capaEstadoRed))
+		{
+			_capaEstadoRed = new CanvasLayer { Layer = 95 };
+			AddChild(_capaEstadoRed);
+			// Franja a lo ancho, debajo del reloj y del "TU TURNO": el cartel queda centrado en ella.
+			var ancla = new CenterContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+			ancla.SetAnchorsPreset(Control.LayoutPreset.TopWide);
+			ancla.OffsetTop = 150;
+			ancla.OffsetBottom = 270;
+			_capaEstadoRed.AddChild(ancla);
+			// Panel "vidrio" de código: el marco de cristal (textura con bordes gruesos) se aplastaba en
+			// un cartel de una sola línea.
+			var panel = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+			EstiloUI.Panel(panel);
+			ancla.AddChild(panel);
+			_lblEstadoRed = new Label { HorizontalAlignment = HorizontalAlignment.Center };
+			panel.AddChild(_lblEstadoRed);
+		}
+		EstiloUI.Texto(_lblEstadoRed, 34, color);
+		_lblEstadoRed.Text = texto;
+		_capaEstadoRed.Visible = true;
+	}
+
+	private void OcultarEstadoRed()
+	{
+		if (_capaEstadoRed != null && IsInstanceValid(_capaEstadoRed)) _capaEstadoRed.Visible = false;
+	}
+
+	// ── SALIR Y VOLVER A LA APP (llamado por SesionJuego) ─────────────────────
+	/// <summary>La app pasa a segundo plano. Contra el bot (o en el tutorial) la partida queda en pausa
+	/// y al volver se encuentra tal cual. En línea no se puede pausar (el rival sigue): si no vuelve
+	/// en 20 s, el servidor le da la victoria al rival.</summary>
+	public void AlIrASegundoPlano()
+	{
+		if (juegoTerminado || PareceOnline) return;
+		GetNodeOrNull<MenuPausa>("MenuPausa")?.Pausar();
+	}
+
+	/// <summary>La app vuelve al frente. En línea se pregunta YA al servidor cómo sigue la partida (si
+	/// estuvo fuera más de 20 s, ya la perdió por desconexión y se le explica).</summary>
+	public void AlVolverDeSegundoPlano()
+	{
+		if (juegoTerminado || !PareceOnline) return;
+		// El tiempo fuera de la app no cuenta como "sin conexión": decide el servidor, no el reloj local.
+		_ultimoLatidoOkMs = Time.GetTicksMsec();
+		MostrarEstadoRed("Reconectando…", EstiloUI.Dorado);
+		_httpLatido?.CancelRequest(); // uno que quedó a medias al salir nunca va a responder
+		_ocupadoLatido = false;
+		EnviarLatido();
 	}
 
 	// ── HELPERS ───────────────────────────────────────────────────────────────

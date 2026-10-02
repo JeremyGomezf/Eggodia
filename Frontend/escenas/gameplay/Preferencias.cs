@@ -91,6 +91,25 @@ public static class Preferencias
 		set => EscribirBoolEn(SEC_DISPOSITIVO, "tutorial_visto", value);
 	}
 
+	/// <summary>Tutorial pendiente por instalación NUEVA: el menú lo abre solo la primera vez que se
+	/// llega a él, entre como entre (cuenta nueva, cuenta existente o invitado). También es del
+	/// DISPOSITIVO.</summary>
+	public static bool TutorialPendiente
+	{
+		get => LeerBoolEn(SEC_DISPOSITIVO, "tutorial_pendiente", false);
+		set => EscribirBoolEn(SEC_DISPOSITIVO, "tutorial_pendiente", value);
+	}
+
+	/// <summary>Si es la primera vez que corre el juego en este aparato (no existe ni el archivo del
+	/// dispositivo), deja el tutorial pendiente. Quien actualiza desde una versión anterior ya tiene
+	/// ese archivo → no se le abre nada. Tiene que correr ANTES que cualquier cosa que escriba
+	/// preferencias.cfg (ver SesionJuego._Ready).</summary>
+	public static void MarcarTutorialSiInstalacionNueva()
+	{
+		if (FileAccess.FileExists(RUTA_DISPOSITIVO)) return;
+		TutorialPendiente = true;
+	}
+
 	// ── NIVEL / EXPERIENCIA ──────────────────────────────────────────────────
 	// +150 XP por cada victoria. Umbral nivel 2 = 1000, nivel 3 = 1500, nivel 4 = 2000...
 	// (1000 + 500 por cada nivel adicional desde el 2).
@@ -140,6 +159,51 @@ public static class Preferencias
 		get => LeerIntEn(SECCION, "partidas_perdidas", 0);
 		set => EscribirIntEn(SECCION, "partidas_perdidas", Mathf.Max(0, value));
 	}
+
+	/// <summary>Con cuenta, el progreso (experiencia → nivel, victorias, derrotas) es el del SERVIDOR:
+	/// así se ve el mismo nivel en cualquier celular donde se inicie sesión. Se adopta al entrar, al
+	/// volver al menú y tras cada partida.</summary>
+	public static void AdoptarProgresoDeServidor(int experiencia, int victorias, int derrotas)
+	{
+		var cfg = new ConfigFile();
+		cfg.Load(RutaPerfil);
+		cfg.SetValue(SECCION, "experiencia_total", Mathf.Max(0, experiencia));
+		cfg.SetValue(SECCION, "partidas_ganadas", Mathf.Max(0, victorias));
+		cfg.SetValue(SECCION, "partidas_perdidas", Mathf.Max(0, derrotas));
+		cfg.Save(RutaPerfil);
+	}
+
+	// ── PREMIOS PENDIENTES (partidas terminadas sin internet) ────────────────
+	// Si al terminar una partida no hay conexión, el premio (monedas/XP) queda guardado acá y se vuelve
+	// a mandar después. El servidor no lo cobra dos veces (cada partida tiene su id).
+	private const string SEC_PENDIENTES = "premios_pendientes";
+
+	public static System.Collections.Generic.List<string> PremiosPendientes()
+	{
+		var lista = new System.Collections.Generic.List<string>();
+		var cfg = new ConfigFile();
+		if (cfg.Load(RutaPerfil) != Error.Ok || !cfg.HasSection(SEC_PENDIENTES)) return lista;
+		foreach (string clave in cfg.GetSectionKeys(SEC_PENDIENTES))
+			lista.Add((string)cfg.GetValue(SEC_PENDIENTES, clave, ""));
+		return lista;
+	}
+
+	public static void GuardarPremioPendiente(string partidaId, string cuerpoJson) =>
+		EscribirStringEn(SEC_PENDIENTES, ClavePendiente(partidaId), cuerpoJson);
+
+	public static void QuitarPremioPendiente(string partidaId)
+	{
+		var cfg = new ConfigFile();
+		if (cfg.Load(RutaPerfil) != Error.Ok) return;
+		string clave = ClavePendiente(partidaId);
+		if (!cfg.HasSectionKey(SEC_PENDIENTES, clave)) return;
+		cfg.EraseSectionKey(SEC_PENDIENTES, clave);
+		cfg.Save(RutaPerfil);
+	}
+
+	// Claves de ConfigFile: solo letras/números/guion bajo.
+	private static string ClavePendiente(string partidaId) =>
+		"p_" + System.Text.RegularExpressions.Regex.Replace(partidaId ?? "", "[^A-Za-z0-9]", "_");
 
 	private const string SEC_USO_CARTAS   = "uso_cartas";
 	private const string SEC_USO_HECHIZOS = "uso_hechizos";

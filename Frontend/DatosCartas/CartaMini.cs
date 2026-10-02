@@ -132,24 +132,31 @@ public partial class CartaMini : Control
 		}
 	}
 
+	private bool _presionada = false;
+
 	public override void _GuiInput(InputEvent @event)
 	{
-		if (@event is InputEventMouseButton mouseEvent)
+		if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left)
 		{
-			if (mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
-			{
-				if (_animarInteraccion)
-				{
-					// Si el hover está apagado, la carta tiene un pivote propio (Ardid): se respeta,
-					// para que el "punch" no la recoloque.
-					if (_animarHover) PivotOffset = Size / 2;
-					var tween = CreateTween();
-					tween.TweenProperty(this, "scale", _escalaBase * 0.85f, 0.05f).SetTrans(Tween.TransitionType.Sine);
-					tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
-				}
+			// Se activa al SOLTAR y solo si no fue un arrastre de la lista: en el celular las cartas están
+			// dentro de listas que se deslizan con el dedo (ScrollTactil), y al empezar a deslizar sobre
+			// una carta antes se seleccionaba sola.
+			if (mouseEvent.Pressed) { _presionada = true; return; }
+			if (!_presionada) return;
+			_presionada = false;
+			if (ScrollTactil.UltimoGestoFueArrastre) return;
 
-				OnClickeada?.Invoke(this);
+			if (_animarInteraccion)
+			{
+				// Si el hover está apagado, la carta tiene un pivote propio (Ardid): se respeta,
+				// para que el "punch" no la recoloque.
+				if (_animarHover) PivotOffset = Size / 2;
+				var tween = CreateTween();
+				tween.TweenProperty(this, "scale", _escalaBase * 0.85f, 0.05f).SetTrans(Tween.TransitionType.Sine);
+				tween.TweenProperty(this, "scale", _escalaBase, 0.1f).SetTrans(Tween.TransitionType.Sine);
 			}
+
+			OnClickeada?.Invoke(this);
 		}
 	}
 

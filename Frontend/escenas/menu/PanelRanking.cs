@@ -61,7 +61,7 @@ public partial class PanelRanking : Control
 		vbox.AddChild(new HSeparator());
 
 		// Scroll para la lista
-		var scroll = new ScrollContainer();
+		var scroll = new ScrollTactil(); // se arrastra con el dedo, sin barra
 		scroll.CustomMinimumSize = new Vector2(0, 360);
 		vbox.AddChild(scroll);
 

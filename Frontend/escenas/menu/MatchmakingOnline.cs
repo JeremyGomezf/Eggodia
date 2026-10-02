@@ -16,6 +16,7 @@ public partial class MatchmakingOnline : Node
 
 	private HttpRequest _http;
 	private Timer _timerSondeo;
+	private bool _rivalEsBot = false;
 	private bool _ocupado = false;
 
 	// Cancelación de la búsqueda (salir de la cola): espera la confirmación del server para no dejar
@@ -51,7 +52,7 @@ public partial class MatchmakingOnline : Node
 
 		ConstruirUI();
 
-		_http = new HttpRequest();
+		_http = new HttpRequest { Timeout = 10 }; // con timeout: un pedido colgado (cambio de red) frenaba el sondeo
 		AddChild(_http);
 		_http.RequestCompleted += OnRespuesta;
 
@@ -91,6 +92,15 @@ public partial class MatchmakingOnline : Node
 	private void OnRespuesta(long result, long code, string[] headers, byte[] body)
 	{
 		_ocupado = false;
+		// El boleto en la cola ya no existe (se salió de la app un rato buscando, o el servidor se
+		// reinició): se vuelve a entrar a la cola solo. Antes quedaba "buscando rival…" para siempre.
+		if (result == (long)HttpRequest.Result.Success && code == 404 && !string.IsNullOrEmpty(_matchId) && _estado != "emparejado")
+		{
+			_matchId = "";
+			_estado = "";
+			Callable.From(EntrarACola).CallDeferred();
+			return;
+		}
 		if (result != (long)HttpRequest.Result.Success || (code != 200 && code != 201))
 		{
 			// Un fallo puntual de sondeo no es fatal si ya estamos en cola; solo error si aún no hay match.
@@ -107,6 +117,7 @@ public partial class MatchmakingOnline : Node
 			_semilla = doc.TryGetProperty("semilla", out var s) ? (s.GetString() ?? "") : "";
 			int rivalSkinIdx  = doc.TryGetProperty("rivalSkinIdx", out var rs) ? rs.GetInt32() : 0;
 			int rivalTronoIdx = doc.TryGetProperty("rivalTronoIdx", out var rt) ? rt.GetInt32() : 0;
+			_rivalEsBot = doc.TryGetProperty("rivalEsBot", out var rb) && rb.ValueKind == JsonValueKind.True;
 
 			if (_estado == "emparejado")
 			{
@@ -270,6 +281,7 @@ public partial class MatchmakingOnline : Node
 		ContextoOnline.RivalNombre = string.IsNullOrEmpty(rival) ? "Rival" : rival;
 		ContextoOnline.RivalSkinIdx  = rivalSkinIdx;
 		ContextoOnline.RivalTronoIdx = rivalTronoIdx;
+		ContextoOnline.RivalEsBot    = _rivalEsBot;
 
 		GetTree().CreateTimer(1.6).Timeout += () =>
 		{

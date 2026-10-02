@@ -382,7 +382,7 @@ public partial class Campo1 : Node2D
 			// aparece directo con sus 3 tropas fijas, espejadas por carril (ver Campo1.Tutorial.cs).
 			if (ModoTutorial) { InvocarRivalTutorial(); return true; }
 
-			string quien = EsOnline ? "El rival" : "La CPU";
+			string quien = PareceOnline ? "El rival" : "La CPU";
 			MostrarAviso($"Tropas listas. {quien} prepara sus fuerzas...", Colors.LightGreen);
 			GetTree().CreateTimer(1.2f).Timeout += () => { if (!juegoTerminado) CambiarTurno(); };
 			return true;

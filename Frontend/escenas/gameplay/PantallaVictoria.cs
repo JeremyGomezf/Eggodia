@@ -13,6 +13,8 @@ public partial class PantallaVictoria : CanvasLayer
 
 	/// <summary>Lo fija Campo1 al abrir la pantalla: cambia qué hace el botón de "jugar de nuevo".</summary>
 	public bool EsOnline { get; set; }
+	// En línea: por qué terminó ("El rival se desconectó…"). Reemplaza el subtítulo genérico.
+	public string MotivoFin { get; set; } = "";
 
 	/// <summary>Victoria del TUTORIAL: sin monedas, sin auto-achicado, y el botón principal repite
 	/// el tutorial en vez de empezar una partida normal.</summary>
@@ -34,6 +36,8 @@ public partial class PantallaVictoria : CanvasLayer
 		if (lblR != null) lblR.Text = Racha > 1 ? $"{Racha} victorias seguidas" : $"{Racha}";
 
 		MostrarMVT();
+		if (!string.IsNullOrEmpty(MotivoFin) && GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/Subtitulo") is Label lblMotivo)
+			lblMotivo.Text = MotivoFin;
 
 		var btnJugar = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnJugarDeNuevo");
 		var btnMenu  = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnMenu");

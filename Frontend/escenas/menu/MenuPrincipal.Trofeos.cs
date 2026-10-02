@@ -136,7 +136,7 @@ public partial class MenuPrincipal : Control
 		EstiloUI.Texto(lblSub, 19, EstiloUI.Acento);
 		vbox.AddChild(lblSub);
 
-		var scroll = new ScrollContainer();
+		var scroll = new ScrollTactil(); // se arrastra con el dedo, sin barra
 		scroll.CustomMinimumSize = new Vector2(0, 520);
 		scroll.HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled;
 		vbox.AddChild(scroll);

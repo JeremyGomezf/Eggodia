@@ -61,9 +61,12 @@ public partial class SesionJuego : Node
 	public override void _Ready()
 	{
 		Instance = this;
+		ReporteErrores.Instalar(this); // errores del celular → servidor (no en el editor)
 
 		// Una sola vez: pasa los datos del formato viejo (todo mezclado) al perfil que corresponde.
-		// Va ANTES que nada, porque todo lo demás ya lee desde los perfiles.
+		// Va ANTES que nada, porque todo lo demás ya lee desde los perfiles. Antes de eso se mira si es
+		// una instalación nueva (todavía no existe preferencias.cfg, que la migración crea).
+		Preferencias.MarcarTutorialSiInstalacionNueva();
 		Preferencias.MigrarAPerfilesSiHaceFalta();
 
 		// Login persistente: SOLO una cuenta registrada queda recordada (así PanelLogin la manda
@@ -96,21 +99,40 @@ public partial class SesionJuego : Node
 
 	/// <summary>
 	/// Ciclo de vida de la app (móvil): si el jugador sale de la aplicación (cambia de app, apaga la
-	/// pantalla o bloquea el celular) el juego pasa a segundo plano; al volver, se reinicia desde el
-	/// menú con estado limpio — como cualquier juego móvil. La sesión (login) NO se cierra: sigue
-	/// logueado. Cualquier partida en línea a medias se abandona (el rival gana por desconexión).
+	/// pantalla o bloquea el celular) el juego pasa a segundo plano; al volver, sigue donde estaba:
+	///   • Partida contra el bot / tutorial: quedó en pausa; se continúa desde el menú de pausa.
+	///   • Partida en línea: no se puede pausar (el rival sigue). Si vuelves antes de 20 s, sigues
+	///     jugando; si no, el servidor le dio la victoria al rival y se te explica.
+	///   • Menú y demás pantallas: se refrescan el saldo/nivel de la cuenta.
+	/// Si Android cerró la app mientras estaba en segundo plano (poca memoria, mucho tiempo fuera),
+	/// arranca de cero desde la pantalla de carga, como cualquier juego.
 	/// </summary>
 	public override void _Notification(int que)
 	{
 		if (que == NotificationApplicationPaused)
 		{
 			_appEnSegundoPlano = true;
+			// Contra el bot la partida queda en pausa mientras no estás.
+			(GetTree()?.CurrentScene as Campo1)?.AlIrASegundoPlano();
+			ReporteErrores.Enviar(); // por si Android cierra la app estando en segundo plano
 		}
 		else if (que == NotificationApplicationResumed && _appEnSegundoPlano)
 		{
 			_appEnSegundoPlano = false;
-			ContextoOnline.Limpiar(); // abandona cualquier emparejamiento/partida en línea en curso
-			GetTree()?.ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
+			// Se vuelve a donde estabas, como en cualquier juego móvil (antes siempre te mandaba al
+			// menú y perdías la partida aunque hubieras salido 2 segundos).
+			switch (GetTree()?.CurrentScene)
+			{
+				case Campo1 campo:
+					campo.AlVolverDeSegundoPlano(); // en línea: pregunta ya al servidor cómo sigue
+					break;
+				case MenuPrincipal menu:
+					menu.AlVolverDeSegundoPlano(); // saldo/nivel y aviso de versión nueva
+					break;
+				default:
+					Economia.Instancia()?.RefrescarCuenta(forzar: true);
+					break;
+			}
 		}
 	}
 
@@ -157,26 +179,66 @@ public partial class SesionJuego : Node
 		GD.Print($"[SesionJuego] Ardides guardados en memoria y disco: {ArdidesSeleccionados.Count} elegidos.");
 	}
 
-	private void GuardarMazoEnDisco()
+	private void GuardarMazoEnDisco(bool subirACuenta = true)
 	{
 		try
 		{
-			using var file = FileAccess.Open(RutaMazoGuardado, FileAccess.ModeFlags.Write);
-			if (file != null)
+			string json = JsonSerializer.Serialize(new MazoPersistenteData
 			{
-				var data = new MazoPersistenteData
-				{
-					Escenas = MazoSeleccionado,
-					Imagenes = ImagenesMazo,
-					Ardides = ArdidesSeleccionados
-				};
-				string json = JsonSerializer.Serialize(data);
-				file.StoreString(json);
-			}
+				Escenas = MazoSeleccionado,
+				Imagenes = ImagenesMazo,
+				Ardides = ArdidesSeleccionados
+			});
+			using (var file = FileAccess.Open(RutaMazoGuardado, FileAccess.ModeFlags.Write))
+				file?.StoreString(json);
+			if (subirACuenta) SubirMazoACuenta(json);
 		}
 		catch (Exception ex)
 		{
 			GD.PrintErr($"[SesionJuego] Error al guardar mazo en disco: {ex.Message}");
+		}
+	}
+
+	/// <summary>Con cuenta, el mazo también se guarda en el servidor: al iniciar sesión en otro celular
+	/// (o tras reinstalar) aparece el mismo mazo. Sin internet queda el del celular y se sube la próxima
+	/// vez que se guarde.</summary>
+	private void SubirMazoACuenta(string json)
+	{
+		if (UsuarioId <= 0 || MazoSeleccionado.Count < 8) return;
+		var h = new HttpRequest { Timeout = 10 };
+		AddChild(h);
+		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) => { if (IsInstanceValid(h)) h.QueueFree(); };
+		string cuerpo = JsonSerializer.Serialize(new { mazo = json });
+		string[] hdr = { "Content-Type: application/json" };
+		if (h.Request($"{ApiConfig.Usuarios}/{UsuarioId}/mazo", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok && IsInstanceValid(h))
+			h.QueueFree();
+	}
+
+	/// <summary>Mazo guardado en la cuenta (llega con el inventario al iniciar sesión / reabrir). Si la
+	/// cuenta aún no tiene uno (cuentas de antes de esta versión), se le sube el de este celular.</summary>
+	public void AdoptarMazoDeServidor(string json)
+	{
+		if (UsuarioId <= 0) return;
+		if (string.IsNullOrWhiteSpace(json))
+		{
+			if (MazoSeleccionado.Count >= 8) GuardarMazoEnDisco();
+			return;
+		}
+		try
+		{
+			var data = JsonSerializer.Deserialize<MazoPersistenteData>(json);
+			if (data?.Escenas == null || data.Escenas.Count < 8) return;
+			// Un mazo armado en otra versión podría traer cartas que en esta no existen: se ignora.
+			foreach (string escena in data.Escenas)
+				if (!ResourceLoader.Exists(escena)) return;
+			MazoSeleccionado = data.Escenas;
+			ImagenesMazo = data.Imagenes ?? new List<string>();
+			ArdidesSeleccionados = data.Ardides ?? new List<string>();
+			GuardarMazoEnDisco(subirACuenta: false);
+		}
+		catch (Exception ex)
+		{
+			GD.PrintErr($"[SesionJuego] Mazo de la cuenta inválido: {ex.Message}");
 		}
 	}
 

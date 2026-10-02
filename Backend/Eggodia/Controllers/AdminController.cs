@@ -107,6 +107,58 @@ public class AdminController : ControllerBase
         return Ok(new { u.Id, u.Monedas });
     }
 
+    // ── Códigos promocionales ─────────────────────────────────────────────────
+    // Crea (o reactiva) un código. Pensado para códigos COMPARTIDOS por tiempo limitado: un solo código
+    // para mucha gente (maxUsos alto, cada cuenta lo canjea una vez) que vence a las `horas` de crearlo.
+    //   POST /api/admin/codigo?clave=XXX  { codigo, tipo: "skin"|"monedas", valor, nombre, maxUsos, horas }
+    //   horas = 0 → no vence.
+    public class CodigoReq
+    {
+        public string Codigo { get; set; } = "";
+        public string Tipo { get; set; } = "skin";
+        public string Valor { get; set; } = "";
+        public string Nombre { get; set; } = "";
+        public int MaxUsos { get; set; } = 100000;
+        public double Horas { get; set; } = 0;
+    }
+
+    [HttpPost("codigo")]
+    public async Task<IActionResult> CrearCodigo([FromQuery] string clave, [FromBody] CodigoReq req)
+    {
+        if (!ClaveOk(clave)) return Unauthorized(new { mensaje = "clave inválida" });
+        string codigo = (req?.Codigo ?? "").Trim().ToLowerInvariant(); // el canje compara en minúsculas
+        if (codigo.Length < 4) return BadRequest(new { mensaje = "Código demasiado corto." });
+        if (req!.Tipo != "skin" && req.Tipo != "monedas") return BadRequest(new { mensaje = "Tipo debe ser skin o monedas." });
+        if (string.IsNullOrWhiteSpace(req.Valor)) return BadRequest(new { mensaje = "Falta el valor (ruta de la skin o cantidad de monedas)." });
+
+        var promo = await _db.PromoCodes.FirstOrDefaultAsync(p => p.Codigo.ToLower() == codigo);
+        if (promo == null)
+        {
+            promo = new PromoCode { Codigo = codigo };
+            _db.PromoCodes.Add(promo);
+        }
+        promo.TipoRecompensa = req.Tipo;
+        promo.ValorRecompensa = req.Valor;
+        promo.NombreRecompensa = string.IsNullOrWhiteSpace(req.Nombre) ? req.Valor : req.Nombre;
+        promo.MaxUsos = Math.Max(1, req.MaxUsos);
+        promo.ExpiraUtc = req.Horas > 0 ? DateTime.UtcNow.AddHours(req.Horas) : null;
+        await _db.SaveChangesAsync();
+        return Ok(new { promo.Id, promo.Codigo, promo.TipoRecompensa, promo.NombreRecompensa, promo.MaxUsos, promo.UsosActuales, promo.ExpiraUtc });
+    }
+
+    // GET /api/admin/codigos?clave=XXX → códigos con vencimiento o de uso múltiple (los individuales
+    // de un solo uso son 100 y no aportan acá).
+    [HttpGet("codigos")]
+    public async Task<IActionResult> ListarCodigos([FromQuery] string clave)
+    {
+        if (!ClaveOk(clave)) return Unauthorized(new { mensaje = "clave inválida" });
+        var lista = await _db.PromoCodes
+            .Where(p => p.ExpiraUtc != null || p.MaxUsos > 1)
+            .Select(p => new { p.Id, p.Codigo, p.TipoRecompensa, p.NombreRecompensa, p.MaxUsos, p.UsosActuales, p.ExpiraUtc })
+            .ToListAsync();
+        return Ok(lista);
+    }
+
     // ── Editar nombre / email ─────────────────────────────────────────────────
     public class EditarReq { public int Id { get; set; } public string? Nombre { get; set; } public string? Email { get; set; } }
 

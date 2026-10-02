@@ -113,15 +113,15 @@ color = Color(0.4, 0.5, 0.6, 0.5)
 
 [node name="HuevoRoto" type="TextureRect" parent="Overlay" unique_id=995649123]
 modulate = Color(1, 1, 1, 0.85)
-custom_minimum_size = Vector2(377, 377)
+custom_minimum_size = Vector2(300, 300)
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -188.0
-offset_top = 30.0
-offset_right = 189.0
-offset_bottom = 407.0
+offset_left = -150.0
+offset_top = 14.0
+offset_right = 150.0
+offset_bottom = 314.0
 grow_horizontal = 2
 texture = ExtResource("2_huevo")
 expand_mode = 1

@@ -19,6 +19,11 @@ namespace Eggodia.API.model
         public string EquipSkinExclusiva { get; set; } = "";
         public int    EquipTronoIdx      { get; set; } = 0;
 
+        // Experiencia (de ella sale el NIVEL) y mazo armado, guardados en la CUENTA: antes vivían solo
+        // en el celular y se perdían al reinstalar o al entrar desde otro teléfono.
+        public int    Experiencia { get; set; } = 0;
+        public string MazoJson    { get; set; } = "";
+
         // Estadísticas para el ranking
         public int Victorias  { get; set; } = 0;
         public int Derrotas   { get; set; } = 0;
@@ -39,6 +44,7 @@ namespace Eggodia.API.model
         public int    EquipSkinIdx       { get; set; }
         public string EquipSkinExclusiva { get; set; } = "";
         public int    EquipTronoIdx      { get; set; }
+        public int    Experiencia { get; set; }
         public int    Victorias { get; set; }
         public int    Derrotas  { get; set; }
         public int    Empates   { get; set; }

@@ -24,6 +24,14 @@ public partial class ChequeoActualizacion : Node
 	// decidir si sigue al login o se queda mostrando el aviso. Puede ser null (uso sin callback).
 	public System.Action<bool> AlTerminar;
 	private bool _avisado = false;
+
+	// Momento del último chequeo que respondió "estás al día". Sirve para no repetir la consulta si el
+	// menú se abre segundos después de la pantalla de carga. Un fallo de red NO lo actualiza, así que
+	// la próxima vez que se entre al menú se vuelve a intentar.
+	private static ulong _ultimoAlDiaMs;
+	private static bool  _huboChequeoAlDia;
+	public static bool RevisadoHaceMenosDe(int segundos) =>
+		_huboChequeoAlDia && Time.GetTicksMsec() - _ultimoAlDiaMs < (ulong)(segundos * 1000);
 	private void Avisar(bool bloquea) { if (_avisado) return; _avisado = true; AlTerminar?.Invoke(bloquea); }
 
 	private class InfoVersion
@@ -61,7 +69,7 @@ public partial class ChequeoActualizacion : Node
 
 			string actual = (string)ProjectSettings.GetSetting("application/config/version", "0.0.0");
 			if (Comparar(actual, info.Ultima) < 0) { MostrarAviso(actual, info); Avisar(true); } // versión nueva → obligar (el aviso queda en pantalla)
-			else { Avisar(false); QueueFree(); }
+			else { _ultimoAlDiaMs = Time.GetTicksMsec(); _huboChequeoAlDia = true; Avisar(false); QueueFree(); }
 		}
 		catch { Avisar(false); QueueFree(); }
 	}

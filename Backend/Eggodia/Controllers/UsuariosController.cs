@@ -8,7 +8,20 @@ using Eggodia.API.model;
 public class UsuariosController : ControllerBase
 {
     private readonly AppDbContext _db;
-    public UsuariosController(AppDbContext db) { _db = db; }
+    private readonly GestorPartidas _partidas;
+    public UsuariosController(AppDbContext db, GestorPartidas partidas) { _db = db; _partidas = partidas; }
+
+    // Premios por partida: los MISMOS valores que Economia.cs del cliente (que los usa para mostrarlos
+    // al instante); acá se aplican de verdad. Si cambian, cambiarlos en los dos lados.
+    private const int RECOMPENSA_ONLINE_VICTORIA = 120;
+    private const int RECOMPENSA_ONLINE_DERROTA  = 30;
+    private const int RECOMPENSA_ONLINE_EMPATE   = 15;
+    private const int RECOMPENSA_BOT_VICTORIA    = 20;
+    private const int RECOMPENSA_BOT_DERROTA     = 5;
+    private const int RECOMPENSA_BOT_EMPATE      = 8;
+    private const int BONO_POR_RACHA             = 25;
+    private const int RACHA_MAXIMA               = 10;
+    private const int XP_POR_VICTORIA            = 150;
 
     // POST: api/usuarios/registro
     [HttpPost("registro")]
@@ -132,8 +145,121 @@ public class UsuariosController : ControllerBase
         return Ok(ToDto(u));
     }
 
+    // POST api/usuarios/{id}/recompensa
+    // Fin de partida (versión 1.1.2+): el SERVIDOR suma monedas, experiencia y estadísticas — el cliente
+    // ya no manda su saldo total (antes, si el admin regalaba monedas con el juego abierto, la siguiente
+    // victoria pisaba el regalo con el saldo viejo del celular). Idempotente por PartidaId: un reintento
+    // tras un corte de red no premia dos veces. En línea el resultado NO se le cree al cliente: se toma
+    // el que arbitró el servidor para esa partida.
+    public class RecompensaRequest
+    {
+        public string PartidaId { get; set; } = ""; // bot: id único generado por el cliente; online: matchId
+        public string Modo      { get; set; } = ""; // "bot" | "online" | "tutorial"
+        public string Resultado { get; set; } = ""; // "victoria" | "derrota" | "empate"
+        public int    Racha     { get; set; }       // victorias seguidas contando esta (bono online)
+        public int    DañoHecho { get; set; }
+    }
+
+    [HttpPost("{id}/recompensa")]
+    public async Task<IActionResult> Recompensa(int id, [FromBody] RecompensaRequest req)
+    {
+        if (req == null || string.IsNullOrWhiteSpace(req.PartidaId) || req.PartidaId.Length > 64)
+            return BadRequest(new { ok = false, mensaje = "Partida inválida." });
+        var u = await _db.Usuarios.FindAsync(id);
+        if (u == null) return NotFound(new { ok = false, mensaje = "Usuario no encontrado." });
+
+        string modo = req.Modo == "online" ? "online" : req.Modo == "tutorial" ? "tutorial" : "bot";
+        string resultado = (req.Resultado ?? "").ToLowerInvariant();
+        if (resultado != "victoria" && resultado != "derrota" && resultado != "empate")
+            return BadRequest(new { ok = false, mensaje = "Resultado inválido." });
+
+        if (modo == "online")
+        {
+            // El resultado online lo decide el servidor (GestorPartidas). Si la partida ya no está en
+            // memoria (se limpió o el servidor se reinició) solo se acepta reportar una derrota.
+            var r = _partidas.ResultadoPara(req.PartidaId, "u" + id);
+            if (r == null)
+            {
+                if (resultado != "derrota")
+                    return Conflict(new { ok = false, mensaje = "No se pudo verificar la partida." });
+            }
+            else
+            {
+                var (decidido, asiento) = r.Value;
+                if (asiento == "") return Conflict(new { ok = false, mensaje = "No jugaste esa partida." });
+                if (decidido == "" || decidido == "cancelada")
+                    return Conflict(new { ok = false, mensaje = "La partida no tiene un resultado válido." });
+                resultado = decidido == "empate" ? "empate" : decidido == "gano_" + asiento ? "victoria" : "derrota";
+            }
+        }
+
+        int racha = Math.Clamp(req.Racha, 0, RACHA_MAXIMA);
+        int monedas = modo == "tutorial" ? 0 : resultado switch
+        {
+            "victoria" => modo == "online" ? RECOMPENSA_ONLINE_VICTORIA + Math.Max(0, racha - 1) * BONO_POR_RACHA
+                                           : RECOMPENSA_BOT_VICTORIA,
+            "derrota"  => modo == "online" ? RECOMPENSA_ONLINE_DERROTA : RECOMPENSA_BOT_DERROTA,
+            _          => modo == "online" ? RECOMPENSA_ONLINE_EMPATE  : RECOMPENSA_BOT_EMPATE,
+        };
+        int xp = resultado == "victoria" && modo != "tutorial" ? XP_POR_VICTORIA : 0;
+
+        // Marca la partida como premiada; si ya lo estaba (reintento), no se vuelve a sumar nada.
+        int filas = await _db.Database.ExecuteSqlInterpolatedAsync($@"
+            INSERT OR IGNORE INTO partidas_jugadas (UserId, PartidaId, Modo, Resultado, Monedas, Xp, FechaUtc)
+            VALUES ({id}, {req.PartidaId}, {modo}, {resultado}, {monedas}, {xp}, {DateTime.UtcNow.ToString("o")});");
+        bool yaAplicada = filas == 0;
+
+        if (!yaAplicada)
+        {
+            u.Monedas += monedas;
+            u.Experiencia += xp;
+            if (modo != "tutorial")
+            {
+                switch (resultado)
+                {
+                    case "victoria": u.Victorias++; break;
+                    case "derrota":  u.Derrotas++;  break;
+                    case "empate":   u.Empates++;   break;
+                }
+                u.DañoTotal += Math.Clamp(req.DañoHecho, 0, 100000);
+            }
+            await _db.SaveChangesAsync();
+        }
+
+        return Ok(new
+        {
+            ok = true,
+            yaAplicada,
+            resultado,
+            ganado = yaAplicada ? 0 : monedas,
+            xpGanada = yaAplicada ? 0 : xp,
+            monedas = u.Monedas,
+            experiencia = u.Experiencia,
+            victorias = u.Victorias,
+            derrotas = u.Derrotas,
+            empates = u.Empates
+        });
+    }
+
+    // POST api/usuarios/{id}/mazo { mazo }  → guarda el mazo armado en la cuenta (JSON tal cual lo
+    // guarda el cliente en su archivo). Se devuelve en /inventario al iniciar sesión en otro celular.
+    public class MazoRequest { public string Mazo { get; set; } = ""; }
+
+    [HttpPost("{id}/mazo")]
+    public async Task<IActionResult> GuardarMazo(int id, [FromBody] MazoRequest req)
+    {
+        if (req == null || req.Mazo == null || req.Mazo.Length > 16000)
+            return BadRequest(new { ok = false, mensaje = "Mazo inválido." });
+        var u = await _db.Usuarios.FindAsync(id);
+        if (u == null) return NotFound(new { ok = false, mensaje = "Usuario no encontrado." });
+        u.MazoJson = req.Mazo;
+        await _db.SaveChangesAsync();
+        return Ok(new { ok = true });
+    }
+
     // POST: api/usuarios/resultado
-    // Llamado al terminar una partida para actualizar stats
+    // Llamado al terminar una partida para actualizar stats (versiones ≤ 1.1.1; las nuevas usan
+    // /{id}/recompensa). Se mantiene para que los APK viejos sigan funcionando.
     [HttpPost("resultado")]
     public async Task<IActionResult> GuardarResultado([FromBody] ResultadoPartidaRequest req)
     {
@@ -175,6 +301,7 @@ public class UsuariosController : ControllerBase
 
     // POST: api/usuarios/{id}/monedas   { monedas }
     // El cliente sincroniza su saldo (tras ganar/gastar). El servidor guarda el valor absoluto.
+    // Solo lo usan los APK ≤ 1.1.1 (los nuevos nunca mandan un saldo: el servidor suma y resta).
     public class MonedasSyncRequest { public int Monedas { get; set; } }
 
     [HttpPost("{id}/monedas")]
@@ -203,6 +330,10 @@ public class UsuariosController : ControllerBase
         return Ok(new
         {
             monedas = u.Monedas,
+            experiencia = u.Experiencia,
+            victorias = u.Victorias,
+            derrotas = u.Derrotas,
+            mazo = u.MazoJson,
             equipSkinIdx = u.EquipSkinIdx,
             equipSkinExclusiva = u.EquipSkinExclusiva,
             equipTronoIdx = u.EquipTronoIdx,
@@ -261,6 +392,7 @@ public class UsuariosController : ControllerBase
         EquipSkinIdx       = u.EquipSkinIdx,
         EquipSkinExclusiva = u.EquipSkinExclusiva,
         EquipTronoIdx      = u.EquipTronoIdx,
+        Experiencia = u.Experiencia,
         Victorias = u.Victorias,
         Derrotas  = u.Derrotas,
         Empates   = u.Empates,

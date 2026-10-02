@@ -541,7 +541,8 @@ public partial class Campo1 : Node2D
 		var btnPausa = capa.GetNodeOrNull<TextureButton>("PausaButton");
 		if (btnPausa != null)
 		{
-			if (ContextoOnline.Activo) btnPausa.Visible = false; // sin pausa en partidas en línea
+			// En línea (rival real o bot) no hay pausa: en su lugar va el botón de retirada.
+			if (PareceOnline) ConfigurarBotonRetirada(btnPausa);
 			else btnPausa.Pressed += () => GetNodeOrNull<MenuPausa>("MenuPausa")?.Pausar();
 		}
 
@@ -647,7 +648,7 @@ public partial class Campo1 : Node2D
 		foreach (Node n in capa.GetChildren())
 		{
 			if (n is not CanvasItem ci || !IsInstanceValid(ci)) continue;
-			if (n.Name == "PausaButton" || ci == btnSacrificio) continue; // Pausa y Sacrificio siguen vivos
+			if (n.Name == "PausaButton" || n.Name == "RetiradaButton" || ci == btnSacrificio) continue; // Pausa/Retirada y Sacrificio siguen vivos
 			AtenuarParaSacrificio(ci);
 		}
 		foreach (Control mano in new[] { contenedorMano, _contenedorHechizos })

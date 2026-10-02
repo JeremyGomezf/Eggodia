@@ -29,6 +29,10 @@ namespace Eggodia.API.model
         public int MaxUsos { get; set; } = 1;
 
         public int UsosActuales { get; set; } = 0;
+
+        // Vencimiento (UTC). Null = no vence. Para códigos compartidos por tiempo limitado (p. ej. uno
+        // solo para todo un evento, válido 20 horas).
+        public DateTime? ExpiraUtc { get; set; }
     }
 
     /// <summary>

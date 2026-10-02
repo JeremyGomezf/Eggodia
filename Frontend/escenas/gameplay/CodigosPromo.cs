@@ -104,7 +104,13 @@ public static class CodigosPromo
 				}
 				else if (tipo == "monedas" && int.TryParse(valor, out monedas))
 				{
-					Economia.Instancia()?.Agregar(monedas);
+					// El servidor ya sumó las monedas a la cuenta y manda el saldo nuevo: se adopta tal
+					// cual. Un servidor viejo no lo manda → se suma como antes.
+					int cuenta = SesionJuego.Instance?.UsuarioId ?? -1;
+					if (root.TryGetProperty("monedas", out var pSaldo) && pSaldo.TryGetInt32(out int saldo) && cuenta > 0)
+						Economia.Instancia()?.AdoptarDeServidor(cuenta, saldo);
+					else
+						Economia.Instancia()?.AgregarModoViejo(monedas);
 				}
 
 				return new ResultadoCanje

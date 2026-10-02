@@ -47,6 +47,8 @@ public class MatchController : ControllerBase
     {
         var p = _gestor.Obtener(id);
         if (p == null) return NotFound(new { mensaje = "partida no existe" });
+        // Si lleva esperando lo suficiente y no apareció nadie real, rival bot (ver GestorPartidas).
+        if (p.JugadorAId == jugadorId) _gestor.AsignarBotSiTocaEsperar(p);
         return Ok(Serializar(p, jugadorId));
     }
 
@@ -90,20 +92,25 @@ public class MatchController : ControllerBase
     public IActionResult Latido(string id, [FromBody] ColaRequest req)
     {
         if (req == null || string.IsNullOrWhiteSpace(req.JugadorId)) return BadRequest(new { mensaje = "jugadorId requerido" });
-        var (rivalCaido, resultado) = _gestor.LatidoYEstado(id, req.JugadorId);
-        return Ok(new { rivalCaido, resultado });
+        // 404 = la partida ya no existe (p. ej. el servidor se reinició): el cliente lo avisa y vuelve al
+        // menú en vez de quedarse esperando para siempre.
+        if (_gestor.Obtener(id) == null) return NotFound(new { mensaje = "partida no existe" });
+        var e = _gestor.LatidoYEstado(id, req.JugadorId);
+        return Ok(new { rivalCaido = e.RivalCaido, resultado = e.Resultado, motivo = e.Motivo, rivalSilencio = e.RivalSilencioSeg });
     }
 
     // El cliente reporta el ganador al terminar la partida (huevo a 0 o por tiempo). El primero en
     // reportar fija el resultado; ambos clientes lo leen y muestran lo mismo (evita "los dos ganan").
-    public class ResultadoRequest { public string JugadorId { get; set; } = ""; public string Ganador { get; set; } = ""; }
+    // Motivo: "normal" (huevo a 0 o por tiempo) o "rendicion" (el que reporta se rinde: ganador = el otro).
+    public class ResultadoRequest { public string JugadorId { get; set; } = ""; public string Ganador { get; set; } = ""; public string Motivo { get; set; } = ""; }
 
     [HttpPost("{id}/resultado")]
     public IActionResult ReportarResultado(string id, [FromBody] ResultadoRequest req)
     {
         if (req == null) return BadRequest(new { mensaje = "cuerpo requerido" });
-        string resultado = _gestor.ReportarResultado(id, req.Ganador);
-        return Ok(new { resultado });
+        if (_gestor.Obtener(id) == null) return NotFound(new { mensaje = "partida no existe" });
+        var (resultado, motivo) = _gestor.ReportarResultado(id, req.JugadorId, req.Ganador, req.Motivo);
+        return Ok(new { resultado, motivo });
     }
 
     // ── Acciones en vivo ──────────────────────────────────────────────────
@@ -148,7 +155,9 @@ public class MatchController : ControllerBase
             jugadorB = p.JugadorBNombre ?? "",
             rival,
             rivalSkinIdx,
-            rivalTronoIdx
+            rivalTronoIdx,
+            // El cliente juega contra la CPU (el bot del VS BOT), pero lo muestra como un rival en línea común.
+            rivalEsBot = p.EsBot
         };
     }
 }
