@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://7phua04l0wtf"
-path="res://.godot/imported/BotonDuda.png-68d17158a3fd43cb569e0fbf703963f2.ctex"
+path.s3tc="res://.godot/imported/BotonDuda.png-68d17158a3fd43cb569e0fbf703963f2.s3tc.ctex"
+path.etc2="res://.godot/imported/BotonDuda.png-68d17158a3fd43cb569e0fbf703963f2.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuConstructor/BotonDuda.png"
-dest_files=["res://.godot/imported/BotonDuda.png-68d17158a3fd43cb569e0fbf703963f2.ctex"]
+dest_files=["res://.godot/imported/BotonDuda.png-68d17158a3fd43cb569e0fbf703963f2.s3tc.ctex", "res://.godot/imported/BotonDuda.png-68d17158a3fd43cb569e0fbf703963f2.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cmgambb0swuag"
-path="res://.godot/imported/Granadero_Cart.png-1696aae4464fd9dbf4b848ef5d6bb65d.ctex"
+path.s3tc="res://.godot/imported/Granadero_Cart.png-1696aae4464fd9dbf4b848ef5d6bb65d.s3tc.ctex"
+path.etc2="res://.godot/imported/Granadero_Cart.png-1696aae4464fd9dbf4b848ef5d6bb65d.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/CartasPng/Granadero_Cart.png"
-dest_files=["res://.godot/imported/Granadero_Cart.png-1696aae4464fd9dbf4b848ef5d6bb65d.ctex"]
+dest_files=["res://.godot/imported/Granadero_Cart.png-1696aae4464fd9dbf4b848ef5d6bb65d.s3tc.ctex", "res://.godot/imported/Granadero_Cart.png-1696aae4464fd9dbf4b848ef5d6bb65d.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

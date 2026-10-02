@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dbq7l6a8lpkro"
-path="res://.godot/imported/ReyHuevoCrowned.png-44da22e4ba248446c762fddd74ff6407.ctex"
+path.s3tc="res://.godot/imported/ReyHuevoCrowned.png-44da22e4ba248446c762fddd74ff6407.s3tc.ctex"
+path.etc2="res://.godot/imported/ReyHuevoCrowned.png-44da22e4ba248446c762fddd74ff6407.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuNuevo/ReyHuevoCrowned.png"
-dest_files=["res://.godot/imported/ReyHuevoCrowned.png-44da22e4ba248446c762fddd74ff6407.ctex"]
+dest_files=["res://.godot/imported/ReyHuevoCrowned.png-44da22e4ba248446c762fddd74ff6407.s3tc.ctex", "res://.godot/imported/ReyHuevoCrowned.png-44da22e4ba248446c762fddd74ff6407.etc2.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

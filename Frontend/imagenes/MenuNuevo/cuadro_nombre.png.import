@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ybkgcvcc4xxa"
-path="res://.godot/imported/cuadro_nombre.png-9bb1f7f38aeff06c350c09aa0e083667.ctex"
+path.s3tc="res://.godot/imported/cuadro_nombre.png-9bb1f7f38aeff06c350c09aa0e083667.s3tc.ctex"
+path.etc2="res://.godot/imported/cuadro_nombre.png-9bb1f7f38aeff06c350c09aa0e083667.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuNuevo/cuadro_nombre.png"
-dest_files=["res://.godot/imported/cuadro_nombre.png-9bb1f7f38aeff06c350c09aa0e083667.ctex"]
+dest_files=["res://.godot/imported/cuadro_nombre.png-9bb1f7f38aeff06c350c09aa0e083667.s3tc.ctex", "res://.godot/imported/cuadro_nombre.png-9bb1f7f38aeff06c350c09aa0e083667.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

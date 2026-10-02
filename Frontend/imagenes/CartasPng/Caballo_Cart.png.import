@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bplkv7lpgh2cm"
-path="res://.godot/imported/Caballo_Cart.png-284aa04c056e3b9479f37bccc1911aa5.ctex"
+path.s3tc="res://.godot/imported/Caballo_Cart.png-284aa04c056e3b9479f37bccc1911aa5.s3tc.ctex"
+path.etc2="res://.godot/imported/Caballo_Cart.png-284aa04c056e3b9479f37bccc1911aa5.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/CartasPng/Caballo_Cart.png"
-dest_files=["res://.godot/imported/Caballo_Cart.png-284aa04c056e3b9479f37bccc1911aa5.ctex"]
+dest_files=["res://.godot/imported/Caballo_Cart.png-284aa04c056e3b9479f37bccc1911aa5.s3tc.ctex", "res://.godot/imported/Caballo_Cart.png-284aa04c056e3b9479f37bccc1911aa5.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

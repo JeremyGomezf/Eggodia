@@ -2,20 +2,22 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ds6u108gcr3n2"
-path="res://.godot/imported/nube3.png-920c01c1dcbfeb716dd284d756b6dcbe.ctex"
+uid="uid://ruxmqulvhvgk"
+path.s3tc="res://.godot/imported/CamperoCartoonSprite.png-45f4bb81e4df9870fdee6d5ec67f5b5a.s3tc.ctex"
+path.etc2="res://.godot/imported/CamperoCartoonSprite.png-45f4bb81e4df9870fdee6d5ec67f5b5a.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
-source_file="res://imagenes/Escenarios/nube3.png"
-dest_files=["res://.godot/imported/nube3.png-920c01c1dcbfeb716dd284d756b6dcbe.ctex"]
+source_file="res://imagenes/sprites/Guerra Cartoons/CamperoCartoonSprite.png"
+dest_files=["res://.godot/imported/CamperoCartoonSprite.png-45f4bb81e4df9870fdee6d5ec67f5b5a.s3tc.ctex", "res://.godot/imported/CamperoCartoonSprite.png-45f4bb81e4df9870fdee6d5ec67f5b5a.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

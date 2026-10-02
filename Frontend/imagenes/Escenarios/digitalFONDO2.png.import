@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cevq45dt7xaj3"
-path="res://.godot/imported/digitalFONDO2.png-aa8670a1ef2e4c88b906db012ab4c0d5.ctex"
+path.s3tc="res://.godot/imported/digitalFONDO2.png-aa8670a1ef2e4c88b906db012ab4c0d5.s3tc.ctex"
+path.etc2="res://.godot/imported/digitalFONDO2.png-aa8670a1ef2e4c88b906db012ab4c0d5.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/Escenarios/digitalFONDO2.png"
-dest_files=["res://.godot/imported/digitalFONDO2.png-aa8670a1ef2e4c88b906db012ab4c0d5.ctex"]
+dest_files=["res://.godot/imported/digitalFONDO2.png-aa8670a1ef2e4c88b906db012ab4c0d5.s3tc.ctex", "res://.godot/imported/digitalFONDO2.png-aa8670a1ef2e4c88b906db012ab4c0d5.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

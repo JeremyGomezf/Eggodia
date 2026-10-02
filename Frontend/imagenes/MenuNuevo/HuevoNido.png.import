@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://5em42bh2gkr2"
-path="res://.godot/imported/HuevoNido.png-286d05b9ba54bf977476150dfcacf344.ctex"
+path.s3tc="res://.godot/imported/HuevoNido.png-286d05b9ba54bf977476150dfcacf344.s3tc.ctex"
+path.etc2="res://.godot/imported/HuevoNido.png-286d05b9ba54bf977476150dfcacf344.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuNuevo/HuevoNido.png"
-dest_files=["res://.godot/imported/HuevoNido.png-286d05b9ba54bf977476150dfcacf344.ctex"]
+dest_files=["res://.godot/imported/HuevoNido.png-286d05b9ba54bf977476150dfcacf344.s3tc.ctex", "res://.godot/imported/HuevoNido.png-286d05b9ba54bf977476150dfcacf344.etc2.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://67ifoyaaom7f"
-path="res://.godot/imported/Fuerza_hechizo.png-28bb110a463405e5c1fa3befad3c4b90.ctex"
+path.s3tc="res://.godot/imported/Fuerza_hechizo.png-28bb110a463405e5c1fa3befad3c4b90.s3tc.ctex"
+path.etc2="res://.godot/imported/Fuerza_hechizo.png-28bb110a463405e5c1fa3befad3c4b90.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/HechizosPng/Fuerza_hechizo.png"
-dest_files=["res://.godot/imported/Fuerza_hechizo.png-28bb110a463405e5c1fa3befad3c4b90.ctex"]
+dest_files=["res://.godot/imported/Fuerza_hechizo.png-28bb110a463405e5c1fa3befad3c4b90.s3tc.ctex", "res://.godot/imported/Fuerza_hechizo.png-28bb110a463405e5c1fa3befad3c4b90.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://526p8y83mt3f"
-path="res://.godot/imported/BotonCartasNegativo.png-8c17b84cec5cbc91f03f74fb5e4be8c8.ctex"
+path.s3tc="res://.godot/imported/BotonCartasNegativo.png-8c17b84cec5cbc91f03f74fb5e4be8c8.s3tc.ctex"
+path.etc2="res://.godot/imported/BotonCartasNegativo.png-8c17b84cec5cbc91f03f74fb5e4be8c8.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuNuevo/BotonCartasNegativo.png"
-dest_files=["res://.godot/imported/BotonCartasNegativo.png-8c17b84cec5cbc91f03f74fb5e4be8c8.ctex"]
+dest_files=["res://.godot/imported/BotonCartasNegativo.png-8c17b84cec5cbc91f03f74fb5e4be8c8.s3tc.ctex", "res://.godot/imported/BotonCartasNegativo.png-8c17b84cec5cbc91f03f74fb5e4be8c8.etc2.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -2,20 +2,22 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b538rfagns3de"
-path="res://.godot/imported/Info_Tropa.png-4f477635d2309d5c57b13d948df1fc81.ctex"
+uid="uid://ct80fbjtdbp6c"
+path.s3tc="res://.godot/imported/KabarCartoonSprite.png-27fecaa561d82ba4d4c68597e25f1b8c.s3tc.ctex"
+path.etc2="res://.godot/imported/KabarCartoonSprite.png-27fecaa561d82ba4d4c68597e25f1b8c.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
-source_file="res://imagenes/MenuConstructor/Info_Tropa.png"
-dest_files=["res://.godot/imported/Info_Tropa.png-4f477635d2309d5c57b13d948df1fc81.ctex"]
+source_file="res://imagenes/sprites/Guerra Cartoons/KabarCartoonSprite.png"
+dest_files=["res://.godot/imported/KabarCartoonSprite.png-27fecaa561d82ba4d4c68597e25f1b8c.s3tc.ctex", "res://.godot/imported/KabarCartoonSprite.png-27fecaa561d82ba4d4c68597e25f1b8c.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

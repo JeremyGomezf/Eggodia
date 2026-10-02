@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dvmtcn06d8cf4"
-path="res://.godot/imported/Tropa_Mazo.png-e9b7987d6cd821d9a1c0502bb360b49f.ctex"
+path.s3tc="res://.godot/imported/Tropa_Mazo.png-e9b7987d6cd821d9a1c0502bb360b49f.s3tc.ctex"
+path.etc2="res://.godot/imported/Tropa_Mazo.png-e9b7987d6cd821d9a1c0502bb360b49f.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuConstructor/Tropa_Mazo.png"
-dest_files=["res://.godot/imported/Tropa_Mazo.png-e9b7987d6cd821d9a1c0502bb360b49f.ctex"]
+dest_files=["res://.godot/imported/Tropa_Mazo.png-e9b7987d6cd821d9a1c0502bb360b49f.s3tc.ctex", "res://.godot/imported/Tropa_Mazo.png-e9b7987d6cd821d9a1c0502bb360b49f.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

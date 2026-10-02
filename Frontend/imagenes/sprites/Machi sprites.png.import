@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cl7cf40lojjch"
-path="res://.godot/imported/Machi sprites.png-0a1a50f8da52fd6a82369aea560bc646.ctex"
+path.s3tc="res://.godot/imported/Machi sprites.png-0a1a50f8da52fd6a82369aea560bc646.s3tc.ctex"
+path.etc2="res://.godot/imported/Machi sprites.png-0a1a50f8da52fd6a82369aea560bc646.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Machi sprites.png"
-dest_files=["res://.godot/imported/Machi sprites.png-0a1a50f8da52fd6a82369aea560bc646.ctex"]
+dest_files=["res://.godot/imported/Machi sprites.png-0a1a50f8da52fd6a82369aea560bc646.s3tc.ctex", "res://.godot/imported/Machi sprites.png-0a1a50f8da52fd6a82369aea560bc646.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

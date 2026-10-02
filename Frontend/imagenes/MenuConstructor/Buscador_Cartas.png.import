@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0dpuca3mgc7k"
-path="res://.godot/imported/Buscador_Cartas.png-000bee44a6d68cd812f69f034b5366d0.ctex"
+path.s3tc="res://.godot/imported/Buscador_Cartas.png-000bee44a6d68cd812f69f034b5366d0.s3tc.ctex"
+path.etc2="res://.godot/imported/Buscador_Cartas.png-000bee44a6d68cd812f69f034b5366d0.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuConstructor/Buscador_Cartas.png"
-dest_files=["res://.godot/imported/Buscador_Cartas.png-000bee44a6d68cd812f69f034b5366d0.ctex"]
+dest_files=["res://.godot/imported/Buscador_Cartas.png-000bee44a6d68cd812f69f034b5366d0.s3tc.ctex", "res://.godot/imported/Buscador_Cartas.png-000bee44a6d68cd812f69f034b5366d0.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

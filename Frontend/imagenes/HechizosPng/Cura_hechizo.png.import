@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://blalx0q20p7st"
-path="res://.godot/imported/Cura_hechizo.png-64dc6341fa74c8747c7d6393ddeee257.ctex"
+path.s3tc="res://.godot/imported/Cura_hechizo.png-64dc6341fa74c8747c7d6393ddeee257.s3tc.ctex"
+path.etc2="res://.godot/imported/Cura_hechizo.png-64dc6341fa74c8747c7d6393ddeee257.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/HechizosPng/Cura_hechizo.png"
-dest_files=["res://.godot/imported/Cura_hechizo.png-64dc6341fa74c8747c7d6393ddeee257.ctex"]
+dest_files=["res://.godot/imported/Cura_hechizo.png-64dc6341fa74c8747c7d6393ddeee257.s3tc.ctex", "res://.godot/imported/Cura_hechizo.png-64dc6341fa74c8747c7d6393ddeee257.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://kf7oiropv673"
-path="res://.godot/imported/medievalFONDO.png-79510c04db965f0c5631cc687327ede2.ctex"
+path.s3tc="res://.godot/imported/medievalFONDO.png-79510c04db965f0c5631cc687327ede2.s3tc.ctex"
+path.etc2="res://.godot/imported/medievalFONDO.png-79510c04db965f0c5631cc687327ede2.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/Escenarios/medievalFONDO.png"
-dest_files=["res://.godot/imported/medievalFONDO.png-79510c04db965f0c5631cc687327ede2.ctex"]
+dest_files=["res://.godot/imported/medievalFONDO.png-79510c04db965f0c5631cc687327ede2.s3tc.ctex", "res://.godot/imported/medievalFONDO.png-79510c04db965f0c5631cc687327ede2.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3isse6qikajh"
-path="res://.godot/imported/Moneda_icon.png-037c772fe24879fed995b0b2ee299e1a.ctex"
+path.s3tc="res://.godot/imported/Moneda_icon.png-037c772fe24879fed995b0b2ee299e1a.s3tc.ctex"
+path.etc2="res://.godot/imported/Moneda_icon.png-037c772fe24879fed995b0b2ee299e1a.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuNuevo/Moneda_icon.png"
-dest_files=["res://.godot/imported/Moneda_icon.png-037c772fe24879fed995b0b2ee299e1a.ctex"]
+dest_files=["res://.godot/imported/Moneda_icon.png-037c772fe24879fed995b0b2ee299e1a.s3tc.ctex", "res://.godot/imported/Moneda_icon.png-037c772fe24879fed995b0b2ee299e1a.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

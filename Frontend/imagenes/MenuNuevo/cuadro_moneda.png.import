@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://wtm5o1b8pog"
-path="res://.godot/imported/cuadro_moneda.png-9dc4b50669e03d440ff351cfc378aec8.ctex"
+path.s3tc="res://.godot/imported/cuadro_moneda.png-9dc4b50669e03d440ff351cfc378aec8.s3tc.ctex"
+path.etc2="res://.godot/imported/cuadro_moneda.png-9dc4b50669e03d440ff351cfc378aec8.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuNuevo/cuadro_moneda.png"
-dest_files=["res://.godot/imported/cuadro_moneda.png-9dc4b50669e03d440ff351cfc378aec8.ctex"]
+dest_files=["res://.godot/imported/cuadro_moneda.png-9dc4b50669e03d440ff351cfc378aec8.s3tc.ctex", "res://.godot/imported/cuadro_moneda.png-9dc4b50669e03d440ff351cfc378aec8.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

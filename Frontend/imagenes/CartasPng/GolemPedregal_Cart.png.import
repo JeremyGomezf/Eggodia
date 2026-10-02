@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b85nu0gjw2jyi"
-path="res://.godot/imported/GolemPedregal_Cart.png-f4d0ab37b09dae610cf64f980c78bd3f.ctex"
+path.s3tc="res://.godot/imported/GolemPedregal_Cart.png-f4d0ab37b09dae610cf64f980c78bd3f.s3tc.ctex"
+path.etc2="res://.godot/imported/GolemPedregal_Cart.png-f4d0ab37b09dae610cf64f980c78bd3f.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/CartasPng/GolemPedregal_Cart.png"
-dest_files=["res://.godot/imported/GolemPedregal_Cart.png-f4d0ab37b09dae610cf64f980c78bd3f.ctex"]
+dest_files=["res://.godot/imported/GolemPedregal_Cart.png-f4d0ab37b09dae610cf64f980c78bd3f.s3tc.ctex", "res://.godot/imported/GolemPedregal_Cart.png-f4d0ab37b09dae610cf64f980c78bd3f.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

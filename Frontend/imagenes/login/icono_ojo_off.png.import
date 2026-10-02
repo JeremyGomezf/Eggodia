@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cx60kt24g5hue"
-path="res://.godot/imported/icono_ojo_off.png-1ee6d0bc83db3566693db383c82b3981.ctex"
+path.s3tc="res://.godot/imported/icono_ojo_off.png-1ee6d0bc83db3566693db383c82b3981.s3tc.ctex"
+path.etc2="res://.godot/imported/icono_ojo_off.png-1ee6d0bc83db3566693db383c82b3981.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/login/icono_ojo_off.png"
-dest_files=["res://.godot/imported/icono_ojo_off.png-1ee6d0bc83db3566693db383c82b3981.ctex"]
+dest_files=["res://.godot/imported/icono_ojo_off.png-1ee6d0bc83db3566693db383c82b3981.s3tc.ctex", "res://.godot/imported/icono_ojo_off.png-1ee6d0bc83db3566693db383c82b3981.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

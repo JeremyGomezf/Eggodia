@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djmjqa33qgyl0"
-path.s3tc="res://.godot/imported/Soldado explosivo 3.png-8586764d0c16d071501d2c71bd5cd824.s3tc.ctex"
-path.etc2="res://.godot/imported/Soldado explosivo 3.png-8586764d0c16d071501d2c71bd5cd824.etc2.ctex"
+uid="uid://dhsyr7g1yha45"
+path.s3tc="res://.godot/imported/GranaderoCartoon-faceta2-Sprite.png-5941e6df16b737733c9d74835ab0e875.s3tc.ctex"
+path.etc2="res://.godot/imported/GranaderoCartoon-faceta2-Sprite.png-5941e6df16b737733c9d74835ab0e875.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ metadata={
 
 [deps]
 
-source_file="res://imagenes/sprites/Guerra Cartoons/Soldado explosivo 3.png"
-dest_files=["res://.godot/imported/Soldado explosivo 3.png-8586764d0c16d071501d2c71bd5cd824.s3tc.ctex", "res://.godot/imported/Soldado explosivo 3.png-8586764d0c16d071501d2c71bd5cd824.etc2.ctex"]
+source_file="res://imagenes/sprites/Guerra Cartoons/GranaderoCartoon-faceta2-Sprite.png"
+dest_files=["res://.godot/imported/GranaderoCartoon-faceta2-Sprite.png-5941e6df16b737733c9d74835ab0e875.s3tc.ctex", "res://.godot/imported/GranaderoCartoon-faceta2-Sprite.png-5941e6df16b737733c9d74835ab0e875.etc2.ctex"]
 
 [params]
 
@@ -25,7 +25,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

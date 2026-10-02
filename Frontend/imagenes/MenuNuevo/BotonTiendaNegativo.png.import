@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c5utt6tl7bxxr"
-path="res://.godot/imported/BotonTiendaNegativo.png-336fd468cf5ea5ffce220799e9b4d023.ctex"
+path.s3tc="res://.godot/imported/BotonTiendaNegativo.png-336fd468cf5ea5ffce220799e9b4d023.s3tc.ctex"
+path.etc2="res://.godot/imported/BotonTiendaNegativo.png-336fd468cf5ea5ffce220799e9b4d023.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuNuevo/BotonTiendaNegativo.png"
-dest_files=["res://.godot/imported/BotonTiendaNegativo.png-336fd468cf5ea5ffce220799e9b4d023.ctex"]
+dest_files=["res://.godot/imported/BotonTiendaNegativo.png-336fd468cf5ea5ffce220799e9b4d023.s3tc.ctex", "res://.godot/imported/BotonTiendaNegativo.png-336fd468cf5ea5ffce220799e9b4d023.etc2.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

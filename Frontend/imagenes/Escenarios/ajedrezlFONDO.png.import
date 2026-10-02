@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bh5p2d4wtxage"
-path="res://.godot/imported/ajedrezlFONDO.png-f5988f9eea17ee71f1ed4788476657ec.ctex"
+path.s3tc="res://.godot/imported/ajedrezlFONDO.png-f5988f9eea17ee71f1ed4788476657ec.s3tc.ctex"
+path.etc2="res://.godot/imported/ajedrezlFONDO.png-f5988f9eea17ee71f1ed4788476657ec.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/Escenarios/ajedrezlFONDO.png"
-dest_files=["res://.godot/imported/ajedrezlFONDO.png-f5988f9eea17ee71f1ed4788476657ec.ctex"]
+dest_files=["res://.godot/imported/ajedrezlFONDO.png-f5988f9eea17ee71f1ed4788476657ec.s3tc.ctex", "res://.godot/imported/ajedrezlFONDO.png-f5988f9eea17ee71f1ed4788476657ec.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

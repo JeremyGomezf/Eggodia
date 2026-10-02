@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c4chfssapoipn"
-path.s3tc="res://.godot/imported/Peon Ajedrez.png-50b0fcf1212ed5704678ee58d3df6273.s3tc.ctex"
-path.etc2="res://.godot/imported/Peon Ajedrez.png-50b0fcf1212ed5704678ee58d3df6273.etc2.ctex"
+uid="uid://cs5ly52p48eu0"
+path.s3tc="res://.godot/imported/GranaderoCartoon-faceta1-Sprite.png-db72a6c76f09917c8003357b8c3ad0ef.s3tc.ctex"
+path.etc2="res://.godot/imported/GranaderoCartoon-faceta1-Sprite.png-db72a6c76f09917c8003357b8c3ad0ef.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ metadata={
 
 [deps]
 
-source_file="res://imagenes/sprites/Ajedrez/Peon Ajedrez.png"
-dest_files=["res://.godot/imported/Peon Ajedrez.png-50b0fcf1212ed5704678ee58d3df6273.s3tc.ctex", "res://.godot/imported/Peon Ajedrez.png-50b0fcf1212ed5704678ee58d3df6273.etc2.ctex"]
+source_file="res://imagenes/sprites/Guerra Cartoons/GranaderoCartoon-faceta1-Sprite.png"
+dest_files=["res://.godot/imported/GranaderoCartoon-faceta1-Sprite.png-db72a6c76f09917c8003357b8c3ad0ef.s3tc.ctex", "res://.godot/imported/GranaderoCartoon-faceta1-Sprite.png-db72a6c76f09917c8003357b8c3ad0ef.etc2.ctex"]
 
 [params]
 
@@ -25,7 +25,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

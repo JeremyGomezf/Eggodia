@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://wbgapvccx4it"
-path="res://.godot/imported/Efectos_OG3.png-4fea11c24c7bc92bb58871dd27e3d68c.ctex"
+path.s3tc="res://.godot/imported/Efectos_OG3.png-4fea11c24c7bc92bb58871dd27e3d68c.s3tc.ctex"
+path.etc2="res://.godot/imported/Efectos_OG3.png-4fea11c24c7bc92bb58871dd27e3d68c.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/sprites/Guerra Cartoons/Efectos_OG3.png"
-dest_files=["res://.godot/imported/Efectos_OG3.png-4fea11c24c7bc92bb58871dd27e3d68c.ctex"]
+dest_files=["res://.godot/imported/Efectos_OG3.png-4fea11c24c7bc92bb58871dd27e3d68c.s3tc.ctex", "res://.godot/imported/Efectos_OG3.png-4fea11c24c7bc92bb58871dd27e3d68c.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

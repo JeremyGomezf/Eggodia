@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://drcvyj61tl2uo"
-path="res://.godot/imported/FondoPortalOceano.jpg-f80d58b2db3984e918df9138bbaddf28.ctex"
+path.s3tc="res://.godot/imported/FondoPortalOceano.jpg-f80d58b2db3984e918df9138bbaddf28.s3tc.ctex"
+path.etc2="res://.godot/imported/FondoPortalOceano.jpg-f80d58b2db3984e918df9138bbaddf28.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/UI_Dialogo/FondoPortalOceano.jpg"
-dest_files=["res://.godot/imported/FondoPortalOceano.jpg-f80d58b2db3984e918df9138bbaddf28.ctex"]
+dest_files=["res://.godot/imported/FondoPortalOceano.jpg-f80d58b2db3984e918df9138bbaddf28.s3tc.ctex", "res://.godot/imported/FondoPortalOceano.jpg-f80d58b2db3984e918df9138bbaddf28.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

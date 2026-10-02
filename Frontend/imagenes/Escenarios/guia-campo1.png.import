@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c44dqpje7p5fk"
-path="res://.godot/imported/guia-campo1.png-774701e67b114f012912c03ab9f84663.ctex"
+path.s3tc="res://.godot/imported/guia-campo1.png-774701e67b114f012912c03ab9f84663.s3tc.ctex"
+path.etc2="res://.godot/imported/guia-campo1.png-774701e67b114f012912c03ab9f84663.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/Escenarios/guia-campo1.png"
-dest_files=["res://.godot/imported/guia-campo1.png-774701e67b114f012912c03ab9f84663.ctex"]
+dest_files=["res://.godot/imported/guia-campo1.png-774701e67b114f012912c03ab9f84663.s3tc.ctex", "res://.godot/imported/guia-campo1.png-774701e67b114f012912c03ab9f84663.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

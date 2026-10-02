@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bt7ggvpnn88n5"
-path="res://.godot/imported/Machi_Cart.png-7ca35f14bf0777b2358fd148de2bb265.ctex"
+path.s3tc="res://.godot/imported/Machi_Cart.png-7ca35f14bf0777b2358fd148de2bb265.s3tc.ctex"
+path.etc2="res://.godot/imported/Machi_Cart.png-7ca35f14bf0777b2358fd148de2bb265.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/CartasPng/Machi_Cart.png"
-dest_files=["res://.godot/imported/Machi_Cart.png-7ca35f14bf0777b2358fd148de2bb265.ctex"]
+dest_files=["res://.godot/imported/Machi_Cart.png-7ca35f14bf0777b2358fd148de2bb265.s3tc.ctex", "res://.godot/imported/Machi_Cart.png-7ca35f14bf0777b2358fd148de2bb265.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

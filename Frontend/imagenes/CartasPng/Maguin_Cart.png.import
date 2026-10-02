@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cb2hpgs3wqkji"
-path="res://.godot/imported/Maguin_Cart.png-5561fb5c71afd9ebee72f29fa4d8b240.ctex"
+path.s3tc="res://.godot/imported/Maguin_Cart.png-5561fb5c71afd9ebee72f29fa4d8b240.s3tc.ctex"
+path.etc2="res://.godot/imported/Maguin_Cart.png-5561fb5c71afd9ebee72f29fa4d8b240.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/CartasPng/Maguin_Cart.png"
-dest_files=["res://.godot/imported/Maguin_Cart.png-5561fb5c71afd9ebee72f29fa4d8b240.ctex"]
+dest_files=["res://.godot/imported/Maguin_Cart.png-5561fb5c71afd9ebee72f29fa4d8b240.s3tc.ctex", "res://.godot/imported/Maguin_Cart.png-5561fb5c71afd9ebee72f29fa4d8b240.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

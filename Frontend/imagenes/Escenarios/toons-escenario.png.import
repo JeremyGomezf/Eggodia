@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cytlxroaykar"
-path="res://.godot/imported/toons-escenario.png-cb7f2d3599fcfe03bb3dfcf155b7551e.ctex"
+path.s3tc="res://.godot/imported/toons-escenario.png-cb7f2d3599fcfe03bb3dfcf155b7551e.s3tc.ctex"
+path.etc2="res://.godot/imported/toons-escenario.png-cb7f2d3599fcfe03bb3dfcf155b7551e.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/Escenarios/toons-escenario.png"
-dest_files=["res://.godot/imported/toons-escenario.png-cb7f2d3599fcfe03bb3dfcf155b7551e.ctex"]
+dest_files=["res://.godot/imported/toons-escenario.png-cb7f2d3599fcfe03bb3dfcf155b7551e.s3tc.ctex", "res://.godot/imported/toons-escenario.png-cb7f2d3599fcfe03bb3dfcf155b7551e.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

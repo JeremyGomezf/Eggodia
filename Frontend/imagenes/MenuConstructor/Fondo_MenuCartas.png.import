@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://duekpoplhs2sl"
-path="res://.godot/imported/Fondo_MenuCartas.png-7c403e5cd3d03671797cc73ebe5ebc49.ctex"
+path.s3tc="res://.godot/imported/Fondo_MenuCartas.png-7c403e5cd3d03671797cc73ebe5ebc49.s3tc.ctex"
+path.etc2="res://.godot/imported/Fondo_MenuCartas.png-7c403e5cd3d03671797cc73ebe5ebc49.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuConstructor/Fondo_MenuCartas.png"
-dest_files=["res://.godot/imported/Fondo_MenuCartas.png-7c403e5cd3d03671797cc73ebe5ebc49.ctex"]
+dest_files=["res://.godot/imported/Fondo_MenuCartas.png-7c403e5cd3d03671797cc73ebe5ebc49.s3tc.ctex", "res://.godot/imported/Fondo_MenuCartas.png-7c403e5cd3d03671797cc73ebe5ebc49.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

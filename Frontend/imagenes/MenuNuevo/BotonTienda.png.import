@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bcbpmj85dc43b"
-path="res://.godot/imported/BotonTienda.png-cf1b3c32a83de162886eeef86cd93f98.ctex"
+path.s3tc="res://.godot/imported/BotonTienda.png-cf1b3c32a83de162886eeef86cd93f98.s3tc.ctex"
+path.etc2="res://.godot/imported/BotonTienda.png-cf1b3c32a83de162886eeef86cd93f98.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://imagenes/MenuNuevo/BotonTienda.png"
-dest_files=["res://.godot/imported/BotonTienda.png-cf1b3c32a83de162886eeef86cd93f98.ctex"]
+dest_files=["res://.godot/imported/BotonTienda.png-cf1b3c32a83de162886eeef86cd93f98.s3tc.ctex", "res://.godot/imported/BotonTienda.png-cf1b3c32a83de162886eeef86cd93f98.etc2.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -299,7 +299,7 @@ position = Vector2(102, -7)
 position = Vector2(34, -76)
 scale = Vector2(0.155, 0.15828604)
 sprite_frames = SubResource("SpriteFrames_ow3ik")
-animation = &"pre defensa"
+animation = &"idle"
 
 [node name="StatsTropa" type="Control" parent="." unique_id=638377521]
 layout_mode = 3
