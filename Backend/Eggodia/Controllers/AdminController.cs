@@ -30,6 +30,16 @@ public class AdminController : ControllerBase
     private readonly IConfiguration _cfg;
     public AdminController(AppDbContext db, IConfiguration cfg) { _db = db; _cfg = cfg; }
 
+    // Hora de Ecuador para el panel (America/Guayaquil, UTC-5 sin horario de verano).
+    private static readonly TimeZoneInfo ZonaEcuador = BuscarZonaEcuador();
+    private static TimeZoneInfo BuscarZonaEcuador()
+    {
+        foreach (var id in new[] { "America/Guayaquil", "SA Pacific Standard Time" })
+            try { return TimeZoneInfo.FindSystemTimeZoneById(id); } catch { }
+        return TimeZoneInfo.CreateCustomTimeZone("Ecuador", TimeSpan.FromHours(-5), "Ecuador", "Ecuador");
+    }
+    private static DateTime EnUtc(DateTime d) => DateTime.SpecifyKind(d, DateTimeKind.Utc);
+
     private bool ClaveOk(string clave)
     {
         string real = _cfg["Admin:Clave"] ?? "";
@@ -46,17 +56,24 @@ public class AdminController : ControllerBase
         int hoy = 0;
         try
         {
-            var conFecha = await _db.Usuarios
+            var filas = await _db.Usuarios
                 .OrderByDescending(u => u.Id)
                 .Select(u => new {
                     u.Id, u.Nombre, u.Email, u.Monedas,
                     u.Victorias, u.Derrotas, u.Empates, u.DañoTotal,
-                    fecha = (DateTime?)u.FechaRegistro
+                    u.FechaRegistro
                 })
                 .ToListAsync();
-            var hoyUtc = DateTime.UtcNow.Date;
-            hoy = conFecha.Count(x => x.fecha.HasValue && x.fecha.Value.Date == hoyUtc);
-            usuarios = conFecha.Cast<object>().ToList();
+            // La fecha se guarda en UTC pero SQLite la devuelve sin zona: se marca como UTC para que el
+            // JSON lleve la "Z" y el navegador no la tome por hora local (salía 5 horas corrida).
+            // "Hoy" se cuenta con el día de ECUADOR (con el día UTC, después de las 19:00 ya era "mañana").
+            var hoyEcuador = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ZonaEcuador).Date;
+            hoy = filas.Count(x => TimeZoneInfo.ConvertTimeFromUtc(EnUtc(x.FechaRegistro), ZonaEcuador).Date == hoyEcuador);
+            usuarios = filas.Select(u => (object)new {
+                u.Id, u.Nombre, u.Email, u.Monedas,
+                u.Victorias, u.Derrotas, u.Empates, u.DañoTotal,
+                fecha = (DateTime?)EnUtc(u.FechaRegistro)
+            }).ToList();
         }
         catch
         {
@@ -242,6 +259,7 @@ public class AdminController : ControllerBase
   .chip{background:#1a2030;border:1px solid #2b3550;border-radius:10px;padding:6px 12px;font-size:12px}
   .chip b{font-size:19px;display:block;color:#7ee0a1}
   .chip.hoy b{color:#ffd25a}
+  .rel{color:#8fa3c8;font-size:12px}
   .upd{font-size:12px;color:#6b768f;width:100%}
   .crear{display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px;background:#0f1420;border-bottom:1px solid #1c2233}
   .crear input{background:#161d2c;border:1px solid #2b3550;border-radius:8px;color:#e8ecf5;padding:9px 11px;font-size:14px}
@@ -284,7 +302,7 @@ public class AdminController : ControllerBase
 
 <div class='wrap'>
   <table><thead><tr>
-    <th>#</th><th>Nombre</th><th>Email</th><th>💰 Monedas</th><th>Registro</th>
+    <th>#</th><th>Nombre</th><th>Email</th><th>💰 Monedas</th><th>Registro (hora Ecuador)</th>
     <th>V</th><th>D</th><th>E</th><th>Acciones</th>
   </tr></thead><tbody id='tb'></tbody></table>
   <div class='vacio' id='vacio' hidden>Sin cuentas todavía.</div>
@@ -294,7 +312,21 @@ public class AdminController : ControllerBase
 <script>
   const CLAVE='%%CLAVE%%';
   let maxVisto=0, primera=true;
-  function fecha(f){ if(!f) return '—'; const d=new Date(f); return isNaN(d)?'—':d.toLocaleString('es'); }
+  // Todo en hora de ECUADOR, se abra el panel desde donde se abra: 'Hoy 6:18 p. m. (hace 13 min)',
+  // 'Ayer 12:56 p. m.' o '13 sept 2026 · 4:57 p. m.'.
+  const ZONA='America/Guayaquil';
+  function horaEc(d){ return d.toLocaleTimeString('es-EC',{timeZone:ZONA,hour:'numeric',minute:'2-digit',hour12:true}); }
+  function diaEc(d){ return d.toLocaleDateString('en-CA',{timeZone:ZONA}); }
+  function fecha(f){
+    if(!f) return '—'; const d=new Date(f); if(isNaN(d)) return '—';
+    const min=Math.max(0,Math.round((Date.now()-d)/60000));
+    if(diaEc(d)===diaEc(new Date())){
+      const hace = min<60 ? min+' min' : Math.floor(min/60)+' h';
+      return 'Hoy '+horaEc(d)+' <span class=rel>(hace '+hace+')</span>';
+    }
+    if(diaEc(d)===diaEc(new Date(Date.now()-864e5))) return 'Ayer '+horaEc(d);
+    return d.toLocaleDateString('es-EC',{timeZone:ZONA,day:'numeric',month:'short',year:'numeric'})+' · '+horaEc(d);
+  }
   function esc(s){ return (s??'').toString().replace(/[&<>""']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','""':'&quot;',""'"":'&#39;'}[c])); }
   function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
 
@@ -343,7 +375,7 @@ public class AdminController : ControllerBase
       if(!r.ok) throw new Error(r.status);
       const d=await r.json();
       total.textContent=d.total; hoy.textContent=d.hoy;
-      upd.textContent='actualizado '+new Date().toLocaleTimeString('es');
+      upd.textContent='actualizado '+new Date().toLocaleTimeString('es-EC',{timeZone:ZONA,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true})+' (Ecuador)';
       const tb=document.getElementById('tb'); tb.innerHTML='';
       document.getElementById('vacio').hidden = d.usuarios.length>0;
       let nuevoMax=maxVisto;
