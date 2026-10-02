@@ -98,7 +98,8 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> Monedas([FromQuery] string clave, [FromBody] MonedasReq req)
     {
         if (!ClaveOk(clave)) return Unauthorized(new { mensaje = "clave inválida" });
-        var u = await _db.Usuarios.FindAsync(req?.Id ?? 0);
+        if (req == null) return BadRequest(new { mensaje = "Faltan datos." });
+        var u = await _db.Usuarios.FindAsync(req.Id);
         if (u == null) return NotFound(new { mensaje = "Usuario no encontrado." });
 
         u.Monedas = (req.Modo == "set") ? req.Cantidad : u.Monedas + req.Cantidad;
@@ -166,7 +167,8 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> Editar([FromQuery] string clave, [FromBody] EditarReq req)
     {
         if (!ClaveOk(clave)) return Unauthorized(new { mensaje = "clave inválida" });
-        var u = await _db.Usuarios.FindAsync(req?.Id ?? 0);
+        if (req == null) return BadRequest(new { mensaje = "Faltan datos." });
+        var u = await _db.Usuarios.FindAsync(req.Id);
         if (u == null) return NotFound(new { mensaje = "Usuario no encontrado." });
 
         if (!string.IsNullOrWhiteSpace(req.Email) && req.Email != u.Email)
@@ -202,7 +204,8 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> Borrar([FromQuery] string clave, [FromBody] BorrarReq req)
     {
         if (!ClaveOk(clave)) return Unauthorized(new { mensaje = "clave inválida" });
-        var u = await _db.Usuarios.FindAsync(req?.Id ?? 0);
+        if (req == null) return BadRequest(new { mensaje = "Faltan datos." });
+        var u = await _db.Usuarios.FindAsync(req.Id);
         if (u == null) return NotFound(new { mensaje = "Usuario no encontrado." });
         _db.Usuarios.Remove(u);
         await _db.SaveChangesAsync();
