@@ -1,18 +1,18 @@
 [gd_resource type="SpriteFrames" format=3 uid="uid://gfof0o3rpwg5"]
 
-[ext_resource type="Texture2D" uid="uid://bm2ach0uttvx8" path="res://imagenes/sprites/Papel/Huevo Dino sprites.png" id="1_atlas"]
+[ext_resource type="Texture2D" uid="uid://bfbs84yceps1q" path="res://imagenes/sprites/Papel/HuevoDino sprites.png" id="1_atlas"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pd1"]
 atlas = ExtResource("1_atlas")
-region = Rect2(0, 2114, 942, 1057)
+region = Rect2(0, 0, 471, 528)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pd2"]
 atlas = ExtResource("1_atlas")
-region = Rect2(0, 3171, 942, 1057)
+region = Rect2(471, 0, 471, 528)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pd3"]
 atlas = ExtResource("1_atlas")
-region = Rect2(0, 4228, 942, 1057)
+region = Rect2(942, 0, 471, 528)
 
 [resource]
 animations = [{

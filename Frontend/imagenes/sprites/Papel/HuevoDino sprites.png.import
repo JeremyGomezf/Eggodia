@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d0tfa02a6lmmh"
-path.s3tc="res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.s3tc.ctex"
-path.etc2="res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.etc2.ctex"
+uid="uid://bfbs84yceps1q"
+path.s3tc="res://.godot/imported/HuevoDino sprites.png-84fff3e2d6d830de6e3cf7896a9e1de4.s3tc.ctex"
+path.etc2="res://.godot/imported/HuevoDino sprites.png-84fff3e2d6d830de6e3cf7896a9e1de4.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ metadata={
 
 [deps]
 
-source_file="res://imagenes/sprites/Papel/Paper-rex sprites.png"
-dest_files=["res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.s3tc.ctex", "res://.godot/imported/Paper-rex sprites.png-fa80c7bfb3a7f55cf97cb90bd5843c29.etc2.ctex"]
+source_file="res://imagenes/sprites/Papel/HuevoDino sprites.png"
+dest_files=["res://.godot/imported/HuevoDino sprites.png-84fff3e2d6d830de6e3cf7896a9e1de4.s3tc.ctex", "res://.godot/imported/HuevoDino sprites.png-84fff3e2d6d830de6e3cf7896a9e1de4.etc2.ctex"]
 
 [params]
 

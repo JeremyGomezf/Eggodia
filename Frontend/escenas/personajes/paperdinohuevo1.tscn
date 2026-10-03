@@ -1,19 +1,19 @@
 [gd_scene format=3 uid="uid://dbqur0dsx22xy"]
 
 [ext_resource type="Script" uid="uid://mtnu5nj7vqhq" path="res://scripts/EntidadRed.cs" id="1_y2583"]
-[ext_resource type="Texture2D" uid="uid://bm2ach0uttvx8" path="res://imagenes/sprites/Papel/Huevo Dino sprites.png" id="2_y2583"]
+[ext_resource type="Texture2D" uid="uid://bfbs84yceps1q" path="res://imagenes/sprites/Papel/HuevoDino sprites.png" id="2_y2583"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ikhn3"]
 atlas = ExtResource("2_y2583")
-region = Rect2(0, 2114, 942, 1057)
+region = Rect2(0, 0, 471, 528)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_iac2d"]
 atlas = ExtResource("2_y2583")
-region = Rect2(0, 3171, 942, 1057)
+region = Rect2(471, 0, 471, 528)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1qmae"]
 atlas = ExtResource("2_y2583")
-region = Rect2(0, 4228, 942, 1057)
+region = Rect2(942, 0, 471, 528)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_8kwib"]
 animations = [{
@@ -29,7 +29,7 @@ animations = [{
 }],
 "loop": 1,
 "name": &"idle",
-"speed": 4.0
+"speed": 3.0
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8ramd"]
@@ -40,11 +40,11 @@ script = ExtResource("1_y2583")
 IdPersonaje = "dino_huevo"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1743464124]
-position = Vector2(22.000008, -28)
-scale = Vector2(0.2, 0.2)
+position = Vector2(20, -1.1368684e-13)
+scale = Vector2(0.4, 0.4)
 sprite_frames = SubResource("SpriteFrames_8kwib")
 animation = &"idle"
-frame_progress = 0.5354467
+frame_progress = 0.536341
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=789237659]
 shape = SubResource("RectangleShape2D_8ramd")

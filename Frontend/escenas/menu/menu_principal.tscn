@@ -199,8 +199,8 @@ stretch_mode = 5
 
 [node name="ReyHuevoAnimado" type="AnimatedSprite2D" parent="IslaContainer" unique_id=897383015]
 visible = false
-position = Vector2(798.8525, 471.96713)
-scale = Vector2(0.45, 0.45)
+position = Vector2(808.68854, 508.85245)
+scale = Vector2(0.97, 0.97)
 sprite_frames = ExtResource("9_paperdino_frames")
 animation = &"idle"
 
