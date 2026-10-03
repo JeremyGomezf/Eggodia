@@ -74,23 +74,13 @@ public partial class Campo1 : Node2D
 	}
 
 	// ── MISMAS REGLAS DE COMPOSICIÓN QUE EL JUGADOR (pedido) ────────────────
-	// 2 tácticos + 1 asesino (o al revés, alternando cada reparto) y colosos recién desde la ronda 3
-	// y después de que el rival haya gastado 5 cartas de otro tipo — nunca dos colosos juntos en la
-	// mano. Usa las MISMAS clasificaciones ya calculadas (_idxTactico/_idxAsesino/_idxColoso), que
+	// 2 tácticos + 1 asesino (o al revés, alternando cada reparto) y colosos desde la ronda 3 —
+	// nunca dos colosos juntos en la mano. Usa las MISMAS clasificaciones ya calculadas (_idxTactico/_idxAsesino/_idxColoso), que
 	// están indexadas sobre _cartasCPU (el mazo propio del rival), NO sobre el mío.
 	private int _manosRepartidasCPU        = 0;
-	private int _cartasNoColosoGastadasCPU = 0;
 
 	private bool HayColosoEnManoCPU() =>
 		_tipoIndiceCPU != null && _manoVisualCPU.Exists(i => i >= 0 && i < _tipoIndiceCPU.Length && _tipoIndiceCPU[i] == TipoTropa.Coloso);
-
-	/// <summary>Cuenta una carta que el rival gastó de su mano visual (para habilitar sus colosos a
-	/// las 5), llamado desde ElegirTropaCPUDeck justo cuando la saca de _manoVisualCPU.</summary>
-	private void RegistrarCartaGastadaCPU(int idx)
-	{
-		if (_tipoIndiceCPU == null || idx < 0 || idx >= _tipoIndiceCPU.Length) return;
-		if (_tipoIndiceCPU[idx] != TipoTropa.Coloso) _cartasNoColosoGastadasCPU++;
-	}
 
 	// Repone hasta 3 cartas — se llama al empezar cada turno del rival, igual que la mano del
 	// jugador se completa al empezar el suyo (CompletarManoAlInicio / RellenarManoObjetivo).
@@ -100,8 +90,7 @@ public partial class Campo1 : Node2D
 		if (_manoVisualCPU.Count >= 3) return;
 
 		int turnoNum = _turnosJugados / 2 + 1; // misma ronda global que usa el jugador
-		bool colosoHabilitado = _idxColosoCPU.Count > 0 && turnoNum >= RONDA_MINIMA_COLOSO
-			&& _cartasNoColosoGastadasCPU >= CARTAS_PARA_COLOSO && !HayColosoEnManoCPU();
+		bool colosoHabilitado = !ModoTutorial && _idxColosoCPU.Count > 0 && turnoNum >= RONDA_MINIMA_COLOSO && !HayColosoEnManoCPU();
 
 		int ocupTac = 0, ocupAse = 0, ocupCol = 0;
 		foreach (int idx in _manoVisualCPU)
@@ -119,6 +108,8 @@ public partial class Campo1 : Node2D
 		int tgtTac = colosoHabilitado ? 1 : (manoDeAsesinos ? 1 : 2);
 		int tgtAse = colosoHabilitado ? 1 : (manoDeAsesinos ? 2 : 1);
 		int tgtCol = colosoHabilitado ? 1 : 0;
+		// Igual que el jugador: desde la ronda 4 el reparto es libre (con el mismo tope por tipo).
+		if (!ModoTutorial && turnoNum >= PRIMERA_RONDA_REPARTO_LIBRE) { tgtTac = 0; tgtAse = 0; }
 		_manosRepartidasCPU++;
 
 		int needTac = Math.Max(0, tgtTac - ocupTac);
@@ -143,10 +134,18 @@ public partial class Campo1 : Node2D
 	{
 		var candidatos = new List<int>();
 		IEnumerable<int> fuente = pool ?? _idxTacticoCPU.Concat(_idxAsesinoCPU).Concat(_idxColosoCPU);
+		// Mismo tope que el jugador: nunca 3 del mismo tipo ni 2 colosos en la mano del rival.
+		bool TipoLleno(int i)
+		{
+			if (ModoTutorial) return false; // el tutorial tiene su propio reparto fijo
+			var tipo = _tipoIndiceCPU[i];
+			return _manoVisualCPU.FindAll(j => j >= 0 && j < _tipoIndiceCPU.Length && _tipoIndiceCPU[j] == tipo).Count >= MaximoEnMano(tipo);
+		}
+		bool Libre(int i) => !_manoVisualCPU.Contains(i) && !TipoLleno(i);
 		foreach (int i in fuente)
-			if (!_manoVisualCPU.Contains(i) && !(_excluirRepartoNuclearCPU?.Contains(i) ?? false)) candidatos.Add(i);
+			if (Libre(i) && !(_excluirRepartoNuclearCPU?.Contains(i) ?? false)) candidatos.Add(i);
 		if (candidatos.Count == 0) // red de seguridad: se relaja el filtro de la Nuclear antes de rendirse
-			foreach (int i in fuente) if (!_manoVisualCPU.Contains(i)) candidatos.Add(i);
+			foreach (int i in fuente) if (Libre(i)) candidatos.Add(i);
 		return candidatos.Count == 0 ? -1 : candidatos[random.Next(candidatos.Count)];
 	}
 
@@ -167,7 +166,7 @@ public partial class Campo1 : Node2D
 			return false;
 		}
 
-		Preferencias.RegistrarUsoHechizo("Robar Carta");
+		if (!ModoTutorial) Preferencias.RegistrarUsoHechizo("Robar Carta");
 		MarcarHechizoUsado(1);
 		_hechizoUsadoEsteTurno = true;
 		AutoReemplazarHechizo(slotIdx);

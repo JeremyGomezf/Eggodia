@@ -24,8 +24,28 @@ public partial class PantallaVictoria : CanvasLayer
 	public int       MvtDaño        { get; set; }
 	public Texture2D MvtIlustracion { get; set; }
 
+	// Premio por ganarle en línea a una cuenta dev: la respuesta del servidor puede llegar antes o
+	// después de abrir esta pantalla; en los dos casos se muestra encima, tras la animación de entrada.
+	private Economia _ecoSkin;
+
+	private void MostrarSkinGanadaSiHay()
+	{
+		if (!IsInstanceValid(this) || !IsInsideTree()) return;
+		if (Economia.Instancia()?.TomarSkinGanadaPendiente() is (string nombre, string ruta))
+			PopupSkinDesbloqueada.Mostrar(this, nombre, ruta, subtitulo: "¡Le ganaste a un desarrollador!");
+	}
+
+	public override void _ExitTree()
+	{
+		if (_ecoSkin != null && IsInstanceValid(_ecoSkin)) _ecoSkin.SkinGanadaRecibida -= MostrarSkinGanadaSiHay;
+	}
+
 	public override void _Ready()
 	{
+		_ecoSkin = Economia.Instancia();
+		if (_ecoSkin != null) _ecoSkin.SkinGanadaRecibida += MostrarSkinGanadaSiHay;
+		GetTree().CreateTimer(1.6).Timeout += MostrarSkinGanadaSiHay;
+
 		var lblD  = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelStats/StatsGrid/LblDañoV");
 		var lblE  = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelStats/StatsGrid/LblElimV");
 		var lblT  = GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/PanelStats/StatsGrid/LblTurnosV");
@@ -35,6 +55,8 @@ public partial class PantallaVictoria : CanvasLayer
 		if (lblT != null) lblT.Text = TurnosJugados.ToString();
 		if (lblR != null) lblR.Text = Racha > 1 ? $"{Racha} victorias seguidas" : $"{Racha}";
 
+		// 4 columnas: las 4 estadísticas quedan de a dos por fila (más letra sin sumar altura).
+		EstiloUI.AgrandarResumenFinPartida(GetNodeOrNull<Control>("Overlay/CentroVBox/VBox"), columnasStats: 4);
 		MostrarMVT();
 		if (!string.IsNullOrEmpty(MotivoFin) && GetNodeOrNull<Label>("Overlay/CentroVBox/VBox/Subtitulo") is Label lblMotivo)
 			lblMotivo.Text = MotivoFin;

@@ -384,7 +384,7 @@ func _activar_invocacion_portal() -> void:
 	if ResourceLoader.exists(ruta_sprite):
 		sprite_personaje.texture = load(ruta_sprite)
 
-	sprite_personaje.position = Vector2(0, -30)
+	sprite_personaje.position = Vector2(0, _y_render_dentro_de_pantalla(sprite_personaje.texture))
 	sprite_personaje.scale = Vector2.ZERO
 	sprite_personaje.modulate.a = 0.0
 
@@ -417,6 +417,35 @@ func _activar_invocacion_portal() -> void:
 	float_tween = create_tween().set_loops()
 	float_tween.tween_property(sprite_personaje, "position:y", -22.0, 1.8).as_relative().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	float_tween.tween_property(sprite_personaje, "position:y", 22.0, 1.8).as_relative().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+# Antes todos los renders iban en la misma posición (30 px arriba del centro del portal) y, a 1.75x,
+# la parte de arriba del dibujo quedaba FUERA de la pantalla en los 7 (de 26 px en el Tanque a 229 px
+# en el Calamar), y al flotar se cortaba todavía más. Ahora cada render se baja lo justo para que lo
+# más alto de su dibujo (sin el borde transparente de la imagen) quede dentro de la pantalla, con un
+# margen, incluso en lo más alto de la flotación. Nunca queda más arriba que antes.
+const ESCALA_RENDER_PORTAL := 1.75
+const FLOTACION_RENDER := 22.0
+const MARGEN_SUPERIOR_RENDER := 30.0
+const Y_RENDER_ORIGINAL := -30.0
+
+func _y_render_dentro_de_pantalla(tex: Texture2D) -> float:
+	if tex == null:
+		return Y_RENDER_ORIGINAL
+	var alto := tex.get_size().y
+	var arriba_dibujo := 0.0 # fila donde empieza el dibujo dentro de la imagen
+	var img := tex.get_image()
+	if img != null:
+		if img.is_compressed():
+			img.decompress()
+		if not img.is_compressed() and img.get_height() > 0:
+			var usado := img.get_used_rect()
+			if usado.has_area():
+				arriba_dibujo = usado.position.y * alto / img.get_height()
+	# Borde de arriba del dibujo respecto del centro del sprite, ya agrandado.
+	var arriba_local := (arriba_dibujo - alto / 2.0) * ESCALA_RENDER_PORTAL
+	# El contenedor está a contenedor_anim.position.y del borde de arriba de la pantalla.
+	var y_minima := MARGEN_SUPERIOR_RENDER + FLOTACION_RENDER - contenedor_anim.position.y - arriba_local
+	return max(Y_RENDER_ORIGINAL, y_minima)
 
 func _iniciar_dialogo_ddlc() -> void:
 	estado_actual = Estado.DIALOGO

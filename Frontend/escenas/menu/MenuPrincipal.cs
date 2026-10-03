@@ -128,11 +128,21 @@ public partial class MenuPrincipal : Control
 		var btnOnline = GetNodeOrNull<BaseButton>("BottomButtons/BtnOnline");
 		if (btnOnline != null)
 		{
-			btnOnline.Pressed += () => { if (TieneMazoCompletoOAvisa()) MostrarPantallaOnline(); };
+			// Primero se revisa la cuenta: a un invitado no le sirve que le pidan completar el mazo si
+			// igual no puede jugar en línea.
+			btnOnline.Pressed += () =>
+			{
+				if (!EsCuentaRegistrada()) { MostrarAvisoCuentaRequerida(); return; }
+				if (TieneMazoCompletoOAvisa()) MostrarPantallaOnline();
+			};
 			AgregarAnimacionHover(btnOnline);
 		}
 
 		DuckingMusica.Reiniciar(); // por si una voz quedó a medias en la escena anterior
+		// Huevo Dorado ganado en línea que no alcanzó a mostrarse en la pantalla de victoria (se salió
+		// antes de que respondiera el servidor): se muestra acá.
+		Callable.From(MostrarSkinGanadaPendiente).CallDeferred();
+		Callable.From(QuitarSkinDevAjena).CallDeferred(); // la skin de un dev solo para su cuenta (por Id)
 		ConectarBtnTrofeo();
 
 		// Clic de interfaz en todos los botones del menú (diferido: alcanza también los creados por código).
@@ -243,23 +253,21 @@ public partial class MenuPrincipal : Control
 			eco.InventarioAplicado += ActualizarHuevoMenu;
 		}
 
-		// 7. Cuenta RECIÉN CREADA o juego RECIÉN INSTALADO: se abre solo el tutorial jugable, una única
-		// vez (como los juegos que te lo muestran apenas los instalás). Lo de la instalación cubre a
-		// quien entra con una cuenta que ya tenía o como invitado en un celular nuevo. Quien solo
-		// actualizó el juego entra directo al menú: no se le abre nada. Antes esto dependía de
-		// Preferencias.TutorialVisto y le saltaba a cualquiera que no hubiese visto la pantalla vieja
-		// de "cómo jugar".
-		// Lo de la instalación nueva es OBLIGATORIO: "pendiente" recién se borra al GANAR el tutorial
+		// 7. Juego RECIÉN INSTALADO: se abre solo el tutorial jugable, una única vez POR APARATO (como
+		// los juegos que te lo muestran apenas los instalás), después de elegir invitado, iniciar sesión
+		// o registrarse. Crear otra cuenta o cambiar de cuenta NO lo vuelve a abrir: es del celular, no
+		// de la cuenta. Solo vuelve a salir si se borra y se vuelve a instalar el juego. Quien solo
+		// actualizó el juego entra directo al menú: no se le abre nada.
+		// Es OBLIGATORIO: "pendiente" recién se borra al GANAR el tutorial
 		// (ver Campo1.FinPartida). Si se sale antes (cerrando la app o perdiendo), al volver al menú se
-		// abre otra vez, y mientras está pendiente la pausa no ofrece RENDIRSE (ver MenuPausa).
+		// abre otra vez. RENDIRSE desde la pausa sí lo da por terminado (quien se rinde ya sabe jugar).
 		// Red de seguridad: si ya se abrió 2 veces sin terminarlo, la 3.ª se abre igual pero deja de
 		// ser obligatorio. Así, si algo fallara en el tutorial en algún celular, nadie queda atrapado
 		// para siempre (reinstalar no lo arreglaría: una instalación nueva vuelve a dejarlo pendiente).
-		if (SesionJuego.CuentaRecienCreada || Preferencias.TutorialPendiente)
+		if (Preferencias.TutorialPendiente)
 		{
-			if (Preferencias.TutorialPendiente && ++Preferencias.IntentosTutorial >= INTENTOS_TUTORIAL_OBLIGATORIO)
+			if (++Preferencias.IntentosTutorial >= INTENTOS_TUTORIAL_OBLIGATORIO)
 				Preferencias.TutorialPendiente = false;
-			SesionJuego.CuentaRecienCreada = false;
 			Preferencias.TutorialVisto = true;
 			Callable.From(AbrirTutorialJugable).CallDeferred();
 		}
@@ -482,248 +490,6 @@ public partial class MenuPrincipal : Control
 		}
 	}
 
-	private void AbrirSelectorSkin()
-	{
-		// Evitar doble apertura
-		if (GetNodeOrNull("SelectorSkin") != null) return;
-
-		var overlay = new ColorRect();
-		overlay.Name = "SelectorSkin";
-		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		overlay.Color = new Color(0, 0, 0, 0.78f);
-		overlay.ZIndex = 200;
-		overlay.MouseFilter = Control.MouseFilterEnum.Stop;
-		AddChild(overlay);
-
-		var panel = new PanelContainer();
-		panel.SetAnchorsPreset(Control.LayoutPreset.Center);
-		// Más grande que antes (820×420): en el celular las tarjetas de skins se veían chicas.
-		panel.CustomMinimumSize = new Vector2(1060, 520);
-		panel.OffsetLeft = -530; panel.OffsetRight = 530;
-		panel.OffsetTop  = -260; panel.OffsetBottom = 260;
-
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.06f, 0.08f, 0.16f, 0.98f);
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
-		sb.BorderColor = new Color(1f, 0.80f, 0.25f);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 14;
-		sb.ContentMarginLeft = sb.ContentMarginRight =
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 16;
-		sb.ShadowColor = new Color(0,0,0,0.6f); sb.ShadowSize = 10;
-		panel.AddThemeStyleboxOverride("panel", sb);
-
-		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 14);
-		panel.AddChild(vbox);
-
-		// Cabecera
-		var header = new HBoxContainer();
-		var lblTitulo = new Label();
-		lblTitulo.Text = "SELECCIONA TU HUEVO";
-		lblTitulo.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
-		lblTitulo.AddThemeFontSizeOverride("font_size", 30);
-		lblTitulo.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		header.AddChild(lblTitulo);
-		var btnX = new Button();
-		btnX.Text = "✕";
-		btnX.CustomMinimumSize = new Vector2(56, 56);
-		btnX.AddThemeFontSizeOverride("font_size", 26);
-		btnX.Pressed += () => overlay.QueueFree();
-		header.AddChild(btnX);
-		vbox.AddChild(header);
-
-		// Grid de skins en una sola fila, envuelto en un ScrollTactil horizontal — con 8 skins ya no
-		// entran todas a la vez en el panel; se arrastra/desliza para ver el resto (con el dedo o el
-		// mouse en cualquier parte del contenido, además de la barra nativa, que sigue disponible).
-		var scrollSkins = new ScrollTactil();
-		scrollSkins.VerticalScrollMode = ScrollContainer.ScrollMode.Disabled;
-		scrollSkins.HorizontalScrollMode = ScrollContainer.ScrollMode.Auto;
-		scrollSkins.CustomMinimumSize = new Vector2(0, 340);
-		vbox.AddChild(scrollSkins);
-
-		var grid = new GridContainer();
-		grid.Columns = Preferencias.SKIN_NOMBRES.Length + 4;
-		grid.AddThemeConstantOverride("h_separation", 14);
-		grid.AddThemeConstantOverride("v_separation", 12);
-		scrollSkins.AddChild(grid);
-
-		string exclusivaActiva = Preferencias.SkinExclusivaActiva;
-
-		for (int i = 0; i < Preferencias.SKIN_NOMBRES.Length; i++)
-		{
-			int capI = i;
-			bool poseida = Preferencias.TieneSkin(i);
-			// El selector solo lista lo que ya tienes — una cuenta nueva solo ve Rey Huevo (idx 0,
-			// siempre poseída) hasta que compre/canjee más. La Tienda sigue mostrando el catálogo
-			// completo para comprar lo que falta.
-			if (!poseida) continue;
-			bool activa  = string.IsNullOrEmpty(exclusivaActiva) && Preferencias.SkinActivaIdx == i;
-
-			var skinPanel = new PanelContainer();
-			skinPanel.CustomMinimumSize = TAM_TARJETA_SKIN;
-
-			var sbSkin = new StyleBoxFlat();
-			sbSkin.BgColor = activa ? new Color(0.12f, 0.22f, 0.10f) : new Color(0.08f, 0.10f, 0.20f, 0.95f);
-			sbSkin.BorderWidthLeft = sbSkin.BorderWidthTop = sbSkin.BorderWidthRight = sbSkin.BorderWidthBottom = 2;
-			sbSkin.BorderColor = activa ? new Color(0.4f, 1f, 0.4f)
-							  : poseida ? new Color(0.85f, 0.65f, 0.2f)
-							  :           new Color(0.35f, 0.35f, 0.55f);
-			sbSkin.CornerRadiusTopLeft = sbSkin.CornerRadiusTopRight =
-			sbSkin.CornerRadiusBottomLeft = sbSkin.CornerRadiusBottomRight = 10;
-			sbSkin.ContentMarginLeft = sbSkin.ContentMarginRight =
-			sbSkin.ContentMarginTop  = sbSkin.ContentMarginBottom = 8;
-			skinPanel.AddThemeStyleboxOverride("panel", sbSkin);
-
-			var svbox = new VBoxContainer();
-			svbox.AddThemeConstantOverride("separation", 6);
-
-			var tex = new TextureRect();
-			tex.CustomMinimumSize = TAM_HUEVO_SKIN; // caja más cuadrada — antes 130x195 (alargada)
-			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-			tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-			var txImg = GD.Load<Texture2D>(Preferencias.SKIN_IMAGENES[capI]);
-			if (txImg != null) tex.Texture = txImg;
-			tex.PivotOffset = tex.CustomMinimumSize / 2f;
-			// Grayscale para skins no poseídas
-			if (!poseida) tex.Modulate = new Color(0.4f, 0.4f, 0.4f);
-			svbox.AddChild(tex);
-
-			var lblN = new Label();
-			lblN.Text = Preferencias.SKIN_NOMBRES[capI];
-			lblN.AddThemeColorOverride("font_color", new Color(0.95f, 0.92f, 0.80f));
-			lblN.AddThemeFontSizeOverride("font_size", 17);
-			lblN.HorizontalAlignment = HorizontalAlignment.Center;
-			lblN.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-			svbox.AddChild(lblN);
-
-			if (activa)
-			{
-				var lbl = new Label();
-				lbl.Text = "✓ EQUIPADA";
-				lbl.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
-				lbl.AddThemeFontSizeOverride("font_size", 16);
-				lbl.HorizontalAlignment = HorizontalAlignment.Center;
-				svbox.AddChild(lbl);
-			}
-			else
-			{
-				var btnEquip = new Button();
-				btnEquip.Text = "EQUIPAR";
-				btnEquip.CustomMinimumSize = new Vector2(0, 46);
-				btnEquip.AddThemeFontSizeOverride("font_size", 17);
-				btnEquip.Pressed += () => {
-					Preferencias.SkinExclusivaActiva = "";
-					Preferencias.SkinActivaIdx = capI;
-					overlay.QueueFree();
-					// Actualizar la imagen del huevo visible en el menú
-					ActualizarHuevoMenu();
-				};
-				svbox.AddChild(btnEquip);
-			}
-
-			skinPanel.AddChild(svbox);
-			grid.AddChild(skinPanel);
-		}
-
-		// ── SKINS EXCLUSIVAS (Huevo Ecotec + Skins Fijas de Devs) ──────────
-		int userIdActual = SesionJuego.Instance != null ? SesionJuego.Instance.UsuarioId : 0;
-		string nombreUsuario = (SesionJuego.Instance != null ? SesionJuego.Instance.NombreJugador : "").ToLowerInvariant();
-
-		var skinsExclusivas = new (string nombre, string ruta, int devId, string claveDev)[]
-		{
-			("Huevo Dorado", "res://imagenes/RendersTropa/Huevo render/HuevoDorado_Render.png", -1, ""),
-			("Huevo Ecotec", "res://imagenes/RendersTropa/Huevo render/HuevoEcotec_Render.png",  -1, ""),
-			("Jeremi Huevo", "res://imagenes/RendersTropa/Huevo render/JeremyHuevo_Render.png",  1, "jeremy"),
-			("Carlos Huevo", "res://imagenes/RendersTropa/Huevo render/CarlosHuevo_Render.png",  4, "kankox"),
-			("Gonza Huevo",  "res://imagenes/RendersTropa/Huevo render/GonzaHuevo_Render.png",   2, "gonza"),
-		};
-
-		foreach (var (nombreExc, rutaExc, devId, claveDev) in skinsExclusivas)
-		{
-			bool esDev = (devId > 0 && userIdActual == devId) || (!string.IsNullOrEmpty(claveDev) && nombreUsuario.Contains(claveDev));
-			bool poseida = esDev || Preferencias.TieneSkinExclusiva(rutaExc);
-			bool activa = exclusivaActiva == rutaExc;
-
-			// El selector solo lista lo que ya tienes: skins de dev ocultas para cualquier otra
-			// cuenta (mantiene la exclusividad), y skins por código ocultas hasta canjearlas.
-			if (!poseida) continue;
-
-			var skinPanel = new PanelContainer();
-			skinPanel.CustomMinimumSize = TAM_TARJETA_SKIN;
-
-			var sbSkin = new StyleBoxFlat();
-			sbSkin.BgColor = activa ? new Color(0.15f, 0.25f, 0.12f) : new Color(0.12f, 0.08f, 0.22f, 0.95f);
-			sbSkin.BorderWidthLeft = sbSkin.BorderWidthTop = sbSkin.BorderWidthRight = sbSkin.BorderWidthBottom = 2;
-			sbSkin.BorderColor = activa ? new Color(0.4f, 1f, 0.4f)
-							  : poseida ? new Color(1f, 0.85f, 0.25f)
-							  :           new Color(0.35f, 0.35f, 0.55f);
-			sbSkin.CornerRadiusTopLeft = sbSkin.CornerRadiusTopRight =
-			sbSkin.CornerRadiusBottomLeft = sbSkin.CornerRadiusBottomRight = 10;
-			sbSkin.ContentMarginLeft = sbSkin.ContentMarginRight =
-			sbSkin.ContentMarginTop  = sbSkin.ContentMarginBottom = 8;
-			skinPanel.AddThemeStyleboxOverride("panel", sbSkin);
-
-			var svbox = new VBoxContainer();
-			svbox.AddThemeConstantOverride("separation", 6);
-
-			var tex = new TextureRect();
-			tex.CustomMinimumSize = TAM_HUEVO_SKIN;
-			tex.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
-			tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-			tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-			if (ResourceLoader.Exists(rutaExc)) tex.Texture = GD.Load<Texture2D>(rutaExc);
-			tex.PivotOffset = tex.CustomMinimumSize / 2f;
-			if (!poseida) tex.Modulate = new Color(0.4f, 0.4f, 0.4f);
-			svbox.AddChild(tex);
-
-			var lblN = new Label();
-			lblN.Text = nombreExc + "\n★ EXCLUSIVO ★";
-			lblN.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
-			lblN.AddThemeFontSizeOverride("font_size", 15);
-			lblN.HorizontalAlignment = HorizontalAlignment.Center;
-			lblN.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-			svbox.AddChild(lblN);
-
-			if (activa)
-			{
-				var lbl = new Label();
-				lbl.Text = "✓ EQUIPADA";
-				lbl.AddThemeColorOverride("font_color", new Color(0.4f, 1f, 0.45f));
-				lbl.AddThemeFontSizeOverride("font_size", 16);
-				lbl.HorizontalAlignment = HorizontalAlignment.Center;
-				svbox.AddChild(lbl);
-			}
-			else
-			{
-				var btnEquip = new Button();
-				btnEquip.Text = "EQUIPAR";
-				btnEquip.CustomMinimumSize = new Vector2(0, 46);
-				btnEquip.AddThemeFontSizeOverride("font_size", 17);
-				string r = rutaExc;
-				btnEquip.Pressed += () => {
-					Preferencias.SkinExclusivaActiva = r;
-					overlay.QueueFree();
-					ActualizarHuevoMenu();
-				};
-				svbox.AddChild(btnEquip);
-			}
-
-			skinPanel.AddChild(svbox);
-			grid.AddChild(skinPanel);
-		}
-
-		overlay.AddChild(panel);
-
-		// Animación de entrada
-		panel.Scale = new Vector2(0.7f, 0.7f);
-		panel.PivotOffset = panel.CustomMinimumSize / 2;
-		var tw = panel.CreateTween();
-		tw.TweenProperty(panel, "scale", Vector2.One, 0.22f)
-		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-	}
-
 	// Tarjetas del selector "SELECCIONA TU HUEVO" (antes 190×230 con huevo de 130×140).
 	private static readonly Vector2 TAM_TARJETA_SKIN = new(240, 300);
 	private static readonly Vector2 TAM_HUEVO_SKIN   = new(170, 190);
@@ -803,164 +569,6 @@ public partial class MenuPrincipal : Control
 	// 195×350 — todas las imágenes de huevo en overlays deben verse a esa misma escala.
 	private static readonly Vector2 TAMAÑO_HUEVO_REFERENCIA = new Vector2(195, 350);
 
-	private void AbrirPerfil()
-	{
-		if (GetNodeOrNull("PerfilJugador") != null) return;
-
-		// Capa casi transparente: solo atrapa el clic para poder cerrar tocando afuera,
-		// sin oscurecer el fondo (mismo criterio visual que PanelSettings, que no tiene backdrop).
-		var overlay = new ColorRect();
-		overlay.Name = "PerfilJugador";
-		overlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		overlay.Color = new Color(0, 0, 0, 0.12f);
-		overlay.ZIndex = 200;
-		overlay.MouseFilter = Control.MouseFilterEnum.Stop;
-		AddChild(overlay);
-
-		var panel = new PanelContainer();
-		// Anclado y centrado con offsets fijos (no solo AnchorsPreset) — así queda centrado de
-		// verdad sin importar el tamaño final del contenido, igual que el selector de skins.
-		panel.SetAnchorsPreset(Control.LayoutPreset.Center);
-		panel.OffsetLeft = -300; panel.OffsetRight = 300;
-		panel.OffsetTop  = -310; panel.OffsetBottom = 310;
-		panel.CustomMinimumSize = new Vector2(600, 0);
-		panel.MouseFilter = Control.MouseFilterEnum.Stop;
-		panel.GuiInput += (ev) => { if (ev is InputEventMouseButton) AcceptEvent(); };
-
-		// Cierra AMBOS nodos (antes solo se liberaba "overlay" y el panel se quedaba pegado).
-		void Cerrar()
-		{
-			if (IsInstanceValid(overlay)) overlay.QueueFree();
-			if (IsInstanceValid(panel))   panel.QueueFree();
-		}
-		overlay.GuiInput += (ev) => { if (ev is InputEventMouseButton mb && mb.Pressed) Cerrar(); };
-
-		// Vidrio semitransparente tipo PanelSettings, con borde neón — se ve el fondo del
-		// menú a través, en vez del recuadro casi opaco de antes.
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.10f, 0.13f, 0.20f, 0.82f);
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 2;
-		sb.BorderColor = new Color(0.3f, 0.9f, 1.0f, 0.85f); // borde neón cian
-		sb.ShadowColor = new Color(0.2f, 0.9f, 1.0f, 0.35f);
-		sb.ShadowSize = 14;
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 18;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 26;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 20;
-		panel.AddThemeStyleboxOverride("panel", sb);
-
-		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 12);
-		panel.AddChild(vbox);
-
-		// Cabecera: nombre + X
-		var header = new HBoxContainer();
-		var lblNombre = new Label();
-		lblNombre.Text = SesionJuego.Instance?.NombreJugador ?? "Invitado";
-		lblNombre.AddThemeColorOverride("font_color", new Color(0.4f, 0.95f, 1.0f));
-		lblNombre.AddThemeFontSizeOverride("font_size", 26);
-		lblNombre.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		header.AddChild(lblNombre);
-		var btnX = new Button();
-		btnX.Text = "✕";
-		btnX.CustomMinimumSize = new Vector2(40, 40);
-		btnX.Pressed += Cerrar;
-		header.AddChild(btnX);
-		vbox.AddChild(header);
-
-		// Fila superior: huevo equipado (a tamaño real) + carta más usada (en su propio cuadro).
-		var filaTop = new HBoxContainer();
-		filaTop.AddThemeConstantOverride("separation", 24);
-		filaTop.Alignment = BoxContainer.AlignmentMode.Center;
-		vbox.AddChild(filaTop);
-
-		var colSkin = new VBoxContainer();
-		colSkin.AddThemeConstantOverride("separation", 6);
-		var tex = new TextureRect();
-		tex.CustomMinimumSize = TAMAÑO_HUEVO_REFERENCIA;
-		tex.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-		tex.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-		int idxSkin = Preferencias.SkinActivaIdx;
-		string rutaSkin = idxSkin == 0 ? RUTA_REY_HUEVO_CORONADO : Preferencias.SKIN_IMAGENES[idxSkin];
-		var txSkin = GD.Load<Texture2D>(rutaSkin);
-		if (txSkin != null) tex.Texture = txSkin;
-		tex.PivotOffset = tex.CustomMinimumSize / 2f;
-		float escalaExtraPerfil = idxSkin < SKIN_ESCALA_EXTRA.Length ? SKIN_ESCALA_EXTRA[idxSkin] : 1.0f;
-		tex.Scale = new Vector2(escalaExtraPerfil, escalaExtraPerfil);
-		colSkin.AddChild(tex);
-		var lblSkin = new Label();
-		lblSkin.Text = Preferencias.SKIN_NOMBRES[idxSkin];
-		lblSkin.HorizontalAlignment = HorizontalAlignment.Center;
-		lblSkin.AddThemeColorOverride("font_color", new Color(0.85f, 0.9f, 1f));
-		colSkin.AddChild(lblSkin);
-		filaTop.AddChild(colSkin);
-
-		// Cuadro de la carta más usada (mismo tratamiento visual que un cuadro de hechizo/trampa).
-		var (nombreCarta, imgCarta) = ResolverCartaPorRuta(Preferencias.CartaMasUsada());
-		var colCarta = new VBoxContainer();
-		colCarta.AddThemeConstantOverride("separation", 6);
-		var cartaFrame = new PanelContainer();
-		cartaFrame.CustomMinimumSize = new Vector2(150, 210);
-		var sbCarta = new StyleBoxFlat();
-		sbCarta.BgColor = new Color(0.05f, 0.06f, 0.10f, 0.9f);
-		sbCarta.BorderWidthLeft = sbCarta.BorderWidthTop = sbCarta.BorderWidthRight = sbCarta.BorderWidthBottom = 2;
-		sbCarta.BorderColor = new Color(0.95f, 0.78f, 0.25f, 0.9f); // borde dorado, como una carta
-		sbCarta.CornerRadiusTopLeft = sbCarta.CornerRadiusTopRight =
-		sbCarta.CornerRadiusBottomLeft = sbCarta.CornerRadiusBottomRight = 12;
-		cartaFrame.AddThemeStyleboxOverride("panel", sbCarta);
-		if (imgCarta != null)
-		{
-			var texCarta = new TextureRect();
-			texCarta.ExpandMode  = TextureRect.ExpandModeEnum.IgnoreSize;
-			texCarta.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-			texCarta.Texture = imgCarta;
-			cartaFrame.AddChild(texCarta);
-		}
-		else
-		{
-			var lblVacio = new Label();
-			lblVacio.Text = "—";
-			lblVacio.HorizontalAlignment = HorizontalAlignment.Center;
-			lblVacio.VerticalAlignment   = VerticalAlignment.Center;
-			lblVacio.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.6f));
-			cartaFrame.AddChild(lblVacio);
-		}
-		colCarta.AddChild(cartaFrame);
-		var lblCartaNombre = new Label();
-		lblCartaNombre.Text = nombreCarta ?? "Carta más usada";
-		lblCartaNombre.HorizontalAlignment = HorizontalAlignment.Center;
-		lblCartaNombre.AddThemeColorOverride("font_color", new Color(0.85f, 0.9f, 1f));
-		colCarta.AddChild(lblCartaNombre);
-		filaTop.AddChild(colCarta);
-
-		vbox.AddChild(new HSeparator());
-
-		void Fila(string etiqueta, string valor)
-		{
-			var fila = new HBoxContainer();
-			var k = new Label(); k.Text = etiqueta; k.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-			k.AddThemeColorOverride("font_color", new Color(0.7f, 0.75f, 0.85f));
-			var v = new Label(); v.Text = valor;
-			v.AddThemeColorOverride("font_color", new Color(1f, 0.92f, 0.5f));
-			fila.AddChild(k); fila.AddChild(v);
-			vbox.AddChild(fila);
-		}
-
-		Fila("Nivel",              Preferencias.Nivel.ToString());
-		Fila("Experiencia",        $"{Preferencias.ExperienciaTotal} XP");
-		Fila("Monedas",            (Economia.Instancia()?.Monedas ?? 0).ToString());
-		Fila("Partidas ganadas",   Preferencias.PartidasGanadas.ToString());
-		Fila("Partidas perdidas",  Preferencias.PartidasPerdidas.ToString());
-		Fila("Hechizo más usado",  Preferencias.HechizoMasUsado() ?? "—");
-
-		AddChild(panel);
-		panel.Scale = new Vector2(0.7f, 0.7f);
-		panel.PivotOffset = panel.Size / 2;
-		var tw = panel.CreateTween();
-		tw.TweenProperty(panel, "scale", Vector2.One, 0.22f)
-		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-	}
-
 	private Dictionary<string, CartaData> _cacheCartaData;
 
 	/// <summary>Resuelve (nombre, ilustración) de la CartaData cuya RutaEscena coincide con
@@ -980,6 +588,9 @@ public partial class MenuPrincipal : Control
 				string archivo = dir.GetNext();
 				while (archivo != "")
 				{
+					// En el APK exportado los .tres aparecen como "x.tres.remap": sin quitar ese sufijo no se
+					// encontraba NINGUNA carta en el celular y el perfil se quedaba sin la imagen de la tropa.
+					if (archivo.EndsWith(".remap")) archivo = archivo[..^".remap".Length];
 					if (archivo.EndsWith(".tres"))
 					{
 						var datos = GD.Load<CartaData>($"res://DatosCartas/{archivo}");
@@ -1065,31 +676,11 @@ public partial class MenuPrincipal : Control
 		return false;
 	}
 
+	/// <summary>Aviso del menú (hoy: mazo incompleto). Usa el MISMO aviso grande que el de "Necesitas
+	/// una cuenta" (ver MostrarAvisoGrande), así los dos se ven igual de grandes y legibles.</summary>
 	private void MostrarPopup(string titulo, string mensaje)
 	{
-		if (_popupDialog != null)
-		{
-			// Único uso hoy es el aviso de mazo incompleto (VS BOT/ONLINE/JUGAR) — se pidió que
-			// esta interfaz se vea más grande, así que se agranda acá directo (no hay otro caso
-			// que dependa del tamaño chico anterior).
-			var lblTitulo  = _popupDialog.GetNode<Label>("VBox/Title");
-			var lblMensaje = _popupDialog.GetNode<Label>("VBox/Message");
-			lblTitulo.Text = titulo;
-			lblTitulo.AddThemeFontSizeOverride("font_size", 32);
-			lblMensaje.Text = mensaje;
-			lblMensaje.AddThemeFontSizeOverride("font_size", 22);
-			lblMensaje.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-			lblMensaje.CustomMinimumSize = new Vector2(520, 0);
-			_popupDialog.CustomMinimumSize = new Vector2(600, 0);
-			_popupDialog.Visible = true;
-
-			_popupDialog.Scale = new Vector2(0.6f, 0.6f);
-			_popupDialog.PivotOffset = _popupDialog.Size / 2;
-			var tw = _popupDialog.CreateTween();
-			tw.TweenProperty(_popupDialog, "scale", Vector2.One, 0.25f)
-			  .SetTrans(Tween.TransitionType.Back)
-			  .SetEase(Tween.EaseType.Out);
-		}
+		MostrarAvisoGrande(titulo, mensaje, ("ENTENDIDO", COLOR_BOTON_AVISO_PRINCIPAL, COLOR_TEXTO_BOTON_PRINCIPAL, null));
 	}
 
 	private void OcultarPopup()

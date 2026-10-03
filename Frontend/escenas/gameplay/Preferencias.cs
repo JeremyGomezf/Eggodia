@@ -125,10 +125,13 @@ public static class Preferencias
 	}
 
 	/// <summary>Guías de pantalla (ver GuiaPasos): cada una se muestra UNA vez por aparato, la primera
-	/// vez que se abre esa pantalla (menú, tienda, mazo, ajustes, pausa, retirada en línea).</summary>
-	public static bool GuiaVista(string clave) => LeerBoolEn(SEC_DISPOSITIVO, "guia_" + clave, false);
+	/// vez que se abre esa pantalla (menú, tienda, mazo, ajustes, pausa contra el bot). Subir
+	/// VERSION_GUIAS hace que todas vuelvan a mostrarse una vez (p. ej. tras rediseñarlas).</summary>
+	private const string VERSION_GUIAS = "guia2_";
 
-	public static void MarcarGuiaVista(string clave) => EscribirBoolEn(SEC_DISPOSITIVO, "guia_" + clave, true);
+	public static bool GuiaVista(string clave) => LeerBoolEn(SEC_DISPOSITIVO, VERSION_GUIAS + clave, false);
+
+	public static void MarcarGuiaVista(string clave) => EscribirBoolEn(SEC_DISPOSITIVO, VERSION_GUIAS + clave, true);
 
 	/// <summary>Si es la primera vez que corre el juego en este aparato (no existe ni el archivo del
 	/// dispositivo), deja el tutorial pendiente. Quien actualiza desde una versión anterior ya tiene
@@ -153,15 +156,15 @@ public static class Preferencias
 
 	public static int UmbralParaNivel(int nivel) => nivel <= 1 ? 0 : 1000 + (nivel - 2) * 500;
 
-	public static int Nivel
+	public static int Nivel => NivelDeExperiencia(ExperienciaTotal);
+
+	/// <summary>Nivel que corresponde a una experiencia dada (también sirve para el perfil de otro
+	/// jugador, que llega del servidor solo con su experiencia).</summary>
+	public static int NivelDeExperiencia(int xp)
 	{
-		get
-		{
-			int xp = ExperienciaTotal;
-			int nivel = 1;
-			while (xp >= UmbralParaNivel(nivel + 1)) nivel++;
-			return nivel;
-		}
+		int nivel = 1;
+		while (xp >= UmbralParaNivel(nivel + 1)) nivel++;
+		return nivel;
 	}
 
 	public static void AgregarExperiencia(int cantidad) => ExperienciaTotal += cantidad;
@@ -271,6 +274,81 @@ public static class Preferencias
 
 	public static string CartaMasUsada()   => MasUsadoEn(SEC_USO_CARTAS);
 	public static string HechizoMasUsado() => MasUsadoEn(SEC_USO_HECHIZOS);
+
+	// ── FAVORITOS DEL PERFIL (tropa y ardid) ─────────────────────────────────
+	// Recién después de PARTIDAS_PARA_FAVORITOS partidas terminadas (ganes, pierdas o empates; no
+	// cuentan el tutorial ni rendirse contra el bot) el juego "detecta" tus favoritos. Antes de eso
+	// una sola partida decidía todo y el perfil mostraba cualquier cosa.
+	//   · Tropa favorita: la que más puntos junta sumando lo que más INVOCAS, las veces que usas su
+	//     HABILIDAD y el DAÑO que causó (el mejor resultado). Ver PuntosTropa.
+	//   · Ardid favorito: el que más usas.
+	public const int PARTIDAS_PARA_FAVORITOS = 3;
+	private const string SEC_HAB_CARTAS  = "habilidad_cartas";
+	private const string SEC_DAÑO_CARTAS = "dano_cartas";
+
+	/// <summary>Partidas que ya cuentan para los favoritos. Quien ya jugaba antes de que existiera este
+	/// contador (tiene usos guardados) arranca con los favoritos ya listos, en vez de volver a esperar.</summary>
+	public static int PartidasParaFavoritos
+	{
+		get
+		{
+			int v = LeerIntEn(SECCION, "partidas_favoritos", -1);
+			if (v >= 0) return v;
+			return MasUsadoEn(SEC_USO_CARTAS) != null ? PARTIDAS_PARA_FAVORITOS : 0;
+		}
+	}
+
+	public static bool FavoritosListos => PartidasParaFavoritos >= PARTIDAS_PARA_FAVORITOS;
+
+	/// <summary>Una habilidad usada por una tropa del JUGADOR (clave = ruta de su escena).</summary>
+	public static void RegistrarHabilidadCarta(string rutaEscena)
+	{
+		if (string.IsNullOrEmpty(rutaEscena)) return;
+		EscribirIntEn(SEC_HAB_CARTAS, rutaEscena, LeerIntEn(SEC_HAB_CARTAS, rutaEscena, 0) + 1);
+	}
+
+	/// <summary>Cierra una partida para los favoritos: suma el daño que causó cada tropa propia y cuenta
+	/// la partida. Se llama una vez por partida terminada.</summary>
+	public static void RegistrarPartidaParaFavoritos(System.Collections.Generic.IDictionary<string, int> dañoPorTropa)
+	{
+		int previas = PartidasParaFavoritos; // incluye el arranque de quien ya jugaba antes
+		var cfg = new ConfigFile();
+		cfg.Load(RutaPerfil);
+		foreach (var par in dañoPorTropa)
+		{
+			if (string.IsNullOrEmpty(par.Key) || par.Value <= 0) continue;
+			cfg.SetValue(SEC_DAÑO_CARTAS, par.Key, (int)cfg.GetValue(SEC_DAÑO_CARTAS, par.Key, 0) + par.Value);
+		}
+		cfg.SetValue(SECCION, "partidas_favoritos", previas + 1);
+		cfg.Save(RutaPerfil);
+	}
+
+	// Cada invocación vale 1, cada habilidad usada 2 y cada 300 de daño causado 1.
+	private static float PuntosTropa(int invocaciones, int habilidades, int daño) =>
+		invocaciones + habilidades * 2f + daño / 300f;
+
+	/// <summary>Ruta de escena de la tropa favorita, o null si todavía no hay partidas suficientes.</summary>
+	public static string TropaFavorita()
+	{
+		if (!FavoritosListos) return null;
+		var cfg = new ConfigFile();
+		if (cfg.Load(RutaPerfil) != Error.Ok) return null;
+		var claves = new System.Collections.Generic.HashSet<string>();
+		foreach (string sec in new[] { SEC_USO_CARTAS, SEC_HAB_CARTAS, SEC_DAÑO_CARTAS })
+			if (cfg.HasSection(sec)) foreach (string k in cfg.GetSectionKeys(sec)) claves.Add(k);
+
+		string mejor = null; float max = 0f;
+		foreach (string k in claves)
+		{
+			float puntos = PuntosTropa((int)cfg.GetValue(SEC_USO_CARTAS, k, 0),
+				(int)cfg.GetValue(SEC_HAB_CARTAS, k, 0), (int)cfg.GetValue(SEC_DAÑO_CARTAS, k, 0));
+			if (puntos > max) { max = puntos; mejor = k; }
+		}
+		return mejor;
+	}
+
+	/// <summary>Nombre del ardid favorito, o null si todavía no hay partidas suficientes.</summary>
+	public static string ArdidFavorito() => FavoritosListos ? HechizoMasUsado() : null;
 
 	// ── SKINS DE HUEVO ────────────────────────────────────────────────────────
 	// Nota: los huevos "exclusivos" (Jeremi, Ecotec, Dorado, Gonza, Carlos) NO tienen entrada

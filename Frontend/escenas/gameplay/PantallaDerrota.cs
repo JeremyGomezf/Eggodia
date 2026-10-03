@@ -24,6 +24,7 @@ public partial class PantallaDerrota : CanvasLayer
 		var btnReintentar = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnReintentar");
 		var btnMenu       = GetNodeOrNull<Button>("Overlay/CentroVBox/VBox/BtnMenu");
 
+		EstiloUI.AgrandarResumenFinPartida(GetNodeOrNull<Control>("Overlay/CentroVBox/VBox"));
 		MostrarRecompensa();
 		MostrarStats();
 		MostrarMVT();

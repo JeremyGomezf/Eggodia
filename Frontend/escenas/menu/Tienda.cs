@@ -188,12 +188,12 @@ public partial class Tienda : Control
 	// ── ORDEN DE EXHIBICIÓN EN LA TIENDA ──────────────────────────────────────────────────────
 	// Cada huevo queda en la misma posición que el trono que le pega, para que se lean en pareja:
 	//   Rey/Real · Dino/Rocoso · Majestad II/Ajedrez · Capitán/Piedra ·
-	//   Paper Dino/Papel · Coronel/Bomba · Rosa/Dado · Majestad/Cofre
+	//   Paper Dino/Papel · Coronel/Bomba · Rosa/Cofre · Majestad/Dado
 	// IMPORTANTE: son solo índices de VISUALIZACIÓN. Los arreglos de Preferencias no se reordenan
 	// porque sus posiciones están guardadas en el perfil del jugador (qué skin tiene y cuál usa);
 	// cambiarlas le daría a cada uno una skin distinta de la que compró.
 	private static readonly int[] ORDEN_SKINS_TIENDA  = { 0, 2, 7, 1, 4, 5, 6, 3 };
-	private static readonly int[] ORDEN_TRONOS_TIENDA = { 0, 3, 5, 2, 1, 4, 7, 6 };
+	private static readonly int[] ORDEN_TRONOS_TIENDA = { 0, 3, 5, 2, 1, 4, 6, 7 };
 
 	private void AgregarGridSkins()
 	{

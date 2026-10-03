@@ -155,9 +155,6 @@ public partial class MenuPausa : CanvasLayer
 		_overlay.Visible = true;
 		_vboxPausa.Visible = true;
 		_panelConfirmacion.Visible = false;
-		// Tutorial de la instalación nueva: es obligatorio, así que la pausa no deja rendirse (rendirse
-		// era la forma de saltárselo). Sigue pudiendo continuar y cambiar las opciones.
-		if (_btnRendirse != null) _btnRendirse.Visible = !EsTutorialObligatorio();
 		OcultarCapasPorEncima();
 		CancelarArrastresEnCurso();
 	}
@@ -172,11 +169,7 @@ public partial class MenuPausa : CanvasLayer
 			if (n is Carta c && c.EstaArrastrando) c.CancelarArrastre();
 	}
 
-	private bool EsTutorialObligatorio()
-	{
-		var campo = GetParentOrNull<Campo1>();
-		return campo != null && campo.ModoTutorial && Preferencias.TutorialPendiente;
-	}
+	private bool EnTutorial() => GetParentOrNull<Campo1>() is Campo1 campo && campo.ModoTutorial;
 
 	public void Reanudar()
 	{
@@ -210,6 +203,8 @@ public partial class MenuPausa : CanvasLayer
 	{
 		_vboxPausa.Visible = false;
 		_panelConfirmacion.Visible = true;
+		if (GetNodeOrNull<Label>("Overlay/PanelConfirmacion/VBox/Label") is Label lbl)
+			lbl.Text = EnTutorial() ? "¿Salir del tutorial?" : "¿Seguro que quieres rendirte?";
 	}
 
 	private void OcultarConfirmacion()
@@ -224,9 +219,18 @@ public partial class MenuPausa : CanvasLayer
 		_overlay.Visible = false;
 		
 		var campo = GetParentOrNull<Campo1>();
-		if (campo != null)
+		// Tutorial: quien se rinde a propósito ya sabe jugar. Se da por visto (no vuelve a abrirse solo),
+		// no cuenta como derrota y va directo al menú, sin pantalla de derrota.
+		if (campo != null && campo.ModoTutorial)
 		{
-			campo.FinalizarPartida("DERROTA");
+			Preferencias.TutorialPendiente = false;
+			LimpiezaEfectos.LimpiarEfectosDeCampo();
+			GetTree().Paused = false;
+			GetTree().ChangeSceneToFile("res://escenas/menu/menu_principal.tscn");
+		}
+		else if (campo != null)
+		{
+			campo.RendirseContraBot();
 		}
 		else
 		{

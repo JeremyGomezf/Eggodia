@@ -166,12 +166,48 @@ public static class SonidosTropa
 	/// <summary>Diálogo de la tropa cuya escena es "rutaEscena" (lo usa el selector del Constructor de mazo).</summary>
 	public static void ReproducirDialogoPorEscena(Node contexto, string rutaEscena)
 	{
-		if (string.IsNullOrEmpty(rutaEscena)) return;
-		string archivo = rutaEscena.GetFile().GetBaseName().ToLowerInvariant();
-		if (!CLASE_POR_ESCENA.TryGetValue(archivo, out string clase)) return;
+		string archivo = string.IsNullOrEmpty(rutaEscena) ? "" : rutaEscena.GetFile().GetBaseName().ToLowerInvariant();
+		CLASE_POR_ESCENA.TryGetValue(archivo, out string clase);
+
+		// Tocar la MISMA tropa que está hablando no corta ni reinicia su diálogo.
+		bool hablandoEsta = clase != null && clase == _claseDialogoActual
+			&& _dialogoActual != null && GodotObject.IsInstanceValid(_dialogoActual) && _dialogoActual.Playing;
+		if (hablandoEsta) return;
+
+		// El diálogo de una misma tropa no se repite antes de 10 s (se hacía repetitivo); pasado ese
+		// tiempo sí. Si la tropa tocada no tiene voz o todavía está en espera, el diálogo que estaba
+		// sonando de OTRA tropa se corta igual: no queda hablando una carta que ya no está elegida.
+		ulong ahora = Time.GetTicksMsec();
+		AudioStream voz = clase != null ? Obtener(clase, DIALOGO) : null;
+		bool enEspera = clase != null && _ultimoDialogoMs.TryGetValue(clase, out ulong ultimo)
+			&& ahora - ultimo < ESPERA_REPETIR_DIALOGO_MS;
+		if (voz == null || enEspera)
+		{
+			DetenerDialogoActual();
+			return;
+		}
+		_ultimoDialogoMs[clase] = ahora;
+		_claseDialogoActual = clase;
+
 		float extraDb = AJUSTE_VOLUMEN.TryGetValue(clase + "/" + DIALOGO, out float ajuste) ? ajuste : 0f;
-		ReproducirStream(contexto, Obtener(clase, DIALOGO), esDialogo: true, extraDb: extraDb);
+		ReproducirStream(contexto, voz, esDialogo: true, extraDb: extraDb);
 	}
+
+	private static string _claseDialogoActual;
+
+	private static void DetenerDialogoActual()
+	{
+		if (_dialogoActual != null && GodotObject.IsInstanceValid(_dialogoActual))
+		{
+			DuckingMusica.Soltar(); // devuelve su "retención" del ducking
+			_dialogoActual.QueueFree();
+		}
+		_dialogoActual = null;
+		_claseDialogoActual = null;
+	}
+
+	private const ulong ESPERA_REPETIR_DIALOGO_MS = 10_000;
+	private static readonly Dictionary<string, ulong> _ultimoDialogoMs = new();
 
 	// Un solo diálogo a la vez: al elegir otra carta rápido, el anterior se corta en vez de encimarse.
 	private static AudioStreamPlayer _dialogoActual;

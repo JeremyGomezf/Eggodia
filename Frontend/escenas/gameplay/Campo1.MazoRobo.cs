@@ -7,20 +7,42 @@ public partial class Campo1 : Node2D
 	// ══════════════════════════════════════════════════════════════════════
 	// SISTEMA DE ROBO DE MANO POR TIPO
 	// Reglas de diseño:
-	//  • La mano ofrece 2 tácticos + 2 asesinos por turno.
-	//  • Cada 3 turnos (turno 3, 6, 9…) aparece un coloso (rotando: Paper-Rex, Tanque…).
-	//  • Una carta invocada NO vuelve a ofrecerse mientras su tropa siga viva; tras morir,
-	//    reaparece una ronda después.
-	//  • Cartas especiales (Peón, Soldado Cartoon, Soldado Real, Ka-Bar) reaparecen cada
-	//    2 rondas sin importar si su tropa está viva o muerta.
+	//  • Hasta la ronda 3, la mano alterna "2 tácticos + 1 asesino" y "2 asesinos + 1 táctico". Desde
+	//    la ronda 4 el reparto es libre (desordenado), con un tope en TODAS las rondas: como mucho 2
+	//    cartas del mismo tipo (nunca 3 iguales) y como mucho 1 coloso (nunca 2).
+	//  • Desde la ronda 3, una vez cada 3 rondas (3, 6, 9…) aparece un coloso (rotando: Paper-Rex,
+	//    Tanque…). Si esa ronda no se pudo dar (mano llena, colosos en el campo), se da en el
+	//    siguiente reparto: no se pierde. Nunca dos colosos juntos en la mano.
+	//  • Una carta invocada NO vuelve a ofrecerse mientras su tropa siga viva en el campo (ninguna,
+	//    tampoco las "especiales"), salvo que esa tropa ya haya sobrevivido 3 rondas: ahí su carta ya
+	//    puede volver a salir. Tras morir, reaparece una ronda después.
+	//  • Cartas especiales (Peón, Soldado Cartoon, Soldado Real, Ka-Bar): además, tras ofrecerse o
+	//    morir esperan 2 rondas para volver.
 	// ══════════════════════════════════════════════════════════════════════
 
-	// Reglas de reparto: la mano alterna "2 tácticos + 1 asesino" y "2 asesinos + 1 táctico", y los
-	// colosos recién entran cuando ya se gastaron 5 cartas de otro tipo (y nunca dos a la vez).
 	private const int RONDA_MINIMA_COLOSO  = 3;
-	private const int CARTAS_PARA_COLOSO   = 5;
+	private const int PRIMERA_RONDA_REPARTO_LIBRE = 4; // desde acá la mano trae cualquier tipo
+
+	/// <summary>Cuántas cartas de un tipo puede haber a la vez en una mano: 1 coloso, 2 de los demás.</summary>
+	private static int MaximoEnMano(TipoTropa tipo) => tipo == TipoTropa.Coloso ? 1 : 2;
+
+	/// <summary>¿Ya se llegó al tope de ese tipo en la mano del jugador?</summary>
+	private bool TipoLlenoEnMano(TipoTropa tipo, HashSet<int> enMano)
+	{
+		if (ModoTutorial) return false; // el tutorial tiene su propio reparto fijo
+		int n = 0;
+		foreach (int i in enMano)
+			if (i >= 0 && i < _tipoIndice.Length && _tipoIndice[i] == tipo) n++;
+		return n >= MaximoEnMano(tipo);
+	}
 	private int _manosRepartidas        = 0;
-	private int _cartasNoColosoGastadas = 0;
+	// Último "ciclo" de 3 rondas (ronda / 3) en el que ya se te dio un coloso.
+	private int _cicloColosoEntregado   = 0;
+
+	/// <summary>Ronda en la que vas a USAR la mano que se está repartiendo. La mano se repone a los 2 s
+	/// de empezar el turno del RIVAL, para tu turno siguiente: contar la ronda actual (como antes)
+	/// atrasaba todo una ronda, y el coloso de la ronda 3 recién llegaba en la 4.</summary>
+	private int RondaDeLaManoJugador() => _turnosJugados / 2 + (esTurnoJugador ? 1 : 2);
 
 	/// <summary>¿Ya hay un coloso esperando en la mano? Solo se permite uno a la vez.</summary>
 	private bool HayColosoEnMano()
@@ -31,13 +53,6 @@ public partial class Campo1 : Node2D
 				&& c.IdCarta >= 0 && c.IdCarta < _tipoIndice.Length && _tipoIndice[c.IdCarta] == TipoTropa.Coloso)
 				return true;
 		return false;
-	}
-
-	/// <summary>Cuenta una carta jugada por el jugador (para habilitar los colosos a las 5).</summary>
-	public void RegistrarCartaGastada(int idxMazo)
-	{
-		if (_tipoIndice == null || idxMazo < 0 || idxMazo >= _tipoIndice.Length) return;
-		if (_tipoIndice[idxMazo] != TipoTropa.Coloso) _cartasNoColosoGastadas++;
 	}
 
 	private const int COOLDOWN_NORMAL   = 1; // rondas para reaparecer tras morir
@@ -196,11 +211,23 @@ public partial class Campo1 : Node2D
 		return s;
 	}
 
-	private HashSet<int> IndicesDesplegados()
+	// Rondas que una tropa tiene que sobrevivir en el campo para que su carta pueda volver a la mano.
+	private const int RONDAS_SOBREVIVIDAS_PARA_REPETIR = 3;
+
+	/// <summary>Cartas cuya tropa está en el campo y todavía NO pueden volver a salir. Las que ya
+	/// sobrevivieron RONDAS_SOBREVIVIDAS_PARA_REPETIR rondas quedan fuera de la lista (ya pueden salir),
+	/// salvo con <paramref name="todas"/> (la mano tras la Nuclear no repite nada de los carriles).</summary>
+	private HashSet<int> IndicesDesplegados(bool todas = false)
 	{
 		var s = new HashSet<int>();
+		int ronda = RondaDeLaManoJugador();
 		foreach (Node n in GetTree().GetNodesInGroup("tropas_jugador"))
-			if (n is Node2D t && IsInstanceValid(t) && t.HasMeta("idx_mazo")) s.Add((int)t.GetMeta("idx_mazo"));
+		{
+			if (n is not Node2D t || !IsInstanceValid(t) || !t.HasMeta("idx_mazo")) continue;
+			bool yaSobrevivio = t.HasMeta("ronda_invocada")
+				&& ronda - (int)t.GetMeta("ronda_invocada") >= RONDAS_SOBREVIVIDAS_PARA_REPETIR;
+			if (todas || ModoTutorial || !yaSobrevivio) s.Add((int)t.GetMeta("idx_mazo"));
+		}
 		return s;
 	}
 
@@ -211,7 +238,10 @@ public partial class Campo1 : Node2D
 		// Mano nueva tras la bomba Nuclear: nada de lo que está en los carriles ni de lo que murió.
 		if (_excluirRepartoNuclear != null && _excluirRepartoNuclear.Contains(i)) return false;
 		if (_cooldownIndice[i] > 0) return false;
-		if (desplegados.Contains(i) && !_esEspecialIndice[i]) return false;
+		// Nunca una carta cuya tropa sigue viva en el campo (antes las especiales sí se repetían).
+		if (desplegados.Contains(i)) return false;
+		// Nunca 3 del mismo tipo ni 2 colosos en la mano.
+		if (TipoLlenoEnMano(_tipoIndice[i], enMano)) return false;
 		return true;
 	}
 
@@ -241,23 +271,23 @@ public partial class Campo1 : Node2D
 	// Cualquier índice elegible sin importar el tipo.
 	private int ElegirIndiceParaSpot() => ElegirIndiceElegible(TipoTropa.Desconocido);
 
-	// Red de seguridad: nunca dejar un spot vacío. Ignora cooldown; evita duplicar desplegados.
+	// Red de seguridad: ignora el cooldown para no dejar un spot vacío, pero NUNCA repite una carta
+	// que ya está en la mano o cuya tropa está en el campo (antes, como último recurso, sí la repetía).
 	private int ElegirRelajado()
 	{
 		var enMano = IndicesEnMano();
 		var desplegados = IndicesDesplegados();
 		var cand = new List<int>();
 		for (int i = 0; i < escenasTropas.Length; i++)
-			if (!enMano.Contains(i) && !desplegados.Contains(i) && !(_excluirRepartoNuclear?.Contains(i) ?? false)) cand.Add(i);
-		if (cand.Count == 0)
-			for (int i = 0; i < escenasTropas.Length; i++) if (!enMano.Contains(i)) cand.Add(i);
+			if (!enMano.Contains(i) && !desplegados.Contains(i) && !(_excluirRepartoNuclear?.Contains(i) ?? false)
+				&& !TipoLlenoEnMano(_tipoIndice[i], enMano)) cand.Add(i);
 		return cand.Count == 0 ? -1 : cand[random.Next(cand.Count)];
 	}
 
 	private int ElegirColosoRotacion(int turnoNum)
 	{
 		if (_colosoRotacion.Count == 0) return ElegirIndiceElegible(TipoTropa.Coloso);
-		int k = turnoNum / 3; // 1 en el turno 3, 2 en el 6, 3 en el 9…
+		int k = Math.Max(1, turnoNum / 3); // 1 en el turno 3, 2 en el 6, 3 en el 9…
 		var enMano = IndicesEnMano();
 		var desplegados = IndicesDesplegados();
 		for (int off = 0; off < _colosoRotacion.Count; off++)
@@ -306,13 +336,14 @@ public partial class Campo1 : Node2D
 		}
 		if (vacios.Count == 0) return;
 
-		int turnoNum = _turnosJugados / 2 + 1;
+		int turnoNum = RondaDeLaManoJugador();
 
-		// COLOSOS: no pueden salir de entrada. Hacen falta 3 rondas Y haber gastado 5 cartas de otro
-		// tipo, y nunca puede haber dos colosos juntos en la mano (uno solo ya cambia la partida).
-		bool colosoHabilitado = _idxColoso.Count > 0 && turnoNum >= RONDA_MINIMA_COLOSO
-			&& _cartasNoColosoGastadas >= CARTAS_PARA_COLOSO && !HayColosoEnMano();
-		bool colosoTurn = colosoHabilitado && (turnoNum % 3 == 0);
+		// COLOSOS: desde la ronda 3, uno por cada ciclo de 3 rondas. Si en su ronda no se pudo dar,
+		// queda pendiente para el próximo reparto. Nunca dos colosos juntos en la mano.
+		int ciclo = turnoNum / 3;
+		// (El tutorial queda fuera: su mano es guionada.)
+		bool colosoTurn = !ModoTutorial && _idxColoso.Count > 0 && turnoNum >= RONDA_MINIMA_COLOSO
+			&& ciclo > _cicloColosoEntregado && !HayColosoEnMano();
 
 		// La mano arranca SIEMPRE con 2 tácticos + 1 asesino; la siguiente trae los del otro tipo
 		// (2 asesinos + 1 táctico), y así alternando.
@@ -320,6 +351,9 @@ public partial class Campo1 : Node2D
 		int tgtTac = colosoTurn ? 1 : (manoDeAsesinos ? 1 : 2);
 		int tgtAse = colosoTurn ? 1 : (manoDeAsesinos ? 2 : 1);
 		int tgtCol = colosoTurn ? 1 : 0;
+		// Desde la ronda 4, reparto libre: los spots se llenan con cualquier tipo (respetando el tope
+		// de 2 iguales / 1 coloso). Solo se mantiene el coloso pendiente del ciclo, si toca.
+		if (!ModoTutorial && turnoNum >= PRIMERA_RONDA_REPARTO_LIBRE) { tgtTac = 0; tgtAse = 0; }
 		_manosRepartidas++;
 
 		int needTac = Math.Max(0, tgtTac - ocupTac);
@@ -332,7 +366,7 @@ public partial class Campo1 : Node2D
 			if (needCol > 0)
 			{
 				idx = colosoTurn ? ElegirColosoRotacion(turnoNum) : ElegirIndiceElegible(TipoTropa.Coloso);
-				if (idx >= 0) needCol--;
+				if (idx >= 0) { needCol--; _cicloColosoEntregado = ciclo; }
 			}
 			if (idx < 0 && needTac > 0) { idx = ElegirIndiceElegible(TipoTropa.Tactico); if (idx >= 0) needTac--; }
 			if (idx < 0 && needAse > 0) { idx = ElegirIndiceElegible(TipoTropa.Asesino); if (idx >= 0) needAse--; }
@@ -409,7 +443,6 @@ public partial class Campo1 : Node2D
 			_colosoPrecargadoCPU = null;
 			int idxColosoJugado = IndiceCPUDe(rutaColoso);
 			_manoVisualCPU.Remove(idxColosoJugado); // si lo tenía en mano, lo gasta
-			RegistrarCartaGastadaCPU(idxColosoJugado);
 			var pc = GD.Load<PackedScene>(rutaColoso);
 			if (pc != null) return pc;
 		}
@@ -424,7 +457,6 @@ public partial class Campo1 : Node2D
 			{
 				int idxElegido = enMano[random.Next(enMano.Count)];
 				_manoVisualCPU.Remove(idxElegido); // la gasta: sale de su mano
-				RegistrarCartaGastadaCPU(idxElegido);
 				var deMano = GD.Load<PackedScene>(_cartasCPU[idxElegido]);
 				if (deMano != null) return deMano;
 			}

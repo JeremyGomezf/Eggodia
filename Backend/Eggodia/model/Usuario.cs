@@ -30,6 +30,12 @@ namespace Eggodia.API.model
         public int Empates    { get; set; } = 0;
         public int DañoTotal  { get; set; } = 0;
 
+        // Favoritos del perfil público (los ve quien te toque en el ranking): la tropa (ruta de su
+        // escena) y el ardid (nombre) que más usa. Los calcula el juego tras 3 partidas y los manda
+        // con cada fin de partida; vacíos hasta entonces.
+        public string TropaFavorita { get; set; } = "";
+        public string ArdidFavorito { get; set; } = "";
+
         // Fecha de registro
         public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
     }

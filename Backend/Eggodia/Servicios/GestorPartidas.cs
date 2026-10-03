@@ -99,7 +99,7 @@ public class GestorPartidas
 
     public GestorPartidas(IConfiguration cfg)
     {
-        _botTrasSegundos = int.TryParse(cfg["Online:BotTrasSegundos"], out var s) ? Math.Max(0, s) : 8;
+        _botTrasSegundos = int.TryParse(cfg["Online:BotTrasSegundos"], out var s) ? Math.Max(0, s) : 10;
     }
 
     // Nombres de jugador "comunes" para el bot (estilo de los nombres reales del juego). Se combinan
@@ -298,6 +298,15 @@ public class GestorPartidas
         if (!_partidas.TryGetValue(id, out var p)) return null;
         string asiento = p.JugadorAId == jugadorId ? "A" : (p.JugadorBId == jugadorId ? "B" : "");
         return (p.Resultado, asiento);
+    }
+
+    /// <summary>Id del rival de un jugador en una partida ("u12", "bot_…"), o null si no se encuentra.</summary>
+    public string? RivalDe(string id, string jugadorId)
+    {
+        if (!_partidas.TryGetValue(id, out var p)) return null;
+        if (p.JugadorAId == jugadorId) return p.JugadorBId;
+        if (p.JugadorBId == jugadorId) return p.JugadorAId;
+        return null;
     }
 
     // Un cliente reporta el ganador de una partida terminada NORMALMENTE (huevo a 0 o por tiempo) o por

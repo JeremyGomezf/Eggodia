@@ -22,6 +22,9 @@ public class UsuariosController : ControllerBase
     private const int BONO_POR_RACHA             = 25;
     private const int RACHA_MAXIMA               = 10;
     private const int XP_POR_VICTORIA            = 150;
+    /// <summary>Monedas con las que arranca toda cuenta nueva (las ya existentes recibieron lo mismo
+    /// una sola vez, ver Program.cs).</summary>
+    public const int MONEDAS_INICIALES           = 500;
 
     // POST: api/usuarios/registro
     [HttpPost("registro")]
@@ -57,7 +60,8 @@ public class UsuariosController : ControllerBase
         {
             Nombre   = nombre,
             Email    = email,
-            Password = BCrypt.Net.BCrypt.HashPassword(req.Password) // hash seguro (nunca texto plano)
+            Password = BCrypt.Net.BCrypt.HashPassword(req.Password), // hash seguro (nunca texto plano)
+            Monedas  = MONEDAS_INICIALES
         };
 
         _db.Usuarios.Add(usuario);
@@ -158,6 +162,8 @@ public class UsuariosController : ControllerBase
         public string Resultado { get; set; } = ""; // "victoria" | "derrota" | "empate"
         public int    Racha     { get; set; }       // victorias seguidas contando esta (bono online)
         public int    DañoHecho { get; set; }
+        public string TropaFavorita { get; set; } = ""; // opcional: favoritos para el perfil público
+        public string ArdidFavorito { get; set; } = "";
     }
 
     [HttpPost("{id}/recompensa")]
@@ -173,6 +179,7 @@ public class UsuariosController : ControllerBase
         if (resultado != "victoria" && resultado != "derrota" && resultado != "empate")
             return BadRequest(new { ok = false, mensaje = "Resultado inválido." });
 
+        bool victoriaVerificadaOnline = false;
         if (modo == "online")
         {
             // El resultado online lo decide el servidor (GestorPartidas). Si la partida ya no está en
@@ -190,6 +197,7 @@ public class UsuariosController : ControllerBase
                 if (decidido == "" || decidido == "cancelada")
                     return Conflict(new { ok = false, mensaje = "La partida no tiene un resultado válido." });
                 resultado = decidido == "empate" ? "empate" : decidido == "gano_" + asiento ? "victoria" : "derrota";
+                victoriaVerificadaOnline = resultado == "victoria";
             }
         }
 
@@ -208,6 +216,36 @@ public class UsuariosController : ControllerBase
             INSERT OR IGNORE INTO partidas_jugadas (UserId, PartidaId, Modo, Resultado, Monedas, Xp, FechaUtc)
             VALUES ({id}, {req.PartidaId}, {modo}, {resultado}, {monedas}, {xp}, {DateTime.UtcNow.ToString("o")});");
         bool yaAplicada = filas == 0;
+
+        // Favoritos del perfil público: se guardan aunque el premio ya se hubiera aplicado (es solo
+        // información de la cuenta, no suma nada). Vacío = todavía no hay partidas suficientes.
+        if (!string.IsNullOrWhiteSpace(req.TropaFavorita) && req.TropaFavorita.Length <= 200)
+            u.TropaFavorita = req.TropaFavorita;
+        if (!string.IsNullOrWhiteSpace(req.ArdidFavorito) && req.ArdidFavorito.Length <= 60)
+            u.ArdidFavorito = req.ArdidFavorito;
+        if (yaAplicada) await _db.SaveChangesAsync();
+
+        // Le ganaste en línea a una cuenta DEV (Jeremy, SrGonza, Carlos): te llevas el Huevo Dorado, si
+        // todavía no lo tenías. Solo con una victoria que arbitró el servidor (no se le cree al cliente).
+        string? skinGanadaRuta = null;
+        if (victoriaVerificadaOnline)
+        {
+            string? rival = _partidas.RivalDe(req.PartidaId, "u" + id);
+            if (rival != null && rival.StartsWith("u") && int.TryParse(rival[1..], out int rivalId)
+                && rivalId != id && CuentasDev.Es(rivalId)
+                && !await _db.UserSkins.AnyAsync(s => s.UserId == id && s.SkinRuta == CuentasDev.RUTA_HUEVO_DORADO))
+            {
+                _db.UserSkins.Add(new UserSkin
+                {
+                    UserId = id,
+                    SkinRuta = CuentasDev.RUTA_HUEVO_DORADO,
+                    Nombre = CuentasDev.NOMBRE_HUEVO_DORADO,
+                    FechaDesbloqueo = DateTime.UtcNow
+                });
+                await _db.SaveChangesAsync();
+                skinGanadaRuta = CuentasDev.RUTA_HUEVO_DORADO;
+            }
+        }
 
         if (!yaAplicada)
         {
@@ -237,7 +275,9 @@ public class UsuariosController : ControllerBase
             experiencia = u.Experiencia,
             victorias = u.Victorias,
             derrotas = u.Derrotas,
-            empates = u.Empates
+            empates = u.Empates,
+            skinGanadaRuta,
+            skinGanadaNombre = skinGanadaRuta != null ? CuentasDev.NOMBRE_HUEVO_DORADO : null
         });
     }
 
@@ -297,6 +337,31 @@ public class UsuariosController : ControllerBase
             .ToListAsync();
 
         return Ok(top);
+    }
+
+    // GET: api/usuarios/{id}/perfil
+    // Perfil PÚBLICO de un jugador, para verlo al tocarlo en el ranking (como en Clash). Solo datos de
+    // juego: nada de email ni monedas.
+    [HttpGet("{id}/perfil")]
+    public async Task<IActionResult> PerfilPublico(int id)
+    {
+        var u = await _db.Usuarios.FindAsync(id);
+        if (u == null) return NotFound(new { mensaje = "Usuario no encontrado." });
+        return Ok(new
+        {
+            id = u.Id,
+            nombre = u.Nombre,
+            experiencia = u.Experiencia,
+            victorias = u.Victorias,
+            derrotas = u.Derrotas,
+            empates = u.Empates,
+            dañoTotal = u.DañoTotal,
+            equipSkinIdx = u.EquipSkinIdx,
+            equipSkinExclusiva = u.EquipSkinExclusiva,
+            equipTronoIdx = u.EquipTronoIdx,
+            tropaFavorita = u.TropaFavorita,
+            ardidFavorito = u.ArdidFavorito
+        });
     }
 
     // POST: api/usuarios/{id}/monedas   { monedas }

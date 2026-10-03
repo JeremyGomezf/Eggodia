@@ -207,9 +207,6 @@ public partial class PanelLogin : Control
 				// Pasa al perfil de ESTA cuenta (su propio archivo: nada del invitado ni de otra cuenta)
 				// y trae del servidor su inventario completo (monedas + skins + tronos + ítems + equipado).
 				SesionJuego.Instance.ActivarPerfil(usuario.Id, usuario.Nombre);
-				// Cuenta recién creada: el menú principal abrirá el tutorial una sola vez. Si esto
-				// fue un inicio de sesión normal, no se toca nada.
-				if (_accionPendiente == "registro") SesionJuego.CuentaRecienCreada = true;
 				// La skin y el trono equipados de la cuenta vienen YA en la respuesta del login: se aplican
 				// antes de abrir el menú, así el huevo se ve bien desde el primer cuadro. Antes el menú
 				// mostraba el huevo que tenía guardado el celular y, al llegar el inventario, lo cambiaba

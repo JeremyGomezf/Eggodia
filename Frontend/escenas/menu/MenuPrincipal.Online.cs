@@ -1,4 +1,5 @@
 using Godot;
+using System;
 
 /// <summary>Interfaz de BtnOnline. El multijugador es SOLO para cuentas registradas: si el jugador
 /// entró como invitado, se le pide crear cuenta / iniciar sesión en vez de emparejarlo. Si tiene
@@ -6,12 +7,18 @@ using Godot;
 public partial class MenuPrincipal : Control
 {
 	private MatchmakingOnline _matchmaking;
-	private CanvasLayer _avisoCuenta;
+	private CanvasLayer _avisoGrande;
+
+	private static readonly Color COLOR_BOTON_AVISO_PRINCIPAL = new(0.95f, 0.76f, 0.3f);
+	private static readonly Color COLOR_TEXTO_BOTON_PRINCIPAL = new(0.17f, 0.12f, 0.04f);
+	private static readonly Color COLOR_BOTON_AVISO_VOLVER    = new(0.32f, 0.32f, 0.38f);
+
+	// Solo cuentas registradas pueden jugar en línea (los invitados tienen UsuarioId <= 0).
+	private static bool EsCuentaRegistrada() => SesionJuego.Instance != null && SesionJuego.Instance.EstaLogueado;
 
 	private void MostrarPantallaOnline()
 	{
-		// Solo cuentas registradas pueden jugar en línea (los invitados tienen UsuarioId <= 0).
-		if (SesionJuego.Instance == null || !SesionJuego.Instance.EstaLogueado)
+		if (!EsCuentaRegistrada())
 		{
 			MostrarAvisoCuentaRequerida();
 			return;
@@ -24,61 +31,93 @@ public partial class MenuPrincipal : Control
 
 	private void MostrarAvisoCuentaRequerida()
 	{
-		if (_avisoCuenta != null && IsInstanceValid(_avisoCuenta)) _avisoCuenta.QueueFree();
+		MostrarAvisoGrande("Necesitas una cuenta",
+			"El modo en línea es solo para cuentas registradas. Inicia sesión o crea una cuenta para jugar contra otros.",
+			("INICIAR SESIÓN", COLOR_BOTON_AVISO_PRINCIPAL, COLOR_TEXTO_BOTON_PRINCIPAL,
+				() => GetTree().ChangeSceneToFile("res://escenas/menu/PanelLogin.tscn")),
+			("VOLVER", COLOR_BOTON_AVISO_VOLVER, Colors.White, null));
+	}
+
+	/// <summary>Aviso grande del menú, pensado para el celular: caja centrada con título y texto en
+	/// letra grande y botones anchos. Lo usan "Necesitas una cuenta" y "Mazo incompleto", así los dos
+	/// se ven del mismo tamaño. Un botón con acción null solo cierra el aviso.</summary>
+	private void MostrarAvisoGrande(string titulo, string mensaje,
+		params (string texto, Color fondo, Color letra, Action accion)[] botones)
+	{
+		if (_avisoGrande != null && IsInstanceValid(_avisoGrande)) _avisoGrande.QueueFree();
 
 		var capa = new CanvasLayer { Layer = 300 };
 		AddChild(capa);
-		_avisoCuenta = capa;
+		_avisoGrande = capa;
+		void Cerrar() { if (IsInstanceValid(capa)) capa.QueueFree(); }
 
-		var fondo = new ColorRect();
-		fondo.Color = new Color(0.02f, 0.03f, 0.06f, 0.85f);
+		var fondo = new ColorRect { Color = new Color(0.02f, 0.03f, 0.06f, 0.8f), MouseFilter = Control.MouseFilterEnum.Stop };
 		fondo.SetAnchorsPreset(LayoutPreset.FullRect);
-		fondo.MouseFilter = Control.MouseFilterEnum.Stop;
 		capa.AddChild(fondo);
 
-		var caja = new VBoxContainer();
-		caja.SetAnchorsPreset(LayoutPreset.Center);
-		caja.OffsetLeft = -440; caja.OffsetRight = 440; caja.OffsetTop = -230; caja.OffsetBottom = 230;
-		caja.Alignment = BoxContainer.AlignmentMode.Center;
-		caja.AddThemeConstantOverride("separation", 30);
-		fondo.AddChild(caja);
+		var panel = new PanelContainer { CustomMinimumSize = new Vector2(1100, 0) };
+		panel.SetAnchorsPreset(LayoutPreset.Center);
+		panel.GrowHorizontal = GrowDirection.Both;
+		panel.GrowVertical   = GrowDirection.Both;
+		var sb = EstiloUI.CuadroDorado();
+		sb.ContentMarginLeft = sb.ContentMarginRight = 56;
+		sb.ContentMarginTop  = sb.ContentMarginBottom = 44;
+		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 22;
+		panel.AddThemeStyleboxOverride("panel", sb);
+		fondo.AddChild(panel);
 
-		var titulo = new Label { Text = "Necesitas una cuenta" };
-		titulo.HorizontalAlignment = HorizontalAlignment.Center;
-		titulo.AddThemeFontSizeOverride("font_size", 54);
-		titulo.AddThemeColorOverride("font_color", new Color(1f, 0.85f, 0.3f));
-		caja.AddChild(titulo);
+		var caja = new VBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+		caja.AddThemeConstantOverride("separation", 34);
+		panel.AddChild(caja);
 
-		var texto = new Label { Text = "El modo en línea es solo para cuentas registradas.\nInicia sesión o crea una cuenta para jugar contra otros." };
-		texto.HorizontalAlignment = HorizontalAlignment.Center;
-		texto.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		texto.AddThemeFontSizeOverride("font_size", 32);
-		texto.AddThemeColorOverride("font_color", new Color(0.9f, 0.93f, 0.98f));
-		caja.AddChild(texto);
+		var lblTitulo = new Label { Text = titulo, HorizontalAlignment = HorizontalAlignment.Center };
+		EstiloUI.Texto(lblTitulo, 64, new Color(1f, 0.85f, 0.3f));
+		caja.AddChild(lblTitulo);
 
-		var fila = new HBoxContainer();
-		fila.Alignment = BoxContainer.AlignmentMode.Center;
-		fila.AddThemeConstantOverride("separation", 24);
+		var lblTexto = new Label
+		{
+			Text = mensaje,
+			HorizontalAlignment = HorizontalAlignment.Center,
+			AutowrapMode = TextServer.AutowrapMode.WordSmart,
+		};
+		EstiloUI.Texto(lblTexto, 42, new Color(0.9f, 0.93f, 0.98f));
+		caja.AddChild(lblTexto);
+
+		var fila = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
+		fila.AddThemeConstantOverride("separation", 32);
 		caja.AddChild(fila);
+		foreach (var (texto, colorFondo, colorLetra, accion) in botones)
+		{
+			var b = CrearBotonAviso(texto, colorFondo, colorLetra);
+			b.Pressed += () => { Cerrar(); accion?.Invoke(); };
+			fila.AddChild(b);
+		}
 
-		var btnLogin = CrearBotonAviso("INICIAR SESIÓN", new Color(0.95f, 0.76f, 0.3f), new Color(0.17f, 0.12f, 0.04f));
-		btnLogin.Pressed += () => GetTree().ChangeSceneToFile("res://escenas/menu/PanelLogin.tscn");
-		fila.AddChild(btnLogin);
-
-		var btnVolver = CrearBotonAviso("VOLVER", new Color(0.32f, 0.32f, 0.38f), Colors.White);
-		btnVolver.Pressed += () => { if (IsInstanceValid(_avisoCuenta)) _avisoCuenta.QueueFree(); };
-		fila.AddChild(btnVolver);
+		// Entra con el mismo "pop" que los demás avisos del menú.
+		panel.Resized += () => { if (IsInstanceValid(panel)) panel.PivotOffset = panel.Size / 2; };
+		panel.Scale = new Vector2(0.6f, 0.6f);
+		panel.CreateTween().TweenProperty(panel, "scale", Vector2.One, 0.25f)
+			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 	}
 
 	private static Button CrearBotonAviso(string texto, Color fondo, Color fuente)
 	{
 		var b = new Button { Text = texto };
-		b.CustomMinimumSize = new Vector2(300, 90);
-		b.AddThemeFontSizeOverride("font_size", 32);
-		b.AddThemeColorOverride("font_color", fuente);
-		var sb = new StyleBoxFlat { BgColor = fondo };
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 12;
-		b.AddThemeStyleboxOverride("normal", sb);
+		b.CustomMinimumSize = new Vector2(380, 110);
+		if (EstiloUI.Fuente != null) b.AddThemeFontOverride("font", EstiloUI.Fuente);
+		b.AddThemeFontSizeOverride("font_size", 40);
+		foreach (var n in new[] { "font_color", "font_hover_color", "font_pressed_color", "font_focus_color" })
+			b.AddThemeColorOverride(n, fuente);
+		StyleBoxFlat Caja(Color bg)
+		{
+			var sb = new StyleBoxFlat { BgColor = bg };
+			sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight = sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 14;
+			return sb;
+		}
+		b.AddThemeStyleboxOverride("normal",  Caja(fondo));
+		b.AddThemeStyleboxOverride("hover",   Caja(fondo.Lightened(0.1f)));
+		b.AddThemeStyleboxOverride("pressed", Caja(fondo.Darkened(0.12f)));
+		b.AddThemeStyleboxOverride("focus",   new StyleBoxEmpty());
 		return b;
 	}
 }

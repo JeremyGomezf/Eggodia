@@ -168,86 +168,8 @@ public partial class MenuPrincipal : Control
 		}
 	}
 
-	private void MostrarPopupSkinDesbloqueada(string nombreSkin, string rutaImagen)
-	{
-		var capa = new CanvasLayer { Layer = 400 };
-		AddChild(capa);
-
-		var fondo = new ColorRect();
-		fondo.Color = new Color(0.02f, 0.04f, 0.1f, 0.88f);
-		fondo.SetAnchorsPreset(LayoutPreset.FullRect);
-		capa.AddChild(fondo);
-
-		var panel = new PanelContainer();
-		panel.SetAnchorsPreset(LayoutPreset.Center);
-		// Más grande que antes (500×520): en el celular la imagen y los textos se veían chicos.
-		panel.CustomMinimumSize = new Vector2(780, 800);
-		panel.OffsetLeft = -390; panel.OffsetRight = 390;
-		panel.OffsetTop  = -400; panel.OffsetBottom = 400;
-
-		var sb = new StyleBoxFlat();
-		sb.BgColor = new Color(0.08f, 0.12f, 0.22f, 0.98f);
-		sb.BorderWidthLeft = sb.BorderWidthTop = sb.BorderWidthRight = sb.BorderWidthBottom = 3;
-		sb.BorderColor = new Color(1f, 0.85f, 0.3f);
-		sb.CornerRadiusTopLeft = sb.CornerRadiusTopRight =
-		sb.CornerRadiusBottomLeft = sb.CornerRadiusBottomRight = 24;
-		sb.ContentMarginLeft = sb.ContentMarginRight = 30;
-		sb.ContentMarginTop  = sb.ContentMarginBottom = 30;
-		sb.ShadowColor = new Color(1f, 0.85f, 0.3f, 0.3f);
-		sb.ShadowSize = 20;
-		panel.AddThemeStyleboxOverride("panel", sb);
-		capa.AddChild(panel);
-
-		var vbox = new VBoxContainer();
-		vbox.AddThemeConstantOverride("separation", 24);
-		vbox.Alignment = BoxContainer.AlignmentMode.Center;
-		panel.AddChild(vbox);
-
-		var lblHeader = new Label();
-		lblHeader.Text = "¡NUEVO SKIN DE HUEVO DESBLOQUEADO!";
-		lblHeader.HorizontalAlignment = HorizontalAlignment.Center;
-		lblHeader.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-		lblHeader.AddThemeColorOverride("font_color", new Color(1f, 0.88f, 0.3f));
-		lblHeader.AddThemeFontSizeOverride("font_size", 40);
-		vbox.AddChild(lblHeader);
-
-		var texRect = new TextureRect();
-		texRect.CustomMinimumSize = new Vector2(300, 360);
-		texRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
-		texRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
-		texRect.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
-		if (ResourceLoader.Exists(rutaImagen))
-		{
-			texRect.Texture = GD.Load<Texture2D>(rutaImagen);
-		}
-		vbox.AddChild(texRect);
-
-		var lblNombre = new Label();
-		lblNombre.Text = nombreSkin;
-		lblNombre.HorizontalAlignment = HorizontalAlignment.Center;
-		lblNombre.AddThemeColorOverride("font_color", Colors.White);
-		lblNombre.AddThemeFontSizeOverride("font_size", 48);
-		vbox.AddChild(lblNombre);
-
-		var btnEquipar = new Button();
-		btnEquipar.Text = "¡GENIAL!";
-		btnEquipar.CustomMinimumSize = new Vector2(340, 92);
-		btnEquipar.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
-		EstiloUI.Boton(btnEquipar, 36, accion: true);
-		btnEquipar.Pressed += () =>
-		{
-			capa.QueueFree();
-			ActualizarHuevoMenu();
-		};
-		vbox.AddChild(btnEquipar);
-
-		// Animación elástica de aparición
-		panel.PivotOffset = new Vector2(390, 400);
-		panel.Scale = Vector2.Zero;
-		var tw = panel.CreateTween();
-		tw.TweenProperty(panel, "scale", Vector2.One, 0.35f)
-		  .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-	}
+	private void MostrarPopupSkinDesbloqueada(string nombreSkin, string rutaImagen) =>
+		PopupSkinDesbloqueada.Mostrar(this, nombreSkin, rutaImagen, ActualizarHuevoMenu);
 
 	private void MostrarAvisoModal(string titulo, string mensaje)
 	{

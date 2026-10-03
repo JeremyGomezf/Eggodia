@@ -8,6 +8,7 @@ public partial class Campo1 : Node2D
 	private class RegistroTropa
 	{
 		public string Nombre;
+		public string Ruta; // escena de la tropa: clave de los favoritos del perfil
 		public bool EsJugador;
 		public int Daño;
 		public Texture2D Ilustracion;
@@ -32,6 +33,7 @@ public partial class Campo1 : Node2D
 			reg = new RegistroTropa
 			{
 				Nombre      = NombreCorto(atacante),
+				Ruta        = atacante.SceneFilePath,
 				EsJugador   = atacante.IsInGroup("tropas_jugador"),
 				Ilustracion = ObtenerIlustracionTropa(atacante),
 			};
@@ -137,6 +139,17 @@ public partial class Campo1 : Node2D
 		return mejor != null ? (mejor.Nombre, mejor.Daño, mejor.Ilustracion) : (null, 0, null);
 	}
 
+	private void RegistrarPartidaParaFavoritos()
+	{
+		var dañoPorTropa = new Dictionary<string, int>();
+		foreach (var reg in _statsPorTropa.Values)
+		{
+			if (!reg.EsJugador || string.IsNullOrEmpty(reg.Ruta)) continue;
+			dañoPorTropa[reg.Ruta] = (dañoPorTropa.TryGetValue(reg.Ruta, out int d) ? d : 0) + reg.Daño;
+		}
+		Preferencias.RegistrarPartidaParaFavoritos(dañoPorTropa);
+	}
+
 	// ── FIN DE PARTIDA ────────────────────────────────────────────────────
 	private void DeterminarGanadorPorTiempo()
 	{
@@ -165,10 +178,21 @@ public partial class Campo1 : Node2D
 	// vista es "vacío", y sin embargo la partida seguía — ese era el fallo reportado. Ahora, mientras
 	// quede aunque sea 1 de vida, la barra nunca baja de este mínimo bien visible; y cuando de verdad
 	// está muerto, SincronizarVidaConBarra lo deja en 0 y la barra se ve vacía de verdad.
-	private const float MINIMO_BARRA_VISIBLE = 5f; // % de la barra
+	private const float MINIMO_BARRA_VISIBLE = 5f; // % de la parte VISIBLE de la barra
 
-	/// <summary>Porcentaje a pintar en la barra: 0 solo si está realmente muerto; si le queda algo de
-	/// vida, nunca menos del mínimo visible. Vale igual para el jugador y para el rival.</summary>
+	// La imagen del relleno (BarraVidaProgress.png) mide 398 px de ancho, pero el marco
+	// (BarraVida.png) tapa los bordes: el relleno solo se VE entre los px 30 y 367. Godot reparte el
+	// valor sobre los 398 px, así que con poca vida el relleno quedaba entero escondido detrás del
+	// marco (el primer ~7,5 %) y la barra parecía vacía con el huevo todavía vivo. Por eso el
+	// porcentaje de vida se reparte solo sobre la parte visible. Si se cambian esas imágenes, medir de
+	// nuevo estos tres números.
+	private const float ANCHO_IMAGEN_BARRA = 398f;
+	private const float PX_VISIBLE_DESDE   = 30f;
+	private const float PX_VISIBLE_HASTA   = 367f;
+
+	/// <summary>Valor a pintar en la barra: 0 solo si está realmente muerto; si le queda algo de vida,
+	/// el relleno siempre asoma fuera del marco (nunca menos del mínimo visible). Vale igual para el
+	/// jugador y para el rival (cuya barra se llena de derecha a izquierda).</summary>
 	private double PorcentajeBarraVida(int vida, bool esRival = false)
 	{
 		if (vida <= 0) return 0;
@@ -176,8 +200,13 @@ public partial class Campo1 : Node2D
 		// pero SU barra se mide contra esa vida reducida — así se ve llena al empezar, en vez de a
 		// un quinto, que daba la impresión de que ya venía golpeado.
 		int maximo = (ModoTutorial && esRival) ? VIDA_RIVAL_TUTORIAL : vidaMaxJugador;
-		float pct = (float)vida / maximo * 100f;
-		return Mathf.Max(pct, MINIMO_BARRA_VISIBLE);
+		float pct = Mathf.Clamp((float)vida / maximo * 100f, MINIMO_BARRA_VISIBLE, 100f);
+
+		// La barra del rival se llena desde la derecha: su parte visible empieza a (ancho - 367) px.
+		float desde = esRival ? ANCHO_IMAGEN_BARRA - PX_VISIBLE_HASTA : PX_VISIBLE_DESDE;
+		float hasta = esRival ? ANCHO_IMAGEN_BARRA - PX_VISIBLE_DESDE : PX_VISIBLE_HASTA;
+		float px = desde + pct / 100f * (hasta - desde);
+		return px / ANCHO_IMAGEN_BARRA * 100f;
 	}
 
 	/// <summary>Redondea a 0 la vida que ya no se ve en la barra, para los DOS bandos (jugador y bot).
@@ -203,11 +232,28 @@ public partial class Campo1 : Node2D
 		else if (vidaRival <= 0) FinalizarPartida("VICTORIA");
 	}
 
+	// Rendirse contra el bot (pausa → RENDIRSE): la partida termina como derrota, pero NO se cuenta en
+	// las estadísticas de la cuenta ni da monedas de consuelo — es una práctica contra la computadora.
+	private bool _rendidoContraBot;
+
+	/// <summary>RENDIRSE del menú de pausa (solo contra el bot): cierra como derrota sin registrarla.</summary>
+	public void RendirseContraBot()
+	{
+		if (juegoTerminado) return;
+		_rendidoContraBot = true;
+		FinalizarPartida("DERROTA");
+	}
+
 	public async void FinalizarPartida(string msg)
 	{
 		if (juegoTerminado) return;
 		juegoTerminado = true;
 		ReportarResultadoContraBot(msg); // contra un bot "en línea": el servidor registra el final
+		// Favoritos del perfil: cuenta toda partida terminada (gane, pierda o empate), salvo el tutorial
+		// y rendirse contra el bot. Va antes del premio, que ya manda los favoritos al servidor.
+		if (!ModoTutorial && !_rendidoContraBot
+			&& (msg.Contains("VICTORIA") || msg.Contains("DERROTA") || msg.Contains("EMPATE")))
+			RegistrarPartidaParaFavoritos();
 		CerrarConfirmacionRetirada();
 		timerReloj.Stop();
 		GetTree().Paused = false;
@@ -250,6 +296,10 @@ public partial class Campo1 : Node2D
 			// sonando, si no quedarían apuntando a un reproductor detenido.
 			if (_reproductorMusica != null && _reproductorMusica.Stream != null && !_reproductorMusica.Playing)
 				_reproductorMusica.Play();
+			// Ya no es música de ambiente: suena a su volumen original (sin ducking de voces encima).
+			DuckingMusica.Reiniciar();
+			if (_reproductorMusica != null)
+				_reproductorMusica.VolumeDb = VOLUMEN_MUSICA_FIN_DB + _volumenExtraEscenario;
 
 			// En victoria: salta a los últimos 10s de la canción y quedan en loop (sigue sonando
 			// en la pantalla de Victoria). En derrota: arranca desde el minuto específico de ESE
@@ -299,10 +349,15 @@ public partial class Campo1 : Node2D
 
 		if (msg.Contains("DERROTA"))
 		{
-			if (!ModoTutorial) Preferencias.PartidasPerdidas++;
 			// El tutorial no paga: ni al ganar ni al (raro) perder. Con cuenta, el premio y la derrota los
-			// guarda el servidor (antes las derrotas nunca llegaban al servidor).
-			int monedasConsuelo = Economia.Instancia().RegistrarFinDePartida("derrota", 0, PareceOnline, ModoTutorial, _dañoTotalJugador);
+			// guarda el servidor (antes las derrotas nunca llegaban al servidor). Rendirse contra el bot no
+			// cuenta: ni derrota en la cuenta ni monedas.
+			int monedasConsuelo = 0;
+			if (!_rendidoContraBot)
+			{
+				if (!ModoTutorial) Preferencias.PartidasPerdidas++;
+				monedasConsuelo = Economia.Instancia().RegistrarFinDePartida("derrota", 0, PareceOnline, ModoTutorial, _dañoTotalJugador);
+			}
 			var escenaDerrota = GD.Load<PackedScene>("res://escenas/gameplay/PantallaDerrota.tscn");
 			if (escenaDerrota != null)
 			{

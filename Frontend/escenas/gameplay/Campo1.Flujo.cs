@@ -147,6 +147,11 @@ public partial class Campo1 : Node2D
 			if (_accionForzadaTutorial != AccionForzadaTutorial.Habilidad && !dragonEnRemate && btnHabilidad != null)
 			{ btnHabilidad.Disabled = true; btnHabilidad.Modulate = new Color(1, 1, 1, 0.4f); }
 		}
+		// Tutorial: DEFENSA solo sirve en el paso que la pide (el del Maguín). Fuera de él —incluido el
+		// rato entre invocar la carta nueva y el remate, sin paso forzado— queda bloqueada en cualquier
+		// tropa (p. ej. Tiburón, Dragón o Calamar): defender ahí rompía el hilo del tutorial.
+		if (ModoTutorial && !DefensaPermitidaTutorial() && btnD != null)
+		{ btnD.Disabled = true; btnD.Modulate = new Color(1, 1, 1, 0.4f); }
 
 		menuAcciones.GlobalPosition = tropa.GetGlobalTransformWithCanvas().Origin + new Vector2(-50, -110);
 		menuAcciones.Visible = true;
@@ -177,7 +182,8 @@ public partial class Campo1 : Node2D
 	public void _on_btn_defensa_pressed()
 	{
 		if (tropaSeleccionada == null || !IsInstanceValid(tropaSeleccionada)) return;
-		if (EstaBlockeada(tropaSeleccionada) || Gi(tropaSeleccionada, "escudoActual") <= 0)
+		if (EstaBlockeada(tropaSeleccionada) || Gi(tropaSeleccionada, "escudoActual") <= 0
+			|| (ModoTutorial && !DefensaPermitidaTutorial()))
 		{ menuAcciones.Visible = false; return; }
 		string carrilDef = tropaSeleccionada.HasMeta("carril") ? (string)tropaSeleccionada.GetMeta("carril") : "";
 		tropaSeleccionada.Call("EjecutarAccion", "preparar_defensa");
@@ -198,6 +204,7 @@ public partial class Campo1 : Node2D
 		string carrilHab = tropaSeleccionada.HasMeta("carril") ? (string)tropaSeleccionada.GetMeta("carril") : "";
 		var tropaHab = tropaSeleccionada;
 		(tropaHab as TropaBase)?.MarcarHabilidad(); // su animación no debe sonar como un ataque normal
+		(tropaHab as TropaBase)?.OcultarBarrasPorHabilidad();
 		tropaHab.Call("EjecutarAccion", "usar_habilidad");
 		menuAcciones.Visible = false;
 
@@ -207,6 +214,7 @@ public partial class Campo1 : Node2D
 		// El SONIDO de la habilidad también espera: suena al tocar la tropa objetivo, no al pulsar el botón.
 		if (tropaHab is TropaBase tb && tb.SeleccionPendiente) { _habilidadPendienteCarril = carrilHab; return; }
 		(tropaHab as TropaBase)?.SonarHabilidad();
+		RegistrarHabilidadParaFavoritos(tropaHab);
 
 		tropaHab.Call("SetActivo", false);
 		RegistrarGastoMovimiento();
@@ -224,12 +232,19 @@ public partial class Campo1 : Node2D
 	{
 		if (tropa == null || !IsInstanceValid(tropa)) return;
 		(tropa as TropaBase)?.SonarHabilidad(); // recién ahora, al tocar el objetivo, suena la habilidad
+		RegistrarHabilidadParaFavoritos(tropa);
 		tropa.Call("SetActivo", false);
 		RegistrarGastoMovimiento();
 		if (EsOnline)
 			EmitirAccionOnline("habilidad", new Godot.Collections.Dictionary { { "carrilHab", _habilidadPendienteCarril } });
 		_habilidadPendienteCarril = "";
 		if (ModoTutorial) AvanzarPasoForzadoTutorial(AccionForzadaTutorial.Habilidad);
+	}
+
+	// Habilidad usada por una tropa propia: suma para la "tropa favorita" del perfil.
+	private void RegistrarHabilidadParaFavoritos(Node2D tropa)
+	{
+		if (!ModoTutorial && tropa.IsInGroup("tropas_jugador")) Preferencias.RegistrarHabilidadCarta(tropa.SceneFilePath);
 	}
 
 	private bool HabilidadUsada(Node2D t) { try { return (bool)t.Get("habilidadUsada"); } catch { return false; } }
@@ -351,8 +366,9 @@ public partial class Campo1 : Node2D
 		t.Visible = true; t.Modulate = Colors.White; // seguro anti-invisible
 		// Estadística de "carta más usada" (perfil): se guarda por ruta de escena, no por nombre
 		// corto, para poder cruzarla luego con CartaData y mostrar su imagen real.
-		if (!string.IsNullOrEmpty(t.SceneFilePath)) Preferencias.RegistrarUsoCarta(t.SceneFilePath);
+		if (!ModoTutorial && !string.IsNullOrEmpty(t.SceneFilePath)) Preferencias.RegistrarUsoCarta(t.SceneFilePath);
 		if (idxMazo >= 0) t.SetMeta("idx_mazo", idxMazo); // para el sistema de reaparición
+		t.SetMeta("ronda_invocada", _turnosJugados / 2 + 1); // tras 3 rondas viva, su carta puede volver a salir
 		t.ZIndex = (string)puntoMod.Name switch { "Mod3" => 100, "Mod2" => 50, _ => 10 };
 		Node marc = new Node(); marc.Name = "Ocupado"; puntoMod.AddChild(marc); marc.SetMeta("tropa_instanciada", t);
 
@@ -361,7 +377,6 @@ public partial class Campo1 : Node2D
 
 		tropasInvocadasTurno++;
 		faseInvocacion = false;
-		RegistrarCartaGastada(idxMazo);  // cuenta para habilitar los colosos (hacen falta 5)
 		ReacomodarManoTropas();          // reacomoda/agranda las cartas que quedan en la mano
 
 		// Nota: la reposición de mano NO se hace acá al instante (se probó y se sentía como un bug —
@@ -747,8 +762,8 @@ public partial class Campo1 : Node2D
 			}
 		}
 
-		if (_barraHPJugador != null) _barraHPJugador.Value = PorcentajeBarraVida(vidaJugador);
-		if (_barraHPRival   != null) _barraHPRival.Value   = PorcentajeBarraVida(vidaRival, esRival: true);
+		MoverBarraVida(_barraHPJugador, PorcentajeBarraVida(vidaJugador));
+		MoverBarraVida(_barraHPRival,   PorcentajeBarraVida(vidaRival, esRival: true));
 
 		if (!juegoTerminado && _lblTiempo != null)
 		{

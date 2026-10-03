@@ -149,6 +149,10 @@ public abstract partial class TropaBase : Area2D
 	/// diferida sobreescriben este valor.</summary>
 	protected virtual int TurnoDesbloqueoHabilidad => 1;
 
+	/// <summary>Turnos que la tropa tiene que sobrevivir para desbloquear su habilidad (0 = lista desde
+	/// que entra). Lo muestra la ficha de datos del constructor de mazo.</summary>
+	public int TurnosParaDesbloquearHabilidad => TurnoDesbloqueoHabilidad;
+
 	/// <summary>Si true, el botón de habilidad se muestra en gris/bloqueado aunque no esté usada.
 	/// Por defecto, bloqueada mientras la tropa no llegue a su turno propio de desbloqueo.</summary>
 	public virtual bool HabilidadBloqueada() => turnoActualCarta < TurnoDesbloqueoHabilidad;
@@ -217,6 +221,8 @@ public abstract partial class TropaBase : Area2D
 		if (vidaActual <= 0 && IsInGroup("tropas_jugador") && EsPartidaTutorial()) vidaActual = 1;
 
 		ActualizarBarrasUI();
+		// Si las escondió la habilidad, el golpe enemigo las vuelve a mostrar (unos segundos).
+		if (_barrasOcultasPorHabilidad) MostrarBarras(true);
 
 		if (vidaActual <= 0)
 		{
@@ -743,9 +749,23 @@ public abstract partial class TropaBase : Area2D
 	// ── UI (encapsulada) ──────────────────────────────────────────────────
 
 	private int _tokenBarras = 0;
+	// Las barras se escondieron porque la tropa usó su habilidad: vuelven a verse recién si un enemigo
+	// le pega (o si el jugador la toca).
+	private bool _barrasOcultasPorHabilidad = false;
+
+	/// <summary>Esconde las barras de vida/escudo al usar la habilidad: si la tropa recién se tocó, se
+	/// estaban viendo y "volaban" con ella mientras salta o cambia de carril (Caballo, Arfil, Dama,
+	/// Torre…). Corta también el auto-ocultado pendiente.</summary>
+	public void OcultarBarrasPorHabilidad()
+	{
+		_tokenBarras++;
+		_barrasOcultasPorHabilidad = true;
+		if (_contenedorStats != null) _contenedorStats.Visible = false;
+	}
 
 	protected void MostrarBarras(bool mostrar)
 	{
+		if (mostrar) _barrasOcultasPorHabilidad = false;
 		if (_contenedorStats != null) { _contenedorStats.Visible = mostrar; ActualizarBarrasUI(); }
 		if (!mostrar) return;
 

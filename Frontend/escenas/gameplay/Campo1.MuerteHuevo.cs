@@ -237,6 +237,37 @@ public partial class Campo1 : Node2D
 	}
 
 	private const float SEG_VACIAR_BARRA = 0.55f; // rapidito, pero se ve bajar
+	private const float SEG_MOVER_BARRA  = 0.35f; // golpes y curaciones durante la partida
+
+	// Último valor pedido a cada barra y su animación en curso.
+	private readonly System.Collections.Generic.Dictionary<TextureProgressBar, (double objetivo, Tween tween)> _animBarras = new();
+
+	// Barras del huevo que ya perdió: quedan en 0 hasta el final. Al rendirse, al acabarse el tiempo o
+	// con una retirada en línea, la vida NO llega a 0 de verdad; la animación de muerte vacía la barra
+	// igual, y cualquier refresco posterior de la interfaz la volvía a subir ("se vacía y regresa").
+	private readonly System.Collections.Generic.HashSet<TextureProgressBar> _barrasTrabadasEnCero = new();
+
+	/// <summary>Lleva la barra de vida a su valor nuevo ANIMADA (sube o baja a la vista), nunca de
+	/// golpe. Así, al llegar a 0 la barra se ve vaciarse en vez de saltar a vacía (antes se ponía en 0
+	/// de una y la animación de vaciado de la muerte ya no tenía nada que mostrar). Solo arranca una
+	/// animación nueva si el valor pedido cambió: la interfaz se refresca a cada rato.</summary>
+	private void MoverBarraVida(TextureProgressBar barra, double objetivo)
+	{
+		if (barra == null || !IsInstanceValid(barra)) return;
+		if (_barrasTrabadasEnCero.Contains(barra)) objetivo = 0.0; // el huevo que perdió no "revive"
+		if (_animBarras.TryGetValue(barra, out var previo) && Mathf.IsEqualApprox(previo.objetivo, objetivo)) return;
+		if (previo.tween != null && previo.tween.IsValid()) previo.tween.Kill();
+		if (!IsInsideTree() || Mathf.IsEqualApprox(barra.Value, objetivo))
+		{
+			barra.Value = objetivo;
+			_animBarras[barra] = (objetivo, null);
+			return;
+		}
+		float seg = objetivo <= 0 ? SEG_VACIAR_BARRA : SEG_MOVER_BARRA;
+		Tween tw = CreateTween();
+		tw.TweenProperty(barra, "value", objetivo, seg).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
+		_animBarras[barra] = (objetivo, tw);
+	}
 
 	/// <summary>Baja a cero la barra de vida del bando indicado con una animación corta, en vez del
 	/// salto seco de siempre. Se usa en TODOS los finales (rendirse, tiempo agotado, muerte real) y
@@ -244,11 +275,8 @@ public partial class Campo1 : Node2D
 	private void VaciarBarraVida(bool esDelJugador)
 	{
 		TextureProgressBar barra = esDelJugador ? _barraHPJugador : _barraHPRival;
-		if (barra == null || !IsInstanceValid(barra) || barra.Value <= 0) return;
-
-		Tween tw = CreateTween();
-		tw.TweenProperty(barra, "value", 0.0, SEG_VACIAR_BARRA)
-		  .SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
+		if (barra != null) _barrasTrabadasEnCero.Add(barra);
+		MoverBarraVida(barra, 0.0); // si ya venía bajando a 0, la sigue (no la corta ni la salta)
 	}
 
 	private async Task EsperarSegurosMuerte(float segundos)

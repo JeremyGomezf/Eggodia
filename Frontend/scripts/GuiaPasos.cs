@@ -36,16 +36,20 @@ public partial class GuiaPasos : CanvasLayer
 	public const string GRUPO = "guia_pasos";
 
 	private const string RUTA_CUADRO = "res://efectos/guiatexto.tscn";
-	// El cuadro del tutorial mide 631×228; así escalado la letra (22) queda en ~30 px, cómoda en celular.
-	private static readonly Vector2 ESCALA_CUADRO = new(1.35f, 1.35f);
+	// El cuadro del tutorial mide 631×228; así escalado la letra (22) queda en ~40 px: se lee bien en
+	// un celular sin tener que acercarse.
+	private const float K_CUADRO = 1.8f;
+	private static readonly Vector2 ESCALA_CUADRO = new(K_CUADRO, K_CUADRO);
 	// Límites del dibujo del cuadro dentro de su propio nodo (el Sprite2D centrado en 315,117).
 	private static readonly Rect2 RECT_CUADRO_LOCAL = new(0f, 3f, 631f, 228f);
 	private const float MARGEN_PANTALLA = 24f;
-	private const float SEPARACION_FOCO = 26f;
-	private const float ALTO_PISTA = 44f;
+	private const float SEPARACION_FOCO = 22f;
+	private const float ALTO_PISTA = 62f;
+	private const int   LETRA_PISTA = 38;
 	// Un segundo toque muy pegado al primero (doble toque sin querer) no se salta un texto sin leerlo.
 	private const ulong ESPERA_MIN_MS = 250;
-	private static readonly Vector2 TAM_SALTAR = new(250f, 70f);
+	private static readonly Vector2 TAM_SALTAR = new(360f, 108f);
+	private const int   LETRA_SALTAR = 40;
 
 	private string _clave;
 	private IReadOnlyList<Paso> _pasos;
@@ -237,7 +241,14 @@ public partial class GuiaPasos : CanvasLayer
 		{
 			AddChild(_cuadro);
 			_lblTexto = _cuadro.FindChild("LblHabilidad", true, false) as Label;
-			if (_lblTexto != null) _lblTexto.Text = "";
+			if (_lblTexto != null)
+			{
+				_lblTexto.Text = "";
+				// La letra se dibuja a su tamaño final (caja y fuente × K_CUADRO, con escala inversa) en
+				// vez de estirar una letra chica: así se ve nítida y no borrosa en el celular.
+				_lblTexto.Scale = Vector2.One / K_CUADRO;
+				_lblTexto.Size *= K_CUADRO;
+			}
 			_cuadro.Visible = false;
 		}
 
@@ -248,15 +259,15 @@ public partial class GuiaPasos : CanvasLayer
 			MouseFilter = Control.MouseFilterEnum.Ignore,
 			Modulate = new Color(1, 1, 1, 0),
 		};
-		EstiloUI.Texto(_lblPista, 28, EstiloUI.TextoClaro);
-		_lblPista.AddThemeConstantOverride("outline_size", 10);
+		EstiloUI.Texto(_lblPista, LETRA_PISTA, EstiloUI.TextoClaro);
+		_lblPista.AddThemeConstantOverride("outline_size", 12);
 		_lblPista.AddThemeColorOverride("font_outline_color", new Color(0f, 0f, 0f, 0.85f));
 		AddChild(_lblPista);
 
 		// SALTAR: para quien ya conoce el juego. Cierra la guía y no vuelve a salir. Sus toques los
 		// atiende _Input (la guía se come todos los toques antes que cualquier botón).
 		_btnSaltar = new Button { Text = "SALTAR GUÍA", CustomMinimumSize = TAM_SALTAR, Modulate = new Color(1, 1, 1, 0) };
-		EstiloUI.Boton(_btnSaltar, 26);
+		EstiloUI.Boton(_btnSaltar, LETRA_SALTAR);
 		_btnSaltar.MouseFilter = Control.MouseFilterEnum.Ignore;
 		_btnSaltar.Size = TAM_SALTAR;
 		AddChild(_btnSaltar);
@@ -407,7 +418,7 @@ public partial class GuiaPasos : CanvasLayer
 	{
 		foreach (int tam in new[] { 22, 20, 18, 16 })
 		{
-			_lblTexto.AddThemeFontSizeOverride("font_size", tam);
+			_lblTexto.AddThemeFontSizeOverride("font_size", Mathf.RoundToInt(tam * K_CUADRO));
 			if (_lblTexto.GetLineCount() * _lblTexto.GetLineHeight() <= _lblTexto.Size.Y + 2) return;
 		}
 	}

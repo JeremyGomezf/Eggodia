@@ -219,7 +219,7 @@ public partial class Campo1 : Node2D
 
 		if (objetivo == null || !AplicarHechizoADestino(pi, objetivo)) return false;
 
-		Preferencias.RegistrarUsoHechizo(_poolActivo[pi].Nombre);
+		if (!ModoTutorial) Preferencias.RegistrarUsoHechizo(_poolActivo[pi].Nombre);
 		_hechizoUsadoEsteTurno = true;
 		AutoReemplazarHechizo(slotIdx);
 		RegistrarGastoMovimiento();

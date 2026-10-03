@@ -69,6 +69,11 @@ public partial class Campo1 : Node2D
 	private bool _bombaEnVuelo            = false;
 	private bool _nuclearEnCurso => _nuclearesEnCurso > 0;
 	private bool _impactoNuclearHecho     = false;
+	// Desde el IMPACTO hasta que se va el blanco (con el tablero bloqueado, nadie puede atacar): solo
+	// las muertes de este rato son de la bomba y terminan en polvo. Antes, en línea, se usaba
+	// "_nuclearEnCurso", que ya es true durante todo el CONTADOR: cualquier tropa que muriera en esos
+	// 60 s por un ataque normal aparecía en polvo, como si la hubiera matado la bomba.
+	private bool _ventanaPolvoNuclear     = false;
 	private bool _destelloNuclearIniciado = false;
 	private bool _destelloNuclearActivo   = false; // hay blanco en pantalla (el polvo espera quieto)
 	private int  _polvosNuclearActivos    = 0;
@@ -117,7 +122,7 @@ public partial class Campo1 : Node2D
 		}
 
 		_nuclearUsadaJugador = true; // antes de reponer la carta: la mano nueva ya no puede traer otra
-		Preferencias.RegistrarUsoHechizo(_poolActivo[pi].Nombre);
+		if (!ModoTutorial) Preferencias.RegistrarUsoHechizo(_poolActivo[pi].Nombre);
 		MarcarHechizoUsado(pi);
 		_hechizoUsadoEsteTurno = true;
 		AutoReemplazarHechizo(slotIdx);
@@ -254,6 +259,7 @@ public partial class Campo1 : Node2D
 			// Para esta altura el blanco ya se fue: el tablero vuelve a estar libre.
 			for (double t = 0; _destelloNuclearActivo && t < 3.0; t += 0.1)
 				if (!await EsperarNuclear(0.1)) return;
+			_ventanaPolvoNuclear = false; // se fue el blanco: desde acá las muertes vuelven a ser normales
 			FinalizarBloqueoTablero();
 			tableroBloqueado = false;
 			_bombaEnVuelo = false; // ya no hay nada volando: la otra cuenta (si hay) sigue
@@ -277,6 +283,7 @@ public partial class Campo1 : Node2D
 	private void TerminarSecuenciaNuclear(Node2D bomba)
 	{
 		if (IsInstanceValid(bomba)) bomba.QueueFree();
+		_ventanaPolvoNuclear = false;
 		QuitarDestelloNuclear();
 		if (_capaNuclear != null && IsInstanceValid(_capaNuclear)) _capaNuclear.QueueFree();
 		_capaNuclear      = null;
@@ -386,6 +393,7 @@ public partial class Campo1 : Node2D
 	{
 		if (_impactoNuclearHecho) return;
 		_impactoNuclearHecho = true;
+		_ventanaPolvoNuclear = true;
 
 
 		// La sufre SOLO el rival de quien la lanzó: sus tropas y su mano.
@@ -430,6 +438,14 @@ public partial class Campo1 : Node2D
 	{
 		_impactoNuclearRemotoRecibido = true;
 		_grupoVictimaNuclearPendiente = null;
+		// Resultado TARDÍO (el rival aplicó la bomba al empezar su turno, cuando mi explosión ya había
+		// pasado): la foto que llega trae las muertes de la bomba, así que se reabre la ventana del
+		// polvo un momento, solo para aplicarla.
+		if (_nuclearEnCurso && _impactoNuclearHecho && !_ventanaPolvoNuclear)
+		{
+			_ventanaPolvoNuclear = true;
+			GetTree().CreateTimer(2.0).Timeout += () => { if (IsInstanceValid(this)) _ventanaPolvoNuclear = false; };
+		}
 		if (!_nuclearEnCurso || _impactoNuclearHecho || string.IsNullOrEmpty(foto)) return false;
 		_snapshotNuclearPendiente = foto;
 		return true;
@@ -957,7 +973,7 @@ public partial class Campo1 : Node2D
 	// murieron por la bomba (las especiales tampoco, aunque normalmente sí podrían repetirse).
 	private void RepartirManoNuevaJugador()
 	{
-		var excluir = IndicesDesplegados();
+		var excluir = IndicesDesplegados(todas: true);
 		excluir.UnionWith(_indicesMuertosNuclearJugador);
 		_excluirRepartoNuclear = excluir;
 		try { RellenarManoObjetivo(); }

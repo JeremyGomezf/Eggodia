@@ -203,6 +203,9 @@ public partial class Campo1 : Node2D
 		// 3) Arrastre paralelo sin teletransporte — mismo tween de regreso real que usan
 		//    Arfil/Caballo/Dama (Sine / InOut / 0.38s). La reasignación de datos NO ocurre
 		//    hasta que este Tween termina al 100%.
+		// Mientras se arrastran no van con las barras de vida/escudo encima (la Torre y el aliado).
+		torre.OcultarBarrasPorHabilidad();
+		(aliado as TropaBase)?.OcultarBarrasPorHabilidad();
 		Tween tw = CreateTween().SetParallel(true);
 		tw.TweenProperty(torre, "global_position", posDestino, 0.38f)
 		  .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);

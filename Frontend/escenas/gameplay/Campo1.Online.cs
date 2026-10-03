@@ -297,7 +297,7 @@ public partial class Campo1 : Node2D
 		{
 			string carrilMio = EspejarCarril(ch.GetString() ?? "");
 			if (TropaEnCarril(carrilMio) is TropaBase hab && IsInstanceValid(hab))
-				EjecutarVisualOnline(() => { hab.AnunciarHabilidad(); hab.EjecutarAccion("usar_habilidad"); });
+				EjecutarVisualOnline(() => { hab.AnunciarHabilidad(); hab.OcultarBarrasPorHabilidad(); hab.EjecutarAccion("usar_habilidad"); });
 		}
 		else if (tipo == "hechizo" && datos.ValueKind == JsonValueKind.Object &&
 			datos.TryGetProperty("hechizoId", out var hid) && datos.TryGetProperty("carrilObjetivo", out var cobj))
@@ -826,8 +826,9 @@ public partial class Campo1 : Node2D
 		bool yaEnDerrota = animSprite != null && ((string)animSprite.Animation).Contains("derrota");
 
 		// Murió por la bomba Nuclear: igual que en la pantalla del lanzador, queda el polvo en vez de
-		// la derrota, y el carril (su círculo) sigue ocupado hasta que el polvo termina.
-		if (_nuclearEnCurso && tropaValida)
+		// la derrota, y el carril (su círculo) sigue ocupado hasta que el polvo termina. Solo cuenta
+		// la ventana del impacto: una muerte durante el CONTADOR es una muerte normal.
+		if (_ventanaPolvoNuclear && tropaValida)
 		{
 			tropa.SetMeta(META_MUERTE_PROCESADA, true);
 			if (!yaEnDerrota && tropa.HasMethod("ReproducirDerrota")) tropa.Call("ReproducirDerrota");

@@ -149,6 +149,35 @@ public static class EstiloUI
 		if (color.HasValue) l.AddThemeColorOverride("font_color", color.Value);
 	}
 
+	/// <summary>Pantallas de Victoria/Derrota: el resumen (estadísticas + MVT) se leía muy chico en el
+	/// celular. Se agranda la letra y la foto del MVT, y se aprovecha el ANCHO (la columna era de solo
+	/// ~650 px) para no sumar altura: esas pantallas se achican enteras si el bloque no entra en el alto,
+	/// así que crecer hacia abajo dejaría todo igual de chico. <paramref name="columnasStats"/> = 4 pone
+	/// las estadísticas de a dos por fila.</summary>
+	public static void AgrandarResumenFinPartida(Control vbox, int columnasStats = 2)
+	{
+		if (vbox == null) return;
+		vbox.CustomMinimumSize = new Vector2(Mathf.Max(vbox.CustomMinimumSize.X, 1000f), vbox.CustomMinimumSize.Y);
+
+		if (vbox.GetNodeOrNull<GridContainer>("PanelStats/StatsGrid") is GridContainer grid)
+		{
+			grid.Columns = columnasStats;
+			grid.AddThemeConstantOverride("h_separation", 36);
+			grid.AddThemeConstantOverride("v_separation", 10);
+			foreach (Node n in grid.GetChildren())
+				if (n is Label l) l.AddThemeFontSizeOverride("font_size", l.Name.ToString().EndsWith("V") ? 36 : 32);
+		}
+
+		if (vbox.GetNodeOrNull<TextureRect>("PanelMVT/MVTBox/MVTFoto") is TextureRect foto)
+			foto.CustomMinimumSize = new Vector2(120, 120);
+		if (vbox.GetNodeOrNull<Control>("PanelMVT/MVTBox") is HBoxContainer caja)
+			caja.AddThemeConstantOverride("separation", 22);
+		void Letra(string ruta, int tam) { if (vbox.GetNodeOrNull<Label>(ruta) is Label l) l.AddThemeFontSizeOverride("font_size", tam); }
+		Letra("PanelMVT/MVTBox/MVTInfo/MVTTitulo", 24);
+		Letra("PanelMVT/MVTBox/MVTInfo/MVTNombre", 38);
+		Letra("PanelMVT/MVTBox/MVTInfo/MVTStat",   28);
+	}
+
 	/// <summary>Título del juego (fuente + dorado + tamaño).</summary>
 	public static void Titulo(Label l, int fontSize) => Texto(l, fontSize, Dorado);
 }

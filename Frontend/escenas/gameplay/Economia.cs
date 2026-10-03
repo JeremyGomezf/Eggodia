@@ -36,6 +36,19 @@ public partial class Economia : Node
 	// Resultado de la última vez que se habló con el servidor: false = sin conexión (el menú lo avisa
 	// con un cartel y un botón de reintentar).
 	[Signal] public delegate void ConexionCambiadaEventHandler(bool hayConexion);
+
+	/// <summary>El servidor regaló una skin al terminar la partida (ganarle en línea a una cuenta dev:
+	/// Huevo Dorado). Queda pendiente hasta que alguna pantalla la muestre (ver TomarSkinGanadaPendiente).</summary>
+	[Signal] public delegate void SkinGanadaRecibidaEventHandler();
+	private (string nombre, string ruta)? _skinGanadaPendiente;
+
+	/// <summary>Devuelve (y olvida) la skin ganada que todavía no se mostró, o null.</summary>
+	public (string nombre, string ruta)? TomarSkinGanadaPendiente()
+	{
+		var s = _skinGanadaPendiente;
+		_skinGanadaPendiente = null;
+		return s;
+	}
 	public bool HayConexion { get; private set; } = true;
 
 	private int _monedas = 0;
@@ -142,6 +155,10 @@ public partial class Economia : Node
 			{ "resultado", resultado },
 			{ "racha", racha },
 			{ "dañoHecho", dañoHecho },
+			// Favoritos para el perfil público (los ve quien te toque en el ranking). Vacíos hasta que
+			// haya partidas suficientes.
+			{ "tropaFavorita", Preferencias.TropaFavorita() ?? "" },
+			{ "ardidFavorito", Preferencias.ArdidFavorito() ?? "" },
 		});
 		Preferencias.GuardarPremioPendiente(partidaId, cuerpo); // por si se corta antes de confirmar
 		EnviarPremio(cuenta, partidaId, cuerpo);
@@ -228,6 +245,16 @@ public partial class Economia : Node
 			_monedas = Mathf.Max(0, monedas);
 			Guardar();
 			EmitSignal(SignalName.MonedasCambiaron, _monedas);
+		}
+		if (doc.TryGetProperty("skinGanadaRuta", out var sg) && sg.ValueKind == JsonValueKind.String
+			&& !string.IsNullOrEmpty(sg.GetString()))
+		{
+			string ruta = sg.GetString();
+			string nombre = doc.TryGetProperty("skinGanadaNombre", out var sn) && sn.ValueKind == JsonValueKind.String
+				? sn.GetString() : "Skin exclusiva";
+			Preferencias.DesbloquearSkinExclusiva(ruta);
+			_skinGanadaPendiente = (nombre, ruta);
+			EmitSignal(SignalName.SkinGanadaRecibida);
 		}
 		if (doc.TryGetProperty("experiencia", out var xp) && xp.TryGetInt32(out var experiencia))
 		{

@@ -563,6 +563,8 @@ public partial class Campo1 : Node2D
 	private readonly Dictionary<TextureButton, Vector2> _escalaReposoBoton = new();
 
 	// ── JUICE DE BOTONES (hover / press) ──────────────────────────────────
+	// Sin aura ni copia del sprite detrás: en el celular quedaba como una "capa fantasma" detrás del
+	// botón al tocarlo (y no seguía al botón cuando éste se movía o balanceaba).
 	private void AgregarJuiceBoton(TextureButton btn)
 	{
 		if (btn == null) return;
@@ -570,21 +572,9 @@ public partial class Campo1 : Node2D
 		_escalaReposoBoton[btn] = escalaBase;
 		btn.PivotOffset = btn.Size / 2f;
 
-		// Aura blanca sutil detrás del botón: mismo sprite en blanco con mezcla aditiva.
-		var aura = new TextureRect();
-		aura.Texture = btn.TextureNormal;
-		aura.Size = btn.Size;
-		aura.Position = btn.Position;
-		aura.Rotation = btn.Rotation;
-		aura.Scale = escalaBase;
-		aura.PivotOffset = btn.Size / 2f;
-		aura.SelfModulate = new Color(1f, 1f, 1f, 0f);
-		aura.MouseFilter = Control.MouseFilterEnum.Ignore;
-		var mat = new CanvasItemMaterial();
-		mat.BlendMode = CanvasItemMaterial.BlendModeEnum.Add;
-		aura.Material = mat;
-		btn.GetParent().AddChild(aura);
-		aura.GetParent().MoveChild(aura, btn.GetIndex()); // justo detrás del botón
+		// En pantalla táctil el "mouse" se queda encima tras el toque: ahí el zoom es un pulso al soltar
+		// (crece un poquito y vuelve), para que el botón no quede agrandado hasta tocar otra cosa.
+		bool tactil = DisplayServer.IsTouchscreenAvailable();
 
 		btn.MouseEntered += () =>
 		{
@@ -593,17 +583,14 @@ public partial class Campo1 : Node2D
 			Vector2 reposo = _escalaReposoBoton[btn];
 			btn.CreateTween().TweenProperty(btn, "scale", reposo * 1.08f, 0.15f)
 				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-			aura.Scale = reposo * 1.1f;
-			aura.CreateTween().TweenProperty(aura, "self_modulate:a", 0.55f, 0.18f);
 		};
 		btn.MouseExited += () =>
 		{
-			// Siempre revierte a la escala de reposo ACTUAL (por si quedó agrandado/con aura justo
-			// antes de bloquearse) — normalmente la original, salvo que algo la haya pisado.
+			// Siempre revierte a la escala de reposo ACTUAL (por si quedó agrandado justo antes de
+			// bloquearse) — normalmente la original, salvo que algo la haya pisado.
 			Vector2 reposo = _escalaReposoBoton[btn];
 			btn.CreateTween().TweenProperty(btn, "scale", reposo, 0.15f)
 				.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
-			aura.CreateTween().TweenProperty(aura, "self_modulate:a", 0.0f, 0.2f);
 		};
 		btn.ButtonDown += () =>
 		{
@@ -616,10 +603,21 @@ public partial class Campo1 : Node2D
 		btn.ButtonUp += () =>
 		{
 			Vector2 reposo = _escalaReposoBoton[btn];
+			// Con mouse queda agrandado mientras siga encima (lo achica MouseExited); en el celular
+			// crece y vuelve solo.
+			bool encima = !btn.Disabled && btn.IsHovered();
 			Tween tw = btn.CreateTween().SetParallel(true);
-			tw.TweenProperty(btn, "scale", reposo, 0.12f)
+			tw.TweenProperty(btn, "scale", encima ? reposo * 1.08f : reposo, 0.12f)
 				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 			tw.TweenProperty(btn, "modulate", Colors.White, 0.12f);
+			if (tactil && encima)
+				// Vuelve a la escala de reposo que haya EN ESE MOMENTO (el modo sacrificio la cambia al tocar).
+				tw.Chain().TweenCallback(Callable.From(() =>
+				{
+					if (!IsInstanceValid(btn)) return;
+					btn.CreateTween().TweenProperty(btn, "scale", _escalaReposoBoton[btn], 0.18f)
+						.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+				})).SetDelay(0.08f);
 			// Si este mismo clic dejó el botón bloqueado (p. ej. Ardid Barajar entra en cooldown al
 			// soltarlo), el tween de arriba lo pisaría de vuelta a blanco opaco — se corrige al terminar,
 			// así el semitransparente de "bloqueado" no desaparece un instante después de aparecer.

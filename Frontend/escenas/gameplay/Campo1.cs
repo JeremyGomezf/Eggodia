@@ -15,6 +15,9 @@ public partial class Campo1 : Node2D
 	// Encima de esto actúa el ducking, que la baja todavía más mientras habla un personaje
 	// (ver DuckingMusica.cs).
 	[Export] private float _volumenMusicaDb = -21.0f;
+	// Al final de la partida (frase de victoria/derrota y su pantalla) la música deja de ser ambiente y
+	// vuelve a su volumen ORIGINAL, el que tenía antes de bajarla a -21 dB.
+	private const float VOLUMEN_MUSICA_FIN_DB = -6f;
 	private AudioStreamPlayer _reproductorMusica;
 
 	// ── ESCENARIOS DE BATALLA (5 mapas visuales+musicales, sorteados por partida) ─────────

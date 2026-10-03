@@ -26,18 +26,20 @@ public partial class MenuPrincipal : Control
 		var padre = btnTrofeo.GetParent();
 		if (padre == null) return;
 
-		// Cuadrado como el botón, chico y fino — antes seguía tapando cosas de alrededor.
+		// Cuadrado como el botón, chico y fino — un poco más adentro que la caja del botón (antes la
+		// sobrepasaba 4 px por lado + 6 de sombra y se veía muy grande).
+		const float ADENTRO = 6f;
 		var halo = new Panel();
 		halo.Name = "HaloTrofeo";
 		halo.MouseFilter = Control.MouseFilterEnum.Ignore;
-		halo.Size = new Vector2(btnTrofeo.Size.X + 8, btnTrofeo.Size.Y + 8);
-		halo.Position = btnTrofeo.Position - new Vector2(4, 4);
+		halo.Size = btnTrofeo.Size - new Vector2(ADENTRO * 2, ADENTRO * 2);
+		halo.Position = btnTrofeo.Position + new Vector2(ADENTRO, ADENTRO);
 		var sbHalo = new StyleBoxFlat();
 		sbHalo.BgColor = new Color(0.55f, 0.35f, 0.95f, 0.18f);
 		sbHalo.CornerRadiusTopLeft = sbHalo.CornerRadiusTopRight =
 		sbHalo.CornerRadiusBottomLeft = sbHalo.CornerRadiusBottomRight = 12;
 		sbHalo.ShadowColor = new Color(0.6f, 0.4f, 1f, 0.25f);
-		sbHalo.ShadowSize = 6;
+		sbHalo.ShadowSize = 4;
 		halo.AddThemeStyleboxOverride("panel", sbHalo);
 		padre.AddChild(halo);
 		padre.MoveChild(halo, btnTrofeo.GetIndex()); // justo detrás del botón
@@ -131,7 +133,7 @@ public partial class MenuPrincipal : Control
 		vbox.AddChild(lblTitulo);
 
 		var lblSub = new Label();
-		lblSub.Text = "Trofeos huevo ganados en partidas";
+		lblSub.Text = "Trofeos huevo ganados en partidas · Toca un jugador para ver su perfil";
 		lblSub.HorizontalAlignment = HorizontalAlignment.Center;
 		EstiloUI.Texto(lblSub, 19, EstiloUI.Acento);
 		vbox.AddChild(lblSub);
@@ -204,7 +206,7 @@ public partial class MenuPrincipal : Control
 				string nombre = e.TryGetProperty("nombre", out var pn) ? (pn.GetString() ?? "?") : "?";
 				int copas     = e.TryGetProperty("victorias", out var pv) ? pv.GetInt32() : 0;
 				bool esYo     = id == miId;
-				_listaTrofeos.AddChild(CrearFilaTrofeo(pos, esYo ? nombre + " (tú)" : nombre, copas, esYo));
+				_listaTrofeos.AddChild(CrearFilaTrofeo(pos, esYo ? nombre + " (tú)" : nombre, copas, esYo, id));
 				pos++;
 			}
 		}
@@ -223,10 +225,23 @@ public partial class MenuPrincipal : Control
 		return lbl;
 	}
 
-	private Control CrearFilaTrofeo(int puesto, string nombre, int trofeos, bool esPropia)
+	private Control CrearFilaTrofeo(int puesto, string nombre, int trofeos, bool esPropia, int usuarioId)
 	{
 		var fila = new PanelContainer();
 		fila.AddThemeStyleboxOverride("panel", EstiloUI.CuadroDorado(esPropia)); // paleta nuestra (azul+oro / verde si eres tú)
+
+		// Tocar la fila abre el perfil de ese jugador (el tuyo, si es tu fila) encima del ranking. Se
+		// decide al SOLTAR y solo si no fue un arrastre: deslizar la lista no abre perfiles sin querer.
+		fila.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+		fila.GuiInput += (ev) =>
+		{
+			if (ev is not InputEventMouseButton mb || mb.ButtonIndex != MouseButton.Left || mb.Pressed) return;
+			if (ScrollTactil.UltimoGestoFueArrastre) return;
+			if (!fila.GetGlobalRect().HasPoint(mb.GlobalPosition)) return;
+			SonidoUI.Reproducir(this);
+			if (esPropia) AbrirPerfil();
+			else AbrirPerfilDeJugador(usuarioId);
+		};
 
 		var hbox = new HBoxContainer();
 		hbox.AddThemeConstantOverride("separation", 14);

@@ -74,7 +74,7 @@ public partial class PanelSettings : PanelContainer
 
 		// Estilo del juego (fuente Almendra + botones nuestros) sobre la UI de la escena, que venía con
 		// la fuente/estilo por defecto de Godot. Solo apariencia: no cambia la lógica.
-		CrearBotonesAudio(); // MÚSICA (verde, izquierda) + EFECTOS (amarillo, derecha) en lugar de SILENCIAR
+		CrearBotonesAudio(); // MÚSICA (izquierda) + EFECTOS (derecha), los dos en amarillo, en lugar de SILENCIAR
 		EstiloUI.Boton(_btnComoJugar, 34);
 		EstiloUI.Boton(_btnCerrar, 36);
 		EstiloUI.Boton(_btnCerrarSesion, 34, rojo: true);
@@ -125,11 +125,10 @@ public partial class PanelSettings : PanelContainer
 
 		if (_chkScreenShake != null)
 		{
+			EstilizarSwitch(_chkScreenShake);
 			_chkScreenShake.ButtonPressed = ScreenShakeEnabled;
 			_chkScreenShake.Toggled += (on) => ScreenShakeEnabled = on;
-			// El switch de Godot es chico y no se puede agrandar con icon_max_width (solo achica). Se
-			// agranda escalando el nodo (switch + texto) con el pivote al centro, sin desbordar. Se
-			// reaplica al redimensionarse para tener el tamaño real. Aplica a menú principal y VS BOT.
+			// Se reaplica al redimensionarse para tener el tamaño real. Aplica a menú principal y VS BOT.
 			_chkScreenShake.Resized += AgrandarSwitchVibracion;
 			Callable.From(AgrandarSwitchVibracion).CallDeferred();
 		}
@@ -179,12 +178,11 @@ public partial class PanelSettings : PanelContainer
 
 	// ── BOTONES DE AUDIO: MÚSICA y EFECTOS por separado ─────────────────────
 	// Antes había un solo "SILENCIAR" que apagaba todo (bus Master). Ahora son dos, lado a lado:
-	// MÚSICA (verde, izquierda) silencia solo la música de menú/batalla, y EFECTOS (amarillo, derecha)
+	// MÚSICA (izquierda) silencia solo la música de menú/batalla, y EFECTOS (derecha)
 	// solo los sonidos del juego (botones, tropas, efectos). Se crean por código en el mismo lugar del
 	// botón viejo, que queda oculto.
 	private Button _btnMusica;
 	private Button _btnEfectos;
-	private static readonly Color VERDE_AUDIO    = new(0.20f, 0.62f, 0.28f);
 	private static readonly Color AMARILLO_AUDIO = new(0.92f, 0.74f, 0.16f);
 	private static readonly Color GRIS_APAGADO   = new(0.28f, 0.29f, 0.32f);
 
@@ -235,7 +233,7 @@ public partial class PanelSettings : PanelContainer
 	{
 		var am = GlobalAudioManager.Instance;
 		if (am == null) return;
-		PintarBotonAudio(_btnMusica,  "MÚSICA",  !am.IsMusicaMuteada(),  VERDE_AUDIO,    Colors.White);
+		PintarBotonAudio(_btnMusica,  "MÚSICA",  !am.IsMusicaMuteada(),  AMARILLO_AUDIO, new Color(0.18f, 0.12f, 0.02f));
 		PintarBotonAudio(_btnEfectos, "EFECTOS", !am.IsEfectosMuteados(), AMARILLO_AUDIO, new Color(0.18f, 0.12f, 0.02f));
 	}
 
@@ -245,7 +243,8 @@ public partial class PanelSettings : PanelContainer
 	// vía es escalar el nodo. Ahora el CheckButton NO tiene texto —el texto es un Label aparte—, así
 	// que se puede escalar fuerte sin que las letras se deformen ni crezcan con él.
 	// Vale para el panel del menú principal y para el de la pausa de campo_1: es la MISMA escena.
-	private const float ESCALA_SWITCH_VIBRACION = 1.45f;
+	// El switch ya se dibuja grande (ver IconoSwitch): no hace falta escalarlo.
+	private const float ESCALA_SWITCH_VIBRACION = 1f;
 	private Control _marcoSwitch;                     // hueco que le reserva el sitio al toggle escalado
 	private Vector2 _tamNaturalSwitch = Vector2.Zero; // tamaño del toggle SIN escalar (se mide una vez)
 
@@ -269,6 +268,55 @@ public partial class PanelSettings : PanelContainer
 		_chkScreenShake.Position       = Vector2.Zero;
 		_chkScreenShake.PivotOffset    = Vector2.Zero; // crece hacia la derecha/abajo, sin descolocarse
 		_chkScreenShake.Scale          = new Vector2(ESCALA_SWITCH_VIBRACION, ESCALA_SWITCH_VIBRACION);
+	}
+
+	// ── SWITCH PROPIO ─────────────────────────────────────────────────────
+	// El de Godot por defecto era chico y, al tocarlo, se oscurecía su fondo y quedaba solo un círculo
+	// negro sobre negro. Este es una pista (amarilla = prendido, gris = apagado) con una perilla BLANCA
+	// grande, igual de grande en los dos estados, y sin ningún fondo al tocarlo.
+	private const int ANCHO_SWITCH = 132, ALTO_SWITCH = 72;
+	private static ImageTexture _switchOn, _switchOff;
+
+	private static void EstilizarSwitch(CheckButton chk)
+	{
+		_switchOn  ??= IconoSwitch(true);
+		_switchOff ??= IconoSwitch(false);
+		foreach (var n in new[] { "checked", "checked_mirrored", "checked_disabled", "checked_disabled_mirrored" })
+			chk.AddThemeIconOverride(n, _switchOn);
+		foreach (var n in new[] { "unchecked", "unchecked_mirrored", "unchecked_disabled", "unchecked_disabled_mirrored" })
+			chk.AddThemeIconOverride(n, _switchOff);
+		foreach (var n in new[] { "normal", "hover", "pressed", "hover_pressed", "focus", "disabled" })
+			chk.AddThemeStyleboxOverride(n, new StyleBoxEmpty());
+		foreach (var n in new[] { "icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_hover_pressed_color", "icon_focus_color" })
+			chk.AddThemeColorOverride(n, Colors.White); // el ícono nunca se oscurece al tocarlo
+	}
+
+	private static ImageTexture IconoSwitch(bool prendido)
+	{
+		const int W = ANCHO_SWITCH, H = ALTO_SWITCH;
+		float cy = H / 2f;
+		float radioPerilla = H / 2f - 3f;           // la perilla ocupa casi todo el alto
+		float radioPista   = radioPerilla * 0.72f;  // pista más fina que la perilla
+		float x0 = radioPerilla + 3f, x1 = W - radioPerilla - 3f;
+		float cxPerilla = prendido ? x1 : x0;
+		Color pista = prendido ? AMARILLO_AUDIO : new Color(0.38f, 0.40f, 0.46f);
+		Color borde = new Color(0.10f, 0.12f, 0.18f);
+
+		var img = Image.CreateEmpty(W, H, false, Image.Format.Rgba8);
+		for (int y = 0; y < H; y++)
+		for (int x = 0; x < W; x++)
+		{
+			var p = new Vector2(x + 0.5f, y + 0.5f);
+			float dPista = p.DistanceTo(new Vector2(Mathf.Clamp(p.X, x0, x1), cy)) - radioPista;
+			float dPerilla = p.DistanceTo(new Vector2(cxPerilla, cy)) - radioPerilla;
+			Color c = new Color(pista, Mathf.Clamp(0.5f - dPista, 0f, 1f));
+			// Perilla blanca con un aro fino oscuro para que se despegue de la pista.
+			float aPerilla = Mathf.Clamp(0.5f - dPerilla, 0f, 1f);
+			Color perilla = Colors.White.Lerp(borde, Mathf.Clamp(dPerilla + 3.5f, 0f, 1f));
+			c = c.Blend(new Color(perilla, aPerilla));
+			img.SetPixel(x, y, c);
+		}
+		return ImageTexture.CreateFromImage(img);
 	}
 
 	public void OcultarCerrarSesion()

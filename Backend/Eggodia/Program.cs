@@ -77,8 +77,20 @@ using (var scope = app.Services.CreateScope())
     }
     catch { /* la columna ya existía */ }
     try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN MazoJson TEXT NOT NULL DEFAULT '';"); } catch { }
+    // Regalo de bienvenida para las cuentas que YA existían: las nuevas nacen con 500 monedas (ver
+    // UsuariosController.MONEDAS_INICIALES), así que a las de antes se les suman 500 UNA sola vez. La
+    // columna es solo la marca de "ya se dio": si el ALTER falla es porque ya existía y no se repite.
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN BonoInicialDado INTEGER NOT NULL DEFAULT 1;");
+        db.Database.ExecuteSqlRaw("UPDATE Usuarios SET Monedas = Monedas + " + UsuariosController.MONEDAS_INICIALES + ";");
+    }
+    catch { /* la columna ya existía: el bono ya se dio */ }
     // Códigos con vencimiento (ver PromoCode.ExpiraUtc).
     try { db.Database.ExecuteSqlRaw("ALTER TABLE promo_codes ADD COLUMN ExpiraUtc TEXT NULL;"); } catch { }
+    // Favoritos del perfil público (ver Usuario.TropaFavorita).
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN TropaFavorita TEXT NOT NULL DEFAULT '';"); } catch { }
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE Usuarios ADD COLUMN ArdidFavorito TEXT NOT NULL DEFAULT '';"); } catch { }
 
     // Migración ligera (igual que arriba): EnsureCreated tampoco agrega TABLAS nuevas a una BD ya
     // creada — promo_codes/user_skins se agregaron después del primer despliegue, así que en un

@@ -241,13 +241,28 @@ public partial class Campo1 : Node2D
 	{
 		_textoGuiaTutorialActual = texto;
 		if (_guiaTutorial == null) return;
-		if (_lblGuiaTutorial != null) _lblGuiaTutorial.Text = texto;
+		if (_lblGuiaTutorial != null)
+		{
+			_lblGuiaTutorial.Text = texto;
+			AjustarLetraGuiaTutorial();
+		}
 		_guiaTutorial.Visible = true;
 		_guiaTutorial.Scale = _escalaFinalGuiaTutorial * 0.15f;
 		_tweenGuiaTutorial?.Kill();
 		_tweenGuiaTutorial = CreateTween();
 		_tweenGuiaTutorial.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 		_tweenGuiaTutorial.TweenProperty(_guiaTutorial, "scale", _escalaFinalGuiaTutorial, 0.35f);
+	}
+
+	/// <summary>Los textos son cortos: se usa la letra MÁS GRANDE que entre en el cuadro (sin salirse),
+	/// así se lee de un vistazo en el celular.</summary>
+	private void AjustarLetraGuiaTutorial()
+	{
+		foreach (int tam in new[] { 32, 30, 28, 26, 24, 22 })
+		{
+			_lblGuiaTutorial.AddThemeFontSizeOverride("font_size", tam);
+			if (_lblGuiaTutorial.GetLineCount() * _lblGuiaTutorial.GetLineHeight() <= _lblGuiaTutorial.Size.Y + 2) return;
+		}
 	}
 
 	/// <summary>Se llama desde Carta.cs apenas el jugador empieza a arrastrar una carta, y desde
@@ -348,23 +363,20 @@ public partial class Campo1 : Node2D
 	// ── SECUENCIA DE INTRODUCCIÓN (3 mensajes de Guia, luego la mano) ────────────────────────
 	private void PasoGuiaIntro1()
 	{
-		MostrarGuiaConTexto("¡Hola! Vamos a guiarte en cómo funciona EGGODIA. Primero: este juego es " +
-			"por turnos, y solo tienes 3 energías cada turno. Invocar cartas NO consume energía.");
+		MostrarGuiaConTexto("¡Hola! EGGODIA es por turnos. Tienes 3 de energía por turno. Invocar cartas es gratis.");
 		EsperarClickParaAvanzar(PasoGuiaIntro2);
 	}
 
 	private void PasoGuiaIntro2()
 	{
-		MostrarGuiaConTexto("Cada botón que veas consume energía, menos el de la esquina derecha (el " +
-			"rojo), que sirve para cambiar tus ardides. Cada partida dura 3 minutos: si se acaba el " +
-			"tiempo, gana quien tenga más vida.");
+		MostrarGuiaConTexto("Todo gasta energía menos el botón rojo de la derecha (cambia tus ardides). " +
+			"La partida dura 3 minutos: gana quien tenga más vida.");
 		EsperarClickParaAvanzar(PasoGuiaIntro3);
 	}
 
 	private void PasoGuiaIntro3()
 	{
-		MostrarGuiaConTexto("En cada turno tienes 20 segundos para armar tu estrategia. Ahora te vamos " +
-			"a presentar nuestras 3 cartas.");
+		MostrarGuiaConTexto("Cada turno dura 20 segundos. ¡Conoce tus 3 cartas!");
 		EsperarClickParaAvanzar(PasoMostrarManoTutorial);
 	}
 
@@ -374,9 +386,7 @@ public partial class Campo1 : Node2D
 		// Antes de mandar a colocarlas, se explica que hay 3 TIPOS de carta y que estas 3 son una
 		// de cada uno (coinciden con ClasificacionCartas: Maguín táctico, Soldado Real asesino,
 		// Gólem coloso).
-		MostrarGuiaConTexto("Hay 3 tipos de carta, y tienes una de cada uno: el TÁCTICO (Maguín) " +
-			"apoya con su habilidad, el ASESINO (Soldado Real) golpea fuerte, y el COLOSO (Gólem) " +
-			"es el que más aguanta.");
+		MostrarGuiaConTexto("TÁCTICO (Maguín) apoya, ASESINO (Soldado Real) pega fuerte y COLOSO (Gólem) aguanta más.");
 		EsperarClickParaAvanzar(PasoColocarTropasTutorial);
 	}
 
@@ -404,8 +414,7 @@ public partial class Campo1 : Node2D
 
 	private void PasoExplicarMenuTropaTutorial()
 	{
-		MostrarGuiaConTexto("¡Bien hecho! Ahora presiona al personaje que quieras y vas a ver que tiene " +
-			"3 funciones: ATAQUE, DEFENSA y la mejor, ¡HABILIDAD!");
+		MostrarGuiaConTexto("¡Bien! Cada tropa tiene ATAQUE, DEFENSA y HABILIDAD. La HABILIDAD se desbloquea si la tropa sobrevive unos turnos.");
 		EsperarClickParaAvanzar(PasoTuTurnoCombateTutorial);
 	}
 
@@ -469,6 +478,9 @@ public partial class Campo1 : Node2D
 	private enum AccionForzadaTutorial { Ninguna, Atacar, Defender, Habilidad }
 	private System.Type            _tropaForzadaTutorial;
 	private AccionForzadaTutorial  _accionForzadaTutorial = AccionForzadaTutorial.Ninguna;
+
+	/// <summary>En el tutorial solo se defiende cuando el paso actual lo pide.</summary>
+	private bool DefensaPermitidaTutorial() => _accionForzadaTutorial == AccionForzadaTutorial.Defender;
 	private Action                 _alCompletarPasoForzadoTutorial;
 
 	/// <summary>Deja habilitado en el menú de acciones SOLO el botón indicado, y solo para la tropa
@@ -499,20 +511,19 @@ public partial class Campo1 : Node2D
 	private void PasoTuTurnoCombateTutorial()
 	{
 		_tutorialBloqueoTotal = false; // recién ahora se puede abrir el menú de una tropa
-		MostrarGuiaConTexto("Ahora es tu turno. Tú vas a poder decidir, pero por ahora te damos las " +
-			"indicaciones: haz clic en el Soldado Real y elige ATAQUE.");
+		MostrarGuiaConTexto("Tu turno. Toca al Soldado Real y elige ATAQUE.");
 		ForzarPasoTutorial(typeof(SoldadoRealPrime), AccionForzadaTutorial.Atacar, PasoDefenderMaguinTutorial);
 	}
 
 	private void PasoDefenderMaguinTutorial()
 	{
-		MostrarGuiaConTexto("Ahora haz clic en el Maguín y elige DEFENSA.");
+		MostrarGuiaConTexto("Ahora toca al Maguín y elige DEFENSA.");
 		ForzarPasoTutorial(typeof(MaguinPrime), AccionForzadaTutorial.Defender, PasoAtacarGolemTutorial);
 	}
 
 	private void PasoAtacarGolemTutorial()
 	{
-		MostrarGuiaConTexto("Por último, haz clic en el Gólem y elige ATAQUE.");
+		MostrarGuiaConTexto("Por último, toca al Gólem y elige ATAQUE.");
 		ForzarPasoTutorial(typeof(GolemPrime), AccionForzadaTutorial.Atacar, PasoFinPrimerTurnoTutorial);
 	}
 
@@ -584,8 +595,7 @@ public partial class Campo1 : Node2D
 		// Todo el HUD y la mano quedan semitransparentes y sin responder MENOS la carta de Curación,
 		// que es lo único que se puede tocar en este paso.
 		AtenuarTodoMenosCuracionTutorial();
-		MostrarGuiaConTexto("El Soldado Real quedó herido por el ataque enemigo. Arrastra tu carta de " +
-			"CURACIÓN sobre él (el círculo verde te marca dónde soltarla) para devolverle vida.");
+		MostrarGuiaConTexto("Tu Soldado Real está herido. Arrastra la CURACIÓN sobre él (al círculo verde).");
 	}
 
 	/// <summary>La llama AplicarCuracion (Campo1.Hechizos.cs) cuando se cura una tropa en modo tutorial.
@@ -604,8 +614,7 @@ public partial class Campo1 : Node2D
 	// ── PIEZA 2: HABILIDAD DEL MAGUÍN SOBRE EL TANQUE (transformación permanente) ──────────────
 	private void PasoMaguinTutorial()
 	{
-		MostrarGuiaConTexto("¡Bien hecho! Ahora usa la HABILIDAD del Maguín: transformará al Tanque " +
-			"enemigo en un pez indefenso… ¡y en el tutorial es para siempre! Toca al Maguín y elige HABILIDAD.");
+		MostrarGuiaConTexto("¡El Maguín sobrevivió y desbloqueó su HABILIDAD! Tócalo y elígela: convertirá al Tanque en pez.");
 		// Solo se puede tocar el Maguín, y solo su botón HABILIDAD queda habilitado. Al usarla,
 		// AvanzarPasoForzadoTutorial(Habilidad) dispara el siguiente paso.
 		ForzarPasoTutorial(typeof(MaguinPrime), AccionForzadaTutorial.Habilidad, PasoTrasMaguinTutorial);
@@ -617,8 +626,7 @@ public partial class Campo1 : Node2D
 	// demás del HUD queda atenuado y bloqueado, para que no haya forma de equivocarse.
 	private void PasoTrasMaguinTutorial()
 	{
-		MostrarGuiaConTexto("¡Excelente! El Tanque quedó convertido en pez para siempre. Ahora usa el " +
-			"botón BARAJAR: con él cambias tu mano y te llegan cartas nuevas para invocar.");
+		MostrarGuiaConTexto("¡El Tanque ahora es un pez! Usa BARAJAR para recibir cartas nuevas.");
 		_esperandoBarajarTutorial = true;
 		_barajarPermitidoTutorial = true; // recién ahora el botón funciona
 		// Se desbloquea la reposición ANTES de barajar: así el barajado ya reparte cartas nuevas.
@@ -713,8 +721,7 @@ public partial class Campo1 : Node2D
 	{
 		_esperandoSacrificioTutorial = true;
 		_sacrificioPermitidoTutorial = true; // recién ahora el botón funciona
-		MostrarGuiaConTexto("El Maguín quedó muy herido y ya no aguanta otro golpe. Usa el botón de " +
-			"SACRIFICIO para retirarlo y poder invocar una tropa nueva en su lugar.");
+		MostrarGuiaConTexto("El Maguín está muy herido. Usa SACRIFICIO para liberar su carril.");
 		MostrarAviso("Sacrifica al Maguín para seguir la batalla", Colors.OrangeRed);
 		ResaltarSoloBotonTutorial(btnSacrificio);
 	}
@@ -729,8 +736,7 @@ public partial class Campo1 : Node2D
 		RestaurarResaltadoBotonTutorial();
 		_esperandoInvocarReemplazoTutorial = true;
 
-		MostrarGuiaConTexto("Sé que duele, pero hay que seguir. Ahora invoca una de tus cartas nuevas " +
-			"en el carril que quedó libre.");
+		MostrarGuiaConTexto("Ahora invoca una carta nueva en el carril libre.");
 		// El cuadro se cierra con un toque; recién ahí sale el aviso de la acción (antes se quedaba
 		// puesto tapando la mano mientras había que elegir la carta nueva).
 		EsperarClickParaAvanzar(() =>
@@ -765,8 +771,7 @@ public partial class Campo1 : Node2D
 		// quedaba sin energía a mitad y el tutorial se trababa sin salida.
 		movimientosRestantes = ENERGIA_MAXIMA;
 		ActualizarInterfaz();
-		MostrarGuiaConTexto("¡Última indicación! Ataca con todo: tienes que eliminar a las 3 tropas " +
-			"enemigas para que el huevo rival caiga y ganes el tutorial.");
+		MostrarGuiaConTexto("¡Último paso! Elimina a las 3 tropas enemigas para ganar.");
 		// Cualquier tropa propia sirve, pero SOLO el botón de ataque (tropa = null → no se filtra por
 		// tipo; la acción forzada sigue limitando los botones en MostrarMenuTropa).
 		ForzarPasoTutorial(null, AccionForzadaTutorial.Atacar, ProgramarContinuarRemateTutorial);
@@ -851,8 +856,7 @@ public partial class Campo1 : Node2D
 	// ── PIEZA 5: CIERRE ───────────────────────────────────────────────────────────────────────
 	private void PasoCierreTutorial()
 	{
-		MostrarGuiaConTexto("¡BIEN HECHO! Ya sabes lo básico de EGGODIA. Espero que ganes muchas " +
-			"batallas más y armes una estrategia todavía mejor.");
+		MostrarGuiaConTexto("¡BIEN HECHO! Ya sabes lo básico de EGGODIA. ¡A ganar batallas!");
 		// PRÓXIMA PIEZA (aún no armada): la frase "TUTORIAL COMPLETADO" y la pantalla de victoria
 		// especial (sin monedas, con el botón "Repetir tutorial" en vez de "Reintentar"). Mientras
 		// tanto, al morir las 3 tropas rivales el flujo normal de fin de partida hace su trabajo.

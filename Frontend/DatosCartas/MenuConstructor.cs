@@ -929,12 +929,32 @@ public partial class MenuConstructor : Control
 		}
 	}
 
+	// Lo que cada ARDID le cambia de verdad a una tropa (mismos valores que Campo1.Hechizos.cs y
+	// Campo1.Nuclear.cs). Lo que no toca queda en "??": Robar y Bloqueo no cambian ninguna estadística.
+	// Antes se mostraban los números de su CartaData, que no significaban nada (Bloqueo decía DEF 350).
+	private static readonly Dictionary<string, (string hp, string atk, string def)> EFECTO_ARDID = new()
+	{
+		{ "curacion",     ("+200",        "??",   "??")   },
+		{ "encebollado",  ("+100",        "+50",  "+50")  },
+		{ "fuerza",       ("??",          "+100", "??")   },
+		{ "debil",        ("??",          "-100", "??")   },
+		{ "escudo",       ("??",          "??",   "+50%") },
+		{ "desprotegido", ("??",          "??",   "-50%") },
+		{ "veneno",       ("-150",        "??",   "??")   }, // 50 por turno durante 3 turnos
+		{ "nuclear",      ("-300",        "??",   "??")   },
+		{ "robar_carta",  ("??",          "??",   "??")   },
+		{ "bloqueo",      ("??",          "??",   "??")   },
+	};
+
 	private void ActualizarFichaDetalles(CartaData datos)
 	{
 		if (_lblDetalleTitulo != null) _lblDetalleTitulo.Text = "Datos";
-		if (_lblDetalleHp != null) _lblDetalleHp.Text = $"HP: {datos.Vida}";
-		if (_lblDetalleAtk != null) _lblDetalleAtk.Text = $"ATK: {datos.Ataque}";
-		if (_lblDetalleDef != null) _lblDetalleDef.Text = $"DEF: {datos.Defensa}";
+		string hp = datos.Vida.ToString(), atk = datos.Ataque.ToString(), def = datos.Defensa.ToString();
+		if (!string.IsNullOrEmpty(datos.IdHechizo))
+			(hp, atk, def) = EFECTO_ARDID.TryGetValue(datos.IdHechizo, out var efecto) ? efecto : ("??", "??", "??");
+		if (_lblDetalleHp != null) _lblDetalleHp.Text = $"HP: {hp}";
+		if (_lblDetalleAtk != null) _lblDetalleAtk.Text = $"ATK: {atk}";
+		if (_lblDetalleDef != null) _lblDetalleDef.Text = $"DEF: {def}";
 		if (_lblDetalleCosto != null) _lblDetalleCosto.Visible = false; // el juego no tiene sistema de costo
 
 		var info = ClasificacionCartas.Clasificar(datos.RutaEscena, datos.Nombre);
@@ -962,6 +982,88 @@ public partial class MenuConstructor : Control
 			string extra = info.Tipo == TipoTropa.Desconocido ? "" : $"Tipo: {EtiquetaTipoSingular(info.Tipo)}";
 			_lblDetalleExtra.Text = extra;
 			_lblDetalleExtra.Visible = !string.IsNullOrEmpty(extra);
+		}
+
+		// Debajo de la habilidad: cuántos turnos tiene que sobrevivir la tropa para desbloquearla.
+		// Los ardides no tienen desbloqueo: ahí no se muestra.
+		var lblDesbloqueo = LabelDesbloqueo();
+		if (lblDesbloqueo != null)
+		{
+			int turnos = string.IsNullOrEmpty(datos.IdHechizo) ? TurnosParaHabilidad(datos.RutaEscena) : -1;
+			lblDesbloqueo.Visible = turnos >= 0;
+			lblDesbloqueo.Text = turnos == 0 ? "Desbloqueo: inmediato"
+				: $"Desbloqueo: {turnos} {(turnos == 1 ? "turno" : "turnos")}";
+			ReservarLugarDesbloqueo(lblDesbloqueo);
+		}
+		Callable.From(AjustarLetraHabilidad).CallDeferred();
+	}
+
+	// ── DESBLOQUEO DE LA HABILIDAD (ficha de datos) ───────────────────────
+	private Label _lblDesbloqueo;
+	private readonly Dictionary<string, int> _turnosHabilidadPorEscena = new();
+
+	/// <summary>Línea "Desbloqueo: N turnos", justo encima de la línea de Tipo, con su mismo estilo.</summary>
+	private Label LabelDesbloqueo()
+	{
+		if (_lblDesbloqueo != null && IsInstanceValid(_lblDesbloqueo)) return _lblDesbloqueo;
+		if (_lblDetalleExtra == null || _lblDetalleExtra.GetParent() is not Node caja) return null;
+		_lblDesbloqueo = new Label { HorizontalAlignment = HorizontalAlignment.Center };
+		if (_lblDetalleExtra.GetThemeFont("font") is Font f) _lblDesbloqueo.AddThemeFontOverride("font", f);
+		_lblDesbloqueo.AddThemeFontSizeOverride("font_size", 21);
+		_lblDesbloqueo.AddThemeColorOverride("font_color", new Color(0.55f, 0.12f, 0.10f)); // rojo oscuro, se distingue del Tipo
+		caja.AddChild(_lblDesbloqueo);
+		caja.MoveChild(_lblDesbloqueo, _lblDetalleExtra.GetIndex());
+		return _lblDesbloqueo;
+	}
+
+	/// <summary>Turnos que la tropa tiene que sobrevivir para desbloquear su habilidad, leídos de la
+	/// propia tropa (así nunca queda desactualizado respecto del combate). -1 si no se pudo saber.</summary>
+	private int TurnosParaHabilidad(string rutaEscena)
+	{
+		if (string.IsNullOrEmpty(rutaEscena)) return -1;
+		if (_turnosHabilidadPorEscena.TryGetValue(rutaEscena, out int guardado)) return guardado;
+		int turnos = -1;
+		if (ResourceLoader.Exists(rutaEscena) && GD.Load<PackedScene>(rutaEscena) is PackedScene ps)
+		{
+			// Se instancia SIN agregarla a la escena (no corre su _Ready): solo para leer el dato.
+			Node n = ps.Instantiate();
+			if (n is TropaBase t && t.TieneHabilidadEspecial()) turnos = t.TurnosParaDesbloquearHabilidad;
+			n.Free();
+		}
+		_turnosHabilidadPorEscena[rutaEscena] = turnos;
+		return turnos;
+	}
+
+	// Alto que la escena le reserva a la descripción (180 px en MenuConstructor.tscn), leído una vez.
+	private float _altoBaseDescripcion = -1f;
+
+	/// <summary>La descripción tiene un alto FIJO reservado en la escena: si la línea de desbloqueo se
+	/// sumara sin más, todo lo de abajo bajaría un renglón y "Tipo" se saldría del pergamino. Por eso a
+	/// ese alto se le resta exactamente lo que ocupa la línea nueva (su alto + la separación): el total
+	/// no cambia y "Tipo" queda en el MISMO lugar que antes.</summary>
+	private void ReservarLugarDesbloqueo(Label lblDesbloqueo)
+	{
+		if (_lblDetalleHabilidad == null) return;
+		if (_altoBaseDescripcion < 0f) _altoBaseDescripcion = _lblDetalleHabilidad.CustomMinimumSize.Y;
+		float quitar = 0f;
+		if (lblDesbloqueo.Visible && lblDesbloqueo.GetParent() is VBoxContainer caja)
+			quitar = lblDesbloqueo.GetCombinedMinimumSize().Y + caja.GetThemeConstant("separation");
+		_lblDetalleHabilidad.CustomMinimumSize = new Vector2(_lblDetalleHabilidad.CustomMinimumSize.X,
+			Mathf.Max(0f, _altoBaseDescripcion - quitar));
+	}
+
+	/// <summary>Si la descripción no entra en su alto reservado (más chico cuando está la línea de
+	/// desbloqueo), achica su letra lo justo: nunca se sale ni empuja nada.</summary>
+	private void AjustarLetraHabilidad()
+	{
+		if (_lblDetalleHabilidad == null || !IsInstanceValid(_lblDetalleHabilidad)) return;
+		float alto = _lblDetalleHabilidad.CustomMinimumSize.Y;
+		if (alto <= 0f) return;
+		int tam = _lblDetalleHabilidad.GetThemeFontSize("font_size");
+		while (tam > 14 && _lblDetalleHabilidad.GetLineCount() * _lblDetalleHabilidad.GetLineHeight() > alto + 1)
+		{
+			tam--;
+			_lblDetalleHabilidad.AddThemeFontSizeOverride("font_size", tam);
 		}
 	}
 

@@ -149,21 +149,10 @@ namespace Eggodia.API.Controllers
             // reales de los desarrolladores por su Id fijo.
             string? skinExclusiva = null;
             string? nombreSkin = null;
-
-            switch (usuario.Id)
+            if (CuentasDev.Skins.TryGetValue(usuario.Id, out var dev))
             {
-                case 1: // Jeremy_dev
-                    skinExclusiva = "res://imagenes/PersonajesPng/JeremiHuevo.png";
-                    nombreSkin = "Jeremi Huevo";
-                    break;
-                case 2: // SrGonza
-                    skinExclusiva = "res://imagenes/PersonajesPng/GonzaHuevo.png";
-                    nombreSkin = "Gonza Huevo";
-                    break;
-                case 4: // kankox_dev (Carlos)
-                    skinExclusiva = "res://imagenes/PersonajesPng/CarlosHuevo.png";
-                    nombreSkin = "Carlos Huevo";
-                    break;
+                skinExclusiva = dev.ruta;
+                nombreSkin = dev.nombre;
             }
 
             if (skinExclusiva != null)

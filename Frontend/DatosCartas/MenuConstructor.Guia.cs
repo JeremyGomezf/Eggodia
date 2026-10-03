@@ -30,7 +30,7 @@ public partial class MenuConstructor : Control
 						GetNodeOrNull("MazoContainer/BarraAccionesMazo/ContadorBox"),
 						GetNodeOrNull("MazoContainer/BarraAccionesMazo/BtnBatallar"))),
 				new GuiaPasos.Paso("Al tocar una carta ves aquí sus datos: vida, ataque, defensa y su " +
-					"habilidad.", () => Foco("InfoContainer", 0f)),
+					"habilidad. Debajo dice en cuántos turnos se desbloquea: la tropa tiene que sobrevivir ese tiempo.", () => Foco("InfoContainer", 0f)),
 				new GuiaPasos.Paso("¿Dudas? Este botón abre la ayuda con las reglas para armar tu mazo.",
 					() => Foco("Boton_Duda", 6f)),
 				new GuiaPasos.Paso("Con este botón invocas tus cartas físicas: acerca la carta NFC al " +
