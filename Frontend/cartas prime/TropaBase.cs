@@ -51,6 +51,8 @@ public abstract partial class TropaBase : Area2D
 
 	// ── REFERENCIAS ───────────────────────────────────────────────────────
 	protected AnimatedSprite2D _anim;
+	// Se revisa siempre con IsInstanceValid (no alcanza con != null): desde celulares de jugadores
+	// llegaron errores de tocar una tropa cuyas barras ya se habían liberado.
 	protected Control          _contenedorStats;
 
 	/// <summary>El sprite visual de la tropa, para teñirlo directamente (veneno, bloqueo, golpe,
@@ -80,7 +82,7 @@ public abstract partial class TropaBase : Area2D
 		_anim = GetNode<AnimatedSprite2D>("AnimatedSprite2D");
 		_anim.AnimationChanged += AlCambiarAnimacionSonido; // sonidos de ataque/defensa/daño/muerte
 		_contenedorStats = GetNodeOrNull<Control>("StatsTropa");
-		if (_contenedorStats != null) _contenedorStats.Visible = false;
+		if (IsInstanceValid(_contenedorStats)) _contenedorStats.Visible = false;
 		// El juego no tiene sistema de elementos visible al jugador: sin círculo de tipo.
 		ReproducirIdle();
 		CrearAreaClicCuerpo();
@@ -760,13 +762,13 @@ public abstract partial class TropaBase : Area2D
 	{
 		_tokenBarras++;
 		_barrasOcultasPorHabilidad = true;
-		if (_contenedorStats != null) _contenedorStats.Visible = false;
+		if (IsInstanceValid(_contenedorStats)) _contenedorStats.Visible = false;
 	}
 
 	protected void MostrarBarras(bool mostrar)
 	{
 		if (mostrar) _barrasOcultasPorHabilidad = false;
-		if (_contenedorStats != null) { _contenedorStats.Visible = mostrar; ActualizarBarrasUI(); }
+		if (IsInstanceValid(_contenedorStats)) { _contenedorStats.Visible = mostrar; ActualizarBarrasUI(); }
 		if (!mostrar) return;
 
 		// Auto-ocultado a los 3s de inactividad (mismo comportamiento para jugador y rival).
@@ -774,14 +776,14 @@ public abstract partial class TropaBase : Area2D
 		GetTree().CreateTimer(3.0).Timeout += () =>
 		{
 			if (!IsInstanceValid(this) || miToken != _tokenBarras) return;
-			if (_contenedorStats != null) _contenedorStats.Visible = false;
+			if (IsInstanceValid(_contenedorStats)) _contenedorStats.Visible = false;
 		};
 	}
 
 	protected void ActualizarBarrasUI()
 	{
-		var bv = _contenedorStats?.GetNodeOrNull<ProgressBar>("BarraVida");
-		var be = _contenedorStats?.GetNodeOrNull<ProgressBar>("BarraEscudo");
+		var bv = (IsInstanceValid(_contenedorStats) ? _contenedorStats : null)?.GetNodeOrNull<ProgressBar>("BarraVida");
+		var be = (IsInstanceValid(_contenedorStats) ? _contenedorStats : null)?.GetNodeOrNull<ProgressBar>("BarraEscudo");
 		if (bv != null) bv.Value = vidaMaxima  > 0 ? (float)vidaActual  / vidaMaxima  * 100 : 0;
 		if (be != null) be.Value = escudoMaximo > 0 ? (float)escudoActual / escudoMaximo * 100 : 0;
 	}

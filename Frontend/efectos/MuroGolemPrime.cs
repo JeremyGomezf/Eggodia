@@ -81,7 +81,7 @@ public partial class MuroGolemPrime : Area2D
 
 	private void ActualizarBarra()
 	{
-		var barra = _contenedorStats?.GetNodeOrNull<ProgressBar>("BarraDurabilidad");
+		var barra = (IsInstanceValid(_contenedorStats) ? _contenedorStats : null)?.GetNodeOrNull<ProgressBar>("BarraDurabilidad");
 		if (barra != null) barra.Value = durabilidadMaxima > 0 ? (float)durabilidadActual / durabilidadMaxima * 100 : 0;
 	}
 }

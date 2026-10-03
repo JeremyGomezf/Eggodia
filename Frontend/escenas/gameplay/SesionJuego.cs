@@ -109,7 +109,9 @@ public partial class SesionJuego : Node
 			_appEnSegundoPlano = true;
 			// Contra el bot la partida queda en pausa mientras no estás.
 			(GetTree()?.CurrentScene as Campo1)?.AlIrASegundoPlano();
-			ReporteErrores.Enviar(); // por si Android cierra la app estando en segundo plano
+			// Por si Android cierra la app estando en segundo plano. Diferido: durante este aviso Godot no
+			// deja agregar nodos (el envío fallaba con "Parent node is busy").
+			Callable.From(ReporteErrores.Enviar).CallDeferred();
 		}
 		else if (que == NotificationApplicationResumed && _appEnSegundoPlano)
 		{

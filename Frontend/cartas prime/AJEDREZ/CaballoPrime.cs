@@ -49,7 +49,7 @@ public partial class CaballoPrime : TropaBase
 
 	public void RefrescarUI()
 	{
-		if (_contenedorStats != null) { _contenedorStats.Visible = true; ActualizarBarrasUI(); }
+		if (IsInstanceValid(_contenedorStats)) { _contenedorStats.Visible = true; ActualizarBarrasUI(); }
 	}
 
 	// ── DETECCIÓN DE CLIC EN PANTALLA (SOLO CUANDO ESTÁ EN CARRIL 2) ───────────

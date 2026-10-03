@@ -46,7 +46,7 @@ public partial class ArfilPrime : TropaBase
 
 	public void RefrescarUI()
 	{
-		if (_contenedorStats != null) { _contenedorStats.Visible = true; ActualizarBarrasUI(); }
+		if (IsInstanceValid(_contenedorStats)) { _contenedorStats.Visible = true; ActualizarBarrasUI(); }
 	}
 
 	// ── MÉTODOS DE CONSULTA PARA LA UI (CAMPO1 Y CAMPOPRUEBA) ────────────────

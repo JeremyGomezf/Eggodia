@@ -86,8 +86,13 @@ public partial class ReporteErrores : Logger
 			usuarioId = SesionJuego.Instance?.UsuarioId ?? -1,
 			errores = tanda,
 		});
+		// Si se llama mientras Godot reparte un aviso por el árbol (p. ej. al pasar a segundo plano), no
+		// se pueden agregar nodos: el pedido nunca entraba al árbol y fallaba (llegaron esos dos errores
+		// desde un celular). Se deja para el final del cuadro, cuando ya se puede.
+		if (!_nodoEnvio.IsInsideTree()) return;
 		var h = new HttpRequest { Timeout = 15 };
 		_nodoEnvio.AddChild(h);
+		if (!h.IsInsideTree()) { h.QueueFree(); return; }
 		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) => { if (GodotObject.IsInstanceValid(h)) h.QueueFree(); };
 		string[] hdr = { "Content-Type: application/json" };
 		if (h.Request($"{ApiConfig.Base}/api/errores", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok)
