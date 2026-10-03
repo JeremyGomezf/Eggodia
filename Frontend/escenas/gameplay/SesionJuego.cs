@@ -149,6 +149,31 @@ public partial class SesionJuego : Node
 	/// pueden leer la clase estática Preferencias.</summary>
 	public string RutaPerfilActivo() => Preferencias.RutaPerfil;
 
+	/// <summary>Cabeceras con la sesión de la cuenta, para los pedidos que hace GDScript (SummonTerminal).</summary>
+	public string[] CabecerasApi() => ApiConfig.Cabeceras();
+
+	/// <summary>True si la sesión venció en medio de una partida: al volver al menú se pide entrar de nuevo.</summary>
+	public static bool SesionVencidaPendiente;
+
+	/// <summary>El servidor rechazó la sesión (ver ApiConfig.SesionVencida). Fuera de una partida se va
+	/// directo a iniciar sesión; en una partida se espera a que termine, para no cortarla.</summary>
+	public void SesionVencida()
+	{
+		if (!EstaLogueado) return;
+		PanelLogin.AvisoPendiente = "Tu sesión venció. Vuelve a iniciar sesión para seguir jugando.";
+		if (GetTree().CurrentScene is Campo1) { SesionVencidaPendiente = true; return; }
+		Callable.From(IrALoginPorSesionVencida).CallDeferred();
+	}
+
+	public void IrALoginPorSesionVencida()
+	{
+		SesionVencidaPendiente = false;
+		if (!EstaLogueado) return;
+		CerrarSesion();
+		GetTree().Paused = false;
+		GetTree().ChangeSceneToFile("res://escenas/menu/PanelLogin.tscn");
+	}
+
 	public void CerrarSesion()
 	{
 		Preferencias.CerrarSesionGuardada(); // el logout también se recuerda
@@ -204,7 +229,7 @@ public partial class SesionJuego : Node
 		AddChild(h);
 		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) => { if (IsInstanceValid(h)) h.QueueFree(); };
 		string cuerpo = JsonSerializer.Serialize(new { mazo = json });
-		string[] hdr = { "Content-Type: application/json" };
+		string[] hdr = ApiConfig.Cabeceras();
 		if (h.Request($"{ApiConfig.Usuarios}/{UsuarioId}/mazo", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok && IsInstanceValid(h))
 			h.QueueFree();
 	}

@@ -51,6 +51,7 @@ public static class CodigosPromo
 		var tcs = new TaskCompletionSource<(long Result, long Code, byte[] Body)>();
 		http.RequestCompleted += (res, code, hdrs, body) =>
 		{
+			ApiConfig.SesionVencida(code, body); // sesión rechazada por el servidor → entrar de nuevo
 			tcs.TrySetResult((res, code, body));
 		};
 
@@ -60,7 +61,7 @@ public static class CodigosPromo
 			codigo = codigo
 		});
 
-		string[] headers = { "Content-Type: application/json" };
+		string[] headers = ApiConfig.Cabeceras();
 		Error err = http.Request(ApiConfig.CodigosCanjear, headers, HttpClient.Method.Post, jsonBody);
 		if (err != Error.Ok)
 		{

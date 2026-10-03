@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Eggodia.API.Data;
 using Eggodia.API.model;
@@ -16,9 +17,12 @@ public class CartasController : ControllerBase
 {
     private readonly AppDbContext _context;
 
-    public CartasController(AppDbContext context)
+    private readonly IConfiguration _cfg;
+
+    public CartasController(AppDbContext context, IConfiguration cfg)
     {
         _context = context;
+        _cfg = cfg;
     }
 
     // GET: api/cartas
@@ -52,20 +56,22 @@ public class CartasController : ControllerBase
         return Ok(lista);
     }
 
-    // POST: api/cartas
+    // POST: api/cartas?clave=XXX — solo administración: cambia las cartas de TODOS los jugadores.
     [HttpPost]
-    public async Task<IActionResult> CrearCarta([FromBody] Carta carta)
+    public async Task<IActionResult> CrearCarta([FromBody] Carta carta, [FromQuery] string clave = "")
     {
+        if (!AdminController.ClaveCorrecta(_cfg, clave)) return Unauthorized(new { mensaje = "clave inválida" });
         if (!ModelState.IsValid) return BadRequest(ModelState);
         _context.Cartas.Add(carta);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetCarta), new { id = carta.Id }, carta);
     }
 
-    // PUT: api/cartas/5
+    // PUT: api/cartas/5?clave=XXX — solo administración (antes cualquiera podía cambiar las cartas).
     [HttpPut("{id}")]
-    public async Task<IActionResult> ActualizarCarta(int id, [FromBody] Carta carta)
+    public async Task<IActionResult> ActualizarCarta(int id, [FromBody] Carta carta, [FromQuery] string clave = "")
     {
+        if (!AdminController.ClaveCorrecta(_cfg, clave)) return Unauthorized(new { mensaje = "clave inválida" });
         if (id != carta.Id) return BadRequest();
         _context.Entry(carta).State = EntityState.Modified;
         await _context.SaveChangesAsync();
@@ -99,6 +105,7 @@ public class CartasController : ControllerBase
     // GET: api/cartas/usuario/{userId}
     // Devuelve todas las cartas desbloqueadas en el ejército del usuario
     [HttpGet("usuario/{userId}")]
+    [CuentaPropia("userId")]
     public async Task<IActionResult> GetCartasUsuario(int userId)
     {
         var cartas = await _context.UserCards
@@ -110,6 +117,8 @@ public class CartasController : ControllerBase
 
     // POST: api/cartas/claim-physical-card
     [HttpPost("claim-physical-card")]
+    [CuentaPropia("request.UserId")]
+    [EnableRateLimiting("codigos")]
     public async Task<IActionResult> ClaimPhysicalCard([FromBody] ClaimCardDto request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.Code))

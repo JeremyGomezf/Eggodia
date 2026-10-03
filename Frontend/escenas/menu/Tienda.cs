@@ -334,6 +334,7 @@ public partial class Tienda : Control
 		AddChild(h);
 		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
 		{
+			ApiConfig.SesionVencida(c, b); // sesión rechazada por el servidor → entrar de nuevo
 			bool exito = false; int monedas = eco.Monedas;
 			if (r == (long)HttpRequest.Result.Success && c == 200)
 			{
@@ -350,7 +351,7 @@ public partial class Tienda : Control
 			if (IsInstanceValid(h)) h.QueueFree();
 		};
 		string cuerpo = JsonSerializer.Serialize(new { tipo, itemId, costo = precio });
-		string[] hdr = { "Content-Type: application/json" };
+		string[] hdr = ApiConfig.Cabeceras();
 		if (h.Request($"{ApiConfig.Base}/api/usuarios/{userId}/comprar", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok)
 		{ MostrarMensaje("Sin conexión", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; if (IsInstanceValid(h)) h.QueueFree(); }
 	}

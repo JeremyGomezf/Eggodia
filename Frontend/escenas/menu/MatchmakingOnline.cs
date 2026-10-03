@@ -73,7 +73,7 @@ public partial class MatchmakingOnline : Node
 			skinIdx = Preferencias.IndiceSkinParaOnline(), // incluye las skins exclusivas, no solo las de tienda
 			tronoIdx = Preferencias.TronoActivoIdx
 		});
-		string[] headers = { "Content-Type: application/json" };
+		string[] headers = ApiConfig.Cabeceras();
 		if (_http.Request($"{ApiConfig.Base}/api/match/cola", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
 		{
 			_ocupado = false;
@@ -85,13 +85,14 @@ public partial class MatchmakingOnline : Node
 	{
 		if (_ocupado || string.IsNullOrEmpty(_matchId) || _estado == "emparejado") return;
 		_ocupado = true;
-		if (_http.Request($"{ApiConfig.Base}/api/match/{_matchId}?jugadorId={_jugadorId}") != Error.Ok)
+		if (_http.Request($"{ApiConfig.Base}/api/match/{_matchId}?jugadorId={_jugadorId}", ApiConfig.Cabeceras(json: false)) != Error.Ok)
 			_ocupado = false; // reintenta en el próximo tick
 	}
 
 	private void OnRespuesta(long result, long code, string[] headers, byte[] body)
 	{
 		_ocupado = false;
+		if (ApiConfig.SesionVencida(code, body)) return; // sin sesión válida no se puede jugar en línea
 		// El boleto en la cola ya no existe (se salió de la app un rato buscando, o el servidor se
 		// reinició): se vuelve a entrar a la cola solo. Antes quedaba "buscando rival…" para siempre.
 		if (result == (long)HttpRequest.Result.Success && code == 404 && !string.IsNullOrEmpty(_matchId) && _estado != "emparejado")
@@ -158,7 +159,7 @@ public partial class MatchmakingOnline : Node
 		if (!string.IsNullOrEmpty(_matchId) && _estado != "emparejado")
 		{
 			string cuerpo = JsonSerializer.Serialize(new { jugadorId = _jugadorId });
-			string[] headers = { "Content-Type: application/json" };
+			string[] headers = ApiConfig.Cabeceras();
 			_httpCancelar = new HttpRequest();
 			AddChild(_httpCancelar);
 			_httpCancelar.RequestCompleted += (long r, long c, string[] hd, byte[] bd) => Cerrar();

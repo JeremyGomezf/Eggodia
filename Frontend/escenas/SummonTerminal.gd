@@ -301,10 +301,12 @@ func _on_sincronizar_pressed() -> void:
 		"UserId": user_id
 	})
 
-	var headers = [
-		"Content-Type: application/json",
-		"Accept: application/json"
-	]
+	# Con la sesión de la cuenta: el servidor solo deja reclamar cartas para la cuenta propia.
+	var headers := PackedStringArray(["Content-Type: application/json"])
+	var sesion = get_node_or_null("/root/SesionJuego")
+	if sesion != null and sesion.has_method("CabecerasApi"):
+		headers = PackedStringArray(sesion.CabecerasApi())
+	headers.append("Accept: application/json")
 
 	var error = http_request.request(
 		api_url,

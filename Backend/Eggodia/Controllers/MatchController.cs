@@ -28,6 +28,7 @@ public class MatchController : ControllerBase
     }
 
     [HttpPost("cola")]
+    [CuentaPropia("req.JugadorId")] // en línea solo juegas como tu propia cuenta
     public IActionResult Cola([FromBody] ColaRequest req)
     {
         if (req == null || string.IsNullOrWhiteSpace(req.JugadorId))
@@ -43,6 +44,7 @@ public class MatchController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [CuentaPropia("jugadorId")] // en línea solo juegas como tu propia cuenta
     public IActionResult Estado(string id, [FromQuery] string jugadorId = "")
     {
         var p = _gestor.Obtener(id);
@@ -53,6 +55,7 @@ public class MatchController : ControllerBase
     }
 
     [HttpPost("{id}/cancelar")]
+    [CuentaPropia("req.JugadorId")] // en línea solo juegas como tu propia cuenta
     public IActionResult Cancelar(string id, [FromBody] ColaRequest req)
     {
         _gestor.Cancelar(id, req?.JugadorId ?? "");
@@ -68,6 +71,7 @@ public class MatchController : ControllerBase
 
     // El jugador activo sube el snapshot del tablero al terminar su turno.
     [HttpPost("{id}/turno")]
+    [CuentaPropia("req.JugadorId")] // en línea solo juegas como tu propia cuenta
     public IActionResult SubirTurno(string id, [FromBody] TurnoRequest req)
     {
         if (req == null) return BadRequest(new { mensaje = "cuerpo requerido" });
@@ -89,6 +93,7 @@ public class MatchController : ControllerBase
     // Latido periódico: mantiene "vivo" al jugador y avisa si el rival se cayó (desconexión /
     // inactividad > 12s). Si el rival se cayó, el que late gana; si ambos, empate.
     [HttpPost("{id}/latido")]
+    [CuentaPropia("req.JugadorId")] // en línea solo juegas como tu propia cuenta
     public IActionResult Latido(string id, [FromBody] ColaRequest req)
     {
         if (req == null || string.IsNullOrWhiteSpace(req.JugadorId)) return BadRequest(new { mensaje = "jugadorId requerido" });
@@ -105,6 +110,7 @@ public class MatchController : ControllerBase
     public class ResultadoRequest { public string JugadorId { get; set; } = ""; public string Ganador { get; set; } = ""; public string Motivo { get; set; } = ""; }
 
     [HttpPost("{id}/resultado")]
+    [CuentaPropia("req.JugadorId")] // en línea solo juegas como tu propia cuenta
     public IActionResult ReportarResultado(string id, [FromBody] ResultadoRequest req)
     {
         if (req == null) return BadRequest(new { mensaje = "cuerpo requerido" });
@@ -122,6 +128,7 @@ public class MatchController : ControllerBase
 
     // El jugador activo publica una acción (invocar/atacar/habilidad/hechizo/fin_turno).
     [HttpPost("{id}/accion")]
+    [CuentaPropia("req.JugadorId")] // en línea solo juegas como tu propia cuenta
     public IActionResult PublicarAccion(string id, [FromBody] AccionRequest req)
     {
         if (req == null) return BadRequest(new { mensaje = "cuerpo requerido" });

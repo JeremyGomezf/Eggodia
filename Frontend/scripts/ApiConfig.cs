@@ -46,6 +46,28 @@ public static class ApiConfig
 	public static string CodigosCanjear     => $"{Base}/api/codigos/canjear";
 	public static string CodigosSkins(int userId) => $"{Base}/api/codigos/usuario/{userId}/skins";
 
+	/// <summary>Cabeceras para pedirle algo al servidor: JSON y, si hay cuenta, su sesión. Sin la sesión
+	/// el servidor no deja tocar nada de la cuenta (monedas, mazo, compras, partidas en línea).</summary>
+	public static string[] Cabeceras(bool json = true)
+	{
+		var lista = new System.Collections.Generic.List<string>();
+		if (json) lista.Add("Content-Type: application/json");
+		string token = Preferencias.SesionToken;
+		if (!string.IsNullOrEmpty(token) && SesionJuego.Instance != null && SesionJuego.Instance.EstaLogueado)
+			lista.Add("Authorization: Bearer " + token);
+		return lista.ToArray();
+	}
+
+	/// <summary>¿El servidor dijo que la sesión ya no vale (contraseña cambiada, sesión vencida o APK sin
+	/// sesión cuando ya se exige)? En ese caso se cierra la sesión y se pide entrar de nuevo.</summary>
+	public static bool SesionVencida(long codigo, byte[] cuerpo)
+	{
+		if (codigo != 401 || cuerpo == null || cuerpo.Length == 0) return false;
+		if (!System.Text.Encoding.UTF8.GetString(cuerpo).Contains("\"sesionInvalida\":true")) return false;
+		SesionJuego.Instance?.SesionVencida();
+		return true;
+	}
+
 	// WebSocket del multijugador en tiempo real (http→ws, https→wss).
 	public static string WsBase =>
 		Base.StartsWith("https://") ? "wss://" + Base.Substring("https://".Length)

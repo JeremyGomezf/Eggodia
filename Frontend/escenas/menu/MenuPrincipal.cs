@@ -54,6 +54,12 @@ public partial class MenuPrincipal : Control
 
 	public override void _Ready()
 	{
+		if (SesionJuego.SesionVencidaPendiente)
+		{
+			Callable.From(() => SesionJuego.Instance?.IrALoginPorSesionVencida()).CallDeferred();
+			return;
+		}
+
 		// Si venimos de una partida en Campo1 (victoria/derrota/pausa), la música global quedó
 		// detenida a propósito durante la batalla — se reanuda acá, sea cual sea el camino de vuelta.
 		GlobalAudioManager.Instance?.AsegurarReproduccion();

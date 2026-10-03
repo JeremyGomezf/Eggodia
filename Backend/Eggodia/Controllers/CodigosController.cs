@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Eggodia.API.Data;
 using Eggodia.API.model;
@@ -18,6 +19,8 @@ namespace Eggodia.API.Controllers
 
         // POST: api/codigos/canjear
         [HttpPost("canjear")]
+        [CuentaPropia("req.UserId")]
+        [EnableRateLimiting("codigos")] // probar códigos al azar queda frenado
         public async Task<IActionResult> Canjear([FromBody] CanjearCodigoRequest req)
         {
             try
@@ -123,6 +126,7 @@ namespace Eggodia.API.Controllers
         // GET: api/codigos/usuario/{userId}/skins
         // Devuelve las skins de huevo desbloqueadas para el usuario (incluye skins automáticas de dev)
         [HttpGet("usuario/{userId}/skins")]
+        [CuentaPropia("userId")]
         public async Task<IActionResult> GetSkinsUsuario(int userId)
         {
             if (userId <= 0) return Ok(new List<UserSkin>());

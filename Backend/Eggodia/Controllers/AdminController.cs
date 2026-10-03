@@ -40,10 +40,16 @@ public class AdminController : ControllerBase
     }
     private static DateTime EnUtc(DateTime d) => DateTime.SpecifyKind(d, DateTimeKind.Utc);
 
-    private bool ClaveOk(string clave)
+    private bool ClaveOk(string clave) => ClaveCorrecta(_cfg, clave);
+
+    /// <summary>¿Es la clave de administración? (también la usa CartasController para editar cartas).
+    /// Comparación de tiempo constante: no deja adivinarla midiendo cuánto tarda la respuesta.</summary>
+    public static bool ClaveCorrecta(IConfiguration cfg, string? clave)
     {
-        string real = _cfg["Admin:Clave"] ?? "";
-        return !string.IsNullOrEmpty(real) && clave == real;
+        string real = cfg["Admin:Clave"] ?? "";
+        if (string.IsNullOrEmpty(real) || string.IsNullOrEmpty(clave)) return false;
+        return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            System.Text.Encoding.UTF8.GetBytes(clave), System.Text.Encoding.UTF8.GetBytes(real));
     }
 
     // ── Lista de usuarios (más nuevos primero) + contadores ───────────────────
@@ -211,6 +217,7 @@ public class AdminController : ControllerBase
         if (u == null) return NotFound(new { mensaje = "Usuario no encontrado." });
         u.Password = BCrypt.Net.BCrypt.HashPassword(req.Nueva);
         await _db.SaveChangesAsync();
+        await Sesiones.CerrarTodas(_db, u.Id); // con la contraseña nueva, las sesiones viejas ya no sirven
         return Ok(new { u.Id, mensaje = "contraseña actualizada" });
     }
 
@@ -226,6 +233,7 @@ public class AdminController : ControllerBase
         if (u == null) return NotFound(new { mensaje = "Usuario no encontrado." });
         _db.Usuarios.Remove(u);
         await _db.SaveChangesAsync();
+        await Sesiones.CerrarTodas(_db, req.Id);
         return Ok(new { ok = true });
     }
 

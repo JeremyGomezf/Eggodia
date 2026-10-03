@@ -710,15 +710,25 @@ public static class Preferencias
 		set => EscribirStringEn(SEC_SESION, "nombre", valor: value);
 	}
 
-	public static void GuardarSesion(int usuarioId, string nombre)
+	/// <summary>Código secreto de la sesión que entregó el servidor al iniciar sesión. Se manda en cada
+	/// pedido (ver ApiConfig.Cabeceras) para que el servidor sepa que es de verdad esta cuenta.</summary>
+	public static string SesionToken
+	{
+		get => LeerStringEn(SEC_SESION, "token", "");
+		set => EscribirStringEn(SEC_SESION, "token", valor: value ?? "");
+	}
+
+	public static void GuardarSesion(int usuarioId, string nombre, string token)
 	{
 		SesionUsuarioId = usuarioId;
 		SesionNombre = nombre ?? "";
+		SesionToken = token ?? "";
 	}
 
 	public static void CerrarSesionGuardada()
 	{
 		SesionUsuarioId = -1;
 		SesionNombre = "";
+		SesionToken = "";
 	}
 }

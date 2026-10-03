@@ -175,6 +175,7 @@ public partial class Economia : Node
 		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
 		{
 			_premiosEnVuelo--;
+			ApiConfig.SesionVencida(c, b); // sesión rechazada por el servidor → entrar de nuevo
 			if (IsInstanceValid(h)) h.QueueFree();
 			bool sigueSiendoSuya = CuentaActiva == cuenta;
 
@@ -204,7 +205,7 @@ public partial class Economia : Node
 				RefrescarCuenta(forzar: true);
 			}
 		};
-		string[] hdr = { "Content-Type: application/json" };
+		string[] hdr = ApiConfig.Cabeceras();
 		if (h.Request($"{ApiConfig.Usuarios}/{cuenta}/recompensa", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok)
 		{
 			_premiosEnVuelo--;
@@ -226,7 +227,7 @@ public partial class Economia : Node
 			var h = new HttpRequest();
 			AddChild(h);
 			h.RequestCompleted += (long r, long c, string[] hd, byte[] b) => { if (IsInstanceValid(h)) h.QueueFree(); };
-			string[] hdr = { "Content-Type: application/json" };
+			string[] hdr = ApiConfig.Cabeceras();
 			if (h.Request(ApiConfig.Resultado, hdr, HttpClient.Method.Post, json) != Error.Ok && IsInstanceValid(h)) h.QueueFree();
 		}
 		catch { }
@@ -305,12 +306,13 @@ public partial class Economia : Node
 		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
 		{
 			_refrescando = false;
+			ApiConfig.SesionVencida(c, b); // sesión rechazada por el servidor → entrar de nuevo
 			if (IsInstanceValid(h)) h.QueueFree();
 			MarcarConexion(r == (long)HttpRequest.Result.Success);
 			if (r == (long)HttpRequest.Result.Success && c == 200 && CuentaActiva == cuenta)
 				AdoptarRespuestaCuenta(Encoding.UTF8.GetString(b));
 		};
-		if (h.Request($"{ApiConfig.Usuarios}/{cuenta}") != Error.Ok)
+		if (h.Request($"{ApiConfig.Usuarios}/{cuenta}", ApiConfig.Cabeceras(json: false)) != Error.Ok)
 		{
 			_refrescando = false;
 			if (IsInstanceValid(h)) h.QueueFree();
@@ -404,6 +406,7 @@ public partial class Economia : Node
 		AddChild(h);
 		h.RequestCompleted += (long result, long code, string[] headers, byte[] body) =>
 		{
+			ApiConfig.SesionVencida(code, body); // sesión rechazada por el servidor → entrar de nuevo
 			if (result == (long)HttpRequest.Result.Success && code == 200)
 			{
 				try
@@ -420,7 +423,7 @@ public partial class Economia : Node
 			}
 			if (IsInstanceValid(h)) h.QueueFree();
 		};
-		if (h.Request($"{ApiConfig.Usuarios}/{usuarioId}") != Error.Ok && IsInstanceValid(h)) h.QueueFree();
+		if (h.Request($"{ApiConfig.Usuarios}/{usuarioId}", ApiConfig.Cabeceras(json: false)) != Error.Ok && IsInstanceValid(h)) h.QueueFree();
 	}
 
 	/// <summary>Sube el saldo actual al servidor (tras ganar/gastar). Fire-and-forget: si falla, el
@@ -435,7 +438,7 @@ public partial class Economia : Node
 			if (IsInstanceValid(h)) h.QueueFree();
 		};
 		string cuerpo = JsonSerializer.Serialize(new { monedas = _monedas });
-		string[] hdr = { "Content-Type: application/json" };
+		string[] hdr = ApiConfig.Cabeceras();
 		if (h.Request($"{ApiConfig.Usuarios}/{_usuarioId}/monedas", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok && IsInstanceValid(h))
 			h.QueueFree();
 	}
@@ -476,7 +479,7 @@ public partial class Economia : Node
 			skinExclusiva = Preferencias.SkinExclusivaActiva,
 			tronoIdx      = Preferencias.TronoActivoIdx,
 		});
-		string[] hdr = { "Content-Type: application/json" };
+		string[] hdr = ApiConfig.Cabeceras();
 		if (h.Request($"{ApiConfig.Usuarios}/{usuarioId}/equipar", hdr, HttpClient.Method.Post, cuerpo) != Error.Ok && IsInstanceValid(h))
 			h.QueueFree();
 	}
@@ -511,6 +514,7 @@ public partial class Economia : Node
 		AddChild(h);
 		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) =>
 		{
+			ApiConfig.SesionVencida(c, b); // sesión rechazada por el servidor → entrar de nuevo
 			// Si mientras viajaba el pedido el jugador cambió de perfil (cerró sesión / entró con
 			// otra cuenta), esta respuesta ya no es suya: se descarta para no escribir en otro perfil.
 			bool sigueSiendoSuya = (SesionJuego.Instance?.UsuarioId ?? -1) == usuarioId;
@@ -525,7 +529,7 @@ public partial class Economia : Node
 			}
 			if (IsInstanceValid(h)) h.QueueFree();
 		};
-		if (h.Request($"{ApiConfig.Usuarios}/{usuarioId}/inventario") != Error.Ok && IsInstanceValid(h)) h.QueueFree();
+		if (h.Request($"{ApiConfig.Usuarios}/{usuarioId}/inventario", ApiConfig.Cabeceras(json: false)) != Error.Ok && IsInstanceValid(h)) h.QueueFree();
 	}
 
 	private void AplicarInventario(string json)
@@ -643,6 +647,6 @@ public partial class Economia : Node
 			}
 			if (IsInstanceValid(h)) h.QueueFree();
 		};
-		if (h.Request($"{ApiConfig.Base}/api/cartas/usuario/{usuarioId}") != Error.Ok && IsInstanceValid(h)) h.QueueFree();
+		if (h.Request($"{ApiConfig.Base}/api/cartas/usuario/{usuarioId}", ApiConfig.Cabeceras(json: false)) != Error.Ok && IsInstanceValid(h)) h.QueueFree();
 	}
 }

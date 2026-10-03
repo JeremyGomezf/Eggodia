@@ -153,7 +153,7 @@ public partial class Campo1 : Node2D
 	{
 		if (_enviandoAccion || _colaAcciones.Count == 0 || _httpAccion == null) return;
 		string cuerpo = _colaAcciones.Peek(); // no se quita hasta confirmar el envío (preserva orden)
-		string[] headers = { "Content-Type: application/json" };
+		string[] headers = ApiConfig.Cabeceras();
 		if (_httpAccion.Request($"{ApiConfig.Base}/api/match/{ContextoOnline.MatchId}/accion", headers, HttpClient.Method.Post, cuerpo) == Error.Ok)
 			_enviandoAccion = true;
 		// Si falló el disparo, la acción queda en la cola y se reintenta (próximo Emitir o latido).
@@ -534,7 +534,7 @@ public partial class Campo1 : Node2D
 		if (_ocupadoLatido) return;
 		_ocupadoLatido = true;
 		string cuerpo = JsonSerializer.Serialize(new { jugadorId = ContextoOnline.JugadorId });
-		string[] headers = { "Content-Type: application/json" };
+		string[] headers = ApiConfig.Cabeceras();
 		if (_httpLatido.Request($"{ApiConfig.Base}/api/match/{ContextoOnline.MatchId}/latido", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
 			_ocupadoLatido = false;
 	}
@@ -636,7 +636,7 @@ public partial class Campo1 : Node2D
 		AddChild(h);
 		h.RequestCompleted += (long r, long c, string[] hd, byte[] b) => { if (IsInstanceValid(h)) h.QueueFree(); };
 		string cuerpo = JsonSerializer.Serialize(new { jugadorId = ContextoOnline.JugadorId, ganador, motivo = "normal" });
-		string[] headers = { "Content-Type: application/json" };
+		string[] headers = ApiConfig.Cabeceras();
 		if (h.Request($"{ApiConfig.Base}/api/match/{ContextoOnline.MatchId}/resultado", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
 			h.QueueFree();
 	}
@@ -678,7 +678,7 @@ public partial class Campo1 : Node2D
 			ResolverResultadoOnline(autoritativo, motivoFinal);
 		};
 		string cuerpo = JsonSerializer.Serialize(new { jugadorId = ContextoOnline.JugadorId, ganador, motivo });
-		string[] headers = { "Content-Type: application/json" };
+		string[] headers = ApiConfig.Cabeceras();
 		if (_httpResultado.Request($"{ApiConfig.Base}/api/match/{ContextoOnline.MatchId}/resultado", headers, HttpClient.Method.Post, cuerpo) != Error.Ok)
 			ResolverResultadoOnline(ganador, motivo);
 	}

@@ -55,6 +55,8 @@ namespace Eggodia.API.model
         public int    Derrotas  { get; set; }
         public int    Empates   { get; set; }
         public int    DañoTotal { get; set; }
+        // Sesión nueva: solo viene al iniciar sesión o registrarse (ver Sesiones). null en el resto.
+        public string? Token    { get; set; }
     }
 
     public class LoginRequest

@@ -1,3 +1,5 @@
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Eggodia.API.Data;
 
@@ -23,6 +25,36 @@ builder.Services.AddCors(options => {
     });
 });
 
+// Límites de pedidos por persona (frena a quien prueba contraseñas o códigos al azar, o inunda el
+// servidor). El servidor está detrás de Cloudflare: la IP real del jugador viene en CF-Connecting-IP.
+static string IpCliente(HttpContext c) =>
+    c.Request.Headers["CF-Connecting-IP"].FirstOrDefault() ?? c.Connection.RemoteIpAddress?.ToString() ?? "?";
+
+static RateLimitPartition<string> PorVentana(string clave, int permitidos, TimeSpan ventana) =>
+    RateLimitPartition.GetFixedWindowLimiter(clave, _ => new FixedWindowRateLimiterOptions
+    {
+        PermitLimit = permitidos, Window = ventana, QueueLimit = 0,
+    });
+
+builder.Services.AddRateLimiter(o =>
+{
+    o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    o.OnRejected = async (ctx, ct) =>
+    {
+        ctx.HttpContext.Response.ContentType = "application/json";
+        await ctx.HttpContext.Response.WriteAsync(
+            "{\"mensaje\":\"Demasiados intentos seguidos. Espera un momento y vuelve a probar.\"}", ct);
+    };
+    // Todo el tráfico: muy holgado (una partida en línea hace ~2 pedidos por segundo; varios
+    // celulares de una misma casa o colegio comparten IP).
+    o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(c =>
+        PorVentana("todo:" + IpCliente(c), 1200, TimeSpan.FromMinutes(1)));
+    o.AddPolicy("login",    c => PorVentana("login:" + IpCliente(c), 30, TimeSpan.FromMinutes(1)));
+    o.AddPolicy("registro", c => PorVentana("registro:" + IpCliente(c), 30, TimeSpan.FromHours(1)));
+    // Códigos promocionales y cartas físicas: por sesión si la hay (cada cuenta su cupo), si no por IP.
+    o.AddPolicy("codigos",  c => PorVentana("codigos:" + (Sesiones.TokenDe(c) ?? IpCliente(c)), 20, TimeSpan.FromMinutes(1)));
+});
+
 // --- PASO 1 CONECTAR LA BASE DE DATOS ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -45,6 +77,7 @@ app.UseCors("AllowAll");
 // WebSockets para el multijugador en tiempo real (endpoint /ws/match).
 app.UseWebSockets();
 
+app.UseRateLimiter();
 app.UseAuthorization();
 app.MapControllers();
 
@@ -171,6 +204,19 @@ using (var scope = app.Services.CreateScope())
                 ""FechaUtc"" TEXT NOT NULL
             );");
         db.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_promo_canjes_CodigoId_UserId"" ON ""promo_canjes"" (""CodigoId"", ""UserId"");");
+
+        // sesiones: una fila por sesión abierta (ver Sesiones). Solo se guarda el HASH del token.
+        db.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS ""sesiones"" (
+                ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_sesiones"" PRIMARY KEY AUTOINCREMENT,
+                ""UsuarioId"" INTEGER NOT NULL,
+                ""TokenHash"" TEXT NOT NULL,
+                ""CreadaUtc"" TEXT NOT NULL,
+                ""UltimoUsoUtc"" TEXT NOT NULL
+            );");
+        db.Database.ExecuteSqlRaw(@"CREATE UNIQUE INDEX IF NOT EXISTS ""IX_sesiones_TokenHash"" ON ""sesiones"" (""TokenHash"");");
+        db.Database.ExecuteSqlRaw(@"CREATE INDEX IF NOT EXISTS ""IX_sesiones_UsuarioId"" ON ""sesiones"" (""UsuarioId"");");
+        Sesiones.BorrarVencidas(db);
 
         // errores_cliente: errores que el juego reporta solo (antes solo se veían conectando el celular
         // por cable). Se guardan los últimos ~2000 (ver ErroresController).

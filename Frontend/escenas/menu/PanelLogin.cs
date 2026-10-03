@@ -93,6 +93,13 @@ public partial class PanelLogin : Control
 		// Ocultar errores al inicio
 		if (_lblErrorLogin    != null) _lblErrorLogin.Visible    = false;
 		if (_lblErrorRegistro != null) _lblErrorRegistro.Visible = false;
+
+		// Llegó acá porque la sesión venció (ver SesionJuego.SesionVencida): se explica por qué.
+		if (!string.IsNullOrEmpty(AvisoPendiente))
+		{
+			MostrarError(_lblErrorLogin, AvisoPendiente);
+			AvisoPendiente = null;
+		}
 	}
 
 	// ── LOGIN ─────────────────────────────────────────────────────────────
@@ -203,7 +210,7 @@ public partial class PanelLogin : Control
 
 			if (usuario != null && SesionJuego.Instance != null)
 			{
-				Preferencias.GuardarSesion(usuario.Id, usuario.Nombre); // login persistente
+				Preferencias.GuardarSesion(usuario.Id, usuario.Nombre, usuario.Token); // login persistente
 				// Pasa al perfil de ESTA cuenta (su propio archivo: nada del invitado ni de otra cuenta)
 				// y trae del servidor su inventario completo (monedas + skins + tronos + ítems + equipado).
 				SesionJuego.Instance.ActivarPerfil(usuario.Id, usuario.Nombre);
@@ -243,6 +250,9 @@ public partial class PanelLogin : Control
 	}
 
 	// DTO para parsear respuesta del backend
+	/// <summary>Mensaje para mostrar al abrir esta pantalla (p. ej. "tu sesión venció").</summary>
+	public static string AvisoPendiente;
+
 	private class UsuarioRespuesta
 	{
 		public int    Id      { get; set; }
@@ -254,5 +264,6 @@ public partial class PanelLogin : Control
 		public int    EquipSkinIdx       { get; set; }
 		public string EquipSkinExclusiva { get; set; } = "";
 		public int    EquipTronoIdx      { get; set; }
+		public string Token              { get; set; } = "";
 	}
 }
