@@ -318,14 +318,20 @@ public class UsuariosController : ControllerBase
         return Ok(ToDto(u));
     }
 
+    // Jugadores que muestra la tabla competitiva.
+    private const int TOPE_RANKING = 50;
+
     // GET: api/usuarios/ranking
+    // Solo entra quien jugó al menos una partida: antes las cuentas en 0/0/0 (nunca jugaron) ocupaban
+    // puestos y dejaban afuera a jugadores que sí tenían partidas.
     [HttpGet("ranking")]
     public async Task<IActionResult> GetRanking()
     {
         var top = await _db.Usuarios
+            .Where(u => u.Victorias + u.Derrotas + u.Empates > 0)
             .OrderByDescending(u => u.Victorias)
             .ThenByDescending(u => u.DañoTotal)
-            .Take(20)
+            .Take(TOPE_RANKING)
             .Select(u => new {
                 u.Id, u.Nombre,
                 u.Victorias, u.Derrotas, u.Empates,
