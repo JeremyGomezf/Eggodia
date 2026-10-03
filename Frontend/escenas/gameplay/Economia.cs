@@ -454,6 +454,24 @@ public partial class Economia : Node
 			h.QueueFree();
 	}
 
+	/// <summary>Skin/trono equipados que trae la respuesta del login: se aplican al instante (sin volver a
+	/// subirlos al servidor). Si la cuenta está en los valores por defecto no se toca nada: así sigue
+	/// valiendo la regla de AplicarInventario que respeta lo equipado en este aparato para cuentas viejas
+	/// que nunca subieron su skin.</summary>
+	public void AdoptarEquipadoDeServidor(int skinIdx, string skinExclusiva, int tronoIdx)
+	{
+		skinExclusiva ??= "";
+		if (skinIdx == 0 && tronoIdx == 0 && skinExclusiva == "") return;
+		_aplicandoInventario = true;
+		try
+		{
+			Preferencias.SkinActivaIdx = skinIdx;
+			Preferencias.TronoActivoIdx = tronoIdx;
+			Preferencias.SkinExclusivaActiva = skinExclusiva;
+		}
+		finally { _aplicandoInventario = false; }
+	}
+
 	/// <summary>Carga el inventario COMPLETO de la cuenta desde el servidor (monedas + skins + tronos +
 	/// ítems + equipado) y lo aplica localmente. Se llama al iniciar sesión / reabrir la app: primero
 	/// limpia lo local (para no heredar la cuenta anterior) y luego pone lo que de verdad tiene ESTA

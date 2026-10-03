@@ -210,6 +210,11 @@ public partial class PanelLogin : Control
 				// Cuenta recién creada: el menú principal abrirá el tutorial una sola vez. Si esto
 				// fue un inicio de sesión normal, no se toca nada.
 				if (_accionPendiente == "registro") SesionJuego.CuentaRecienCreada = true;
+				// La skin y el trono equipados de la cuenta vienen YA en la respuesta del login: se aplican
+				// antes de abrir el menú, así el huevo se ve bien desde el primer cuadro. Antes el menú
+				// mostraba el huevo que tenía guardado el celular y, al llegar el inventario, lo cambiaba
+				// (el "parpadeo" de la skin al iniciar sesión).
+				Economia.Instancia()?.AdoptarEquipadoDeServidor(usuario.EquipSkinIdx, usuario.EquipSkinExclusiva, usuario.EquipTronoIdx);
 				Economia.Instancia()?.CargarInventarioCuenta(usuario.Id);
 				GD.Print($"[Login] ¡Bienvenido, {usuario.Nombre}! (ID: {usuario.Id}, monedas: {usuario.Monedas})");
 				IrAlMenu();
@@ -249,5 +254,8 @@ public partial class PanelLogin : Control
 		public int    Monedas   { get; set; }
 		public int    Victorias { get; set; }
 		public int    Derrotas  { get; set; }
+		public int    EquipSkinIdx       { get; set; }
+		public string EquipSkinExclusiva { get; set; } = "";
+		public int    EquipTronoIdx      { get; set; }
 	}
 }

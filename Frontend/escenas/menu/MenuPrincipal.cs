@@ -723,10 +723,19 @@ public partial class MenuPrincipal : Control
 	// usa KeepAspectCentered para las demás.
 	private const int IDX_PAPER_DINO = 4; // Preferencias.SKIN_ESCENAS[4]
 
+	// Qué huevo está dibujado ahora. Si al llegar el inventario de la cuenta el equipado es el MISMO, no
+	// se vuelve a dibujar (re-aplicar textura/escala/color en medio de su animación se notaba como un
+	// salto).
+	private string _huevoDibujado = "";
+
 	/// <summary>Refleja en el menú principal la skin de huevo equipada (soporta tanto catálogo estándar como exclusivas).</summary>
 	private void ActualizarHuevoMenu()
 	{
 		if (_reyHuevoNode == null) return;
+
+		string clave = Preferencias.SkinExclusivaActiva + "|" + Preferencias.SkinActivaIdx;
+		if (clave == _huevoDibujado) return;
+		_huevoDibujado = clave;
 
 		string exclusiva = Preferencias.SkinExclusivaActiva;
 		if (!string.IsNullOrEmpty(exclusiva) && ResourceLoader.Exists(exclusiva))

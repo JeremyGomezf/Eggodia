@@ -125,6 +125,11 @@ public partial class Tienda : Control
 		_contenidoScroll.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		scroll.AddChild(_contenidoScroll);
 
+		LlenarContenido();
+	}
+
+	private void LlenarContenido()
+	{
 		// Sección 1: Skins de huevo
 		AgregarSeccion("SKINS DE HUEVO", new Color(1f, 0.65f, 0.25f));
 		AgregarGridSkins();
@@ -140,6 +145,26 @@ public partial class Tienda : Control
 		// Sección 4: Ardides y Hechizos
 		AgregarSeccion("ARDIDES Y HECHIZOS", new Color(0.55f, 0.85f, 1f));
 		AgregarGridHechizosTienda();
+	}
+
+	/// <summary>Vuelve a armar las tarjetas (qué está comprado/equipado) SIN recargar la escena: antes
+	/// cada compra o EQUIPAR recargaba la Tienda entera, y eso hacía parpadear la pantalla y devolvía la
+	/// lista arriba. Ahora se rehace solo el contenido y se conserva dónde estabas.</summary>
+	private void RefrescarTienda()
+	{
+		if (_contenidoScroll == null || !IsInstanceValid(_contenidoScroll)) return;
+		var scroll = _contenidoScroll.GetParent() as ScrollTactil;
+		int posicion = scroll?.ScrollVertical ?? 0;
+		foreach (Node hijo in _contenidoScroll.GetChildren())
+		{
+			_contenidoScroll.RemoveChild(hijo);
+			hijo.QueueFree();
+		}
+		LlenarContenido();
+		if (scroll == null) return;
+		scroll.RefrescarFiltros();
+		// El contenido nuevo recién tiene tamaño en el próximo frame: ahí se vuelve a la misma posición.
+		Callable.From(() => { if (IsInstanceValid(scroll)) scroll.ScrollVertical = posicion; }).CallDeferred();
 	}
 
 	private void AgregarSeccion(string titulo, Color color)
@@ -283,12 +308,11 @@ public partial class Tienda : Control
 		void ExitoLocal()
 		{
 			aplicarLocal();
-			// El cartel tapa la pantalla mientras dura, y la recarga de la escena se dispara recién
-			// al final, con el fondo oscuro todavía puesto: así el "parpadeo" oscuro que antes
-			// aparecía suelto al recargar queda escondido detrás de un aviso que se ve a propósito.
+			// El cartel tapa la pantalla mientras dura y, al final, las tarjetas se actualizan en el
+			// lugar (sin recargar la escena, que era lo que parpadeaba) antes de que el cartel se vaya.
 			MostrarAvisoDesbloqueo($"¡{nombre} desbloqueado!", () =>
 			{
-				if (IsInstanceValid(this)) GetTree()?.ReloadCurrentScene();
+				if (IsInstanceValid(this)) RefrescarTienda();
 			});
 		}
 		void SinMonedas() { MostrarMensaje("Monedas insuficientes", new Color(1f, 0.45f, 0.35f)); if (btn != null) btn.Disabled = false; }
@@ -449,7 +473,7 @@ public partial class Tienda : Control
 			btnEquipar.AddThemeFontSizeOverride("font_size", 18);
 			btnEquipar.Pressed += () => {
 				Preferencias.SkinActivaIdx = idx;
-				GetTree().ReloadCurrentScene();
+				RefrescarTienda();
 			};
 			vbox.AddChild(btnEquipar);
 		}
@@ -461,7 +485,7 @@ public partial class Tienda : Control
 			btnEquipar.AddThemeFontSizeOverride("font_size", 18);
 			btnEquipar.Pressed += () => {
 				Preferencias.SkinActivaIdx = 0;
-				GetTree().ReloadCurrentScene();
+				RefrescarTienda();
 			};
 			vbox.AddChild(btnEquipar);
 		}
@@ -540,7 +564,7 @@ public partial class Tienda : Control
 			int capIdx = idx;
 			btnEquipar.Pressed += () => {
 				Preferencias.TronoActivoIdx = capIdx;
-				GetTree().ReloadCurrentScene();
+				RefrescarTienda();
 			};
 			vbox.AddChild(btnEquipar);
 		}
@@ -658,7 +682,11 @@ public partial class Tienda : Control
 		tw.TweenProperty(lbl, "scale", Vector2.One, 0.3f)
 			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 		tw.Chain().TweenInterval(1.5f);
+		// Las tarjetas se actualizan mientras el aviso todavía tapa la pantalla; después se desvanece.
 		tw.Chain().TweenCallback(Callable.From(() => alTerminar?.Invoke()));
+		tw.Chain().TweenProperty(fondo, "modulate:a", 0f, 0.25f);
+		tw.Parallel().TweenProperty(lbl, "modulate:a", 0f, 0.25f);
+		tw.Chain().TweenCallback(Callable.From(() => { if (IsInstanceValid(capa)) capa.QueueFree(); }));
 	}
 
 	private async void MostrarMensaje(string texto, Color color)
