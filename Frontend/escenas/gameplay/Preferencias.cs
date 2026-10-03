@@ -115,6 +115,12 @@ public static class Preferencias
 		set => EscribirBoolEn(SEC_DISPOSITIVO, "tutorial_pendiente", value);
 	}
 
+	/// <summary>Guías de pantalla (ver GuiaPasos): cada una se muestra UNA vez por aparato, la primera
+	/// vez que se abre esa pantalla (menú, tienda, mazo, ajustes, pausa, retirada en línea).</summary>
+	public static bool GuiaVista(string clave) => LeerBoolEn(SEC_DISPOSITIVO, "guia_" + clave, false);
+
+	public static void MarcarGuiaVista(string clave) => EscribirBoolEn(SEC_DISPOSITIVO, "guia_" + clave, true);
+
 	/// <summary>Si es la primera vez que corre el juego en este aparato (no existe ni el archivo del
 	/// dispositivo), deja el tutorial pendiente. Quien actualiza desde una versión anterior ya tiene
 	/// ese archivo → no se le abre nada. Tiene que correr ANTES que cualquier cosa que escriba

@@ -12,6 +12,10 @@ public partial class MenuPausa : CanvasLayer
 	private PanelSettings _panelSettings;
 	private VBoxContainer _vboxPausa;
 	private PanelContainer _panelConfirmacion;
+	private Button _btnRendirse;
+
+	/// <summary>True mientras el panel de pausa está a la vista.</summary>
+	public bool EstaAbierta => _overlay != null && _overlay.Visible;
 
 	public override void _Ready()
 	{
@@ -29,6 +33,7 @@ public partial class MenuPausa : CanvasLayer
 		var btnContinue = GetNode<Button>("Overlay/VBox/BtnContinue");
 		var btnSettings = GetNode<Button>("Overlay/VBox/BtnSettings");
 		var btnExit     = GetNode<Button>("Overlay/VBox/BtnExit");
+		_btnRendirse = btnExit;
 
 		var btnCancelar = GetNode<Button>("Overlay/PanelConfirmacion/VBox/HBox/BtnCancelar");
 		var btnConfirmar = GetNode<Button>("Overlay/PanelConfirmacion/VBox/HBox/BtnConfirmar");
@@ -129,6 +134,8 @@ public partial class MenuPausa : CanvasLayer
 		foreach (Node n in raizPartida.FindChildren("*", "CanvasLayer", true, false))
 		{
 			if (n is not CanvasLayer capa || capa == this || !capa.Visible || capa.Layer <= Layer) continue;
+			// La guía de primera vez puede abrir esta pausa para explicarla: no se tapa a sí misma.
+			if (capa.IsInGroup(GuiaPasos.GRUPO)) continue;
 			capa.Visible = false;
 			_capasOcultasPorPausa.Add(capa);
 		}
@@ -148,6 +155,9 @@ public partial class MenuPausa : CanvasLayer
 		_overlay.Visible = true;
 		_vboxPausa.Visible = true;
 		_panelConfirmacion.Visible = false;
+		// Tutorial de la instalación nueva: es obligatorio, así que la pausa no deja rendirse (rendirse
+		// era la forma de saltárselo). Sigue pudiendo continuar y cambiar las opciones.
+		if (_btnRendirse != null) _btnRendirse.Visible = !EsTutorialObligatorio();
 		OcultarCapasPorEncima();
 		CancelarArrastresEnCurso();
 	}
@@ -162,7 +172,13 @@ public partial class MenuPausa : CanvasLayer
 			if (n is Carta c && c.EstaArrastrando) c.CancelarArrastre();
 	}
 
-	private void Reanudar()
+	private bool EsTutorialObligatorio()
+	{
+		var campo = GetParentOrNull<Campo1>();
+		return campo != null && campo.ModoTutorial && Preferencias.TutorialPendiente;
+	}
+
+	public void Reanudar()
 	{
 		_overlay.Visible = false;
 		if (_panelSettings != null) _panelSettings.Visible = false;

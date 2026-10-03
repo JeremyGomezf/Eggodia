@@ -246,12 +246,19 @@ public partial class MenuPrincipal : Control
 		// actualizó el juego entra directo al menú: no se le abre nada. Antes esto dependía de
 		// Preferencias.TutorialVisto y le saltaba a cualquiera que no hubiese visto la pantalla vieja
 		// de "cómo jugar".
+		// Lo de la instalación nueva es OBLIGATORIO: "pendiente" recién se borra al GANAR el tutorial
+		// (ver Campo1.FinPartida). Si se sale antes (cerrando la app o perdiendo), al volver al menú se
+		// abre otra vez, y mientras está pendiente la pausa no ofrece RENDIRSE (ver MenuPausa).
 		if (SesionJuego.CuentaRecienCreada || Preferencias.TutorialPendiente)
 		{
 			SesionJuego.CuentaRecienCreada = false;
-			Preferencias.TutorialPendiente = false;
 			Preferencias.TutorialVisto = true;
 			Callable.From(AbrirTutorialJugable).CallDeferred();
+		}
+		else
+		{
+			// Primera vez en el menú (después del tutorial, o al actualizar): guía de sus botones.
+			ProgramarGuiaMenu();
 		}
 
 		// El chequeo de versión nueva del APK corre AL INICIO, en la PantallaCarga (antes del login),
@@ -989,6 +996,7 @@ public partial class MenuPrincipal : Control
 		MostrarBloqueadorAjustes();
 		_panelSettings.AlCerrar = OcultarBloqueadorAjustes; // al cerrar el panel, quitar el bloqueo
 		_panelSettings.Visible = true;
+		ProgramarGuiaAjustes(); // la primera vez que se abren, se explica cada opción
 	}
 
 	// Coloca (o reutiliza) un backdrop a pantalla completa JUSTO debajo del panel de Opciones: come

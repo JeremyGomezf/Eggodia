@@ -188,6 +188,7 @@ public partial class Campo1 : Node2D
 		MostrarCirculosInvocacion(true);
 		IntroEnCurso = false;
 		ActualizarInterfaz();
+		ProgramarGuiaPartida(); // primera partida: guía de la pausa (VS BOT) o de la retirada (en línea)
 	}
 
 	private async Task<bool> EsperarIntro(double segundos)

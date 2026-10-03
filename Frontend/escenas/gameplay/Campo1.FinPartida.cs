@@ -334,6 +334,8 @@ public partial class Campo1 : Node2D
 				Preferencias.PartidasGanadas++;
 				Preferencias.AgregarExperiencia(Preferencias.XP_POR_VICTORIA);
 			}
+			// Tutorial ganado: recién ahora deja de ser obligatorio (ver MenuPrincipal._Ready).
+			else Preferencias.TutorialPendiente = false;
 			VerificarLogros(msg);
 			var escenaVictoria = GD.Load<PackedScene>("res://escenas/gameplay/PantallaVictoria.tscn");
 			int monedasGanadas = Economia.Instancia().RegistrarFinDePartida("victoria", _rachaVictorias + 1, PareceOnline, ModoTutorial, _dañoTotalJugador);

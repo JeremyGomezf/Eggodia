@@ -16,11 +16,14 @@ public partial class Tienda : Control
 
 	private Label _lblMonedas;
 	private VBoxContainer _contenidoScroll;
+	private Button _btnVolver;          // los usa la guía de primera vez (Tienda.Guia.cs)
+	private TextureRect _chipMonedas;
 
 
 	public override void _Ready()
 	{
 		ConstruirUI();
+		ProgramarGuia();
 		var eco = Economia.Instancia();
 		if (eco != null)
 		{
@@ -65,6 +68,7 @@ public partial class Tienda : Control
 		btnVolver.AddThemeFontSizeOverride("font_size", 26);
 		btnVolver.Pressed += () => GetTree().ChangeSceneToFile(RutaMenuPrincipal);
 		topBar.AddChild(btnVolver);
+		_btnVolver = btnVolver;
 
 		var lblTitulo = new Label();
 		lblTitulo.Text = "TIENDA";
@@ -111,6 +115,7 @@ public partial class Tienda : Control
 		_lblMonedas.VerticalAlignment = VerticalAlignment.Center;
 		hboxMonedas.AddChild(_lblMonedas);
 		topBar.AddChild(chipMonedas);
+		_chipMonedas = chipMonedas;
 
 		// Scroll container principal (táctil: se arrastra en cualquier parte, no solo la barra)
 		var scroll = new ScrollTactil();

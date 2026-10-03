@@ -258,6 +258,8 @@ public partial class MenuConstructor : Control
 			var primeraTropa = _todasLasCartas.Find(c => c.Categoria == CategoriaCarta.Unidad) ?? _todasLasCartas[0];
 			SeleccionarCarta(primeraTropa);
 		}
+
+		ProgramarGuia(); // la primera vez, se explica cada parte del constructor (MenuConstructor.Guia.cs)
 	}
 
 	private void CargarTexturasPorDefecto()
