@@ -27,6 +27,6 @@ public partial class Campo1 : Node2D
 	private async Task EsperarTableroLibre()
 	{
 		while (HayAnimacionEnCurso && !juegoTerminado)
-			await ToSignal(GetTree().CreateTimer(0.1f), "timeout");
+			await ToSignal(GetTree().CreateTimer(0.1f, false), "timeout");
 	}
 }

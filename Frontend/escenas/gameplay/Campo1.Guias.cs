@@ -1,7 +1,7 @@
 using Godot;
 
 /// <summary>
-/// Guías de primera vez dentro de la partida (ver GuiaPasos), al terminar la intro:
+/// Guías de primera vez dentro de la partida (ver GuiaPasos), después de la intro:
 ///   · VS BOT: el botón de PAUSA y, con la pausa abierta, CONTINUAR / OPCIONES / RENDIRSE. El juego
 ///     queda en pausa mientras se explica, así el reloj no corre.
 ///   · EN LÍNEA: el botón de RETIRADA (no hay pausa) y qué pasa si te desconectas o no juegas. Aquí
@@ -9,16 +9,35 @@ using Godot;
 /// </summary>
 public partial class Campo1 : Node2D
 {
+	// Cada cuánto se revisa si ya es buen momento para abrir la guía, y cuánto se espera como mucho.
+	private const double INTERVALO_GUIA_PARTIDA = 0.4;
+	private const int    INTENTOS_GUIA_PARTIDA  = 150; // ~1 minuto
+
 	private void ProgramarGuiaPartida()
 	{
-		if (ModoTutorial || juegoTerminado) return;
+		// TerminarIntro también corre si la escena se está cerrando: sin árbol no hay nada que programar.
+		if (!IsInsideTree() || ModoTutorial || juegoTerminado) return;
 		if (Preferencias.GuiaVista(PareceOnline ? "retirada" : "pausa")) return;
-		GetTree().CreateTimer(0.9, false).Timeout += () =>
+		// Un respiro tras la intro, para que no salte encima del primer "TU TURNO".
+		GetTree().CreateTimer(0.7, false).Timeout += () => EsperarMomentoGuia(INTENTOS_GUIA_PARTIDA);
+	}
+
+	/// <summary>La guía se abre en un momento que no le cueste nada al jugador:
+	///   · contra el bot, en TU turno (el juego se pausa, así que el reloj no corre; en el turno del bot
+	///     se cortaría su jugada a la mitad);
+	///   · en línea, en el turno del RIVAL (no se pausa: así no te come tiempo de tu turno).</summary>
+	private void EsperarMomentoGuia(int intentosRestantes)
+	{
+		if (intentosRestantes <= 0 || !IsInstanceValid(this) || !IsInsideTree() || juegoTerminado) return;
+		bool momento = !IntroEnCurso && !HayAnimacionEnCurso
+			&& (PareceOnline ? !esTurnoJugador : esTurnoJugador);
+		if (!momento)
 		{
-			if (!IsInstanceValid(this) || !IsInsideTree() || juegoTerminado) return;
-			if (PareceOnline) IniciarGuiaRetirada();
-			else IniciarGuiaPausa();
-		};
+			GetTree().CreateTimer(INTERVALO_GUIA_PARTIDA, false).Timeout += () => EsperarMomentoGuia(intentosRestantes - 1);
+			return;
+		}
+		if (PareceOnline) IniciarGuiaRetirada();
+		else IniciarGuiaPausa();
 	}
 
 	private void IniciarGuiaPausa()

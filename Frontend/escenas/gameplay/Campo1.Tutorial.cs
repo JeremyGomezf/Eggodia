@@ -356,8 +356,8 @@ public partial class Campo1 : Node2D
 	private void PasoGuiaIntro2()
 	{
 		MostrarGuiaConTexto("Cada botón que veas consume energía, menos el de la esquina derecha (el " +
-			"rojo), que es para rendirse. Cada partida dura 3 minutos: si se acaba el tiempo, gana " +
-			"quien tenga más vida.");
+			"rojo), que sirve para cambiar tus ardides. Cada partida dura 3 minutos: si se acaba el " +
+			"tiempo, gana quien tenga más vida.");
 		EsperarClickParaAvanzar(PasoGuiaIntro3);
 	}
 
@@ -550,7 +550,7 @@ public partial class Campo1 : Node2D
 			if (BuscarObjetivoEnCarril(tropa, "tropas_jugador") != null)
 				ProcesarCombateFrontal(tropa, "tropas_jugador");
 			ActualizarInterfaz();
-			await ToSignal(GetTree().CreateTimer(0.8f), "timeout");
+			await ToSignal(GetTree().CreateTimer(0.8f, false), "timeout");
 			if (juegoTerminado) return;
 		}
 

@@ -30,7 +30,7 @@ public partial class Campo1 : Node2D
 		if (ModoTutorial) { await EjecutarTurnoCPUTutorial(); return; }
 
 		// La intro cinemática bloquea la partida: el bot espera a que termine.
-		while (IntroEnCurso && !juegoTerminado) await ToSignal(GetTree().CreateTimer(0.2f), "timeout");
+		while (IntroEnCurso && !juegoTerminado) await ToSignal(GetTree().CreateTimer(0.2f, false), "timeout");
 		if (juegoTerminado) return;
 
 		// Rival bot "en línea" (nadie real buscaba partida): que no se note. Mismo aviso que con un rival
@@ -38,14 +38,14 @@ public partial class Campo1 : Node2D
 		if (OnlineConBot)
 		{
 			MostrarAviso("Turno del rival…", new Color(1f, 0.85f, 0.4f));
-			await ToSignal(GetTree().CreateTimer(1.5 + random.NextDouble() * 2.5), "timeout");
+			await ToSignal(GetTree().CreateTimer(1.5 + random.NextDouble() * 2.5, false), "timeout");
 			if (juegoTerminado) return;
 		}
 
 		// Fase de apertura: la CPU llena sus 3 carriles sin atacar
 		if (_faseApertura)
 		{
-			await ToSignal(GetTree().CreateTimer(0.9f), "timeout");
+			await ToSignal(GetTree().CreateTimer(0.9f, false), "timeout");
 			string[] spotsRival = { "ModRival1", "ModRival2", "ModRival3" };
 			foreach (string nombre in spotsRival)
 			{
@@ -54,7 +54,7 @@ public partial class Campo1 : Node2D
 				if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
 				InvocacionRival(zona, ElegirTropaCPU());
 				ActualizarInterfaz();
-				await ToSignal(GetTree().CreateTimer(OnlineConBot ? 1.0 + random.NextDouble() * 1.4 : 0.65), "timeout");
+				await ToSignal(GetTree().CreateTimer(OnlineConBot ? 1.0 + random.NextDouble() * 1.4 : 0.65, false), "timeout");
 			}
 			_faseApertura = false;
 			if (!juegoTerminado) CambiarTurno();
@@ -83,7 +83,7 @@ public partial class Campo1 : Node2D
 		float delay = _dificultadCPU == 0 ? 1.0f : _dificultadCPU == 1 ? 0.75f : 0.5f;
 		if (OnlineConBot) delay *= 1.7f + (float)random.NextDouble() * 0.9f; // ritmo de persona, no de máquina
 		await EsperarTableroLibre();
-		await ToSignal(GetTree().CreateTimer(delay * 0.4f), "timeout");
+		await ToSignal(GetTree().CreateTimer(delay * 0.4f, false), "timeout");
 		if (juegoTerminado) return;
 
 		// Ardid Nuclear: si le conviene, la tira al empezar su turno. El contador de 10s no lo frena:
@@ -141,7 +141,7 @@ public partial class Campo1 : Node2D
 				if (_dificultadCPU >= 1 && random.Next(_dificultadCPU == 2 ? 5 : 9) == 0) CPUUsarHechizo(); // dificultad 1 (la normal): de vez en cuando, no siempre
 				movimientosRestantes--;
 				ActualizarInterfaz();
-				await ToSignal(GetTree().CreateTimer(delay), "timeout");
+				await ToSignal(GetTree().CreateTimer(delay, false), "timeout");
 				if (juegoTerminado) return;
 			}
 			int maxNuevos = _dificultadCPU + 1;
@@ -154,7 +154,7 @@ public partial class Campo1 : Node2D
 				InvocacionRival(zona, ElegirTropaCPU());
 				reforzadas++;
 				ActualizarInterfaz();
-				await ToSignal(GetTree().CreateTimer(delay * 0.7f), "timeout");
+				await ToSignal(GetTree().CreateTimer(delay * 0.7f, false), "timeout");
 				if (juegoTerminado) return;
 			}
 		}
@@ -170,7 +170,7 @@ public partial class Campo1 : Node2D
 				InvocacionRival(zona, ElegirTropaCPU());
 				invocadas++;
 				ActualizarInterfaz();
-				await ToSignal(GetTree().CreateTimer(delay), "timeout");
+				await ToSignal(GetTree().CreateTimer(delay, false), "timeout");
 				if (juegoTerminado) return;
 			}
 
@@ -214,7 +214,7 @@ public partial class Campo1 : Node2D
 				if (_dificultadCPU >= 1 && random.Next(_dificultadCPU == 2 ? 5 : 9) == 0) CPUUsarHechizo(); // dificultad 1 (la normal): de vez en cuando, no siempre
 				movimientosRestantes--;
 				ActualizarInterfaz();
-				await ToSignal(GetTree().CreateTimer(delay), "timeout");
+				await ToSignal(GetTree().CreateTimer(delay, false), "timeout");
 				if (juegoTerminado) return;
 			}
 		}
@@ -228,7 +228,7 @@ public partial class Campo1 : Node2D
 			if (zona == null || zona.GetNodeOrNull("Ocupado") != null) continue;
 			InvocacionRival(zona, ElegirTropaCPU());
 			ActualizarInterfaz();
-			await ToSignal(GetTree().CreateTimer(delay * 0.5f), "timeout");
+			await ToSignal(GetTree().CreateTimer(delay * 0.5f, false), "timeout");
 			if (juegoTerminado) return;
 		}
 
@@ -271,7 +271,7 @@ public partial class Campo1 : Node2D
 
 			movimientosRestantes--;
 			ActualizarInterfaz();
-			await ToSignal(GetTree().CreateTimer(delay * 0.8f), "timeout");
+			await ToSignal(GetTree().CreateTimer(delay * 0.8f, false), "timeout");
 		}
 	}
 

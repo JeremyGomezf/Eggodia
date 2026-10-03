@@ -115,6 +115,15 @@ public static class Preferencias
 		set => EscribirBoolEn(SEC_DISPOSITIVO, "tutorial_pendiente", value);
 	}
 
+	/// <summary>Cuántas veces se abrió solo el tutorial obligatorio sin llegar a ganarlo. Es la red de
+	/// seguridad para que nadie quede atrapado si algo del tutorial fallara en su celular (ver
+	/// MenuPrincipal._Ready): a la 3.ª vez se abre igual, pero ya se puede salir.</summary>
+	public static int IntentosTutorial
+	{
+		get => LeerIntEn(SEC_DISPOSITIVO, "intentos_tutorial", 0);
+		set => EscribirIntEn(SEC_DISPOSITIVO, "intentos_tutorial", value);
+	}
+
 	/// <summary>Guías de pantalla (ver GuiaPasos): cada una se muestra UNA vez por aparato, la primera
 	/// vez que se abre esa pantalla (menú, tienda, mazo, ajustes, pausa, retirada en línea).</summary>
 	public static bool GuiaVista(string clave) => LeerBoolEn(SEC_DISPOSITIVO, "guia_" + clave, false);

@@ -49,6 +49,9 @@ public partial class MenuPrincipal : Control
 
 	private float _tiempoAcumulado = 0f;
 
+	// Veces que el tutorial de instalación nueva se abre solo como obligatorio (ver _Ready).
+	private const int INTENTOS_TUTORIAL_OBLIGATORIO = 3;
+
 	public override void _Ready()
 	{
 		// Si venimos de una partida en Campo1 (victoria/derrota/pausa), la música global quedó
@@ -249,8 +252,13 @@ public partial class MenuPrincipal : Control
 		// Lo de la instalación nueva es OBLIGATORIO: "pendiente" recién se borra al GANAR el tutorial
 		// (ver Campo1.FinPartida). Si se sale antes (cerrando la app o perdiendo), al volver al menú se
 		// abre otra vez, y mientras está pendiente la pausa no ofrece RENDIRSE (ver MenuPausa).
+		// Red de seguridad: si ya se abrió 2 veces sin terminarlo, la 3.ª se abre igual pero deja de
+		// ser obligatorio. Así, si algo fallara en el tutorial en algún celular, nadie queda atrapado
+		// para siempre (reinstalar no lo arreglaría: una instalación nueva vuelve a dejarlo pendiente).
 		if (SesionJuego.CuentaRecienCreada || Preferencias.TutorialPendiente)
 		{
+			if (Preferencias.TutorialPendiente && ++Preferencias.IntentosTutorial >= INTENTOS_TUTORIAL_OBLIGATORIO)
+				Preferencias.TutorialPendiente = false;
 			SesionJuego.CuentaRecienCreada = false;
 			Preferencias.TutorialVisto = true;
 			Callable.From(AbrirTutorialJugable).CallDeferred();

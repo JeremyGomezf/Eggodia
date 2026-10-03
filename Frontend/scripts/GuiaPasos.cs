@@ -9,11 +9,12 @@ using System.Collections.Generic;
 /// En cada paso, lo que se explica queda NÍTIDO y con un aro dorado que late (enfoque) y todo lo demás
 /// se difumina y oscurece (desenfoque). El foco viaja suave de un paso al siguiente. El texto va en el
 /// mismo cuadro "INF" del tutorial (efectos/guiatexto.tscn), con su misma animación de chico a grande,
-/// y se avanza tocando cualquier parte de la pantalla, igual que en el tutorial.
+/// y se avanza tocando cualquier parte de la pantalla, igual que en el tutorial. SALTAR GUÍA (o el
+/// botón "atrás") la cierra de una.
 ///
-/// Mientras está abierta se come todos los toques (y el botón "atrás"), así detrás no se compra, se
-/// juega ni se navega nada por accidente. Cada guía se ve una sola vez por aparato
-/// (Preferencias.GuiaVista): se marca como vista al terminarla.
+/// Mientras está abierta se come todos los toques, así detrás no se compra, se juega ni se navega nada
+/// por accidente. Si al abrirse había un dedo apoyado, espera a que se levante. Cada guía se ve una
+/// sola vez por aparato (Preferencias.GuiaVista): se marca como vista al terminarla o saltarla.
 /// </summary>
 public partial class GuiaPasos : CanvasLayer
 {
@@ -42,8 +43,9 @@ public partial class GuiaPasos : CanvasLayer
 	private const float MARGEN_PANTALLA = 24f;
 	private const float SEPARACION_FOCO = 26f;
 	private const float ALTO_PISTA = 44f;
-	// Toques que llegan apenas cambió el paso no cuentan: un doble toque no se salta un texto sin leerlo.
-	private const ulong ESPERA_MIN_MS = 450;
+	// Un segundo toque muy pegado al primero (doble toque sin querer) no se salta un texto sin leerlo.
+	private const ulong ESPERA_MIN_MS = 250;
+	private static readonly Vector2 TAM_SALTAR = new(250f, 70f);
 
 	private string _clave;
 	private IReadOnlyList<Paso> _pasos;
@@ -56,6 +58,7 @@ public partial class GuiaPasos : CanvasLayer
 
 	private int _indice = -1;
 	private ulong _inicioPasoMs;
+	private bool _comenzada;
 	private bool _terminando;
 
 	private ColorRect _velo;
@@ -63,6 +66,7 @@ public partial class GuiaPasos : CanvasLayer
 	private Node2D _cuadro;
 	private Label _lblTexto;
 	private Label _lblPista;
+	private Button _btnSaltar;
 	private Tween _tweenCuadro;
 
 	private Rect2 _focoActual;
@@ -219,6 +223,7 @@ public partial class GuiaPasos : CanvasLayer
 		Layer = 900; // por encima de todo (pausa 100, avisos 300, tutorial 500/600)
 		ProcessMode = ProcessModeEnum.Always; // sigue funcionando con el juego en pausa
 		AddToGroup(GRUPO);
+		Visible = false; // se muestra recién en Comenzar (ver _Process)
 
 		_velo = new ColorRect { Color = Colors.White, MouseFilter = Control.MouseFilterEnum.Stop };
 		_velo.SetAnchorsPreset(Control.LayoutPreset.FullRect);
@@ -248,17 +253,40 @@ public partial class GuiaPasos : CanvasLayer
 		_lblPista.AddThemeColorOverride("font_outline_color", new Color(0f, 0f, 0f, 0.85f));
 		AddChild(_lblPista);
 
+		// SALTAR: para quien ya conoce el juego. Cierra la guía y no vuelve a salir. Sus toques los
+		// atiende _Input (la guía se come todos los toques antes que cualquier botón).
+		_btnSaltar = new Button { Text = "SALTAR GUÍA", CustomMinimumSize = TAM_SALTAR, Modulate = new Color(1, 1, 1, 0) };
+		EstiloUI.Boton(_btnSaltar, 26);
+		_btnSaltar.MouseFilter = Control.MouseFilterEnum.Ignore;
+		_btnSaltar.Size = TAM_SALTAR;
+		AddChild(_btnSaltar);
+	}
+
+	/// <summary>Arranca de verdad. Si al abrirse había un dedo apoyado (arrastrando una carta, deslizando
+	/// una lista), se espera a que se levante: así ese gesto termina normal y no queda nada "pegado".</summary>
+	private void Comenzar()
+	{
+		_comenzada = true;
+		Visible = true;
 		if (_pausarJuego) GetTree().Paused = true;
 
 		var entrada = CreateTween();
 		entrada.TweenMethod(Callable.From<float>(v => _fuerza = v), 0f, 1f, 0.35f);
 		entrada.Parallel().TweenProperty(_lblPista, "modulate:a", 1f, 0.35f);
+		entrada.Parallel().TweenProperty(_btnSaltar, "modulate:a", 1f, 0.35f);
 
 		Avanzar();
 	}
 
 	public override void _Process(double delta)
 	{
+		if (!_comenzada)
+		{
+			if (CerrarSi != null && CerrarSi()) { QueueFree(); return; }
+			if (!Input.IsMouseButtonPressed(MouseButton.Left)) Comenzar();
+			return;
+		}
+
 		// Si algo reanudó el juego por fuera (p. ej. el menú de pausa al cerrarse), se vuelve a pausar:
 		// mientras la guía está abierta el reloj no puede correr.
 		if (_pausarJuego && !_terminando && !GetTree().Paused) GetTree().Paused = true;
@@ -286,10 +314,16 @@ public partial class GuiaPasos : CanvasLayer
 		// Lo que se enfoca puede acomodarse un instante después de entrar al paso (una lista que se
 		// desplaza, un panel que se abre): durante ese primer momento el cuadro se reubica.
 		if (!_terminando && Time.GetTicksMsec() - _inicioPasoMs < 300) UbicarCuadro(objetivo, tamPantalla);
+
+		// "Toca para continuar" late suave, para que se note que hay que tocar.
+		if (!_terminando)
+			_lblPista.SelfModulate = new Color(1, 1, 1, 0.65f + 0.35f * Mathf.Sin(Time.GetTicksMsec() / 260f));
 	}
 
 	public override void _Input(InputEvent e)
 	{
+		if (!_comenzada) return; // todavía no se ve: el gesto que estaba en curso termina normal
+
 		bool atras = e.IsActionPressed("ui_cancel");
 		bool puntero = e is InputEventMouseButton || e is InputEventMouseMotion
 			|| e is InputEventScreenTouch || e is InputEventScreenDrag;
@@ -299,11 +333,29 @@ public partial class GuiaPasos : CanvasLayer
 		GetViewport().SetInputAsHandled();
 		if (_terminando) return;
 
-		// En el celular cada toque llega también como clic emulado: se avanza solo con el clic, así un
+		// "Atrás" del celular = saltar la guía.
+		if (atras) { SonidoUI.Reproducir(this); Terminar(); return; }
+
+		// En el celular cada toque llega también como clic emulado: se atiende solo el clic, así un
 		// toque no cuenta doble.
-		bool toque = e is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left;
-		if (!toque && !atras) return;
-		if (Time.GetTicksMsec() - _inicioPasoMs < ESPERA_MIN_MS) return;
+		if (e is not InputEventMouseButton mb || !mb.Pressed || mb.ButtonIndex != MouseButton.Left) return;
+
+		if (_btnSaltar.GetGlobalRect().HasPoint(mb.Position))
+		{
+			SonidoUI.Reproducir(this);
+			Terminar();
+			return;
+		}
+
+		// Ningún toque se pierde: si el cuadro todavía está apareciendo, el toque lo termina de mostrar
+		// (para leerlo ya); si ya está entero, pasa al siguiente paso.
+		if (_tweenCuadro != null && _tweenCuadro.IsRunning())
+		{
+			_tweenCuadro.Kill();
+			if (_cuadro != null) _cuadro.Scale = ESCALA_CUADRO;
+			return;
+		}
+		if (Time.GetTicksMsec() - _inicioPasoMs < ESPERA_MIN_MS) return; // doble toque accidental
 
 		SonidoUI.Reproducir(this);
 		Avanzar();
@@ -326,9 +378,9 @@ public partial class GuiaPasos : CanvasLayer
 		catch (Exception ex) { GD.PushWarning($"[GuiaPasos] al entrar al paso {_indice}: {ex.Message}"); }
 
 		_inicioPasoMs = Time.GetTicksMsec();
-		_lblPista.Text = _pasos.Count > 1
-			? $"{_indice + 1}/{_pasos.Count}   ·   Toca para continuar"
-			: "Toca para continuar";
+		bool ultimo = _indice == _pasos.Count - 1;
+		string accion = ultimo ? "Toca para terminar" : "Toca para continuar";
+		_lblPista.Text = _pasos.Count > 1 ? $"{_indice + 1}/{_pasos.Count}   ·   {accion}" : accion;
 		MostrarCuadro(paso.Texto);
 	}
 
@@ -336,7 +388,11 @@ public partial class GuiaPasos : CanvasLayer
 	private void MostrarCuadro(string texto)
 	{
 		if (_cuadro == null) return;
-		if (_lblTexto != null) _lblTexto.Text = texto;
+		if (_lblTexto != null)
+		{
+			_lblTexto.Text = texto;
+			AjustarLetra();
+		}
 		_cuadro.Visible = true;
 		UbicarCuadro(FocoDelPasoActual(), GetViewport().GetVisibleRect().Size);
 		_cuadro.Scale = ESCALA_CUADRO * 0.15f;
@@ -346,8 +402,19 @@ public partial class GuiaPasos : CanvasLayer
 		_tweenCuadro.TweenProperty(_cuadro, "scale", ESCALA_CUADRO, 0.35f);
 	}
 
+	/// <summary>Si un texto es largo, achica la letra lo justo para que entre en el cuadro (nunca se sale).</summary>
+	private void AjustarLetra()
+	{
+		foreach (int tam in new[] { 22, 20, 18, 16 })
+		{
+			_lblTexto.AddThemeFontSizeOverride("font_size", tam);
+			if (_lblTexto.GetLineCount() * _lblTexto.GetLineHeight() <= _lblTexto.Size.Y + 2) return;
+		}
+	}
+
 	/// <summary>Pone el cuadro (y la pista de abajo) donde no tape lo enfocado: debajo o encima si hay
-	/// lugar; si lo enfocado es muy alto, a un costado. Siempre dentro de la pantalla.</summary>
+	/// lugar; si lo enfocado es muy alto, a un costado. Siempre dentro de la pantalla. SALTAR va a la
+	/// esquina que no tape ni lo enfocado ni el cuadro.</summary>
 	private void UbicarCuadro(Rect2? foco, Vector2 pantalla)
 	{
 		if (_cuadro == null) return;
@@ -396,6 +463,31 @@ public partial class GuiaPasos : CanvasLayer
 		_cuadro.Position = pos - RECT_CUADRO_LOCAL.Position * ESCALA_CUADRO;
 		_lblPista.Position = new Vector2(pos.X, pos.Y + tam.Y + 2f);
 		_lblPista.Size = new Vector2(tam.X, ALTO_PISTA);
+
+		var rectCuadro = new Rect2(pos, new Vector2(tam.X, altoTotal));
+		Vector2[] esquinas =
+		{
+			new(pantalla.X - m - TAM_SALTAR.X, pantalla.Y - m - TAM_SALTAR.Y), // abajo a la derecha
+			new(m, pantalla.Y - m - TAM_SALTAR.Y),                             // abajo a la izquierda
+			new(pantalla.X - m - TAM_SALTAR.X, m),                             // arriba a la derecha
+			new(m, m),                                                         // arriba a la izquierda
+		};
+		Vector2 elegida = esquinas[0];
+		float menorSolape = float.MaxValue;
+		foreach (var esquina in esquinas)
+		{
+			var r = new Rect2(esquina, TAM_SALTAR).Grow(10f);
+			float solape = AreaComun(r, rectCuadro) + (foco.HasValue ? AreaComun(r, foco.Value) : 0f);
+			if (solape < menorSolape) { menorSolape = solape; elegida = esquina; }
+			if (solape <= 0f) break;
+		}
+		_btnSaltar.Position = elegida;
+	}
+
+	private static float AreaComun(Rect2 a, Rect2 b)
+	{
+		Rect2 i = a.Intersection(b);
+		return i.HasArea() ? i.Area : 0f;
 	}
 
 	private void Terminar(bool marcarVista = true)
@@ -409,6 +501,7 @@ public partial class GuiaPasos : CanvasLayer
 		salida.SetParallel();
 		salida.TweenMethod(Callable.From<float>(v => _fuerza = v), _fuerza, 0f, 0.3f);
 		salida.TweenProperty(_lblPista, "modulate:a", 0f, 0.2f);
+		salida.TweenProperty(_btnSaltar, "modulate:a", 0f, 0.2f);
 		if (_cuadro != null)
 			salida.TweenProperty(_cuadro, "scale", ESCALA_CUADRO * 0.15f, 0.2f)
 				.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.In);
@@ -464,7 +557,12 @@ void fragment() {
 	vec3 fondo = b * (1.0 - oscuridad);
 
 	float latido = 0.6 + 0.4 * sin(TIME * 4.0);
-	float aro = (foco.z > 0.0) ? (1.0 - smoothstep(0.0, 4.0, abs(d - 3.0))) * latido : 0.0;
+	float aro = 0.0;
+	if (foco.z > 0.0) {
+		float linea = 1.0 - smoothstep(1.5, 4.5, abs(d - 4.0));
+		float brillo = (1.0 - smoothstep(0.0, 22.0, d)) * step(0.0, d) * 0.55;
+		aro = max(linea, brillo) * latido;
+	}
 
 	float a = max(fuera, aro) * fuerza;
 	COLOR = vec4(mix(fondo, color_aro.rgb, aro), a);
